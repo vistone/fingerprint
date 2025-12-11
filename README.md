@@ -188,11 +188,14 @@ func listAllProfiles() {
 ## 支持的指纹
 
 ### Chrome 系列
-- Chrome 103-133（包括 PSK 版本）
-- Chrome 116_PSK_PQ
+- Chrome 103, 104, 105, 106, 107, 108, 109, 110, 111, 112
+- Chrome 116_PSK, 116_PSK_PQ
+- Chrome 117, 120, 124
+- Chrome 130_PSK, 131, 131_PSK
+- Chrome 133, 133_PSK
 
 ### Firefox 系列
-- Firefox 102-135
+- Firefox 102, 104, 105, 106, 108, 110, 117, 120, 123, 132, 133, 135
 
 ### Safari 系列
 - Safari 15.6.1, 16.0
@@ -202,16 +205,7 @@ func listAllProfiles() {
 ### Opera 系列
 - Opera 89, 90, 91
 
-### 移动端
-- Zalando Android/iOS Mobile
-- Nike iOS/Android Mobile
-- MMS iOS (多个版本)
-- Mesh iOS/Android (多个版本)
-- Confirmed iOS/Android
-- OkHttp4 Android 7-13
-
-### 自定义
-- Cloudflare Custom (cloudscraper)
+**注意**：当前 `MappedTLSClients` 中包含 44 个主流浏览器指纹。代码中还定义了其他移动端和自定义指纹（如 Zalando、Nike、MMS、Mesh、Confirmed、OkHttp4、Cloudflare Custom），但这些指纹需要直接从 `profiles` 子包中导入使用，未包含在 `MappedTLSClients` 映射表中。
 
 ## API 参考
 
@@ -259,17 +253,29 @@ type FingerprintResult struct {
 - `Sec-CH-UA-*` - 客户端提示头（Chrome/Opera）
 - `Upgrade-Insecure-Requests` - 升级不安全请求
 
-使用 `Headers.ToMap()` 可以转换为 `map[string]string`，直接用于 HTTP 请求。
+**方法：**
+- `ToMap() map[string]string` - 将 HTTPHeaders 转换为 map，直接用于 HTTP 请求
+
+**函数：**
+- `GenerateHeaders(browserType BrowserType, userAgent string, isMobile bool) *HTTPHeaders` - 根据浏览器类型和 User-Agent 生成标准 HTTP headers
+- `RandomLanguage() string` - 随机选择一个语言（从 30+ 种全球语言中选择）
 
 **重要**：`Headers` 已经包含了 `User-Agent` 和 `Accept-Language`，无需单独使用 `FingerprintResult.UserAgent` 字段。
 
 ### User-Agent API
 
+**主要函数（推荐使用）：**
 - `GetUserAgentByProfileName(profileName string) (string, error)` - 根据 profile 名称获取 User-Agent（操作系统随机）
 - `GetUserAgentByProfileNameWithOS(profileName string, os OperatingSystem) (string, error)` - 根据 profile 名称和指定操作系统获取 User-Agent
 - `GetUserAgentFromProfile(profile ClientProfile) (string, error)` - 从 ClientProfile 对象获取 User-Agent
 - `GetUserAgentFromProfileWithOS(profile ClientProfile, os OperatingSystem) (string, error)` - 从 ClientProfile 对象获取 User-Agent，并指定操作系统
 - `RandomOS() OperatingSystem` - 随机选择一个操作系统
+
+**辅助函数：**
+- `GetUserAgentForProfile(profileName string) (string, error)` - 为指定的 ClientProfile 获取 User-Agent（内部使用）
+- `GetUserAgentForProfileWithOS(profileName string, os OperatingSystem) (string, error)` - 为指定的 ClientProfile 和操作系统获取 User-Agent（内部使用）
+- `GetUserAgentForMappedProfile(profileName string) (string, error)` - 从 MappedTLSClients 中获取指定名称的 profile 的 User-Agent
+- `GetUserAgentForMappedProfileWithOS(profileName string, os OperatingSystem) (string, error)` - 从 MappedTLSClients 中获取指定名称的 profile 的 User-Agent，并指定操作系统
 
 ### 支持的操作系统
 
@@ -282,10 +288,25 @@ type FingerprintResult struct {
 - `OSLinuxUbuntu` - Ubuntu Linux
 - `OSLinuxDebian` - Debian Linux
 
-### 全局变量
+### 全局变量和常量
 
+**变量：**
 - `DefaultClientProfile` - 默认客户端指纹配置（Chrome 133）
-- `MappedTLSClients` - 所有可用的 TLS 客户端指纹映射表
+- `MappedTLSClients` - 所有可用的 TLS 客户端指纹映射表（map[string]ClientProfile）
+- `Languages` - 全球语言列表（30+ 种语言，用于随机选择 Accept-Language）
+- `OperatingSystems` - 操作系统列表（用于随机选择）
+- `NewClientProfile` - 创建新的客户端指纹配置的函数
+
+**类型：**
+- `BrowserType` - 浏览器类型（chrome, firefox, safari, opera, edge）
+- `OperatingSystem` - 操作系统类型（字符串类型）
+
+**BrowserType 常量：**
+- `BrowserChrome` - Chrome 浏览器
+- `BrowserFirefox` - Firefox 浏览器
+- `BrowserSafari` - Safari 浏览器
+- `BrowserOpera` - Opera 浏览器
+- `BrowserEdge` - Edge 浏览器
 
 ## 依赖
 
