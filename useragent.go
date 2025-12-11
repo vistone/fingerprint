@@ -1,0 +1,295 @@
+package fingerprint
+
+import (
+	"fmt"
+	"math/rand"
+	"strings"
+	"sync"
+	"time"
+)
+
+// OperatingSystem 操作系统类型
+type OperatingSystem string
+
+const (
+	OSWindows10    OperatingSystem = "Windows NT 10.0; Win64; x64"
+	OSWindows11    OperatingSystem = "Windows NT 10.0; Win64; x64"
+	OSMacOS13      OperatingSystem = "Macintosh; Intel Mac OS X 13_0_0"
+	OSMacOS14      OperatingSystem = "Macintosh; Intel Mac OS X 14_0_0"
+	OSMacOS15      OperatingSystem = "Macintosh; Intel Mac OS X 15_0_0"
+	OSLinux        OperatingSystem = "X11; Linux x86_64"
+	OSLinuxUbuntu  OperatingSystem = "X11; Linux x86_64"
+	OSLinuxDebian  OperatingSystem = "X11; Linux x86_64"
+)
+
+// 操作系统列表（用于随机选择）
+var OperatingSystems = []OperatingSystem{
+	OSWindows10,
+	OSWindows11,
+	OSMacOS13,
+	OSMacOS14,
+	OSMacOS15,
+	OSLinux,
+	OSLinuxUbuntu,
+	OSLinuxDebian,
+}
+
+// BrowserType 浏览器类型
+type BrowserType string
+
+const (
+	BrowserChrome  BrowserType = "chrome"
+	BrowserFirefox BrowserType = "firefox"
+	BrowserSafari BrowserType = "safari"
+	BrowserOpera  BrowserType = "opera"
+	BrowserEdge   BrowserType = "edge"
+)
+
+// UserAgentTemplate User-Agent 模板
+type UserAgentTemplate struct {
+	Browser     BrowserType
+	Version     string
+	Template    string // 模板字符串，使用 %s 占位符表示操作系统
+	Mobile      bool   // 是否为移动端
+	OSRequired  bool   // 是否需要操作系统信息
+}
+
+// UserAgentGenerator User-Agent 生成器
+type UserAgentGenerator struct {
+	templates map[string]UserAgentTemplate
+	rng       *rand.Rand
+	rngMu     sync.Mutex
+}
+
+var (
+	defaultGenerator *UserAgentGenerator
+	defaultGenMu     sync.Mutex
+)
+
+func init() {
+	defaultGenerator = NewUserAgentGenerator()
+}
+
+// NewUserAgentGenerator 创建新的 User-Agent 生成器
+func NewUserAgentGenerator() *UserAgentGenerator {
+	gen := &UserAgentGenerator{
+		templates: make(map[string]UserAgentTemplate),
+		rng:       rand.New(rand.NewSource(time.Now().UnixNano())),
+	}
+	gen.initTemplates()
+	return gen
+}
+
+// initTemplates 初始化 User-Agent 模板
+func (g *UserAgentGenerator) initTemplates() {
+	// Chrome User-Agent 模板
+	chromeTemplates := map[string]string{
+		"103": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
+		"104": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36",
+		"105": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
+		"106": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36",
+		"107": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
+		"108": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+		"109": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+		"110": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+		"111": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36",
+		"112": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+		"116": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36",
+		"117": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
+		"120": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+		"124": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+		"130": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+		"131": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+		"133": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+	}
+
+	for version, template := range chromeTemplates {
+		g.templates["chrome_"+version] = UserAgentTemplate{
+			Browser:    BrowserChrome,
+			Version:    version,
+			Template:   template,
+			OSRequired: true,
+		}
+	}
+
+	// Firefox User-Agent 模板
+	firefoxTemplates := map[string]string{
+		"102": "Mozilla/5.0 (%s; rv:102.0) Gecko/20100101 Firefox/102.0",
+		"104": "Mozilla/5.0 (%s; rv:104.0) Gecko/20100101 Firefox/104.0",
+		"105": "Mozilla/5.0 (%s; rv:105.0) Gecko/20100101 Firefox/105.0",
+		"106": "Mozilla/5.0 (%s; rv:106.0) Gecko/20100101 Firefox/106.0",
+		"108": "Mozilla/5.0 (%s; rv:108.0) Gecko/20100101 Firefox/108.0",
+		"110": "Mozilla/5.0 (%s; rv:110.0) Gecko/20100101 Firefox/110.0",
+		"117": "Mozilla/5.0 (%s; rv:117.0) Gecko/20100101 Firefox/117.0",
+		"120": "Mozilla/5.0 (%s; rv:120.0) Gecko/20100101 Firefox/120.0",
+		"123": "Mozilla/5.0 (%s; rv:123.0) Gecko/20100101 Firefox/123.0",
+		"132": "Mozilla/5.0 (%s; rv:132.0) Gecko/20100101 Firefox/132.0",
+		"133": "Mozilla/5.0 (%s; rv:133.0) Gecko/20100101 Firefox/133.0",
+		"135": "Mozilla/5.0 (%s; rv:135.0) Gecko/20100101 Firefox/135.0",
+	}
+
+	for version, template := range firefoxTemplates {
+		g.templates["firefox_"+version] = UserAgentTemplate{
+			Browser:    BrowserFirefox,
+			Version:    version,
+			Template:   template,
+			OSRequired: true,
+		}
+	}
+
+	// Safari User-Agent 模板
+	safariTemplates := map[string]string{
+		"15_6_1": "Mozilla/5.0 (%s) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+		"16_0":   "Mozilla/5.0 (%s) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15",
+		"ipad_15_6": "Mozilla/5.0 (iPad; CPU OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1",
+		"ios_15_5": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Mobile/15E148 Safari/604.1",
+		"ios_15_6": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1",
+		"ios_16_0": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+		"ios_17_0": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+		"ios_18_0": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
+		"ios_18_5": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1",
+	}
+
+	for key, template := range safariTemplates {
+		mobile := strings.Contains(key, "ios") || strings.Contains(key, "ipad")
+		g.templates["safari_"+key] = UserAgentTemplate{
+			Browser:    BrowserSafari,
+			Version:    key,
+			Template:   template,
+			Mobile:     mobile,
+			OSRequired: !mobile, // 移动端不需要操作系统信息
+		}
+	}
+
+	// Opera User-Agent 模板
+	operaTemplates := map[string]string{
+		"89": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36 OPR/89.0.0.0",
+		"90": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36 OPR/90.0.0.0",
+		"91": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36 OPR/91.0.0.0",
+	}
+
+	for version, template := range operaTemplates {
+		g.templates["opera_"+version] = UserAgentTemplate{
+			Browser:    BrowserOpera,
+			Version:    version,
+			Template:   template,
+			OSRequired: true,
+		}
+	}
+
+}
+
+// GetUserAgent 根据指纹名称获取 User-Agent
+// 如果指纹需要操作系统信息，会随机选择一个操作系统
+func (g *UserAgentGenerator) GetUserAgent(profileName string) (string, error) {
+	return g.GetUserAgentWithOS(profileName, OperatingSystem(""))
+}
+
+// GetUserAgentWithOS 根据指纹名称和指定操作系统获取 User-Agent
+// 如果 os 为空，且需要操作系统信息，会随机选择一个操作系统
+func (g *UserAgentGenerator) GetUserAgentWithOS(profileName string, os OperatingSystem) (string, error) {
+	if profileName == "" {
+		return "", fmt.Errorf("profile name cannot be empty")
+	}
+	template, ok := g.templates[profileName]
+	if !ok {
+		// 尝试从 profileName 中提取浏览器类型和版本
+		return g.generateFromProfileName(profileName, os)
+	}
+
+	// 如果不需要操作系统信息，直接返回模板
+	if !template.OSRequired {
+		return template.Template, nil
+	}
+
+	// 如果需要操作系统信息
+	if os == "" {
+		// 随机选择操作系统
+		os = g.RandomOS()
+	}
+
+	return fmt.Sprintf(template.Template, string(os)), nil
+}
+
+// generateFromProfileName 从 profile 名称生成 User-Agent
+func (g *UserAgentGenerator) generateFromProfileName(profileName string, os OperatingSystem) (string, error) {
+	profileName = strings.ToLower(profileName)
+
+	// 解析浏览器类型和版本
+	var browser BrowserType
+	var version string
+
+	if strings.HasPrefix(profileName, "chrome_") {
+		browser = BrowserChrome
+		version = strings.TrimPrefix(profileName, "chrome_")
+		// 处理特殊版本
+		if strings.Contains(version, "_psk") {
+			version = strings.Split(version, "_psk")[0]
+		}
+		if strings.Contains(version, "_pq") {
+			version = strings.Split(version, "_pq")[0]
+		}
+	} else if strings.HasPrefix(profileName, "firefox_") {
+		browser = BrowserFirefox
+		version = strings.TrimPrefix(profileName, "firefox_")
+	} else if strings.HasPrefix(profileName, "safari_") {
+		browser = BrowserSafari
+		version = strings.TrimPrefix(profileName, "safari_")
+	} else if strings.HasPrefix(profileName, "opera_") {
+		browser = BrowserOpera
+		version = strings.TrimPrefix(profileName, "opera_")
+	} else {
+		// 默认使用 Chrome 133
+		return g.GetUserAgentWithOS("chrome_133", os)
+	}
+
+	// 生成 User-Agent
+	if os == "" {
+		os = g.RandomOS()
+	}
+
+	switch browser {
+	case BrowserChrome:
+		return fmt.Sprintf("Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s.0.0.0 Safari/537.36", string(os), version), nil
+	case BrowserFirefox:
+		return fmt.Sprintf("Mozilla/5.0 (%s; rv:%s.0) Gecko/20100101 Firefox/%s.0", string(os), version, version), nil
+	case BrowserSafari:
+		return fmt.Sprintf("Mozilla/5.0 (%s) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/%s Safari/605.1.15", string(os), version), nil
+	case BrowserOpera:
+		return fmt.Sprintf("Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s.0.0.0 Safari/537.36 OPR/%s.0.0.0", string(os), version, version), nil
+	default:
+		return "", fmt.Errorf("unsupported browser type: %s", browser)
+	}
+}
+
+// RandomOS 随机选择一个操作系统
+func (g *UserAgentGenerator) RandomOS() OperatingSystem {
+	if len(OperatingSystems) == 0 {
+		return OSWindows10 // 默认返回 Windows 10
+	}
+	g.rngMu.Lock()
+	defer g.rngMu.Unlock()
+	return OperatingSystems[g.rng.Intn(len(OperatingSystems))]
+}
+
+// GetUserAgentForProfile 为指定的 ClientProfile 获取 User-Agent
+func GetUserAgentForProfile(profileName string) (string, error) {
+	return defaultGenerator.GetUserAgent(profileName)
+}
+
+// GetUserAgentForProfileWithOS 为指定的 ClientProfile 和操作系统获取 User-Agent
+func GetUserAgentForProfileWithOS(profileName string, os OperatingSystem) (string, error) {
+	return defaultGenerator.GetUserAgentWithOS(profileName, os)
+}
+
+// RandomOS 随机选择一个操作系统（便捷函数）
+func RandomOS() OperatingSystem {
+	defaultGenMu.Lock()
+	gen := defaultGenerator
+	defaultGenMu.Unlock()
+	if gen == nil {
+		return OSWindows10 // 默认返回 Windows 10
+	}
+	return gen.RandomOS()
+}
+

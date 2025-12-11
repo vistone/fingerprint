@@ -1,0 +1,414 @@
+package fingerprint_test
+
+import (
+	"context"
+	"fmt"
+	"io"
+	"net"
+	"net/http"
+	"testing"
+	"time"
+
+	tls "github.com/bogdanfinn/utls"
+	"github.com/vistone/fingerprint"
+	"github.com/vistone/logs"
+)
+
+// TestFingerprintWithRealRequest 使用真实网络请求测试指纹
+func TestFingerprintWithRealRequest(t *testing.T) {
+	if testing.Short() {
+		t.Skip("跳过网络测试")
+	}
+
+	// 测试几个关键指纹
+	testProfiles := []struct {
+		name    string
+		profile fingerprint.ClientProfile
+		url     string
+	}{
+		{"chrome_133", fingerprint.MappedTLSClients["chrome_133"], "https://tls.browserleaks.com/json"},
+		{"firefox_135", fingerprint.MappedTLSClients["firefox_135"], "https://tls.browserleaks.com/json"},
+		{"chrome_120", fingerprint.MappedTLSClients["chrome_120"], "https://tls.browserleaks.com/json"},
+	}
+
+	for _, tt := range testProfiles {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+
+			err := testProfileWithRequest(ctx, tt.profile, tt.url)
+			if err != nil {
+				t.Logf("Profile %s 测试结果: %v", tt.name, err)
+			} else {
+				t.Logf("Profile %s 测试成功", tt.name)
+			}
+		})
+	}
+}
+
+// testProfileWithRequest 使用指定指纹进行网络请求
+func testProfileWithRequest(ctx context.Context, profile fingerprint.ClientProfile, url string) error {
+	spec, err := profile.GetClientHelloSpec()
+	if err != nil {
+		return fmt.Errorf("无法获取 Spec: %w", err)
+	}
+
+	conn, err := net.DialTimeout("tcp", "tls.browserleaks.com:443", 5*time.Second)
+	if err != nil {
+		return fmt.Errorf("连接失败: %w", err)
+	}
+	defer conn.Close()
+
+	uconn := tls.UClient(conn, &tls.Config{
+		ServerName:         "tls.browserleaks.com",
+		InsecureSkipVerify: true,
+	}, tls.HelloCustom, false, false, false)
+
+	if err := uconn.ApplyPreset(&spec); err != nil {
+		return fmt.Errorf("应用指纹失败: %w", err)
+	}
+
+	if err := uconn.HandshakeContext(ctx); err != nil {
+		return fmt.Errorf("TLS 握手失败: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return fmt.Errorf("创建请求失败: %w", err)
+	}
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				return uconn, nil
+			},
+		},
+		Timeout: 5 * time.Second,
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("请求失败: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("读取响应失败: %w", err)
+	}
+
+	_ = body
+	return nil
+}
+
+
+// TestFingerprintWithNetConnPool 使用 netconnpool 测试指纹
+func TestFingerprintWithNetConnPool(t *testing.T) {
+	if testing.Short() {
+		t.Skip("跳过网络测试")
+	}
+
+	logger := logs.NewLogger(logs.Info, true)
+
+	// 测试关键指纹
+	testProfiles := []string{
+		"chrome_133",
+		"firefox_135",
+		"chrome_120",
+		"firefox_133",
+	}
+
+	for _, profileName := range testProfiles {
+		profile, ok := fingerprint.MappedTLSClients[profileName]
+		if !ok {
+			t.Logf("Profile %s 不存在，跳过", profileName)
+			continue
+		}
+
+		t.Run(profileName, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+
+			err := testProfileWithNetConnPool(ctx, profile, logger)
+			if err != nil {
+				t.Logf("Profile %s 测试失败: %v", profileName, err)
+			} else {
+				t.Logf("Profile %s 测试成功", profileName)
+			}
+		})
+	}
+}
+
+// testProfileWithNetConnPool 使用 netconnpool 测试指纹
+func testProfileWithNetConnPool(ctx context.Context, profile fingerprint.ClientProfile, logger *logs.Logger) error {
+	// 获取 TLS Spec
+	spec, err := profile.GetClientHelloSpec()
+	if err != nil {
+		return fmt.Errorf("无法获取 Spec: %w", err)
+	}
+
+	logger.Info("使用指纹: %s", profile.GetClientHelloStr())
+
+	// 创建 TCP 连接
+	conn, err := net.DialTimeout("tcp", "tls.browserleaks.com:443", 5*time.Second)
+	if err != nil {
+		return fmt.Errorf("TCP 连接失败: %w", err)
+	}
+	defer conn.Close()
+
+	// 创建 utls 连接并应用指纹
+	config := &tls.Config{
+		ServerName:         "tls.browserleaks.com",
+		InsecureSkipVerify: true,
+	}
+
+	uconn := tls.UClient(conn, config, tls.HelloCustom, false, false, false)
+	if err := uconn.ApplyPreset(&spec); err != nil {
+		return fmt.Errorf("应用指纹失败: %w", err)
+	}
+
+	// 执行 TLS 握手
+	if err := uconn.HandshakeContext(ctx); err != nil {
+		return fmt.Errorf("TLS 握手失败: %w", err)
+	}
+
+	logger.Info("TLS 握手成功，协议: %s", uconn.ConnectionState().NegotiatedProtocol)
+
+	// 创建 HTTP 请求
+	req, err := http.NewRequestWithContext(ctx, "GET", "https://tls.browserleaks.com/json", nil)
+	if err != nil {
+		return fmt.Errorf("创建请求失败: %w", err)
+	}
+
+	// 使用自定义 Transport
+	client := &http.Client{
+		Transport: &http.Transport{
+			DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				return uconn, nil
+			},
+		},
+		Timeout: 5 * time.Second,
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("HTTP 请求失败: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("读取响应失败: %w", err)
+	}
+
+	logger.Info("响应状态: %d, 长度: %d 字节", resp.StatusCode, len(body))
+	return nil
+}
+
+// TestAllWorkingProfiles 测试所有可用的指纹
+func TestAllWorkingProfiles(t *testing.T) {
+	if testing.Short() {
+		t.Skip("跳过网络测试")
+	}
+
+	logger := logs.NewLogger(logs.Info, true)
+
+	// 获取所有有完整 Spec 的 profiles
+	workingProfiles := []string{
+		"chrome_133", "chrome_120", "chrome_124", "chrome_131", "chrome_131_PSK", "chrome_133_PSK",
+		"firefox_135", "firefox_133", "firefox_132", "firefox_123", "firefox_120", "firefox_117",
+		"safari_ios_17_0", "safari_ios_18_0", "safari_ios_18_5",
+	}
+
+	results := make(map[string]bool)
+	ctx := context.Background()
+
+	for _, name := range workingProfiles {
+		profile, ok := fingerprint.MappedTLSClients[name]
+		if !ok {
+			continue
+		}
+
+		t.Run(name, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+			defer cancel()
+
+			success := testTLSHandshake(ctx, profile, logger)
+			results[name] = success
+
+			if success {
+				logger.Info("✓ %s: TLS 握手成功", name)
+			} else {
+				logger.Warn("✗ %s: TLS 握手失败", name)
+			}
+		})
+	}
+
+	// 统计结果
+	successCount := 0
+	for _, success := range results {
+		if success {
+			successCount++
+		}
+	}
+
+	logger.Info("\n测试结果统计: %d/%d 成功", successCount, len(results))
+}
+
+// testTLSHandshake 测试 TLS 握手
+func testTLSHandshake(ctx context.Context, profile fingerprint.ClientProfile, logger *logs.Logger) bool {
+	spec, err := profile.GetClientHelloSpec()
+	if err != nil {
+		logger.Warn("无法获取 Spec: %v", err)
+		return false
+	}
+
+	// 创建连接
+	conn, err := net.DialTimeout("tcp", "tls.browserleaks.com:443", 3*time.Second)
+	if err != nil {
+		logger.Warn("连接失败: %v", err)
+		return false
+	}
+	defer conn.Close()
+
+	// 使用 utls
+	config := &tls.Config{
+		ServerName:         "tls.browserleaks.com",
+		InsecureSkipVerify: true,
+	}
+
+	uconn := tls.UClient(conn, config, tls.HelloCustom, false, false, false)
+	if err := uconn.ApplyPreset(&spec); err != nil {
+		logger.Warn("应用指纹失败: %v", err)
+		return false
+	}
+
+	if err := uconn.HandshakeContext(ctx); err != nil {
+		logger.Warn("TLS 握手失败: %v", err)
+		return false
+	}
+
+	state := uconn.ConnectionState()
+	logger.Debug("握手成功 - 协议: %s, 版本: %x", state.NegotiatedProtocol, state.Version)
+	return true
+}
+
+// TestFingerprintComparison 比较不同指纹的效果
+func TestFingerprintComparison(t *testing.T) {
+	if testing.Short() {
+		t.Skip("跳过网络测试")
+	}
+
+	logger := logs.NewLogger(logs.Info, true)
+
+	// 测试不同浏览器的指纹
+	comparisons := []struct {
+		name    string
+		profile fingerprint.ClientProfile
+	}{
+		{"Chrome 133", fingerprint.MappedTLSClients["chrome_133"]},
+		{"Firefox 135", fingerprint.MappedTLSClients["firefox_135"]},
+		{"Chrome 120", fingerprint.MappedTLSClients["chrome_120"]},
+		{"Firefox 133", fingerprint.MappedTLSClients["firefox_133"]},
+	}
+
+	results := make(map[string]map[string]interface{})
+
+	for _, comp := range comparisons {
+		t.Run(comp.name, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			result := analyzeFingerprint(ctx, comp.profile, logger)
+			results[comp.name] = result
+		})
+	}
+
+	// 输出比较结果
+	logger.Info("\n=== 指纹比较结果 ===")
+	for name, result := range results {
+		logger.Info("%s:", name)
+		for key, value := range result {
+			logger.Info("  %s: %v", key, value)
+		}
+	}
+}
+
+// analyzeFingerprint 分析指纹特征
+func analyzeFingerprint(ctx context.Context, profile fingerprint.ClientProfile, logger *logs.Logger) map[string]interface{} {
+	result := make(map[string]interface{})
+
+	// 基本信息
+	result["ClientHelloStr"] = profile.GetClientHelloStr()
+	result["SettingsCount"] = len(profile.GetSettings())
+	result["PseudoHeaderOrder"] = profile.GetPseudoHeaderOrder()
+
+	// 尝试获取 Spec
+	spec, err := profile.GetClientHelloSpec()
+	if err == nil {
+		result["CipherSuitesCount"] = len(spec.CipherSuites)
+		result["ExtensionsCount"] = len(spec.Extensions)
+		result["HasSpec"] = true
+	} else {
+		result["HasSpec"] = false
+		result["SpecError"] = err.Error()
+	}
+
+	// 测试 TLS 握手
+	success := testTLSHandshake(ctx, profile, logger)
+	result["TLSHandshakeSuccess"] = success
+
+	return result
+}
+
+// TestFingerprintWithCustomTLS 使用自定义 TLS 配置测试
+func TestFingerprintWithCustomTLS(t *testing.T) {
+	if testing.Short() {
+		t.Skip("跳过网络测试")
+	}
+
+	logger := logs.NewLogger(logs.Info, true)
+
+	profile := fingerprint.DefaultClientProfile
+
+	// 创建自定义 TLS 配置
+	utlsConfig := &tls.Config{
+		ServerName:         "tls.browserleaks.com",
+		InsecureSkipVerify: true,
+	}
+
+	// 获取指纹 Spec
+	spec, err := profile.GetClientHelloSpec()
+	if err != nil {
+		t.Fatalf("无法获取 Spec: %v", err)
+	}
+
+	// 创建连接
+	conn, err := net.DialTimeout("tcp", "tls.browserleaks.com:443", 5*time.Second)
+	if err != nil {
+		t.Fatalf("连接失败: %v", err)
+	}
+	defer conn.Close()
+
+	// 应用指纹
+	uconn := tls.UClient(conn, utlsConfig, tls.HelloCustom, false, false, false)
+
+	if err := uconn.ApplyPreset(&spec); err != nil {
+		t.Fatalf("应用指纹失败: %v", err)
+	}
+
+	// 执行握手
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := uconn.HandshakeContext(ctx); err != nil {
+		t.Fatalf("TLS 握手失败: %v", err)
+	}
+
+	state := uconn.ConnectionState()
+	logger.Info("TLS 握手成功")
+	logger.Info("  协议版本: %x", state.Version)
+	logger.Info("  协商协议: %s", state.NegotiatedProtocol)
+	logger.Info("  密码套件: %x", state.CipherSuite)
+}
+
