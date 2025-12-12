@@ -18,7 +18,7 @@ func main() {
 			log.Printf("错误: %v", err)
 			continue
 		}
-		fmt.Printf("   %d. %s\n", i+1, result.Name)
+		fmt.Printf("   %d. %s\n", i+1, result.HelloClientID)
 		fmt.Printf("      ClientHello: %s\n\n", result.Profile.GetClientHelloStr())
 	}
 
@@ -30,7 +30,7 @@ func main() {
 			log.Printf("错误: %v", err)
 			continue
 		}
-		fmt.Printf("   %d. %s\n\n", i+1, result.Name)
+		fmt.Printf("   %d. %s\n\n", i+1, result.HelloClientID)
 	}
 
 	// 示例 3: 随机 Firefox 指纹
@@ -41,7 +41,7 @@ func main() {
 			log.Printf("错误: %v", err)
 			continue
 		}
-		fmt.Printf("   %d. %s\n\n", i+1, result.Name)
+		fmt.Printf("   %d. %s\n\n", i+1, result.HelloClientID)
 	}
 
 	// 示例 4: 指定操作系统的随机指纹
@@ -52,7 +52,7 @@ func main() {
 			log.Printf("错误: %v", err)
 			continue
 		}
-		fmt.Printf("   %d. %s\n\n", i+1, result.Name)
+		fmt.Printf("   %d. %s\n\n", i+1, result.HelloClientID)
 	}
 
 	// 示例 5: 指定浏览器和操作系统
@@ -63,7 +63,7 @@ func main() {
 			log.Printf("错误: %v", err)
 			continue
 		}
-		fmt.Printf("   %d. %s\n\n", i+1, result.Name)
+		fmt.Printf("   %d. %s\n\n", i+1, result.HelloClientID)
 	}
 
 	fmt.Println("=== 使用示例 ===")
@@ -74,5 +74,5 @@ func main() {
 	fmt.Println("  }")
 	fmt.Println("  // result.Profile 是 TLS 指纹配置")
 	fmt.Println("  // result.Headers 包含完整的 HTTP Headers（包括 User-Agent 和 Accept-Language）")
-	fmt.Println("  // result.Name 是指纹名称")
+	fmt.Println("  // result.HelloClientID 是 Client Hello ID（与 tls-client 保持一致）")
 }

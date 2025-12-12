@@ -177,6 +177,79 @@ func (g *UserAgentGenerator) initTemplates() {
 		}
 	}
 
+	// 移动端和自定义指纹的 User-Agent 模板
+	// iOS 应用指纹 - 使用 iOS Safari User-Agent
+	iosAppTemplates := map[string]string{
+		"zalando_ios_mobile":    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+		"nike_ios_mobile":       "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+		"mms_ios":               "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+		"mms_ios_2":             "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+		"mms_ios_3":             "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+		"mesh_ios":              "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+		"mesh_ios_2":            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+		"confirmed_ios":         "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+	}
+
+	for key, template := range iosAppTemplates {
+		g.templates[key] = UserAgentTemplate{
+			Browser:    BrowserSafari,
+			Version:    "ios",
+			Template:   template,
+			Mobile:     true,
+			OSRequired: false, // iOS 移动端不需要操作系统占位符
+		}
+	}
+
+	// Android 应用指纹 - 使用 Android Chrome User-Agent
+	androidAppTemplates := map[string]string{
+		"zalando_android_mobile": "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+		"nike_android_mobile":    "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+		"mesh_android":            "Mozilla/5.0 (Linux; Android 12; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+		"mesh_android_2":         "Mozilla/5.0 (Linux; Android 13; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+		"confirmed_android":      "Mozilla/5.0 (Linux; Android 12; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+		"confirmed_android_2":    "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+	}
+
+	for key, template := range androidAppTemplates {
+		g.templates[key] = UserAgentTemplate{
+			Browser:    BrowserChrome,
+			Version:    "android",
+			Template:   template,
+			Mobile:     true,
+			OSRequired: false, // Android 移动端不需要操作系统占位符
+		}
+	}
+
+	// OkHttp4 Android 指纹 - 使用 Android Chrome User-Agent（不同 Android 版本）
+	okhttpTemplates := map[string]string{
+		"okhttp4_android_7":  "Mozilla/5.0 (Linux; Android 7.0; SM-G930F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+		"okhttp4_android_8":  "Mozilla/5.0 (Linux; Android 8.0; SM-G950F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+		"okhttp4_android_9":  "Mozilla/5.0 (Linux; Android 9; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+		"okhttp4_android_10": "Mozilla/5.0 (Linux; Android 10; SM-G970F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+		"okhttp4_android_11": "Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+		"okhttp4_android_12": "Mozilla/5.0 (Linux; Android 12; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+		"okhttp4_android_13": "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+	}
+
+	for key, template := range okhttpTemplates {
+		g.templates[key] = UserAgentTemplate{
+			Browser:    BrowserChrome,
+			Version:    "okhttp4",
+			Template:   template,
+			Mobile:     true,
+			OSRequired: false, // Android 移动端不需要操作系统占位符
+		}
+	}
+
+	// Cloudflare Custom - 使用 Chrome User-Agent（通常用于 cloudscraper）
+	g.templates["cloudflare_custom"] = UserAgentTemplate{
+		Browser:    BrowserChrome,
+		Version:    "custom",
+		Template:   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+		Mobile:     false,
+		OSRequired: false, // 固定 User-Agent，不需要操作系统占位符
+	}
+
 }
 
 // GetUserAgent 根据指纹名称获取 User-Agent

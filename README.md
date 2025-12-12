@@ -2,7 +2,7 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/vistone/fingerprint.svg)](https://pkg.go.dev/github.com/vistone/fingerprint)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/vistone/fingerprint/releases/tag/v1.0.0)
+[![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)](https://github.com/vistone/fingerprint/releases/tag/v1.0.1)
 
 一个独立的浏览器 TLS 指纹库，从 [tls-client](https://github.com/bogdanfinn/tls-client) 迁移而来。
 
@@ -16,6 +16,7 @@
 - ✅ **主流浏览器支持**：Chrome、Firefox、Safari、Opera 等
 - ✅ **移动端支持**：iOS、Android 移动端指纹
 - ✅ **HTTP/2 支持**：包含完整的 HTTP/2 配置
+- ✅ **HTTP/3 兼容**：头部字段兼容 HTTP/3（使用 QPACK 压缩）
 - ✅ **User-Agent 匹配**：自动为每个指纹生成匹配的 User-Agent
 - ✅ **标准 HTTP Headers**：自动生成完整的标准 HTTP 请求头
 - ✅ **全球语言支持**：支持 30+ 种语言的 Accept-Language 头
@@ -53,9 +54,9 @@ func main() {
     
     // result.Profile 是 TLS 指纹配置
     // result.Headers 包含完整的 HTTP Headers（包括 User-Agent 和 Accept-Language）
-    // result.Name 是指纹名称
+    // result.HelloClientID 是 Client Hello ID（与 tls-client 保持一致）
     
-    fmt.Printf("指纹名称: %s\n", result.Name)
+    fmt.Printf("HelloClientID: %s\n", result.HelloClientID)
     
     // 使用指纹进行 TLS 握手
     spec, err := result.Profile.GetClientHelloSpec()
@@ -205,7 +206,16 @@ func listAllProfiles() {
 ### Opera 系列
 - Opera 89, 90, 91
 
-**注意**：当前 `MappedTLSClients` 中包含 44 个主流浏览器指纹。代码中还定义了其他移动端和自定义指纹（如 Zalando、Nike、MMS、Mesh、Confirmed、OkHttp4、Cloudflare Custom），但这些指纹需要直接从 `profiles` 子包中导入使用，未包含在 `MappedTLSClients` 映射表中。
+### 移动端和自定义指纹
+- **Zalando**: `zalando_android_mobile`, `zalando_ios_mobile`
+- **Nike**: `nike_ios_mobile`, `nike_android_mobile`
+- **MMS**: `mms_ios`, `mms_ios_2`, `mms_ios_3`
+- **Mesh**: `mesh_ios`, `mesh_android`, `mesh_ios_2`, `mesh_android_2`
+- **Confirmed**: `confirmed_ios`, `confirmed_android`, `confirmed_android_2`
+- **OkHttp4 Android**: `okhttp4_android_7`, `okhttp4_android_8`, `okhttp4_android_9`, `okhttp4_android_10`, `okhttp4_android_11`, `okhttp4_android_12`, `okhttp4_android_13`
+- **Cloudflare**: `cloudflare_custom`
+
+**总计**：`MappedTLSClients` 中包含 **66 个指纹**（44 个主流浏览器 + 22 个移动端/自定义指纹），所有指纹都可以通过 `MappedTLSClients` 或随机函数访问。
 
 ## API 参考
 
@@ -233,10 +243,10 @@ func listAllProfiles() {
 `FingerprintResult` 结构：
 ```go
 type FingerprintResult struct {
-    Profile   ClientProfile  // TLS 指纹配置
-    UserAgent string         // 对应的 User-Agent（已包含在 Headers 中，建议直接使用 Headers）
-    Name      string         // 指纹名称
-    Headers   *HTTPHeaders   // 标准 HTTP 请求头（包含 User-Agent、Accept-Language 和所有标准头）
+    Profile      ClientProfile  // TLS 指纹配置
+    UserAgent    string         // 对应的 User-Agent（已包含在 Headers 中，建议直接使用 Headers）
+    HelloClientID string        // Client Hello ID（与 tls-client 保持一致）
+    Headers      *HTTPHeaders   // 标准 HTTP 请求头（包含 User-Agent、Accept-Language 和所有标准头）
 }
 ```
 
@@ -244,7 +254,7 @@ type FingerprintResult struct {
 
 ### HTTP Headers API
 
-`HTTPHeaders` 包含完整的标准浏览器请求头：
+`HTTPHeaders` 包含完整的标准浏览器请求头，**适用于 HTTP/1.1、HTTP/2 和 HTTP/3**：
 - `Accept` - 内容类型接受
 - `Accept-Language` - 语言偏好（支持 30+ 种全球语言，随机选择）
 - `Accept-Encoding` - 编码支持
@@ -253,14 +263,61 @@ type FingerprintResult struct {
 - `Sec-CH-UA-*` - 客户端提示头（Chrome/Opera）
 - `Upgrade-Insecure-Requests` - 升级不安全请求
 
+**关于 HTTP/3 头部：**
+- HTTP/3 的头部字段定义与 HTTP/1.1 和 HTTP/2 **完全相同**，没有引入新的专有头部字段
+- HTTP/3 使用 **QPACK** 进行头部压缩（而不是 HTTP/2 的 HPACK），但这是传输层的优化，对应用层透明
+- **伪头部**（`:method`, `:scheme`, `:path`, `:authority`）由 HTTP/2 或 HTTP/3 客户端库自动处理，不需要在 `HTTPHeaders` 中设置
+- 当前的 `HTTPHeaders` 结构体可以**同时用于 HTTP/1.1、HTTP/2 和 HTTP/3**，无需修改
+
 **方法：**
-- `ToMap() map[string]string` - 将 HTTPHeaders 转换为 map，直接用于 HTTP 请求
+- `ToMap() map[string]string` - 将 HTTPHeaders 转换为 map，直接用于 HTTP 请求。**系统会自动合并 Custom 中的用户自定义 headers**（如 Cookie、Authorization、X-API-Key 等）
+- `Set(key, value string)` - 设置单个自定义 header（系统会自动合并到 ToMap() 中）
+- `SetHeaders(customHeaders map[string]string)` - 批量设置自定义 headers（系统会自动合并到 ToMap() 中）
+- `Clone() *HTTPHeaders` - 克隆 HTTPHeaders 对象，返回一个新的副本
+- `Merge(customHeaders map[string]string) *HTTPHeaders` - 合并用户自定义的 headers，返回新的 HTTPHeaders 对象（内部使用，通常不需要调用）
 
 **函数：**
 - `GenerateHeaders(browserType BrowserType, userAgent string, isMobile bool) *HTTPHeaders` - 根据浏览器类型和 User-Agent 生成标准 HTTP headers
 - `RandomLanguage() string` - 随机选择一个语言（从 30+ 种全球语言中选择）
 
 **重要**：`Headers` 已经包含了 `User-Agent` 和 `Accept-Language`，无需单独使用 `FingerprintResult.UserAgent` 字段。
+
+**自定义 Headers 使用示例（系统自动合并）：**
+
+```go
+// 获取标准 headers
+result, _ := fingerprint.GetRandomFingerprint()
+
+// 方式 1: 直接设置 Custom 字段（最简单）
+result.Headers.Custom = make(map[string]string)
+result.Headers.Custom["Cookie"] = "session_id=abc123"
+result.Headers.Custom["X-API-Key"] = "your-api-key"
+result.Headers.Custom["Authorization"] = "Bearer token123"
+
+// 方式 2: 使用 Set 方法（推荐）
+result.Headers.Set("Cookie", "session_id=abc123")
+result.Headers.Set("X-API-Key", "your-api-key")
+
+// 方式 3: 使用 SetHeaders 批量设置
+result.Headers.SetHeaders(map[string]string{
+    "Cookie":        "session_id=abc123",
+    "X-API-Key":     "your-api-key",
+    "Authorization": "Bearer token123",
+})
+
+// 调用 ToMap()，系统自动合并自定义 headers（无需手动调用 Merge）
+headers := result.Headers.ToMap()
+
+// 使用 headers 创建 HTTP 请求
+req, _ := http.NewRequest("GET", url, nil)
+for key, value := range headers {
+    req.Header.Set(key, value)
+}
+
+// 动态更新 session（系统自动处理）
+result.Headers.Set("Cookie", "session_id=updated123")
+updatedHeaders := result.Headers.ToMap() // 自动包含更新后的 Cookie
+```
 
 ### User-Agent API
 

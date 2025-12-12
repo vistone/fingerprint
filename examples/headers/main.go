@@ -16,7 +16,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("指纹名称: %s\n", result.Name)
+	fmt.Printf("HelloClientID: %s\n", result.HelloClientID)
 	fmt.Printf("\n标准 HTTP Headers（包含 User-Agent 和 Accept-Language）:\n")
 
 	// 将 Headers 转换为 map
@@ -37,7 +37,7 @@ func main() {
 
 	// Chrome
 	chromeResult, _ := fingerprint.GetRandomFingerprintByBrowser("chrome")
-	fmt.Printf("\nChrome (%s) Headers:\n", chromeResult.Name)
+	fmt.Printf("\nChrome (%s) Headers:\n", chromeResult.HelloClientID)
 	chromeHeaders := chromeResult.Headers.ToMap()
 	for key, value := range chromeHeaders {
 		fmt.Printf("  %s: %s\n", key, value)
@@ -45,7 +45,7 @@ func main() {
 
 	// Firefox
 	firefoxResult, _ := fingerprint.GetRandomFingerprintByBrowser("firefox")
-	fmt.Printf("\nFirefox (%s) Headers:\n", firefoxResult.Name)
+	fmt.Printf("\nFirefox (%s) Headers:\n", firefoxResult.HelloClientID)
 	firefoxHeaders := firefoxResult.Headers.ToMap()
 	for key, value := range firefoxHeaders {
 		fmt.Printf("  %s: %s\n", key, value)
@@ -53,7 +53,7 @@ func main() {
 
 	// Safari
 	safariResult, _ := fingerprint.GetRandomFingerprintByBrowser("safari")
-	fmt.Printf("\nSafari (%s) Headers:\n", safariResult.Name)
+	fmt.Printf("\nSafari (%s) Headers:\n", safariResult.HelloClientID)
 	safariHeaders := safariResult.Headers.ToMap()
 	for key, value := range safariHeaders {
 		fmt.Printf("  %s: %s\n", key, value)

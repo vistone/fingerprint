@@ -17,7 +17,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("指纹名称: %s\n", result.Name)
+	fmt.Printf("HelloClientID: %s\n", result.HelloClientID)
 	fmt.Printf("\n完整 HTTP Headers（包含 User-Agent 和 Accept-Language）:\n")
 
 	// 2. 获取完整的 HTTP Headers

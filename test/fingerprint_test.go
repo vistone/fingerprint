@@ -143,10 +143,12 @@ func TestAllProfilesValid(t *testing.T) {
 
 // TestProfileCount 测试指纹数量
 func TestProfileCount(t *testing.T) {
-	expectedMinCount := 60 // 至少应该有60个指纹
-	if len(fingerprint.MappedTLSClients) < expectedMinCount {
-		t.Errorf("指纹数量 %d 少于预期的最小值 %d", len(fingerprint.MappedTLSClients), expectedMinCount)
+	expectedMinCount := 60 // 至少应该有60个指纹（44个主流浏览器 + 22个移动端/自定义）
+	actualCount := len(fingerprint.MappedTLSClients)
+	if actualCount < expectedMinCount {
+		t.Errorf("指纹数量 %d 少于预期的最小值 %d", actualCount, expectedMinCount)
 	}
+	t.Logf("当前指纹数量: %d", actualCount)
 }
 
 // TestChromeProfiles 测试 Chrome 系列指纹
@@ -200,10 +202,13 @@ func TestMobileProfiles(t *testing.T) {
 	mobileProfiles := []string{
 		"zalando_android_mobile", "zalando_ios_mobile",
 		"nike_ios_mobile", "nike_android_mobile",
-		"mms_ios", "mms_ios_1", "mms_ios_2", "mms_ios_3",
-		"mesh_ios", "mesh_ios_1", "mesh_ios_2",
-		"mesh_android", "mesh_android_1", "mesh_android_2",
-		"confirmed_ios", "confirmed_android",
+		"mms_ios", "mms_ios_2", "mms_ios_3",
+		"mesh_ios", "mesh_ios_2",
+		"mesh_android", "mesh_android_2",
+		"confirmed_ios", "confirmed_android", "confirmed_android_2",
+		"okhttp4_android_7", "okhttp4_android_8", "okhttp4_android_9",
+		"okhttp4_android_10", "okhttp4_android_11", "okhttp4_android_12", "okhttp4_android_13",
+		"cloudflare_custom",
 	}
 
 	for _, profile := range mobileProfiles {

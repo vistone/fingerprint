@@ -9,10 +9,10 @@ import (
 
 // FingerprintResult 指纹结果，包含指纹、User-Agent 和标准 HTTP Headers
 type FingerprintResult struct {
-	Profile   ClientProfile // 指纹配置
-	UserAgent string        // 对应的 User-Agent
-	Name      string        // 指纹名称
-	Headers   *HTTPHeaders  // 标准 HTTP 请求头（包含全球语言支持）
+	Profile       ClientProfile // 指纹配置
+	UserAgent     string        // 对应的 User-Agent
+	HelloClientID string        // Client Hello ID（与 tls-client 保持一致）
+	Headers       *HTTPHeaders  // 标准 HTTP 请求头（包含全球语言支持）
 }
 
 var (
@@ -71,10 +71,10 @@ func GetRandomFingerprintWithOS(os OperatingSystem) (*FingerprintResult, error) 
 	headers := GenerateHeaders(BrowserType(browserTypeStr), ua, isMobile)
 
 	return &FingerprintResult{
-		Profile:   profile,
-		UserAgent: ua,
-		Name:      randomName,
-		Headers:   headers,
+		Profile:       profile,
+		UserAgent:     ua,
+		HelloClientID: profile.GetClientHelloStr(),
+		Headers:       headers,
 	}, nil
 }
 
@@ -135,10 +135,10 @@ func GetRandomFingerprintByBrowserWithOS(browserType string, os OperatingSystem)
 	headers := GenerateHeaders(BrowserType(browserTypeStr), ua, isMobile)
 
 	return &FingerprintResult{
-		Profile:   profile,
-		UserAgent: ua,
-		Name:      randomName,
-		Headers:   headers,
+		Profile:       profile,
+		UserAgent:     ua,
+		HelloClientID: profile.GetClientHelloStr(),
+		Headers:       headers,
 	}, nil
 }
 

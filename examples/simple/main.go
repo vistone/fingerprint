@@ -14,7 +14,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("指纹名称: %s\n", result.Name)
+	fmt.Printf("HelloClientID: %s\n", result.HelloClientID)
 	fmt.Printf("ClientHello: %s\n", result.Profile.GetClientHelloStr())
 	fmt.Printf("\n完整 HTTP Headers（包含 User-Agent 和 Accept-Language）:\n")
 	headers := result.Headers.ToMap()
@@ -36,7 +36,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("  名称: %s\n", chromeResult.Name)
+	fmt.Printf("  HelloClientID: %s\n", chromeResult.HelloClientID)
 	fmt.Printf("  Headers（包含 User-Agent）:\n")
 	chromeHeaders := chromeResult.Headers.ToMap()
 	for key, value := range chromeHeaders {
