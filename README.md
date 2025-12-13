@@ -2,7 +2,7 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/vistone/fingerprint.svg)](https://pkg.go.dev/github.com/vistone/fingerprint)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)](https://github.com/vistone/fingerprint/releases/tag/v1.0.1)
+[![Version](https://img.shields.io/badge/version-1.0.2-blue.svg)](https://github.com/vistone/fingerprint/releases/tag/v1.0.2)
 
 一个独立的浏览器 TLS 指纹库，从 [tls-client](https://github.com/bogdanfinn/tls-client) 迁移而来。
 
