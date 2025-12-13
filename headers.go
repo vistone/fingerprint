@@ -2,36 +2,9 @@ package fingerprint
 
 import (
 	"fmt"
-	"math/rand"
-	"sync"
-	"time"
+
+	"github.com/vistone/fingerprint/internal/utils"
 )
-
-// HTTPHeaders 标准的 HTTP 请求头
-type HTTPHeaders struct {
-	Accept                  string            // Accept 头
-	AcceptLanguage          string            // Accept-Language 头（支持全球语言）
-	AcceptEncoding          string            // Accept-Encoding 头
-	UserAgent               string            // User-Agent 头
-	SecFetchSite            string            // Sec-Fetch-Site 头
-	SecFetchMode            string            // Sec-Fetch-Mode 头
-	SecFetchUser            string            // Sec-Fetch-User 头
-	SecFetchDest            string            // Sec-Fetch-Dest 头
-	SecCHUA                 string            // Sec-CH-UA 头
-	SecCHUAMobile           string            // Sec-CH-UA-Mobile 头
-	SecCHUAPlatform         string            // Sec-CH-UA-Platform 头
-	UpgradeInsecureRequests string            // Upgrade-Insecure-Requests 头
-	Custom                  map[string]string // 用户自定义的 headers（如 Cookie、Authorization、X-API-Key 等）
-}
-
-var (
-	headerRNG   *rand.Rand
-	headerRNGMu sync.Mutex
-)
-
-func init() {
-	headerRNG = rand.New(rand.NewSource(time.Now().UnixNano()))
-}
 
 // 全球语言列表（按使用频率排序）
 var Languages = []string{
@@ -72,9 +45,7 @@ func RandomLanguage() string {
 	if len(Languages) == 0 {
 		return "en-US,en;q=0.9" // 默认返回英语
 	}
-	headerRNGMu.Lock()
-	defer headerRNGMu.Unlock()
-	return Languages[headerRNG.Intn(len(Languages))]
+	return utils.RandomChoiceString(Languages)
 }
 
 // GenerateHeaders 根据浏览器类型和 User-Agent 生成标准 HTTP headers
@@ -102,11 +73,11 @@ func GenerateHeaders(browserType BrowserType, userAgent string, isMobile bool) *
 			headers.SecCHUAPlatform = `"Android"`
 		} else {
 			// 从 User-Agent 提取 Chrome 版本
-			chromeVersion := extractChromeVersion(userAgent)
+			chromeVersion := utils.ExtractChromeVersion(userAgent)
 			headers.SecCHUA = fmt.Sprintf(`"Not A(Brand";v="8", "Chromium";v="%s", "Google Chrome";v="%s"`, chromeVersion, chromeVersion)
 			headers.SecCHUAMobile = "?0"
 			// 从 User-Agent 提取平台
-			headers.SecCHUAPlatform = extractPlatform(userAgent)
+			headers.SecCHUAPlatform = utils.ExtractPlatform(userAgent)
 		}
 
 	case BrowserFirefox:
@@ -148,7 +119,7 @@ func GenerateHeaders(browserType BrowserType, userAgent string, isMobile bool) *
 		} else {
 			headers.SecCHUA = `"Opera";v="91", "Chromium";v="105", "Not A(Brand";v="8"`
 			headers.SecCHUAMobile = "?0"
-			headers.SecCHUAPlatform = extractPlatform(userAgent)
+			headers.SecCHUAPlatform = utils.ExtractPlatform(userAgent)
 		}
 	}
 
@@ -360,56 +331,4 @@ func (h *HTTPHeaders) ToMapWithCustom(customHeaders map[string]string) map[strin
 	}
 
 	return headers
-}
-
-// 辅助函数：从 User-Agent 提取 Chrome 版本
-func extractChromeVersion(ua string) string {
-	// 简单提取，实际应该用正则
-	// Chrome/120.0.0.0 -> 120
-	start := indexOf(ua, "Chrome/")
-	if start == -1 {
-		return "120" // 默认版本
-	}
-	start += 7 // "Chrome/" 长度
-	end := start
-	for end < len(ua) && ua[end] != '.' && ua[end] != ' ' && ua[end] != ';' {
-		end++
-	}
-	if end > start {
-		return ua[start:end]
-	}
-	return "120"
-}
-
-// 辅助函数：从 User-Agent 提取平台
-func extractPlatform(ua string) string {
-	if contains(ua, "Windows") {
-		return `"Windows"`
-	} else if contains(ua, "Macintosh") {
-		return `"macOS"`
-	} else if contains(ua, "Linux") {
-		return `"Linux"`
-	}
-	return `"Windows"` // 默认
-}
-
-// 辅助函数
-func indexOf(s, substr string) int {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		match := true
-		for j := 0; j < len(substr); j++ {
-			if s[i+j] != substr[j] {
-				match = false
-				break
-			}
-		}
-		if match {
-			return i
-		}
-	}
-	return -1
-}
-
-func contains(s, substr string) bool {
-	return indexOf(s, substr) != -1
 }

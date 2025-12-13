@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"testing"
@@ -11,7 +12,6 @@ import (
 
 	tls "github.com/bogdanfinn/utls"
 	"github.com/vistone/fingerprint"
-	"github.com/vistone/logs"
 )
 
 // TestFingerprintWithRealRequest 使用真实网络请求测试指纹

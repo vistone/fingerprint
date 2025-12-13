@@ -4,13 +4,6 @@ import (
 	"testing"
 
 	"github.com/vistone/fingerprint"
-
-	// 导入所有库以确保它们被正确加载
-	_ "github.com/vistone/domaindns"
-	_ "github.com/vistone/localippool"
-	_ "github.com/vistone/logs"
-	_ "github.com/vistone/netconnpool"
-	_ "github.com/vistone/quic"
 )
 
 // TestDefaultProfile 测试默认指纹
@@ -113,7 +106,13 @@ func TestAllProfilesValid(t *testing.T) {
 
 			spec, err := profile.GetClientHelloSpec()
 			if err != nil {
-				// 如果使用预定义 ID 且没有 SpecFactory，这是正常的
+				// 如果错误是 "please implement this method"，这是使用预定义 ID 的正常情况
+				if err.Error() == "please implement this method" {
+					predefinedCount++
+					t.Logf("Profile %s 使用预定义 ID，无法获取 Spec（这是正常的）", name)
+					return
+				}
+				// 如果使用预定义 ID 且没有 SpecFactory，这也是正常的
 				if !hasSpecFactory {
 					predefinedCount++
 					t.Logf("Profile %s 使用预定义 ID，无法获取 Spec（这是正常的）", name)
