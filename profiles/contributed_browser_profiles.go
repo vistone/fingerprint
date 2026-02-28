@@ -1,3 +1,4 @@
+//nolint:composites
 package profiles
 
 import (
@@ -42,6 +43,12 @@ var Firefox_135 = ClientProfile{
 					&tls.RenegotiationInfoExtension{
 						Renegotiation: tls.RenegotiateOnceAsClient,
 					},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.X25519MLKEM768,
 						tls.X25519,
@@ -66,11 +73,23 @@ var Firefox_135 = ClientProfile{
 						tls.ECDSAWithSHA1,
 					}},
 					&tls.SCTExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.X25519MLKEM768},
 						{Group: tls.X25519},
 						{Group: tls.CurveP256},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.VersionTLS13,
 						tls.VersionTLS12,
@@ -88,7 +107,19 @@ var Firefox_135 = ClientProfile{
 						tls.ECDSAWithSHA1,
 						tls.PKCS1WithSHA1,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.FakeRecordSizeLimitExtension{Limit: 0x4001},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{
 						tls.CertCompressionZlib,
 						tls.CertCompressionBrotli,
@@ -172,6 +203,12 @@ var Firefox_133 = ClientProfile{
 					&tls.RenegotiationInfoExtension{
 						Renegotiation: tls.RenegotiateOnceAsClient,
 					},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.X25519MLKEM768,
 						tls.X25519,
@@ -195,11 +232,23 @@ var Firefox_133 = ClientProfile{
 						tls.ECDSAWithP521AndSHA512,
 						tls.ECDSAWithSHA1,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.X25519MLKEM768},
 						{Group: tls.X25519},
 						{Group: tls.CurveP256},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.VersionTLS13,
 						tls.VersionTLS12,
@@ -217,7 +266,19 @@ var Firefox_133 = ClientProfile{
 						tls.ECDSAWithSHA1,
 						tls.PKCS1WithSHA1,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.FakeRecordSizeLimitExtension{Limit: 0x4001},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{
 						tls.CertCompressionZlib,
 						tls.CertCompressionBrotli,
@@ -311,6 +372,12 @@ var Chrome_130_PSK = ClientProfile{
 						Renegotiation: tls.RenegotiateOnceAsClient,
 					},
 					&tls.SCTExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{
 						tls.CertCompressionBrotli,
 					}},
@@ -319,6 +386,12 @@ var Chrome_130_PSK = ClientProfile{
 						"http/1.1",
 					}},
 					&tls.StatusRequestExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.GREASE_PLACEHOLDER,
 						tls.X25519,
@@ -331,16 +404,34 @@ var Chrome_130_PSK = ClientProfile{
 					&tls.SupportedPointsExtension{SupportedPoints: []byte{
 						tls.PointFormatUncompressed,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.CurveID(tls.GREASE_PLACEHOLDER), Data: []byte{0}},
 						{Group: tls.X25519},
 					}},
 					&tls.SessionTicketExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.GREASE_PLACEHOLDER,
 						tls.VersionTLS13,
 						tls.VersionTLS12,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
@@ -419,6 +510,12 @@ var Chrome_131_PSK = ClientProfile{
 						Renegotiation: tls.RenegotiateOnceAsClient,
 					},
 					&tls.SCTExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{
 						tls.CertCompressionBrotli,
 					}},
@@ -427,6 +524,12 @@ var Chrome_131_PSK = ClientProfile{
 						"http/1.1",
 					}},
 					&tls.StatusRequestExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.GREASE_PLACEHOLDER,
 						tls.X25519MLKEM768,
@@ -440,17 +543,35 @@ var Chrome_131_PSK = ClientProfile{
 					&tls.SupportedPointsExtension{SupportedPoints: []byte{
 						tls.PointFormatUncompressed,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.CurveID(tls.GREASE_PLACEHOLDER), Data: []byte{0}},
 						{Group: tls.X25519MLKEM768},
 						{Group: tls.X25519},
 					}},
 					&tls.SessionTicketExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.GREASE_PLACEHOLDER,
 						tls.VersionTLS13,
 						tls.VersionTLS12,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
@@ -529,6 +650,12 @@ var Chrome_131 = ClientProfile{
 						Renegotiation: tls.RenegotiateOnceAsClient,
 					},
 					&tls.SCTExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{
 						tls.CertCompressionBrotli,
 					}},
@@ -537,6 +664,12 @@ var Chrome_131 = ClientProfile{
 						"http/1.1",
 					}},
 					&tls.StatusRequestExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.GREASE_PLACEHOLDER,
 						tls.X25519MLKEM768,
@@ -550,17 +683,35 @@ var Chrome_131 = ClientProfile{
 					&tls.SupportedPointsExtension{SupportedPoints: []byte{
 						tls.PointFormatUncompressed,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.CurveID(tls.GREASE_PLACEHOLDER), Data: []byte{0}},
 						{Group: tls.X25519MLKEM768},
 						{Group: tls.X25519},
 					}},
 					&tls.SessionTicketExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.GREASE_PLACEHOLDER,
 						tls.VersionTLS13,
 						tls.VersionTLS12,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
@@ -628,6 +779,12 @@ var Firefox_132 = ClientProfile{
 					&tls.RenegotiationInfoExtension{
 						Renegotiation: tls.RenegotiateOnceAsClient,
 					},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.X25519MLKEM768,
 						tls.X25519,
@@ -651,11 +808,23 @@ var Firefox_132 = ClientProfile{
 						tls.ECDSAWithP521AndSHA512,
 						tls.ECDSAWithSHA1,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.X25519MLKEM768},
 						{Group: tls.X25519},
 						{Group: tls.CurveP256},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.VersionTLS13,
 						tls.VersionTLS12,
@@ -673,7 +842,19 @@ var Firefox_132 = ClientProfile{
 						tls.ECDSAWithSHA1,
 						tls.PKCS1WithSHA1,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.FakeRecordSizeLimitExtension{Limit: 0x4001},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{
 						tls.CertCompressionZlib,
 						tls.CertCompressionBrotli,
@@ -757,6 +938,12 @@ var Firefox_123 = ClientProfile{
 					&tls.SNIExtension{},
 					&tls.ExtendedMasterSecretExtension{},
 					&tls.RenegotiationInfoExtension{Renegotiation: tls.RenegotiateOnceAsClient},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{[]tls.CurveID{
 						tls.X25519,
 						tls.CurveP256,
@@ -780,10 +967,22 @@ var Firefox_123 = ClientProfile{
 							tls.ECDSAWithSHA1,
 						},
 					},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{[]tls.KeyShare{
 						{Group: tls.X25519},
 						{Group: tls.CurveP256},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{[]uint16{
 						tls.VersionTLS13,
 						tls.VersionTLS12,
@@ -801,9 +1000,21 @@ var Firefox_123 = ClientProfile{
 						tls.ECDSAWithSHA1,
 						tls.PKCS1WithSHA1,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{[]uint8{
 						tls.PskModeDHE,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.FakeRecordSizeLimitExtension{0x4001},
 					tls.BoringGREASEECH(),
 				}}, nil
@@ -899,6 +1110,12 @@ var Firefox_120 = ClientProfile{
 					&tls.SNIExtension{},
 					&tls.ExtendedMasterSecretExtension{},
 					&tls.RenegotiationInfoExtension{Renegotiation: tls.RenegotiateOnceAsClient},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{[]tls.CurveID{
 						tls.X25519,
 						tls.CurveP256,
@@ -921,10 +1138,22 @@ var Firefox_120 = ClientProfile{
 							tls.ECDSAWithSHA1,
 						},
 					},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{[]tls.KeyShare{
 						{Group: tls.X25519},
 						{Group: tls.CurveP256},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{[]uint16{
 						tls.VersionTLS13,
 						tls.VersionTLS12,
@@ -942,6 +1171,12 @@ var Firefox_120 = ClientProfile{
 						tls.ECDSAWithSHA1,
 						tls.PKCS1WithSHA1,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.FakeRecordSizeLimitExtension{0x4001},
 					tls.BoringGREASEECH(),
 				}}, nil

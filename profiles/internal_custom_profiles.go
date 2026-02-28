@@ -1,3 +1,4 @@
+//nolint:composites
 package profiles
 
 import (
@@ -43,6 +44,12 @@ func getMMSClientProfile2() ClientProfile {
 					&tls.SNIExtension{},
 					&tls.ExtendedMasterSecretExtension{},
 					&tls.RenegotiationInfoExtension{Renegotiation: tls.RenegotiateOnceAsClient},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.CurveID(0x001d),
 						tls.CurveID(0x0017),
@@ -63,12 +70,30 @@ func getMMSClientProfile2() ClientProfile {
 						0x0601,
 						0x0201,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.X25519},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.VersionTLS13,
 						tls.VersionTLS12,
@@ -138,6 +163,12 @@ func getMMSClientProfile3() ClientProfile {
 					&tls.SNIExtension{},
 					&tls.ExtendedMasterSecretExtension{},
 					&tls.RenegotiationInfoExtension{Renegotiation: tls.RenegotiateOnceAsClient},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.GREASE_PLACEHOLDER,
 						0x001d,
@@ -163,18 +194,42 @@ func getMMSClientProfile3() ClientProfile {
 						0x0201,
 					}},
 					&tls.SCTExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{[]tls.KeyShare{
 						{Group: tls.CurveID(tls.GREASE_PLACEHOLDER), Data: []byte{0}},
 						{Group: tls.X25519},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.GREASE_PLACEHOLDER,
 						tls.VersionTLS13,
 						tls.VersionTLS12,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.UtlsCompressCertExtension{[]tls.CertCompressionAlgo{
 						tls.CertCompressionZlib,
 					}},

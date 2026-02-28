@@ -1,0 +1,24 @@
+# 📚 文档中心
+**版本**: 1.0  
+**最后更新**: 2026-02-28  
+欢迎来到 Fingerprint 项目文档中心。本文档中心采用严格的组织规则，确保所有文档与代码保持同步。
+## 📋 快速导航
+- 🆕 第一次来？→ [快速开始指南](./2-guides/01-quick-start.md)
+- 💻 开发者 → [开发者指南](./2-guides/developer/01-setup-dev-environment.md)
+- 📖 API 文档 → [API 参考](./3-references/api/public-api.md)
+- 🤝 贡献者 → [贡献指南](./2-guides/contributor/01-contribution-guide.md)
+- 🔍 项目分析 → [项目健康报告](./1-analysis/project-health.md)
+## 📁 目录结构
+- **1-analysis/** - 分析报告（项目质量、性能等）
+- **2-guides/** - 用户指南（快速开始、最佳实践等）
+- **3-references/** - 参考文档（API、配置等）
+- **4-templates/** - 模板文件（GitHub、CI/CD 等）
+- **5-process/** - 流程文档（开发、发布等）
+## 📏 文档规则
+所有文档必须遵循严格的组织规则。详见 [RULES.md](./RULES.md)
+**核心原则**:
+- ✅ 代码优先 - 文档必须与代码保持一致
+- ✅ 结构化 - 所有文档放在对应的子目录
+- ✅ 可发现 - 在导航中引用所有文档
+- ✅ 可维护 - 清晰的版本控制和更新机制
+**最后更新**: 2026-02-28 | **版本**: 1.0 | **状态**: ✅ 生效中

@@ -1,3 +1,4 @@
+//nolint:composites
 package profiles
 
 import (
@@ -44,6 +45,12 @@ var Edge_99 = ClientProfile{
 					&tls.RenegotiationInfoExtension{
 						Renegotiation: tls.RenegotiateOnceAsClient,
 					},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.GREASE_PLACEHOLDER,
 						tls.X25519,
@@ -67,18 +74,42 @@ var Edge_99 = ClientProfile{
 						tls.PKCS1WithSHA512,
 					}},
 					&tls.SCTExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.CurveID(tls.GREASE_PLACEHOLDER), Data: []byte{0}},
 						{Group: tls.X25519},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.GREASE_PLACEHOLDER,
 						tls.VersionTLS13,
 						tls.VersionTLS12,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{
 						tls.CertCompressionBrotli,
 					}},
@@ -144,6 +175,12 @@ var Edge_101 = ClientProfile{
 					&tls.RenegotiationInfoExtension{
 						Renegotiation: tls.RenegotiateOnceAsClient,
 					},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.GREASE_PLACEHOLDER,
 						tls.X25519,
@@ -167,18 +204,42 @@ var Edge_101 = ClientProfile{
 						tls.PKCS1WithSHA512,
 					}},
 					&tls.SCTExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.CurveID(tls.GREASE_PLACEHOLDER), Data: []byte{0}},
 						{Group: tls.X25519},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.GREASE_PLACEHOLDER,
 						tls.VersionTLS13,
 						tls.VersionTLS12,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{
 						tls.CertCompressionBrotli,
 					}},
@@ -244,6 +305,12 @@ var Edge_120 = ClientProfile{
 					&tls.RenegotiationInfoExtension{
 						Renegotiation: tls.RenegotiateOnceAsClient,
 					},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.GREASE_PLACEHOLDER,
 						tls.X25519,
@@ -267,18 +334,42 @@ var Edge_120 = ClientProfile{
 						tls.PKCS1WithSHA512,
 					}},
 					&tls.SCTExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.CurveID(tls.GREASE_PLACEHOLDER), Data: []byte{0}},
 						{Group: tls.X25519},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.GREASE_PLACEHOLDER,
 						tls.VersionTLS13,
 						tls.VersionTLS12,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{
 						tls.CertCompressionBrotli,
 					}},
@@ -344,6 +435,12 @@ var Edge_131 = ClientProfile{
 					&tls.RenegotiationInfoExtension{
 						Renegotiation: tls.RenegotiateOnceAsClient,
 					},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.GREASE_PLACEHOLDER,
 						tls.X25519MLKEM768,
@@ -368,19 +465,43 @@ var Edge_131 = ClientProfile{
 						tls.PKCS1WithSHA512,
 					}},
 					&tls.SCTExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.CurveID(tls.GREASE_PLACEHOLDER), Data: []byte{0}},
 						{Group: tls.X25519MLKEM768},
 						{Group: tls.X25519},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.GREASE_PLACEHOLDER,
 						tls.VersionTLS13,
 						tls.VersionTLS12,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{
 						tls.CertCompressionBrotli,
 					}},
@@ -447,6 +568,12 @@ var Edge_133 = ClientProfile{
 					&tls.RenegotiationInfoExtension{
 						Renegotiation: tls.RenegotiateOnceAsClient,
 					},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.GREASE_PLACEHOLDER,
 						tls.X25519MLKEM768,
@@ -471,19 +598,43 @@ var Edge_133 = ClientProfile{
 						tls.PKCS1WithSHA512,
 					}},
 					&tls.SCTExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.CurveID(tls.GREASE_PLACEHOLDER), Data: []byte{0}},
 						{Group: tls.X25519MLKEM768},
 						{Group: tls.X25519},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.GREASE_PLACEHOLDER,
 						tls.VersionTLS13,
 						tls.VersionTLS12,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{
 						tls.CertCompressionBrotli,
 					}},

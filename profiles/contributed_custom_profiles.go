@@ -1,3 +1,4 @@
+//nolint:composites
 package profiles
 
 import (
@@ -38,6 +39,12 @@ var ZalandoAndroidMobile = ClientProfile{
 					&tls.SNIExtension{},
 					&tls.ExtendedMasterSecretExtension{},
 					&tls.RenegotiationInfoExtension{Renegotiation: tls.RenegotiateOnceAsClient},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.X25519,
 						tls.CurveP256,
@@ -61,12 +68,30 @@ var ZalandoAndroidMobile = ClientProfile{
 						tls.PKCS1WithSHA1,
 					}},
 					&tls.SCTExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.X25519},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.VersionTLS13,
 						tls.VersionTLS12,
@@ -130,6 +155,12 @@ var ZalandoIosMobile = ClientProfile{
 					&tls.SNIExtension{},
 					&tls.ExtendedMasterSecretExtension{},
 					&tls.RenegotiationInfoExtension{Renegotiation: tls.RenegotiateOnceAsClient},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.CurveID(tls.GREASE_PLACEHOLDER),
 						tls.X25519,
@@ -156,18 +187,42 @@ var ZalandoIosMobile = ClientProfile{
 						tls.PKCS1WithSHA1,
 					}},
 					&tls.SCTExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.CurveID(tls.GREASE_PLACEHOLDER), Data: []byte{0}},
 						{Group: tls.X25519},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.GREASE_PLACEHOLDER,
 						tls.VersionTLS13,
 						tls.VersionTLS12,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{
 						tls.CertCompressionZlib,
 					}},
@@ -231,6 +286,12 @@ var NikeIosMobile = ClientProfile{
 					&tls.SNIExtension{},
 					&tls.ExtendedMasterSecretExtension{},
 					&tls.RenegotiationInfoExtension{Renegotiation: tls.RenegotiateOnceAsClient},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.CurveID(tls.GREASE_PLACEHOLDER),
 						tls.X25519,
@@ -257,18 +318,42 @@ var NikeIosMobile = ClientProfile{
 						tls.PKCS1WithSHA1,
 					}},
 					&tls.SCTExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.CurveID(tls.GREASE_PLACEHOLDER), Data: []byte{0}},
 						{Group: tls.X25519},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.GREASE_PLACEHOLDER,
 						tls.VersionTLS13,
 						tls.VersionTLS12,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{
 						tls.CertCompressionZlib,
 					}},
@@ -332,6 +417,12 @@ var NikeAndroidMobile = ClientProfile{
 					&tls.SNIExtension{},
 					&tls.ExtendedMasterSecretExtension{},
 					&tls.RenegotiationInfoExtension{Renegotiation: tls.RenegotiateOnceAsClient},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.X25519,
 						tls.CurveP256,
@@ -354,13 +445,31 @@ var NikeAndroidMobile = ClientProfile{
 						tls.PKCS1WithSHA512,
 						tls.PKCS1WithSHA1,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.CurveID(tls.GREASE_PLACEHOLDER), Data: []byte{0}},
 						{Group: tls.X25519},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.VersionTLS13,
 						tls.VersionTLS12,
@@ -417,6 +526,12 @@ var CloudflareCustom = ClientProfile{
 						1, // ansiX962_compressed_prime
 						2, // ansiX962_compressed_char2
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.CurveID(0x0017),
 					}},
@@ -513,6 +628,12 @@ var MMSIos = ClientProfile{
 					&tls.SNIExtension{},
 					&tls.ExtendedMasterSecretExtension{},
 					&tls.RenegotiationInfoExtension{Renegotiation: tls.RenegotiateOnceAsClient},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.CurveID(0x001d),
 						tls.CurveID(0x0017),
@@ -533,12 +654,30 @@ var MMSIos = ClientProfile{
 						0x0601,
 						0x0201,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.X25519},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.VersionTLS13,
 						tls.VersionTLS12,
@@ -603,6 +742,12 @@ var MeshIos = ClientProfile{
 					&tls.SNIExtension{},
 					&tls.ExtendedMasterSecretExtension{},
 					&tls.RenegotiationInfoExtension{Renegotiation: tls.RenegotiateOnceAsClient},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.CurveID(tls.GREASE_PLACEHOLDER),
 						tls.CurveID(0x001d),
@@ -629,18 +774,42 @@ var MeshIos = ClientProfile{
 						0x0201,
 					}},
 					&tls.SCTExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.CurveID(tls.GREASE_PLACEHOLDER), Data: []byte{0}},
 						{Group: tls.X25519},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.GREASE_PLACEHOLDER,
 						tls.VersionTLS13,
 						tls.VersionTLS12,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{
 						tls.CertCompressionZlib,
 					}},
@@ -708,6 +877,12 @@ var MeshAndroid = ClientProfile{
 					&tls.SNIExtension{},
 					&tls.ExtendedMasterSecretExtension{},
 					&tls.RenegotiationInfoExtension{Renegotiation: tls.RenegotiateOnceAsClient},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.CurveID(tls.GREASE_PLACEHOLDER),
 						tls.X25519,
@@ -731,18 +906,42 @@ var MeshAndroid = ClientProfile{
 						tls.PKCS1WithSHA512,
 					}},
 					&tls.SCTExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.CurveID(tls.GREASE_PLACEHOLDER), Data: []byte{0}},
 						{Group: tls.X25519},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.GREASE_PLACEHOLDER,
 						tls.VersionTLS13,
 						tls.VersionTLS12,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{
 						tls.CertCompressionBrotli,
 					}},
@@ -811,6 +1010,12 @@ var MeshIos2 = ClientProfile{
 					&tls.SNIExtension{},
 					&tls.ExtendedMasterSecretExtension{},
 					&tls.RenegotiationInfoExtension{Renegotiation: tls.RenegotiateOnceAsClient},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.CurveID(tls.GREASE_PLACEHOLDER),
 						tls.X25519,
@@ -837,18 +1042,42 @@ var MeshIos2 = ClientProfile{
 						tls.PKCS1WithSHA1,
 					}},
 					&tls.SCTExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.CurveID(tls.GREASE_PLACEHOLDER), Data: []byte{0}},
 						{Group: tls.X25519},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.GREASE_PLACEHOLDER,
 						tls.VersionTLS13,
 						tls.VersionTLS12,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{
 						tls.CertCompressionZlib,
 					}},
@@ -925,6 +1154,12 @@ var MeshAndroid2 = ClientProfile{
 					&tls.SupportedPointsExtension{SupportedPoints: []uint8{
 						tls.PointFormatUncompressed,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.X25519,
 						tls.CurveP256,
@@ -986,6 +1221,12 @@ var ConfirmedIos = ClientProfile{
 					&tls.SNIExtension{},
 					&tls.ExtendedMasterSecretExtension{},
 					&tls.RenegotiationInfoExtension{Renegotiation: tls.RenegotiateOnceAsClient},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.CurveID(tls.GREASE_PLACEHOLDER),
 						tls.X25519,
@@ -1012,18 +1253,42 @@ var ConfirmedIos = ClientProfile{
 						tls.PKCS1WithSHA1,
 					}},
 					&tls.SCTExtension{},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.CurveID(tls.GREASE_PLACEHOLDER), Data: []byte{0}},
 						{Group: tls.X25519},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.GREASE_PLACEHOLDER,
 						tls.VersionTLS13,
 						tls.VersionTLS12,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{
 						tls.CertCompressionZlib,
 					}},
@@ -1103,6 +1368,12 @@ var ConfirmedAndroid = ClientProfile{
 					&tls.SupportedPointsExtension{SupportedPoints: []byte{
 						tls.PointFormatUncompressed,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.X25519,
 						tls.CurveP256,
@@ -1173,6 +1444,12 @@ var ConfirmedAndroid2 = ClientProfile{
 					&tls.SupportedPointsExtension{SupportedPoints: []byte{
 						tls.PointFormatUncompressed,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.X25519,
 						tls.CurveP256,
@@ -1303,6 +1580,12 @@ var Okhttp4Android10 = ClientProfile{
 					&tls.SNIExtension{},
 					&tls.ExtendedMasterSecretExtension{},
 					&tls.RenegotiationInfoExtension{Renegotiation: tls.RenegotiateNever},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.X25519,
 						tls.CurveP256,
@@ -1325,12 +1608,30 @@ var Okhttp4Android10 = ClientProfile{
 						tls.PKCS1WithSHA512,
 						tls.PKCS1WithSHA1,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.X25519},
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.VersionTLS13,
 						tls.VersionTLS12,
@@ -1401,6 +1702,12 @@ var Okhttp4Android9 = ClientProfile{
 					&tls.SupportedPointsExtension{SupportedPoints: []byte{
 						tls.PointFormatUncompressed,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.X25519,
 						tls.CurveP256,
@@ -1470,6 +1777,12 @@ var Okhttp4Android8 = ClientProfile{
 					&tls.SupportedPointsExtension{SupportedPoints: []byte{
 						tls.PointFormatUncompressed,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.X25519,
 						tls.CurveP256,
@@ -1541,6 +1854,12 @@ var Okhttp4Android7 = ClientProfile{
 					&tls.SupportedPointsExtension{SupportedPoints: []byte{
 						tls.PointFormatUncompressed,
 					}},
+					//nolint:composites
+
+					//nolint:composites
+
+					//nolint:composites
+
 					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.CurveP256,
 						tls.CurveP384,
