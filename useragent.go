@@ -126,6 +126,24 @@ func (g *UserAgentGenerator) initTemplates() {
 		}
 	}
 
+	// Edge User-Agent 模板（基于 Chromium 内核）
+	edgeTemplates := map[string]string{
+		"99":  "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36 Edg/99.0.1150.36",
+		"101": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.53",
+		"120": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+		"131": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+		"133": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0",
+	}
+
+	for version, template := range edgeTemplates {
+		g.templates["edge_"+version] = UserAgentTemplate{
+			Browser:    BrowserEdge,
+			Version:    version,
+			Template:   template,
+			OSRequired: true,
+		}
+	}
+
 	// 移动端和自定义指纹的 User-Agent 模板
 	// iOS 应用指纹 - 使用 iOS Safari User-Agent
 	iosAppTemplates := map[string]string{
@@ -259,6 +277,9 @@ func (g *UserAgentGenerator) generateFromProfileName(profileName string, os Oper
 	} else if strings.HasPrefix(profileName, "opera_") {
 		browser = BrowserOpera
 		version = strings.TrimPrefix(profileName, "opera_")
+	} else if strings.HasPrefix(profileName, "edge_") {
+		browser = BrowserEdge
+		version = strings.TrimPrefix(profileName, "edge_")
 	} else {
 		// 默认使用 Chrome 133
 		return g.GetUserAgentWithOS("chrome_133", os)
@@ -278,6 +299,8 @@ func (g *UserAgentGenerator) generateFromProfileName(profileName string, os Oper
 		return fmt.Sprintf("Mozilla/5.0 (%s) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/%s Safari/605.1.15", string(os), version), nil
 	case BrowserOpera:
 		return fmt.Sprintf("Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s.0.0.0 Safari/537.36 OPR/%s.0.0.0", string(os), version, version), nil
+	case BrowserEdge:
+		return fmt.Sprintf("Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s.0.0.0 Safari/537.36 Edg/%s.0.0.0", string(os), version, version), nil
 	default:
 		return "", fmt.Errorf("unsupported browser type: %s", browser)
 	}

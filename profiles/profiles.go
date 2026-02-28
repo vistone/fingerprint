@@ -75,6 +75,12 @@ var MappedTLSClients = map[string]ClientProfile{
 	"okhttp4_android_12":     Okhttp4Android12,
 	"okhttp4_android_13":     Okhttp4Android13,
 	"cloudflare_custom":      CloudflareCustom,
+	// Edge 系列
+	"edge_99":  Edge_99,
+	"edge_101": Edge_101,
+	"edge_120": Edge_120,
+	"edge_131": Edge_131,
+	"edge_133": Edge_133,
 }
 
 type ClientProfile struct {
