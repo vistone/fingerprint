@@ -121,6 +121,28 @@ func GenerateHeaders(browserType BrowserType, userAgent string, isMobile bool) *
 			headers.SecCHUAMobile = "?0"
 			headers.SecCHUAPlatform = utils.ExtractPlatform(userAgent)
 		}
+
+	case BrowserEdge:
+		// Edge 使用 Chromium 内核，headers 类似 Chrome
+		headers.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+		headers.AcceptEncoding = "gzip, deflate, br, zstd"
+		headers.SecFetchSite = "none"
+		headers.SecFetchMode = "navigate"
+		headers.SecFetchUser = "?1"
+		headers.SecFetchDest = "document"
+		headers.UpgradeInsecureRequests = "1"
+
+		if isMobile {
+			headers.SecCHUA = `"Not A(Brand";v="8", "Chromium";v="120", "Microsoft Edge";v="120"`
+			headers.SecCHUAMobile = "?1"
+			headers.SecCHUAPlatform = `"Android"`
+		} else {
+			edgeVersion := utils.ExtractChromeVersion(userAgent)
+			headers.SecCHUA = fmt.Sprintf(`"Not A(Brand";v="8", "Chromium";v="%s", "Microsoft Edge";v="%s"`, edgeVersion, edgeVersion)
+			headers.SecCHUAMobile = "?0"
+			headers.SecCHUAPlatform = utils.ExtractPlatform(userAgent)
+		}
+
 	}
 
 	// Accept-Language 使用随机语言

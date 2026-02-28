@@ -1,6 +1,7 @@
 package fingerprint_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/vistone/fingerprint"
@@ -142,7 +143,7 @@ func TestAllProfilesValid(t *testing.T) {
 
 // TestProfileCount 测试指纹数量
 func TestProfileCount(t *testing.T) {
-	expectedMinCount := 60 // 至少应该有60个指纹（44个主流浏览器 + 22个移动端/自定义）
+	expectedMinCount := 70 // 至少应该有70个指纹（含Edge系列）
 	actualCount := len(fingerprint.MappedTLSClients)
 	if actualCount < expectedMinCount {
 		t.Errorf("指纹数量 %d 少于预期的最小值 %d", actualCount, expectedMinCount)
@@ -230,5 +231,223 @@ func TestAndroidProfiles(t *testing.T) {
 			t.Errorf("Android 指纹 %s 不存在", version)
 		}
 	}
+}
+
+// TestEdgeProfiles 测试 Edge 系列指纹
+func TestEdgeProfiles(t *testing.T) {
+	edgeVersions := []string{
+		"edge_99", "edge_101", "edge_120", "edge_131", "edge_133",
+	}
+
+	for _, version := range edgeVersions {
+		if _, ok := fingerprint.MappedTLSClients[version]; !ok {
+			t.Errorf("Edge 指纹 %s 不存在", version)
+		}
+	}
+}
+
+// TestGetRandomFingerprintByEdge 测试按 Edge 浏览器获取指纹
+func TestGetRandomFingerprintByEdge(t *testing.T) {
+	result, err := fingerprint.GetRandomFingerprintByBrowser("edge")
+	if err != nil {
+		t.Fatalf("获取 Edge 指纹失败: %v", err)
+	}
+	if result.UserAgent == "" {
+		t.Error("UserAgent 不能为空")
+	}
+	if !containsCI(result.UserAgent, "Edg") {
+		t.Errorf("Edge UserAgent 应包含 'Edg': %s", result.UserAgent)
+	}
+	t.Logf("Edge 指纹: %s, UA: %s", result.HelloClientID, result.UserAgent)
+}
+
+// containsCI 大小写不敏感的字符串包含检查
+func containsCI(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr ||
+		strings.Contains(strings.ToLower(s), strings.ToLower(substr)))
+}
+
+// TestJA3Computation 测试 JA3 指纹计算
+func TestJA3Computation(t *testing.T) {
+	// 测试 Chrome 133 JA3
+	result, err := fingerprint.ComputeJA3ByProfileName("chrome_133")
+	if err != nil {
+		t.Fatalf("计算 JA3 失败: %v", err)
+	}
+
+	if result.Hash == "" {
+		t.Error("JA3 哈希不能为空")
+	}
+	if len(result.Hash) != 32 {
+		t.Errorf("JA3 哈希长度应为32（MD5），实际为 %d", len(result.Hash))
+	}
+	if result.RawString == "" {
+		t.Error("JA3 原始字符串不能为空")
+	}
+	if len(result.CipherSuites) == 0 {
+		t.Error("密码套件不能为空")
+	}
+	t.Logf("Chrome 133 JA3: %s", result.Hash)
+	t.Logf("Chrome 133 JA3 原始: %s", result.RawString)
+}
+
+// TestJA3AllProfiles 测试所有指纹的 JA3 计算
+func TestJA3AllProfiles(t *testing.T) {
+	successCount := 0
+	skipCount := 0
+
+	for name, profile := range fingerprint.MappedTLSClients {
+		t.Run(name, func(t *testing.T) {
+			result, err := fingerprint.ComputeJA3FromProfile(profile)
+			if err != nil {
+				// 使用预定义 ID 的指纹无法计算 JA3（正常情况）
+				skipCount++
+				t.Logf("跳过 %s: %v", name, err)
+				return
+			}
+			if result.Hash == "" {
+				t.Errorf("Profile %s JA3 哈希为空", name)
+				return
+			}
+			if len(result.Hash) != 32 {
+				t.Errorf("Profile %s JA3 哈希长度错误: %d", name, len(result.Hash))
+			}
+			successCount++
+		})
+	}
+
+	t.Logf("成功计算 JA3 的指纹数: %d, 跳过: %d", successCount, skipCount)
+}
+
+// TestJA4Computation 测试 JA4 指纹计算
+func TestJA4Computation(t *testing.T) {
+	result, err := fingerprint.ComputeJA4ByProfileName("chrome_133")
+	if err != nil {
+		t.Fatalf("计算 JA4 失败: %v", err)
+	}
+
+	if result.Hash == "" {
+		t.Error("JA4 哈希不能为空")
+	}
+	if result.JA4A == "" {
+		t.Error("JA4_a 不能为空")
+	}
+	// JA4 格式：protocol + version + sni + cipher_count + extension_count + alpn
+	// 例如：t13d1516h2
+	if len(result.JA4A) < 9 {
+		t.Errorf("JA4_a 长度不足: %s", result.JA4A)
+	}
+	t.Logf("Chrome 133 JA4: %s", result.Hash)
+	t.Logf("Chrome 133 JA4_a: %s", result.JA4A)
+	t.Logf("Chrome 133 JA4_r: %s", result.RawString)
+}
+
+// TestAnomalyDetector 测试异常检测器
+func TestAnomalyDetector(t *testing.T) {
+	detector := fingerprint.NewAnomalyDetector()
+
+	// 测试正常数据
+	normalData := []byte("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+	if detector.DetectAnomalies(normalData) {
+		t.Error("正常数据不应被检测为异常")
+	}
+
+	// 测试无头浏览器
+	headlessUA := "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 HeadlessChrome/120"
+	if !detector.DetectHeadlessBrowser(headlessUA) {
+		t.Error("HeadlessChrome 应被检测为无头浏览器")
+	}
+
+	// 测试正常 UA
+	normalUA := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/133"
+	if detector.DetectHeadlessBrowser(normalUA) {
+		t.Error("正常 UA 不应被检测为无头浏览器")
+	}
+}
+
+// TestContradictionDetector 测试矛盾检测器
+func TestContradictionDetector(t *testing.T) {
+	detector := fingerprint.NewContradictionDetector()
+
+	// 测试无矛盾
+	attrs := map[string]string{
+		"os":       "Windows NT 10.0",
+		"platform": "Win32",
+	}
+	if detector.CheckContradictions(attrs) {
+		t.Error("无矛盾的属性不应被检测到矛盾")
+	}
+
+	// 测试 OS/Platform 矛盾
+	contradictAttrs := map[string]string{
+		"os":       "Windows NT 10.0",
+		"platform": "MacIntel",
+	}
+	if !detector.CheckContradictions(contradictAttrs) {
+		t.Error("Windows OS 与 Mac Platform 应被检测为矛盾")
+	}
+}
+
+// TestPassiveRecognizer 测试被动识别器
+func TestPassiveRecognizer(t *testing.T) {
+	recognizer := fingerprint.NewPassiveRecognizer()
+
+	// 测试 Chrome UA 识别
+	headers := map[string]string{
+		"User-Agent":      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+		"Accept":          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+		"Accept-Language": "en-US,en;q=0.9",
+		"Sec-CH-UA":       `"Google Chrome";v="133", "Chromium";v="133"`,
+	}
+	result := recognizer.RecognizeFromHeaders(headers)
+	if result.Browser != fingerprint.BrowserChrome {
+		t.Errorf("应识别为 Chrome，实际为 %s", result.Browser)
+	}
+	if result.IsBot {
+		t.Error("正常 Chrome UA 不应被识别为机器人")
+	}
+	if result.Confidence < 0.5 {
+		t.Errorf("置信度应大于 0.5，实际为 %f", result.Confidence)
+	}
+	t.Logf("识别结果: 浏览器=%s, 版本=%s, OS=%s, 置信度=%.2f", result.Browser, result.BrowserVersion, result.OS, result.Confidence)
+}
+
+// TestNoiseInjector 测试噪声注入器
+func TestNoiseInjector(t *testing.T) {
+	config := fingerprint.DefaultNoiseConfig
+	injector := fingerprint.NewNoiseInjector(config)
+
+	// 测试 Canvas 噪声
+	canvasNoise := injector.GenerateCanvasNoise()
+	if canvasNoise == nil {
+		t.Fatal("Canvas 噪声不能为 nil")
+	}
+
+	// 测试 Audio 噪声
+	audioNoise := injector.GenerateAudioNoise()
+	if audioNoise == nil {
+		t.Fatal("Audio 噪声不能为 nil")
+	}
+	if audioNoise.NoiseLevel < 0 || audioNoise.NoiseLevel > 0.02 {
+		t.Errorf("Audio 噪声级别超出范围: %f", audioNoise.NoiseLevel)
+	}
+
+	// 测试 WebGL 噪声
+	webglNoise := injector.GenerateWebGLNoise()
+	if webglNoise == nil {
+		t.Fatal("WebGL 噪声不能为 nil")
+	}
+
+	// 测试完整配置
+	profile := injector.GenerateFullProfile()
+	if profile == nil {
+		t.Fatal("完整噪声配置不能为 nil")
+	}
+	if profile.Canvas == nil || profile.Audio == nil || profile.WebGL == nil {
+		t.Error("完整噪声配置的各部分不能为 nil")
+	}
+
+	t.Logf("Canvas 噪声: R=%d, G=%d, B=%d", canvasNoise.PixelOffsetR, canvasNoise.PixelOffsetG, canvasNoise.PixelOffsetB)
+	t.Logf("Audio 噪声: Level=%.4f", audioNoise.NoiseLevel)
 }
 

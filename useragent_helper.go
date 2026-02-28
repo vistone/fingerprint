@@ -92,6 +92,9 @@ func inferBrowserFromProfileName(profileName string) (string, string) {
 	} else if strings.HasPrefix(profileName, "opera_") {
 		version := strings.TrimPrefix(profileName, "opera_")
 		return string(BrowserOpera), version
+	} else if strings.HasPrefix(profileName, "edge_") {
+		version := strings.TrimPrefix(profileName, "edge_")
+		return string(BrowserEdge), version
 	}
 
 	return string(BrowserChrome), "" // 默认返回 Chrome
