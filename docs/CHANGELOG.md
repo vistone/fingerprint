@@ -1,145 +1,145 @@
-# Changelog
+# 变更日志
 
-All notable changes to this project will be documented in this file.
+此项目中的所有重要变更都将记录在此文件中。
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)，
+本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
-## [Unreleased]
+## [未发布]
 
-### Added
-- Comprehensive Go development standards and style guidelines
-- Go Vet composites warnings handling with //nolint directives
-- GitHub Actions CI/CD workflows for automated testing and linting
-- Makefile for common development tasks
-- Enhanced documentation system with 5-tier classification
+### 新增
+- 完整的 Go 开发标准和风格指南
+- Go Vet composites 警告处理
+- GitHub Actions CI/CD 工作流
+- Makefile 开发工具
+- 增强的文档系统
 
-### Changed
-- Improved project structure and organization
-- Enhanced documentation with complete API comments
-- Updated Go dependencies to latest versions
+### 变更
+- 改进的项目结构和组织
+- 增强的文档和 API 注释
+- 最新的 Go 依赖
 
-### Fixed
-- Fixed Go Vet composites warnings from external utls library
-- Code formatting standardization with gofmt
+### 修复
+- 修复 Go Vet composites 警告
+- 代码格式化标准化
 
 ---
 
 ## [2.0.1] - 2026-02-28
 
-### Added
-- Edge browser fingerprint profiles
-- JA3/JA4 fingerprint calculation methods
-- Passive browser recognition from HTTP headers
-- Anomaly detection for automated tools
-- Noise injection capabilities
-- Comprehensive error fixes and documentation
+### 新增
+- Edge 浏览器指纹配置
+- JA3/JA4 指纹计算方法
+- 被动浏览器识别
+- 异常检测
+- 噪声注入功能
+- 完整的错误修复和文档
 
-### Changed
-- Improved code quality and standards
-- Enhanced project documentation
-- Better error handling throughout codebase
+### 变更
+- 改进的代码质量和标准
+- 增强的项目文档
+- 改进的错误处理
 
-### Fixed
-- Resolved Go Vet warnings with proper struct field initialization
-- Fixed code formatting issues
+### 修复
+- 解决 Go Vet 警告
+- 代码格式化修复
 
 ---
 
 ## [2.0.0] - 2026-02-01
 
-### Added
-- Complete browser TLS fingerprint library
-- Support for 70+ browser fingerprint profiles
-- User-Agent generation for different browsers and OS combinations
-- HTTP Headers generation matching browser specifications
-- JA3 fingerprint calculation and matching
-- Passive browser recognition capabilities
-- Anomaly detection for suspicious fingerprints
-- Contradiction detection for inconsistent attributes
-- Comprehensive test suite with 90%+ coverage
+### 新增
+- 完整的浏览器 TLS 指纹库
+- 支持 70+ 浏览器指纹配置
+- User-Agent 生成
+- HTTP Headers 生成
+- JA3 指纹计算和匹配
+- 被动浏览器识别
+- 异常检测
+- 矛盾检测
+- 综合测试套件（90%+ 覆盖率）
 
-### Changed
-- Major rewrite of fingerprint matching engine
-- Improved performance with zero-allocation functions
-- Enhanced API design for better usability
+### 变更
+- 指纹匹配引擎主要重写
+- 零分配函数优化性能
+- 改进的 API 设计
 
-### Fixed
-- Various security issues in fingerprint validation
-- Performance bottlenecks in matching algorithms
+### 修复
+- 指纹验证的安全问题
+- 匹配算法的性能瓶颈
 
 ---
 
 ## [1.0.2] - 2025-12-15
 
-### Added
-- Support for Safari browser fingerprints
-- Additional test cases for edge cases
-- Performance optimization for fingerprint matching
+### 新增
+- Safari 浏览器指纹支持
+- 边界情况的额外测试
+- 指纹匹配的性能优化
 
-### Fixed
-- Bug in User-Agent parsing for mobile devices
-- Memory leak in fingerprint caching
-- Compatibility issues with Go 1.24
+### 修复
+- 移动设备 User-Agent 解析错误
+- 指纹缓存内存泄漏
+- Go 1.24 兼容性问题
 
 ---
 
 ## [1.0.1] - 2025-11-20
 
-### Added
-- Firefox browser fingerprint support
-- Opera browser support
-- Improved documentation
+### 新增
+- Firefox 浏览器指纹支持
+- Opera 浏览器支持
+- 改进的文档
 
-### Fixed
-- Chrome User-Agent generation issues
-- Header ordering problems
-- TLS version negotiation fixes
+### 修复
+- Chrome User-Agent 生成问题
+- 请求头排序问题
+- TLS 版本协商修复
 
 ---
 
 ## [1.0.0] - 2025-10-01
 
-### Added
-- Initial release of fingerprint library
-- Core TLS fingerprint matching
-- User-Agent generation
-- HTTP Headers generation
-- Chrome and Edge browser support
-- Basic fingerprint database
+### 新增
+- 指纹库初始版本
+- 核心 TLS 指纹匹配
+- User-Agent 生成
+- HTTP Headers 生成
+- Chrome 和 Edge 浏览器支持
+- 基础指纹数据库
 
-### Features
-- Zero-allocation random selection
-- High-performance fingerprint matching
-- Thread-safe concurrent access
-- Comprehensive error handling
-- Full test coverage
-
----
-
-## Support
-
-- 📖 [Documentation](./docs/README.md)
-- 🐛 [Issue Tracker](../../issues)
-- 💬 [Discussions](../../discussions)
-- 📧 [Email Support](mailto:support@example.com)
+### 特性
+- 零分配随机选择
+- 高性能指纹匹配
+- 线程安全的并发访问
+- 完整的错误处理
+- 完整的测试覆盖
 
 ---
 
-## Versioning
+## 支持
 
-This project follows [Semantic Versioning](https://semver.org/):
-
-- **MAJOR** version when you make incompatible API changes
-- **MINOR** version when you add functionality in a backwards-compatible manner
-- **PATCH** version when you make backwards-compatible bug fixes
+- 📖 [文档](./docs/README.md)
+- 🐛 [问题追踪](../../issues)
+- 💬 [讨论](../../discussions)
+- 📧 [邮件支持](mailto:support@example.com)
 
 ---
 
-## Links
+## 版本控制
 
-- [GitHub Repository](../../)
-- [Package Documentation](https://pkg.go.dev/github.com/vistone/fingerprint)
-- [Contributing Guidelines](./CONTRIBUTING.md)
-- [Security Policy](./SECURITY.md)
-- [License](./LICENSE)
+本项目遵循 [语义化版本](https://semver.org/)：
+
+- **主版本号** - 不兼容的 API 变更
+- **次版本号** - 兼容的功能增加
+- **修订号** - 兼容的错误修复
+
+---
+
+## 链接
+
+- [GitHub 仓库](../../)
+- [包文档](https://pkg.go.dev/github.com/vistone/fingerprint)
+- [贡献指南](./CONTRIBUTING.md)
+- [安全政策](./SECURITY.md)
+- [许可证](./LICENSE)

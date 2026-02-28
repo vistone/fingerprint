@@ -1,82 +1,82 @@
-# Contributing to Fingerprint
+# 贡献指南
 
-Thank you for your interest in contributing to the Fingerprint project! This document provides guidelines and instructions for contributing.
+感谢您对 Fingerprint 项目的贡献兴趣！本文档提供贡献指南和说明。
 
-## Code of Conduct
+## 行为准则
 
-By participating in this project, you agree to abide by our Code of Conduct. Please be respectful and constructive in all interactions.
+参与此项目即表示您同意遵守我们的行为准则。请在所有互动中保持尊重和建设性。
 
-## Getting Started
+## 准备工作
 
-### Prerequisites
+### 前置条件
 
-- Go 1.24 or later (we test on 1.24 and 1.25)
+- Go 1.24 或更高版本（我们测试 1.24 和 1.25）
 - Git
-- Make (optional, but recommended)
+- Make（可选，但推荐）
 
-### Development Environment Setup
+### 开发环境设置
 
-1. **Clone the repository**
+1. **克隆仓库**
    ```bash
    git clone https://github.com/vistone/fingerprint.git
    cd fingerprint
    ```
 
-2. **Install dependencies**
+2. **安装依赖**
    ```bash
    go mod download
    ```
 
-3. **Install development tools** (optional)
+3. **安装开发工具**（可选）
    ```bash
    make install-tools
    ```
 
-4. **Verify setup**
+4. **验证设置**
    ```bash
    go test ./...
    ```
 
-## Development Workflow
+## 开发工作流
 
-### 1. Create a Feature Branch
+### 1. 创建功能分支
 
 ```bash
 git checkout -b feature/your-feature-name
-# or for bug fixes
+# 或 bug 修复
 git checkout -b fix/your-bug-fix
 ```
 
-Branch naming convention:
-- `feature/` for new features
-- `fix/` for bug fixes
-- `docs/` for documentation changes
-- `refactor/` for code refactoring
-- `perf/` for performance improvements
+分支命名约定：
+- `feature/` 新功能
+- `fix/` 错误修复
+- `docs/` 文档更改
+- `refactor/` 代码重构
+- `perf/` 性能改进
 
-### 2. Make Changes
+### 2. 进行更改
 
-Follow our development standards:
+遵循我们的开发标准：
 
-1. **Code Quality**
-   - Run `make format` to format code
-   - Run `make lint` to check code quality
-   - Run `make test` to verify tests pass
-   - Ensure `go vet ./...` passes
+1. **代码质量**
+   - 运行 `make format` 格式化代码
+   - 运行 `make lint` 检查代码质量
+   - 运行 `make test` 验证测试通过
+   - 确保 `go vet ./...` 通过
 
-2. **Documentation**
-   - Add/update comments for public APIs
-   - Update CHANGELOG.md with your changes
-   - Update relevant documentation files
+2. **文档**
+   - 为公开 API 添加/更新注释
+   - 使用您的更改更新 CHANGELOG.md
+   - 更新相关文档文件
 
-3. **Tests**
-   - Write tests for new functionality
-   - Ensure all tests pass
-   - Aim for 80%+ code coverage
+3. **测试**
+   - 为新功能编写测试
+   - 确保所有测试通过
+   - 目标是 80%+ 代码覆盖率
 
-### 3. Commit Changes
+### 3. 提交更改
 
-Write clear commit messages following this format:
+遵循以下格式编写清晰的提交消息：
 
 ```
 <type>(<scope>): <subject>
@@ -86,123 +86,123 @@ Write clear commit messages following this format:
 <footer>
 ```
 
-**Type** (required):
-- `feat`: A new feature
-- `fix`: A bug fix
-- `docs`: Documentation changes
-- `style`: Code style changes (formatting, etc.)
-- `refactor`: Code refactoring without feature changes
-- `perf`: Performance improvements
-- `test`: Adding or updating tests
-- `chore`: Other changes that don't affect code
+**类型**（必需）：
+- `feat`: 新功能
+- `fix`: 错误修复
+- `docs`: 文档更改
+- `style`: 代码风格更改
+- `refactor`: 代码重构
+- `perf`: 性能改进
+- `test`: 添加或更新测试
+- `chore`: 其他不影响代码的更改
 
-**Scope** (optional):
-- `profiles`: Changes to browser profiles
-- `ja3`: JA3 fingerprinting changes
-- `ja4`: JA4 fingerprinting changes
-- `defense`: Anomaly/contradiction detection
-- `api`: Public API changes
+**范围**（可选）：
+- `profiles`: 浏览器配置变更
+- `ja3`: JA3 指纹变更
+- `ja4`: JA4 指纹变更
+- `defense`: 异常/矛盾检测变更
+- `api`: 公开 API 变更
 
-**Subject** (required):
-- Use imperative mood ("add" not "added")
-- Don't capitalize first letter
-- No period at the end
-- Limit to 50 characters
+**主题**（必需）：
+- 使用命令式语气（"add" 而不是 "added"）
+- 不要大写首字母
+- 行末无句号
+- 限制在 50 个字符以内
 
-**Examples**:
+**示例**：
 ```
-feat(profiles): add Safari 18 browser profile
-fix(ja3): handle GREASE values correctly
-docs: update API documentation
-test(defense): add anomaly detection tests
+feat(profiles): 添加 Safari 18 浏览器配置
+fix(ja3): 正确处理 GREASE 值
+docs: 更新 API 文档
+test(defense): 添加异常检测测试
 ```
 
-### 4. Push and Create Pull Request
+### 4. 推送和创建拉取请求
 
 ```bash
 git push origin feature/your-feature-name
 ```
 
-Then create a Pull Request on GitHub with:
+然后在 GitHub 上创建拉取请求，包含：
 
-1. **Clear title** following commit message format
-2. **Description** explaining:
-   - What changes were made
-   - Why the changes were made
-   - Any related issues (use `Closes #123`)
-3. **Screenshots/examples** if applicable
-4. **Checklist** (automatically provided by PR template)
+1. **清晰的标题** 遵循提交消息格式
+2. **描述** 说明：
+   - 进行了哪些更改
+   - 为什么进行更改
+   - 任何相关问题（使用 `Closes #123`）
+3. **截图/示例** 如适用
+4. **检查清单** （PR 模板自动提供）
 
-## Code Review Process
+## 代码审查流程
 
-1. **Automated Checks**
-   - GitHub Actions will run tests, linting, and coverage
-   - All checks must pass
+1. **自动化检查**
+   - GitHub Actions 将运行测试、检查和覆盖率
+   - 所有检查必须通过
 
-2. **Manual Review**
-   - At least one maintainer will review the code
-   - May request changes or ask questions
-   - Be responsive to feedback
+2. **手动审查**
+   - 至少一名维护者将审查代码
+   - 可能会请求更改或提出问题
+   - 请对反馈做出响应
 
-3. **Approval and Merge**
-   - Once approved and checks pass, PR will be merged
-   - Maintainer will handle merging
+3. **批准和合并**
+   - 批准后且检查通过，PR 将被合并
+   - 维护者将处理合并
 
-## Quality Standards
+## 质量标准
 
-### Code Quality Requirements
+### 代码质量要求
 
-- ✅ All tests pass (`go test ./...`)
-- ✅ No go vet warnings (`go vet ./...`)
-- ✅ Code is formatted (`gofmt -s -w .`)
-- ✅ Linting passes (`make lint`)
-- ✅ No security issues (`gosec ./...`)
-- ✅ Test coverage maintained or improved
+- ✅ 所有测试通过 (`go test ./...`)
+- ✅ 没有 go vet 警告 (`go vet ./...`)
+- ✅ 代码已格式化 (`gofmt -s -w .`)
+- ✅ 检查通过 (`make lint`)
+- ✅ 没有安全问题 (`gosec ./...`)
+- ✅ 测试覆盖率维持或改进
 
-### Documentation Requirements
+### 文档要求
 
-- ✅ Public functions/types have godoc comments
-- ✅ Complex logic has inline comments
-- ✅ CHANGELOG.md is updated
-- ✅ README.md is updated if needed
-- ✅ Examples in docs/examples are valid
+- ✅ 公开函数/类型有 godoc 注释
+- ✅ 复杂逻辑有行内注释
+- ✅ CHANGELOG.md 已更新
+- ✅ README.md 已更新（如需要）
+- ✅ docs/examples 中的示例有效
 
-### Performance Requirements
+### 性能要求
 
-- ✅ No performance regression
-- ✅ Benchmarks pass (`make benchmark`)
-- ✅ Memory usage is acceptable
-- ✅ Concurrent performance is maintained
+- ✅ 没有性能回归
+- ✅ 基准测试通过 (`make benchmark`)
+- ✅ 内存使用可接受
+- ✅ 并发性能维持
 
-## Testing Guidelines
+## 测试指南
 
-### Running Tests
+### 运行测试
 
 ```bash
-# Run all tests
+# 运行所有测试
 go test ./...
 
-# Run with verbose output
+# 运行详细输出
 go test ./... -v
 
-# Run specific test
+# 运行特定测试
 go test ./test -run TestSpecificName
 
-# Run with coverage
+# 运行并显示覆盖率
 go test ./... -cover
 
-# Run benchmarks
+# 运行基准测试
 go test ./test -bench=. -benchmem
 ```
 
-### Writing Tests
+### 编写测试
 
-1. **Test file naming**: `*_test.go`
-2. **Test function naming**: `TestFunctionName`
-3. **Table-driven tests**: Use for multiple scenarios
-4. **Test organization**: Group related tests
+1. **测试文件命名**: `*_test.go`
+2. **测试函数命名**: `TestFunctionName`
+3. **表驱动测试**: 用于多个场景
+4. **测试组织**: 分组相关测试
 
-Example:
+示例:
 ```go
 func TestGetRandomFingerprint(t *testing.T) {
 	tests := []struct {
@@ -227,76 +227,76 @@ func TestGetRandomFingerprint(t *testing.T) {
 }
 ```
 
-## Documentation
+## 文档
 
-### Types of Documentation
+### 文档类型
 
-1. **API Documentation**: Godoc comments in code
-2. **User Guides**: `docs/2-guides/`
-3. **Reference Docs**: `docs/3-references/`
-4. **Development Guides**: `docs/5-process/development/`
+1. **API 文档**: 代码中的 Godoc 注释
+2. **用户指南**: `docs/2-guides/`
+3. **参考文档**: `docs/3-references/`
+4. **开发指南**: `docs/5-process/development/`
 
-### Writing Documentation
+### 编写文档
 
-1. Use clear, simple English
-2. Include code examples
-3. Explain why, not just how
-4. Keep it up-to-date with code
-5. Link to related documentation
+1. 使用清晰简洁的中文
+2. 包含代码示例
+3. 解释为什么，不仅仅是怎样
+4. 与代码保持最新
+5. 链接相关文档
 
-## Reporting Issues
+## 报告问题
 
-### Bug Reports
+### 错误报告
 
-Include:
-- Go version
-- Operating system
-- Steps to reproduce
-- Expected behavior
-- Actual behavior
-- Code example (if applicable)
+包含：
+- Go 版本
+- 操作系统
+- 复现步骤
+- 预期行为
+- 实际行为
+- 代码示例（如适用）
 
-### Feature Requests
+### 功能请求
 
-Include:
-- Use case description
-- Why it's needed
-- Proposed API/interface
-- Examples of similar features
+包含：
+- 用例描述
+- 为什么需要
+- 建议的 API/接口
+- 类似功能的示例
 
-## Security
+## 安全
 
-### Reporting Security Issues
+### 报告安全问题
 
-⚠️ **Do not open a public issue for security vulnerabilities**
+⚠️ **不要公开提交安全漏洞问题**
 
-Please report security issues privately to: security@example.com
+请私密报告安全问题至：security@example.com
 
-Include:
-- Type of vulnerability
-- Location in codebase
-- Potential impact
-- Suggested fix (if any)
+包含：
+- 漏洞类型
+- 代码位置
+- 潜在影响
+- 建议修复（如有）
 
-See [SECURITY.md](./SECURITY.md) for more details.
+详见 [SECURITY.md](./SECURITY.md)
 
-## Additional Resources
+## 其他资源
 
-- 📖 [Development Guidelines](./docs/5-process/development/README.md)
-- 🚀 [Project Setup Guide](./docs/2-guides/01-quick-start.md)
-- 📋 [Developer Checklist](./docs/2-guides/developer/01-developer-checklist.md)
-- 🔍 [Go Development Rules](./docs/5-process/development/00-go-development-rules.md)
+- 📖 [开发指南](./5-process/development/README.md)
+- 🚀 [快速开始](./2-guides/)
+- 📋 [开发检查清单](./2-guides/developer/)
+- 🔍 [Go 开发规范](./5-process/development/)
 
-## Questions?
+## 有问题？
 
-- 📧 Email: support@example.com
-- 💬 Discussions: GitHub Discussions
-- 📝 Documentation: See docs/README.md
+- 📧 邮箱: support@example.com
+- 💬 讨论: GitHub Discussions
+- 📝 文档: 见 docs/README.md
 
 ---
 
-## License
+## 许可证
 
-By contributing to this project, you agree that your contributions will be licensed under the same license as the project.
+对本项目的贡献即表示您同意您的贡献采用与本项目相同的许可证。
 
-Thank you for contributing! 🎉
+感谢您的贡献！🎉
