@@ -18,12 +18,13 @@ import (
 //   - error: 如果指纹库为空或配置无效则返回错误
 //
 // 示例:
-//   result, err := GetRandomFingerprint()
-//   if err != nil {
-//       log.Fatal(err)
-//   }
-//   println(result.UserAgent)
-//   println(result.ClientProfile.GetClientHelloStr())
+//
+//	result, err := GetRandomFingerprint()
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//	println(result.UserAgent)
+//	println(result.ClientProfile.GetClientHelloStr())
 //
 // 线程安全性: 是
 // 性能: 平均耗时 7.4 微秒，分配 1.8 KB 内存
@@ -44,10 +45,11 @@ func GetRandomFingerprint() (*FingerprintResult, error) {
 //   - error: 操作系统无效或指纹库为空时返回错误
 //
 // 示例:
-//   // 指定 Windows 操作系统
-//   result, err := GetRandomFingerprintWithOS("Windows NT 10.0; Win64; x64")
-//   // 随机选择操作系统
-//   result, err := GetRandomFingerprintWithOS("")
+//
+//	// 指定 Windows 操作系统
+//	result, err := GetRandomFingerprintWithOS("Windows NT 10.0; Win64; x64")
+//	// 随机选择操作系统
+//	result, err := GetRandomFingerprintWithOS("")
 //
 // 线程安全性: 是
 func GetRandomFingerprintWithOS(os OperatingSystem) (*FingerprintResult, error) {
