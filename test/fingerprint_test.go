@@ -450,4 +450,3 @@ func TestNoiseInjector(t *testing.T) {
 	t.Logf("Canvas 噪声: R=%d, G=%d, B=%d", canvasNoise.PixelOffsetR, canvasNoise.PixelOffsetG, canvasNoise.PixelOffsetB)
 	t.Logf("Audio 噪声: Level=%.4f", audioNoise.NoiseLevel)
 }
-

@@ -43,4 +43,3 @@ func main() {
 		fmt.Printf("    %s: %s\n", key, value)
 	}
 }
-

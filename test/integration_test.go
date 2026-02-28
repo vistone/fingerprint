@@ -130,8 +130,8 @@ func TestHeadersCustomizationIntegration(t *testing.T) {
 
 	// 测试 SetHeaders 方法
 	result.Headers.SetHeaders(map[string]string{
-		"Cookie":      "session_id=updated",
-		"X-API-Key":   "api-key-123",
+		"Cookie":       "session_id=updated",
+		"X-API-Key":    "api-key-123",
 		"X-Request-ID": "req-123",
 	})
 
@@ -385,7 +385,7 @@ func TestAllProfilesWithUserAgent(t *testing.T) {
 	}
 
 	t.Logf("User-Agent 测试完成: 成功 %d, 失败 %d", successCount, failCount)
-	
+
 	if failCount > 0 {
 		t.Errorf("有 %d 个 profile 的 User-Agent 生成失败", failCount)
 	}

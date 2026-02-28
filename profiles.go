@@ -18,4 +18,3 @@ var MappedTLSClients = profiles.MappedTLSClients
 // NewClientProfile 创建一个新的客户端指纹配置
 // 这是 profiles.NewClientProfile 的重新导出
 var NewClientProfile = profiles.NewClientProfile
-

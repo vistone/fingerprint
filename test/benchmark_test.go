@@ -63,7 +63,7 @@ func BenchmarkGenerateHeaders(b *testing.B) {
 func BenchmarkHeadersToMap(b *testing.B) {
 	ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
 	headers := fingerprint.GenerateHeaders(fingerprint.BrowserChrome, ua, false)
-	
+
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -77,7 +77,7 @@ func BenchmarkHeadersClone(b *testing.B) {
 	headers := fingerprint.GenerateHeaders(fingerprint.BrowserChrome, ua, false)
 	headers.Set("Cookie", "session_id=abc123")
 	headers.Set("Authorization", "Bearer token")
-	
+
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -123,16 +123,16 @@ func BenchmarkFullWorkflow(b *testing.B) {
 		if err != nil {
 			b.Fatal(err)
 		}
-		
+
 		// 2. 获取 Client Hello Spec
 		_, err = result.Profile.GetClientHelloSpec()
 		if err != nil && err.Error() != "please implement this method" {
 			b.Fatal(err)
 		}
-		
+
 		// 3. 设置自定义 Headers
 		result.Headers.Set("Cookie", "session_id=test")
-		
+
 		// 4. 转换为 Map
 		_ = result.Headers.ToMap()
 	}

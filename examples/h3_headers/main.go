@@ -42,7 +42,7 @@ func main() {
 	fmt.Println("\n4. 使用自定义 headers（适用于所有 HTTP 版本）：")
 	result.Headers.Set("Cookie", "session_id=abc123")
 	result.Headers.Set("X-API-Key", "api-key-123")
-	
+
 	allHeaders := result.Headers.ToMap()
 	fmt.Printf("   Cookie: %s\n", allHeaders["Cookie"])
 	fmt.Printf("   X-API-Key: %s\n", allHeaders["X-API-Key"])
@@ -55,4 +55,3 @@ func main() {
 
 	fmt.Println("\n✓ HTTP/3 头部使用说明完成！")
 }
-

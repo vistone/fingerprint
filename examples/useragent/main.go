@@ -86,4 +86,3 @@ func main() {
 		fmt.Printf("  %s: %s\n", name, ua)
 	}
 }
-

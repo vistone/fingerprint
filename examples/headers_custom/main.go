@@ -25,12 +25,12 @@ func main() {
 
 	// 2. 设置自定义 headers（系统会自动合并，无需手动调用 Merge）
 	fmt.Println("\n2. 设置自定义 Headers（系统自动合并）:")
-	
+
 	// 方式 1: 使用 Set 方法（推荐）
 	result.Headers.Set("Cookie", "session_id=abc123; csrf_token=xyz789")
 	result.Headers.Set("X-API-Key", "your-api-key-here")
 	result.Headers.Set("Authorization", "Bearer token123456")
-	
+
 	// 方式 2: 使用 SetHeaders 批量设置
 	result.Headers.SetHeaders(map[string]string{
 		"X-Custom-Header": "custom-value",
@@ -49,7 +49,7 @@ func main() {
 	// 4. 实际使用示例：创建 HTTP 请求
 	fmt.Println("\n4. 实际使用示例（创建 HTTP 请求）:")
 	req, _ := http.NewRequest("GET", "https://example.com", nil)
-	
+
 	// 直接使用 ToMap()，系统自动包含所有自定义 headers
 	headers := result.Headers.ToMap()
 	for key, value := range headers {
@@ -71,20 +71,19 @@ func main() {
 	// 6. 使用场景：多次更新（系统自动处理）
 	fmt.Println("\n6. 使用场景：多次更新（系统自动处理）")
 	result2, _ := fingerprint.GetRandomFingerprint()
-	
+
 	// 第一次设置
 	result2.Headers.Set("Cookie", "session_id=initial")
 	fmt.Printf("  第一次设置后: %s\n", result2.Headers.ToMap()["Cookie"])
-	
+
 	// 第二次更新
 	result2.Headers.Set("Cookie", "session_id=updated")
 	fmt.Printf("  第二次更新后: %s\n", result2.Headers.ToMap()["Cookie"])
-	
+
 	// 添加新的 header
 	result2.Headers.Set("X-API-Key", "new-api-key")
 	fmt.Printf("  添加 API Key 后 Cookie: %s\n", result2.Headers.ToMap()["Cookie"])
 	fmt.Printf("  添加 API Key 后 X-API-Key: %s\n", result2.Headers.ToMap()["X-API-Key"])
-	
+
 	fmt.Println("\n✓ 所有操作都是系统自动完成的，无需手动调用 Merge 或 ToMapWithCustom！")
 }
-

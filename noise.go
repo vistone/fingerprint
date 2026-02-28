@@ -173,11 +173,11 @@ func (n *NoiseInjector) GenerateScreenNoise() *ScreenNoise {
 
 // BrowserNoiseProfile 完整的浏览器噪声配置
 type BrowserNoiseProfile struct {
-	Canvas  *CanvasNoise
-	Audio   *AudioNoise
-	WebGL   *WebGLNoise
-	Font    *FontNoise
-	Screen  *ScreenNoise
+	Canvas *CanvasNoise
+	Audio  *AudioNoise
+	WebGL  *WebGLNoise
+	Font   *FontNoise
+	Screen *ScreenNoise
 }
 
 // GenerateFullProfile 生成完整的浏览器噪声配置

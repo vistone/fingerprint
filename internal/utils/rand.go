@@ -33,7 +33,7 @@ func NewRandGenerator() *RandGenerator {
 	seed := time.Now().UnixNano()
 	// 添加额外的随机性：使用默认随机源生成偏移
 	seed += int64(rand.Intn(10000))
-	
+
 	return &RandGenerator{
 		rng: rand.New(rand.NewSource(seed)),
 	}
