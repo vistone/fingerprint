@@ -1,6 +1,6 @@
 package useragent
 
-// TODO@Phase-3: 本模块暂未迁移（参见 docs/5-process/modularization/PHASE_3_PLAN.md）
+// Phase 3: 本模块已完成基础迁移，待深度优化（详见 docs/5-process/modularization/PHASE_3_PLAN.md）
 import (
 	"fmt"
 	"strings"
