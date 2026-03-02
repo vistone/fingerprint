@@ -311,9 +311,10 @@ return nil, errors.Wrap(errors.ErrProfileNotFound, "profile lookup failed")
 ### 立即执行（本周）
 
 1. ✅ **创建本文档** - 已完成
-2. 🔲 **创建 feature/phase-3-optimization 分支**
-3. 🔲 **团队评审本计划**
-4. 🔲 **开始 P1 任务**
+2. ✅ **建立性能基线** - 已完成（见 PHASE_3_BASELINE.md）
+3. 🔲 **创建 feature/phase-3-optimization 分支**
+4. 🔲 **团队评审本计划**
+5. 🔲 **开始 P1 任务**
 
 ### 短期目标（2周内）
 

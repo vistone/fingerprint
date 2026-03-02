@@ -16,6 +16,17 @@
   - 测试覆盖率提升（> 80% 核心模块）
   - 文档完善
 
+### [PHASE_3_BASELINE.md](PHASE_3_BASELINE.md)
+**Phase 3: 性能基线报告**
+
+- **状态**: ✅ 已建立
+- **测试日期**: 2026-03-02
+- **关键指标**:
+  - GetRandomFingerprint: 7.19 µs (目标 6.0 µs)
+  - GenerateHeaders: 1.21 µs (目标 0.8 µs)
+  - 零分配函数: RandomLanguage 34.45 ns, RandomOS 30.16 ns
+- **用途**: 优化前后性能对比基准
+
 ## 📊 模块化进度
 
 | 阶段 | 状态 | 完成日期 | 备注 |
