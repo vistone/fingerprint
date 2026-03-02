@@ -1,9 +1,12 @@
-package fingerprint
+package clienthints
 
 // TODO@Phase-3: 本模块暂未迁移（参见 docs/5-process/modularization/PHASE_3_PLAN.md）
 import (
 	"fmt"
 	"strings"
+
+	"github.com/vistone/fingerprint/profiles"
+	"github.com/vistone/fingerprint/types"
 )
 
 // ClientHintsPolicy Client Hints 策略配置
@@ -50,7 +53,7 @@ type ClientHintsData struct {
 }
 
 // NewClientHintsPolicy 创建默认策略
-func NewClientHintsPolicy(browserType BrowserType) *ClientHintsPolicy {
+func NewClientHintsPolicy(browserType types.BrowserType) *ClientHintsPolicy {
 	policy := &ClientHintsPolicy{
 		SendLowEntropyHints:           true,
 		SupportsCrossOriginDelegation: false,
@@ -59,7 +62,7 @@ func NewClientHintsPolicy(browserType BrowserType) *ClientHintsPolicy {
 
 	// 根据浏览器配置高熵提示
 	switch browserType {
-	case BrowserChrome:
+	case types.BrowserChrome:
 		policy.HighEntropyHints = []string{
 			"Sec-CH-UA-Arch",
 			"Sec-CH-UA-Bitness",
@@ -74,7 +77,7 @@ func NewClientHintsPolicy(browserType BrowserType) *ClientHintsPolicy {
 		policy.PermissionsPolicy["ch-ua-model"] = "()"
 		policy.PermissionsPolicy["ch-ua-platform"] = "self"
 
-	case BrowserEdge:
+	case types.BrowserEdge:
 		policy.HighEntropyHints = []string{
 			"Sec-CH-UA-Arch",
 			"Sec-CH-UA-Bitness",
@@ -85,7 +88,7 @@ func NewClientHintsPolicy(browserType BrowserType) *ClientHintsPolicy {
 		policy.SupportsCrossOriginDelegation = true
 		policy.PermissionsPolicy["ch-ua"] = "self"
 
-	case BrowserFirefox, BrowserSafari:
+	case types.BrowserFirefox, types.BrowserSafari:
 		// Firefox 和 Safari 目前不支持 Client Hints
 		policy.HighEntropyHints = []string{}
 	}
@@ -94,7 +97,7 @@ func NewClientHintsPolicy(browserType BrowserType) *ClientHintsPolicy {
 }
 
 // GenerateClientHintsFromProfile 从 profile 生成 Client Hints
-func GenerateClientHintsFromProfile(profile *ClientProfile, policy *ClientHintsPolicy) *ClientHintsData {
+func GenerateClientHintsFromProfile(profile *profiles.ClientProfile, policy *ClientHintsPolicy) *ClientHintsData {
 	hints := &ClientHintsData{}
 
 	if !policy.SendLowEntropyHints {
@@ -204,7 +207,7 @@ func (hints *ClientHintsData) ApplyToHeaders(headers map[string]string) {
 
 // ============ 辅助函数 ============
 
-func generateSecCHUA(profile *ClientProfile) string {
+func generateSecCHUA(profile *profiles.ClientProfile) string {
 	// 格式: "Brand";v="major", "Brand";v="major"
 	// Chrome 示例: "Not A(Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"
 
@@ -225,14 +228,14 @@ func generateSecCHUA(profile *ClientProfile) string {
 	}
 }
 
-func generateSecCHUAMobile(profile *ClientProfile) string {
+func generateSecCHUAMobile(profile *profiles.ClientProfile) string {
 	if profile.IsMobile {
 		return "?1"
 	}
 	return "?0"
 }
 
-func generateSecCHUAPlatform(profile *ClientProfile) string {
+func generateSecCHUAPlatform(profile *profiles.ClientProfile) string {
 	// 根据操作系统返回标准平台名
 	os := strings.ToLower(profile.OS)
 
@@ -252,7 +255,7 @@ func generateSecCHUAPlatform(profile *ClientProfile) string {
 	}
 }
 
-func generateFullVersionList(profile *ClientProfile) string {
+func generateFullVersionList(profile *profiles.ClientProfile) string {
 	// 格式: "Brand";v="full.version", "Brand";v="full.version"
 	version := profile.BrowserVersion
 

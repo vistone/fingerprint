@@ -1,155 +1,76 @@
-package fingerprint
+package types
 
-// TODO@Phase-3: 本模块暂未迁移（参见 docs/5-process/modularization/PHASE_3_PLAN.md）
-import (
-	"fmt"
+import "github.com/vistone/fingerprint/profiles"
 
-	"github.com/vistone/fingerprint/internal/utils"
+// BrowserType 浏览器类型
+type BrowserType string
+
+const (
+	BrowserChrome  BrowserType = "chrome"
+	BrowserFirefox BrowserType = "firefox"
+	BrowserSafari  BrowserType = "safari"
+	BrowserOpera   BrowserType = "opera"
+	BrowserEdge    BrowserType = "edge"
 )
 
-// 全球语言列表（按使用频率排序）
-var Languages = []string{
-	"en-US,en;q=0.9",          // 英语（美国）
-	"zh-CN,zh;q=0.9,en;q=0.8", // 中文（简体）
-	"es-ES,es;q=0.9,en;q=0.8", // 西班牙语
-	"fr-FR,fr;q=0.9,en;q=0.8", // 法语
-	"de-DE,de;q=0.9,en;q=0.8", // 德语
-	"ja-JP,ja;q=0.9,en;q=0.8", // 日语
-	"pt-BR,pt;q=0.9,en;q=0.8", // 葡萄牙语（巴西）
-	"ru-RU,ru;q=0.9,en;q=0.8", // 俄语
-	"ar-SA,ar;q=0.9,en;q=0.8", // 阿拉伯语
-	"ko-KR,ko;q=0.9,en;q=0.8", // 韩语
-	"it-IT,it;q=0.9,en;q=0.8", // 意大利语
-	"tr-TR,tr;q=0.9,en;q=0.8", // 土耳其语
-	"pl-PL,pl;q=0.9,en;q=0.8", // 波兰语
-	"nl-NL,nl;q=0.9,en;q=0.8", // 荷兰语
-	"sv-SE,sv;q=0.9,en;q=0.8", // 瑞典语
-	"vi-VN,vi;q=0.9,en;q=0.8", // 越南语
-	"th-TH,th;q=0.9,en;q=0.8", // 泰语
-	"id-ID,id;q=0.9,en;q=0.8", // 印尼语
-	"hi-IN,hi;q=0.9,en;q=0.8", // 印地语
-	"cs-CZ,cs;q=0.9,en;q=0.8", // 捷克语
-	"ro-RO,ro;q=0.9,en;q=0.8", // 罗马尼亚语
-	"hu-HU,hu;q=0.9,en;q=0.8", // 匈牙利语
-	"el-GR,el;q=0.9,en;q=0.8", // 希腊语
-	"da-DK,da;q=0.9,en;q=0.8", // 丹麦语
-	"fi-FI,fi;q=0.9,en;q=0.8", // 芬兰语
-	"no-NO,no;q=0.9,en;q=0.8", // 挪威语
-	"he-IL,he;q=0.9,en;q=0.8", // 希伯来语
-	"uk-UA,uk;q=0.9,en;q=0.8", // 乌克兰语
-	"pt-PT,pt;q=0.9,en;q=0.8", // 葡萄牙语（葡萄牙）
-	"zh-TW,zh;q=0.9,en;q=0.8", // 中文（繁体）
+// OperatingSystem 操作系统类型
+type OperatingSystem string
+
+const (
+	OSWindows10   OperatingSystem = "Windows NT 10.0; Win64; x64"
+	OSWindows11   OperatingSystem = "Windows NT 10.0; Win64; x64"
+	OSMacOS13     OperatingSystem = "Macintosh; Intel Mac OS X 13_0_0"
+	OSMacOS14     OperatingSystem = "Macintosh; Intel Mac OS X 14_0_0"
+	OSMacOS15     OperatingSystem = "Macintosh; Intel Mac OS X 15_0_0"
+	OSLinux       OperatingSystem = "X11; Linux x86_64"
+	OSLinuxUbuntu OperatingSystem = "X11; Linux x86_64"
+	OSLinuxDebian OperatingSystem = "X11; Linux x86_64"
+)
+
+// OperatingSystems 操作系统列表（用于随机选择）
+var OperatingSystems = []OperatingSystem{
+	OSWindows10,
+	OSWindows11,
+	OSMacOS13,
+	OSMacOS14,
+	OSMacOS15,
+	OSLinux,
+	OSLinuxUbuntu,
+	OSLinuxDebian,
 }
 
-// RandomLanguage 随机选择一个语言
-func RandomLanguage() string {
-	if len(Languages) == 0 {
-		return "en-US,en;q=0.9" // 默认返回英语
-	}
-	return utils.RandomChoiceString(Languages)
+// FingerprintResult 指纹结果，包含指纹、User-Agent 和标准 HTTP Headers
+type FingerprintResult struct {
+	Profile       profiles.ClientProfile // 指纹配置
+	UserAgent     string                 // 对应的 User-Agent
+	HelloClientID string                 // Client Hello ID（与 tls-client 保持一致）
+	Headers       *HTTPHeaders           // 标准 HTTP 请求头（包含全球语言支持）
 }
 
-// GenerateHeaders 根据浏览器类型和 User-Agent 生成标准 HTTP headers
-func GenerateHeaders(browserType BrowserType, userAgent string, isMobile bool) *HTTPHeaders {
-	if userAgent == "" {
-		userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-	}
-	headers := &HTTPHeaders{
-		UserAgent: userAgent,
-	}
+// HTTPHeaders 标准的 HTTP 请求头
+type HTTPHeaders struct {
+	Accept                  string            // Accept 头
+	AcceptLanguage          string            // Accept-Language 头（支持全球语言）
+	AcceptEncoding          string            // Accept-Encoding 头
+	UserAgent               string            // User-Agent 头
+	SecFetchSite            string            // Sec-Fetch-Site 头
+	SecFetchMode            string            // Sec-Fetch-Mode 头
+	SecFetchUser            string            // Sec-Fetch-User 头
+	SecFetchDest            string            // Sec-Fetch-Dest 头
+	SecCHUA                 string            // Sec-CH-UA 头
+	SecCHUAMobile           string            // Sec-CH-UA-Mobile 头
+	SecCHUAPlatform         string            // Sec-CH-UA-Platform 头
+	UpgradeInsecureRequests string            // Upgrade-Insecure-Requests 头
+	Custom                  map[string]string // 用户自定义的 headers（如 Cookie、Authorization、X-API-Key 等）
+}
 
-	switch browserType {
-	case BrowserChrome:
-		headers.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
-		headers.AcceptEncoding = "gzip, deflate, br, zstd"
-		headers.SecFetchSite = "none"
-		headers.SecFetchMode = "navigate"
-		headers.SecFetchUser = "?1"
-		headers.SecFetchDest = "document"
-		headers.UpgradeInsecureRequests = "1"
-
-		if isMobile {
-			headers.SecCHUA = `"Not A(Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"`
-			headers.SecCHUAMobile = "?1"
-			headers.SecCHUAPlatform = `"Android"`
-		} else {
-			// 从 User-Agent 提取 Chrome 版本
-			chromeVersion := utils.ExtractChromeVersion(userAgent)
-			headers.SecCHUA = fmt.Sprintf(`"Not A(Brand";v="8", "Chromium";v="%s", "Google Chrome";v="%s"`, chromeVersion, chromeVersion)
-			headers.SecCHUAMobile = "?0"
-			// 从 User-Agent 提取平台
-			headers.SecCHUAPlatform = utils.ExtractPlatform(userAgent)
-		}
-
-	case BrowserFirefox:
-		headers.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
-		headers.AcceptEncoding = "gzip, deflate, br"
-		// Firefox 不使用 Sec-Fetch-* headers（旧版本）
-		// 新版本 Firefox 使用，但格式不同
-		if isMobile {
-			headers.SecFetchSite = "none"
-			headers.SecFetchMode = "navigate"
-			headers.SecFetchUser = "?1"
-			headers.SecFetchDest = "document"
-		}
-
-	case BrowserSafari:
-		headers.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-		headers.AcceptEncoding = "gzip, deflate, br"
-		if !isMobile {
-			headers.SecFetchSite = "none"
-			headers.SecFetchMode = "navigate"
-			headers.SecFetchUser = "?1"
-			headers.SecFetchDest = "document"
-		}
-
-	case BrowserOpera:
-		// Opera 使用 Chrome 内核，headers 类似 Chrome
-		headers.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
-		headers.AcceptEncoding = "gzip, deflate, br, zstd"
-		headers.SecFetchSite = "none"
-		headers.SecFetchMode = "navigate"
-		headers.SecFetchUser = "?1"
-		headers.SecFetchDest = "document"
-		headers.UpgradeInsecureRequests = "1"
-
-		if isMobile {
-			headers.SecCHUA = `"Opera";v="91", "Chromium";v="105", "Not A(Brand";v="8"`
-			headers.SecCHUAMobile = "?1"
-			headers.SecCHUAPlatform = `"Android"`
-		} else {
-			headers.SecCHUA = `"Opera";v="91", "Chromium";v="105", "Not A(Brand";v="8"`
-			headers.SecCHUAMobile = "?0"
-			headers.SecCHUAPlatform = utils.ExtractPlatform(userAgent)
-		}
-
-	case BrowserEdge:
-		// Edge 使用 Chromium 内核，headers 类似 Chrome
-		headers.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
-		headers.AcceptEncoding = "gzip, deflate, br, zstd"
-		headers.SecFetchSite = "none"
-		headers.SecFetchMode = "navigate"
-		headers.SecFetchUser = "?1"
-		headers.SecFetchDest = "document"
-		headers.UpgradeInsecureRequests = "1"
-
-		if isMobile {
-			headers.SecCHUA = `"Not A(Brand";v="8", "Chromium";v="120", "Microsoft Edge";v="120"`
-			headers.SecCHUAMobile = "?1"
-			headers.SecCHUAPlatform = `"Android"`
-		} else {
-			edgeVersion := utils.ExtractChromeVersion(userAgent)
-			headers.SecCHUA = fmt.Sprintf(`"Not A(Brand";v="8", "Chromium";v="%s", "Microsoft Edge";v="%s"`, edgeVersion, edgeVersion)
-			headers.SecCHUAMobile = "?0"
-			headers.SecCHUAPlatform = utils.ExtractPlatform(userAgent)
-		}
-
-	}
-
-	// Accept-Language 使用随机语言
-	headers.AcceptLanguage = RandomLanguage()
-
-	return headers
+// UserAgentTemplate User-Agent 模板
+type UserAgentTemplate struct {
+	Browser    BrowserType
+	Version    string
+	Template   string // 模板字符串，使用 %s 占位符表示操作系统
+	Mobile     bool   // 是否为移动端
+	OSRequired bool   // 是否需要操作系统信息
 }
 
 // Clone 克隆 HTTPHeaders 对象，返回一个新的副本

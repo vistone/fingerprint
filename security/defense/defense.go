@@ -1,9 +1,11 @@
-package fingerprint
+package defense
 
 // TODO@Phase-3: 本模块暂未迁移（参见 docs/5-process/modularization/PHASE_3_PLAN.md）
 import (
 	"math"
 	"strings"
+
+	"github.com/vistone/fingerprint/types"
 )
 
 // AnomalyDetector 异常指纹检测器
@@ -287,9 +289,9 @@ func NewPassiveRecognizer() *PassiveRecognizer {
 // RecognitionResult 被动识别结果
 type RecognitionResult struct {
 	// 检测到的浏览器类型
-	Browser BrowserType
+	Browser types.BrowserType
 	// 检测到的操作系统
-	OS OperatingSystem
+	OS types.OperatingSystem
 	// 检测到的浏览器版本
 	BrowserVersion string
 	// 置信度（0.0-1.0）
@@ -339,7 +341,7 @@ func (r *PassiveRecognizer) RecognizeFromHeaders(headers map[string]string) *Rec
 }
 
 // detectBrowserFromUA 从 User-Agent 检测浏览器类型和版本
-func detectBrowserFromUA(ua string) (BrowserType, string) {
+func detectBrowserFromUA(ua string) (types.BrowserType, string) {
 	uaLower := strings.ToLower(ua)
 
 	// Edge 必须在 Chrome 之前检测（Edge UA 也包含 Chrome）
@@ -348,34 +350,34 @@ func detectBrowserFromUA(ua string) (BrowserType, string) {
 		if version == "" {
 			version = extractVersionFromUA(ua, "Edge/")
 		}
-		return BrowserEdge, version
+		return types.BrowserEdge, version
 	}
 
 	// Opera 必须在 Chrome 之前检测
 	if strings.Contains(uaLower, "opr/") {
 		version := extractVersionFromUA(ua, "OPR/")
-		return BrowserOpera, version
+		return types.BrowserOpera, version
 	}
 
 	// Chrome
 	if strings.Contains(uaLower, "chrome/") && !strings.Contains(uaLower, "chromium") {
 		version := extractVersionFromUA(ua, "Chrome/")
-		return BrowserChrome, version
+		return types.BrowserChrome, version
 	}
 
 	// Firefox
 	if strings.Contains(uaLower, "firefox/") {
 		version := extractVersionFromUA(ua, "Firefox/")
-		return BrowserFirefox, version
+		return types.BrowserFirefox, version
 	}
 
 	// Safari
 	if strings.Contains(uaLower, "safari/") {
 		version := extractVersionFromUA(ua, "Version/")
-		return BrowserSafari, version
+		return types.BrowserSafari, version
 	}
 
-	return BrowserChrome, ""
+	return types.BrowserChrome, ""
 }
 
 // extractVersionFromUA 从 User-Agent 提取特定标识符后的版本号
@@ -396,23 +398,23 @@ func extractVersionFromUA(ua, prefix string) string {
 }
 
 // detectOSFromUA 从 User-Agent 检测操作系统
-func detectOSFromUA(ua string) OperatingSystem {
+func detectOSFromUA(ua string) types.OperatingSystem {
 	if strings.Contains(ua, "Windows NT 10.0") {
-		return OSWindows10
+		return types.OSWindows10
 	}
 	if strings.Contains(ua, "Macintosh; Intel Mac OS X 15") {
-		return OSMacOS15
+		return types.OSMacOS15
 	}
 	if strings.Contains(ua, "Macintosh; Intel Mac OS X 14") {
-		return OSMacOS14
+		return types.OSMacOS14
 	}
 	if strings.Contains(ua, "Macintosh; Intel Mac OS X 13") {
-		return OSMacOS13
+		return types.OSMacOS13
 	}
 	if strings.Contains(ua, "X11; Linux") {
-		return OSLinux
+		return types.OSLinux
 	}
-	return OSWindows10 // 默认
+	return types.OSWindows10 // 默认
 }
 
 // calculateConfidence 计算识别置信度
