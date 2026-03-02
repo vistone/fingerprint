@@ -1,5 +1,6 @@
 package fingerprint
 
+// TODO@Phase-3: 本模块暂未迁移（参见 docs/5-process/modularization/PHASE_3_PLAN.md）
 import (
 	"fmt"
 	"strings"
