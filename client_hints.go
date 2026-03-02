@@ -294,3 +294,13 @@ func isSupportedHighEntropyHint(hint string) bool {
 	}
 	return false
 }
+
+// contains 检查字符串切片是否包含指定的值
+func contains(slice []string, item string) bool {
+	for _, v := range slice {
+		if strings.EqualFold(v, item) {
+			return true
+		}
+	}
+	return false
+}
