@@ -9,7 +9,7 @@
 
 ### 未发布 - 新增
 
-- **模块化重构第二阶段完成（至 JA4S + HTTP/JA4H + TLS/ECH + HTTP/HTTP2）**：核心 TLS 指纹算法和 HTTP 签名实现已下沉到专用子模块
+- **模块化重构第二阶段完成（至 Permissions-Policy）**：核心 TLS 指纹算法、HTTP 签名和权限策略实现已下沉到专用子模块
   - ✅ **QUIC 签名模块**：`network/quic/signature.go` - 完整实现迁移，根包转为兼容转发层
   - ✅ **TCP/IP 指纹模块**：`network/tcp/fingerprint.go` - 完整实现迁移，根包转为兼容别名层
   - ✅ **JA3 TLS 指纹模块**：`tls/ja3/ja3.go` (280 行) - 完整实现迁移，支持 GREASE 过滤和多配置匹配
@@ -39,6 +39,16 @@
     - 异常检测、已知客户端匹配、优先级树验证
     - 根包提供 5 个类型别名和 2 个转发函数
     - ✓ 编译通过，相关测试通过
+  - ✅ **Permissions-Policy 权限策略模块**：`http/policy/policy.go` (382 行) - 完整实现迁移
+    - 现代 Permissions-Policy 和传统 Feature-Policy 格式解析
+    - 权限指令解析、风险评估、危险组合检测
+    - ECH 影响度评估和策略建议
+    - 根包提供 3 个类型别名和 1 个转发函数
+    - ✓ 编译通过，兼容性验证成功
+  - ⏭️ **Defense 异常检测模块**：已评估但未迁移（循环依赖）
+    - Defense 模块使用根包的 BrowserType 和 OperatingSystem 类型
+    - 尝试迁移到 `security/defense/anomaly.go` 时引发循环导入：defense 包需要导入 fp 来获取类型，而 fp 需要导入 defense
+    - 现有架构下完整迁移不可行，已保留在根包，适时规划专项重构
   - ⏭️ **Random 和 Noise 生成器**：已评估但未迁移（循环依赖复杂度高）
     - 这两个模块有深层根包依赖（MappedTLSClients, UserAgent 生成，Headers 生成等）
     - 现有架构下迁移会引入循环导入问题，需要更深层的重构，推迟至后续专项优化
@@ -48,13 +58,13 @@
     - 待后续架构优化时完全迁移
   
   **Phase 2 总计迁移**：
-  - 迁移代码量：**3,175+ 行**（QUIC 1100+ + TCP 200+ + JA3 280 + JA4 400+ + JA4S 387 + JA4H 661 + ECH 384 + HTTP2 415）
-  - 迁移模块数：**8 个**（网络层 2 个 + TLS 层 4 个 + HTTP 层 2 个）
+  - 迁移代码量：**3,557+ 行**（QUIC 1100+ + TCP 200+ + JA3 280 + JA4 400+ + JA4S 387 + JA4H 661 + ECH 384 + HTTP2 415 + Permissions-Policy 382）
+  - 迁移模块数：**9 个**（网络层 2 个 + TLS 层 4 个 + HTTP 层 3 个）
   - 测试状态：254+ 单元测试通过，所有新迁移模块编译通过
   
   迁移模式说明：
   - **完整实现迁移**：将完整代码复制到子模块，仅改变 package 声明
-  - **类型兼容层**：根包使用 `type Alias = submodule.Type` 的类型别名（JA4S/JA4H/ECH/HTTP2 等）或结构体转发（JA3/JA4）
+  - **类型兼容层**：根包使用 `type Alias = submodule.Type` 的类型别名（JA4S/JA4H/ECH/HTTP2/Permissions-Policy 等）或结构体转发（JA3/JA4）
   - **懒初始化**：通过 sync.Once 在首次使用时初始化跨包依赖，避免 init() 时的循环依赖问题
   - **向后兼容**：所有根包 API 保持不变，现有代码无需修改，自动使用新子模块实现
   
