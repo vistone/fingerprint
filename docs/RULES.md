@@ -1,5 +1,7 @@
 # 📋 文档组织规则 (Documentation Organization Rules)
 
+<!-- markdownlint-disable MD022 MD031 MD032 MD040 -->
+
 **版本**: 1.0  
 **生效日期**: 2026-02-28  
 **维护者**: vistone  
@@ -295,8 +297,8 @@ func GetRandomFingerprint() (*FingerprintResult, error)
 A: 答案
 
 ## 相关文档
-- [文档 A](../path/to/doc-a.md)
-- [文档 B](../path/to/doc-b.md)
+- [改进计划](./2-guides/02-improvement-plan.md)
+- [开发规范](./5-process/development/README.md)
 
 ## 变更历史
 - v1.0 (2026-02-28): 初始版本
@@ -305,11 +307,11 @@ A: 答案
 ### 文件链接规则
 ```markdown
 ✅ 推荐 (相对路径):
-[快速开始](./02-installation.md)
-[API 文档](../3-references/api/public-api.md)
+[改进计划](./2-guides/02-improvement-plan.md)
+[快速参考](./3-references/00-quick-reference.md)
 
 ❌ 避免 (绝对路径):
-[文档](/media/stone/data/dev/docs/guides/02-installation.md)
+文档: /media/stone/data/dev/docs/guides/02-installation.md
 ```
 
 ---
@@ -415,8 +417,8 @@ A: 答案
    - ✅ 文件名: `quick-start.md`
 
 4. **不使用相对路径**
-   - ❌ `[文档](/media/stone/data/dev/docs/ref.md)`
-   - ✅ `[文档](../3-references/ref.md)`
+    - ❌ `文档: /media/stone/data/dev/docs/ref.md`
+    - ✅ `[文档](./3-references/00-quick-reference.md)`
 
 5. **不更新版本信息**
    - ❌ 文档说的是 v1.0，但代码已是 v2.0
@@ -476,8 +478,8 @@ result, err := fingerprint.GetRandomFingerprint()
 \`\`\`
 
 ## 相关文档
-- [快速开始](../2-guides/01-quick-start.md)
-- [类型定义](./types.md)
+- 改进计划: ../2-guides/02-improvement-plan.md
+- 快速参考: ../3-references/00-quick-reference.md
 ```
 
 ### 指南文档示例
@@ -510,7 +512,7 @@ func main() {
 \`\`\`
 
 ## 下一步
-[基础用法](./03-basic-usage.md)
+改进计划: ./02-improvement-plan.md
 ```
 
 ---

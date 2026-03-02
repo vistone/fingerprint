@@ -1,5 +1,7 @@
 # ✅ 开发者检查清单
 
+<!-- markdownlint-disable MD009 MD022 MD031 MD032 MD036 -->
+
 本文档提供了可操作的、分步骤的改进检查清单。
 
 ---
@@ -100,7 +102,7 @@
 - [ ] 创建测试工作流文件 (`.github/workflows/test.yml`)
   ```bash
   # 复制以下内容到 .github/workflows/test.yml
-  # 完整内容见 IMPROVEMENT_PLAN.md 任务 2.1
+  # 完整内容见 ../02-improvement-plan.md 任务 2.1
   touch .github/workflows/test.yml
   ```
 
@@ -533,10 +535,10 @@
 
 ## 📞 相关资源
 
-- 📄 IMPROVEMENT_PLAN.md - 详细改进计划
-- 📄 comprehensive_analysis_report.md - 完整分析报告
-- 📄 QUICK_REFERENCE.md - 快速参考指南
-- 📄 PROJECT_HEALTH_DASHBOARD.md - 项目健康报告
+- 📄 ../02-improvement-plan.md - 详细改进计划
+- 📄 ../../1-analysis/01-project-health-dashboard.md - 项目健康报告
+- 📄 ../../3-references/00-quick-reference.md - 快速参考指南
+- 📄 ../../README.md - 文档导航首页
 
 ---
 

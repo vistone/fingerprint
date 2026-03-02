@@ -8,18 +8,359 @@
 
 ## 核心功能
 
-- ✅ **71+ 真实浏览器指纹** - Chrome、Firefox、Safari、Opera、**Edge** 等准确版本
-- ✅ **JA3 指纹生成** - 从 TLS ClientHello 规范计算标准 JA3 哈希（MD5）
-- ✅ **JA4+ 指纹生成** - SHA256 基础的新一代 TLS 指纹（排序版和原始顺序版）
+### 已实现 ✅
+
+- ✅ **71+ 真实浏览器指纹** - Chrome、Firefox、Safari、Opera、Edge 等准确版本
+- ✅ **JA3/JA4 指纹生成** - 标准 TLS ClientHello 指纹（MD5 和 SHA256）
+- ✅ **JA4S（服务端指纹）** - ServerHello 响应特征识别与异常检测
+- ✅ **JA4H（HTTP 请求指纹）** - 应用层请求头特征识别与浏览器匹配
+- ✅ **HTTP/2 帧签名** - Settings/Priority/Headers 完整签名与客户端识别
+- ✅ **QUIC 签名分析** - QUIC Initial 包指纹、传输参数、帧序列特征识别
+- ✅ **HTTP/3 支持** - 基于 QUIC v1/v2 的 HTTP/3 流量识别与异常检测
 - ✅ **被动识别** - 从 HTTP 请求头识别浏览器类型、版本、操作系统
 - ✅ **主动防护** - Canvas/Audio/WebGL/Font 噪声注入，防止精确指纹追踪
-- ✅ **异常检测** - 检测无头浏览器、机器人和可疑指纹数据
+- ✅ **异常检测** - 检测无头浏览器、机器人、可疑指纹和数据熵异常
 - ✅ **矛盾检测** - 识别 UA/OS/Platform 等属性间的逻辑不一致
-- ✅ **HTTP/2 & HTTP/3** - 完整的 HTTP/2 配置，兼容 HTTP/3
+- ✅ **HTTP/2 配置** - 完整的 Settings/Priority/Pseudo-Header-Order 支持
 - ✅ **User-Agent 匹配** - 自动生成与指纹匹配的 User-Agent
 - ✅ **全球语言支持** - 30+ 种语言的 Accept-Language
 - ✅ **操作系统随机化** - 随机选择操作系统
 - ✅ **高性能** - 零分配的关键操作，并发安全
+- ✅ **配置驱动检测** - 基于 JSON 的可热更新规则配置引擎
+- ✅ **Client Hints 支持** - 低熵/高熵提示、Accept-CH 协商、跨源委托、权限策略
+- ✅ **ECH 分析** - Encrypted Client Hello 检测、影响评估、替代策略建议
+- ✅ **综合风险评分** - 8 维度风险评估、5 级威胁判定、上下文感知计算
+- ✅ **UA-CH 协商策略深化** - 完整的 Client Hints 生命周期管理
+- ✅ **行为信号分析** - 时序模式、协议分布、连接行为多维分析
+
+### 规划中 🔄
+
+- 📌 后续优化和扩展功能
+
+## 最新更新（2026.02.28）
+
+🎉 **高级指纹分析能力**
+
+新增三大核心指纹分析模块：
+
+### JA4S - TLS ServerHello 指纹分析
+
+识别服务端 TLS 配置特征，检测异常服务器行为：
+
+```go
+import "github.com/vistone/fingerprint"
+
+analyzer := fingerprint.NewJA4SAnalyzer()
+
+// 从 ServerHello 字节数据生成指纹
+result, _ := analyzer.AnalyzeServerHello(serverHelloBytes)
+
+// 或从配置生成虚拟指纹
+result, _ := analyzer.GenerateServerHelloSignature(
+    0x0304,                          // TLS 1.3
+    0x1302,                          // TLS_AES_256_GCM_SHA384
+    []uint16{0, 10, 11, 16, 23, 35}, // extensions
+    0,                               // no compression
+)
+
+fmt.Printf("JA4S Hash: %s\n", result.Hash)
+fmt.Printf("Risk Score: %.2f\n", result.RiskScore)
+// 输出: JA4S Hash: 24f6341540cd29ce904e7896...
+//      Risk Score: 0.00
+```
+
+**异常检测能力**：
+- 非标准 TLS 版本
+- 已知弱密码套件
+- 异常扩展配置
+- 服务端配置匹配
+
+### HTTP/2 帧签名分析
+
+分析 HTTP/2 帧序列特征，识别客户端实现：
+
+```go
+frames := []fingerprint.HTTP2FrameData{
+    {
+        Type: "SETTINGS",
+        Settings: map[string]interface{}{
+            "HEADER_TABLE_SIZE":   4096,
+            "INITIAL_WINDOW_SIZE": 65535,
+        },
+    },
+    {
+        Type:    "HEADERS",
+        FrameID: 1,
+        Headers: []string{":method", ":scheme", ":authority", ":path"},
+    },
+}
+
+analyzer := fingerprint.NewHTTP2SignatureAnalyzer()
+result, _ := analyzer.AnalyzeHTTP2Stream(frames)
+
+fmt.Printf("Frame Sequence: %s\n", result.FrameSequence)
+fmt.Printf("HTTP/2 Hash: %s\n", result.Hash)
+// 输出: Frame Sequence: set-hea
+//      HTTP/2 Hash: b7494379847d44d3382cdb3b...
+```
+
+**分析维度**：
+- Settings 帧参数配置
+- Priority 优先级树结构
+- Headers 帧头顺序
+- Window Update 窗口策略
+
+### JA4H - HTTP 请求头指纹
+
+应用层请求特征识别，浏览器行为匹配：
+
+```go
+request := fingerprint.HTTP2RequestData{
+    Method:   "GET",
+    Path:     "/api/v1/users",
+    Protocol: "HTTP/2",
+    Headers: []struct {
+        Name  string
+        Value string
+    }{
+        {Name: "Host", Value: "example.com"},
+        {Name: "User-Agent", Value: "Mozilla/5.0..."},
+        {Name: "Accept", Value: "text/html,..."},
+        {Name: "Accept-Language", Value: "en-US,en;q=0.9"},
+        {Name: "Accept-Encoding", Value: "gzip, deflate"},
+    },
+}
+
+analyzer := fingerprint.NewJA4HAnalyzer()
+result, _ := analyzer.AnalyzeHTTPRequest(request)
+
+fmt.Printf("JA4H Hash: %s\n", result.Hash)
+fmt.Printf("Risk Score: %.2f\n", result.RiskScore)
+// 输出: JA4H Hash: 51790179c203f52835e0dcca...
+//      Risk Score: 0.00
+```
+
+**异常检测能力**：
+- 请求头顺序异常
+- 缺失常见请求头
+- User-Agent 不一致
+- SQL 注入迹象
+- 方法与路径矛盾
+
+---
+
+### 行为信号分析 - 时序模式与协议分布识别 🆕
+
+通过分析跨请求的行为模式来识别机器人和异常活动：
+
+```go
+import "github.com/vistone/fingerprint"
+
+// 创建行为分析器
+analyzer := fingerprint.NewBehaviorAnalyzer(nil)
+
+// 添加请求行为数据
+for _, req := range requests {
+    analyzer.AddRequest(fingerprint.RequestBehavior{
+        Timestamp:         req.Timestamp,
+        TLSVersion:        "1.3",
+        CipherSuite:       "TLS_AES_256_GCM_SHA384",
+        HTTPVersion:       "2",
+        ReusingConnection: true,
+        SNI:               "example.com",
+    })
+}
+
+// 生成行为信号
+signals := analyzer.GenerateBehaviorSignals("example.com")
+riskScore := analyzer.GetRiskScore()
+
+fmt.Printf("风险评分: %.2f\n", riskScore)
+fmt.Printf("检测信号数: %d\n", len(signals))
+
+// 获取完整分析报告
+report := analyzer.GetAnalysisSummary()
+```
+
+**分析维度**：
+
+1. **时序模式分析** - 请求间隔规律性
+   - 规律性指数（0-1）：区分机器人(>0.8) vs 真实用户(<0.3)
+   - 基于变异系数(CV)的统计分析
+   - 异常间隔检测（3-sigma规则）
+
+2. **协议分布分析** - TLS/HTTP版本和密码套件多样性
+   - TLS版本分布
+   - Cipher Suite组合
+   - Extension签名一致性
+   - 熵值计算
+
+3. **连接复用行为** - 连接复用率异常检测
+   - 真实用户：60-80%复用率
+   - 机器人脚本：>95%复用率
+
+**异常检测示例**：
+
+```go
+// 机器人特征：高规律性 + 单一协议 + 极高连接复用
+pattern := analyzer.AnalyzeTemporalPattern("origin")
+proportion := analyzer.AnalyzeProtocolProportion("origin")
+
+if pattern.RegularityIndex > 0.8 && 
+   len(proportion.TLSVersions) == 1 && 
+   riskScore > 0.7 {
+    fmt.Println("⚠️  检测到可疑的机器人行为")
+}
+```
+
+**性能指标**：
+- 添加请求：< 1μs
+- 时序分析：< 10μs  
+- 协议分析：< 50μs
+- 信号生成：< 100μs
+- 吞吐量：> 1M req/sec
+
+---
+
+
+分析 QUIC Initial 包特征，识别 HTTP/3 客户端：
+
+```go
+initial := fingerprint.QUICInitialData{
+    Version: 0x00000001, // QUIC v1
+    TransportParams: map[string]interface{}{
+        "initial_max_data":                     10485760,
+        "initial_max_stream_data_bidi_local":   1048576,
+        "initial_max_stream_data_bidi_remote":  1048576,
+        "initial_max_streams_bidi":             100,
+    },
+    FrameTypes: []uint64{
+        0x06, // CRYPTO
+        0x02, // ACK
+    },
+    SourceConnectionID:   []byte{0x01, 0x02, 0x03, 0x04},
+    InitialMaxData:       10485760,
+    InitialMaxStreamData: 1048576,
+}
+
+analyzer := fingerprint.NewQUICSignatureAnalyzer()
+result, _ := analyzer.AnalyzeQUICInitial(initial)
+
+// 或使用便捷函数
+result, _ = fingerprint.ComputeQUICSignature(initial)
+
+fmt.Printf("QUIC Hash: %s\n", result.Hash)
+fmt.Printf("Version: %s (HTTP/3: %v)\n", result.QUICVersion, result.IsHTTP3)
+fmt.Printf("Risk Score: %.2f\n", result.RiskScore)
+// 输出: QUIC Hash: 1300acc37a7e074f1de5286b...
+//      Version: v1 (HTTP/3: true)
+//      Risk Score: 0.00
+```
+
+**异常检测能力**：
+- 草稿版本（draft versions）
+- 缺失 CRYPTO 帧
+- 可疑的传输参数限制
+- 无效连接 ID 长度
+- 异常帧序列
+
+---
+
+### ECH - Encrypted Client Hello 分析
+
+分析 TLS 1.3 ECH 扩展，评估对指纹识别的影响：
+
+```go
+import "github.com/vistone/fingerprint"
+
+// 构建 ClientHello 数据
+data := fingerprint.ClientHelloData{
+    TLSVersion:   0x0304, // TLS 1.3
+    CipherSuites: []uint16{0x1301, 0x1302, 0x1303},
+    Extensions: []fingerprint.ExtensionData{
+        {Type: 0xfd00, Data: []byte{0xfe, 0x0d, 0x01, 0x02}}, // ECH outer
+        {Type: 0x000d, Data: []byte{}}, // signature_algorithms
+        {Type: 0x0033, Data: []byte{}}, // key_share
+    },
+    HasSNI: false, // ECH 加密了 SNI
+}
+
+result, _ := fingerprint.AnalyzeECH(data)
+
+fmt.Printf("ECH 检测: %v\n", result.ECHPresent)
+fmt.Printf("ECH 类型: %s\n", result.ECHType)
+fmt.Printf("影响等级: %s\n", result.Impact.ImpactLevel)
+fmt.Printf("SNI 可见: %v\n", result.Impact.SNIVisible)
+fmt.Printf("可见字段签名: %s\n", result.VisibleFieldsSignature)
+// 输出: ECH 检测: true
+//      ECH 类型: outer
+//      影响等级: high
+//      SNI 可见: false
+//      可见字段签名: faa38b794acbd77a
+```
+
+**分析维度**：
+- **ECH 类型识别**：GREASE（兼容测试）、Outer（完整加密）、Inner（内部 Hello）
+- **影响评估**：SNI 可见性、受影响的指纹方法、仍可用的替代方法
+- **异常检测**：配置错误（ECH 但 SNI 仍可见）、协议异常（旧 TLS 版本使用 ECH）
+- **替代策略**：基于可见字段的指纹（Cipher Suites、扩展顺序）、结合 HTTP/2、QUIC 特征
+
+**应对策略示例**：
+
+```go
+if result.ECHPresent && result.Impact.ImpactLevel == "high" {
+    fmt.Println("建议的替代策略:")
+    for _, strategy := range result.AlternativeStrategies {
+        fmt.Printf("  - %s\n", strategy)
+    }
+}
+// 输出:
+//   - 使用 JA3/JA4 基于可见字段的指纹
+//   - 分析 Cipher Suite 和扩展顺序
+//   - 结合 HTTP/2 帧签名和 QUIC 特征
+//   - 应用层行为分析（请求模式、时序）
+//   - IP 信誉和地理位置分析
+//   - 实施多层防御策略，不依赖单一指纹方法
+```
+
+---
+
+### 统一特征提取框架（基础架构）
+
+| 新增功能 | 说明 |
+|---------|------|
+| **统一 Feature Extractor** | 可扩展的特征提取接口，支持多种实现（规则引擎、ML 等） |
+| **JSON 规则配置** | `internal/config/rules.json`：阈值、工具标记、规则完全可配置（由 `internal/extension` 统一加载） |
+| **统一配置入口** | `extension.NewUnifiedConfigFromEnv()`：自动加载运行配置 + 规则配置 |
+| **兼容适配层** | `internal/features/legacy_adapter.go`：现有代码零成本迁移 |
+| **特征向量** | `FeatureVector`：完整的特征记录、异常类型、风险评分 |
+
+**使用新特征提取器**（详见[快速指南](docs/2-guides/developer/03-feature-extractor-quickstart.md)）：
+
+```go
+import (
+    "fingerprint/internal/extension"
+    "fingerprint/internal/features"
+)
+
+// 使用默认配置
+extractor := features.NewBaseFeatureExtractor(nil)
+score, isBot := extractor.ExtractFeature(
+  features.FeatureHeadlessBrowser,
+  userAgent,
+  nil,
+)
+
+// 或从配置文件加载
+appConfig := extension.NewUnifiedConfigFromEnv()
+rulesConfig := appConfig.Rules
+// ... 转换为 FeatureConfig ...
+vector := extractor.ExtractFeatureVector(data, featureConfig)
+```
+
+**下一步** → [缺口分析](docs/1-analysis/02-fingerprint-gap-analysis-2026-02-28.md)
+
+---
 
 ## 安装
 
@@ -372,7 +713,29 @@ RandomOS:                   15 ns/op       0 B/op    0 allocs ⭐
 └── README.md
 ```
 
+## 开发路线图
+
+### 当前进度：P0 ✅ | P1 ✅ | P2 ✅
+
+| 阶段 | 核心目标 | 预期周期 | 状态 |
+|------|---------|---------|------|
+| **P0** | 特征提取统一层 + 规则配置化 | 1-2 周 | ✅ 完成 |
+| **P1** | JA4S/H + HTTP/2 签名 + QUIC + 综合评分 + UA-CH 协商 | 2-4 周 | ✅ 完成 |
+| **P2** | 行为信号分析 + 风险评分体系优化 | 4-8 周 | ✅ 完成 |
+
+**详细计划** → [缺口分析与分期规划](docs/1-analysis/02-fingerprint-gap-analysis-2026-02-28.md)
+
+---
+
 ## 更新日志
+
+### v2.1.0-rc1 (P0 阶段 - 2026-02-28) 🆕
+- ✅ **统一 Feature Extractor 接口** - 可扩展的特征提取框架
+- ✅ **JSON 规则配置引擎** - `internal/config/rules.json` 完全可配置（统一入口为 `internal/extension`）
+- ✅ **特征配置加载器** - 支持自动查找和热更新
+- ✅ **兼容性适配层** - `LegacyFeatureAdapter` 零成本迁移
+- ✅ **特征向量 & 风险评分** - 完整的特征记录与去重
+- ✅ **开发文档完善** - [快速指南](docs/2-guides/developer/03-feature-extractor-quickstart.md) + [实施指南](docs/5-process/development/04-p0-feature-extractor-guide.md)
 
 ### v2.0.0 (2026-02-28)
 - ✅ 新增 Edge 浏览器指纹（5个版本：99/101/120/131/133）

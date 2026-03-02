@@ -1,0 +1,164 @@
+{
+  "_metadata": {
+    "version": "1.0",
+    "description": "Fingerprint detection rules configuration",
+    "last_updated": "2026-02-28",
+    "changelog": [
+      {
+        "version": "1.0",
+        "date": "2026-02-28",
+        "changes": [
+          "Initial configuration schema extracted from defense.go hardcoded values",
+          "Added feature-level configurability for entropy, tool markers, and contradiction detection"
+        ]
+      }
+    ]
+  },
+  "entropy": {
+    "enabled": true,
+    "high_threshold": 7.5,
+    "low_threshold": 26,
+    "description": "Detects anomalies in data entropy using Shannon entropy and byte uniqueness",
+    "sensitivity": "high"
+  },
+  "tool_markers": {
+    "enabled": true,
+    "patterns": [
+      {
+        "marker": "HeadlessChrome",
+        "type": "browser_automation",
+        "severity": "critical"
+      },
+      {
+        "marker": "PhantomJS",
+        "type": "headless_browser",
+        "severity": "critical"
+      },
+      {
+        "marker": "webdriver",
+        "type": "selenium_indicator",
+        "severity": "critical"
+      },
+      {
+        "marker": "selenium",
+        "type": "selenium_driver",
+        "severity": "critical"
+      },
+      {
+        "marker": "puppeteer",
+        "type": "puppeteer_client",
+        "severity": "critical"
+      }
+    ],
+    "description": "Detects known automation tool markers in binary or text data"
+  },
+  "headless_browser_ua": {
+    "enabled": true,
+    "markers": [
+      "headlesschrome",
+      "phantomjs",
+      "selenium",
+      "webdriver",
+      "puppeteer",
+      "playwright",
+      "cypress",
+      "jsdom",
+      "zombie",
+      "htmlunit"
+    ],
+    "description": "Detects headless browser indicators in User-Agent string"
+  },
+  "os_platform_contradiction": {
+    "enabled": true,
+    "rules": [
+      {
+        "os": "Windows",
+        "platform_must_contain": "Win",
+        "severity": "high"
+      },
+      {
+        "os": "Mac",
+        "platform_must_contain": "Mac",
+        "severity": "high"
+      },
+      {
+        "os": "Linux",
+        "platform_must_contain": ["Linux", "X11"],
+        "severity": "high"
+      }
+    ],
+    "description": "Detects logical contradictions between OS and Platform identifiers"
+  },
+  "ua_os_contradiction": {
+    "enabled": true,
+    "rules": [
+      {
+        "ua_contains": "Windows",
+        "os_cannot_contain": "Mac",
+        "severity": "critical"
+      },
+      {
+        "ua_contains": "Macintosh",
+        "os_cannot_contain": "Windows",
+        "severity": "critical"
+      },
+      {
+        "ua_contains": "X11; Linux",
+        "os_cannot_contain": "Windows",
+        "severity": "critical"
+      }
+    ],
+    "description": "Detects contradictions between User-Agent and declared OS"
+  },
+  "mobile_screen_contradiction": {
+    "enabled": true,
+    "mobile_screen_width_max": 1920,
+    "desktop_screen_width_min": 800,
+    "description": "Detects mobile/desktop devices with suspicious screen resolutions",
+    "rules": [
+      {
+        "device": "mobile",
+        "screen_width_threshold": 1920,
+        "rule": "mobile_exceeding_width"
+      },
+      {
+        "device": "desktop",
+        "screen_width_threshold": 800,
+        "rule": "desktop_below_width"
+      }
+    ]
+  },
+  "ua_feature_contradiction": {
+    "enabled": true,
+    "rules": [
+      {
+        "ua_contains": "Chrome/60",
+        "feature_cannot_support": "WebGL2",
+        "severity": "medium"
+      },
+      {
+        "ua_contains": "Mobile",
+        "feature_cannot_support": "desktop",
+        "severity": "medium"
+      }
+    ],
+    "description": "Detects User-Agent feature compatibility contradictions"
+  },
+  "scoring": {
+    "anomaly_weights": {
+      "entropy": 0.15,
+      "tool_marker": 0.25,
+      "headless_browser": 0.20,
+      "os_platform_contradiction": 0.15,
+      "ua_os_contradiction": 0.20,
+      "mobile_screen_contradiction": 0.10,
+      "ua_feature_contradiction": 0.10
+    },
+    "risk_levels": {
+      "low": { "min": 0.0, "max": 0.3 },
+      "medium": { "min": 0.3, "max": 0.6 },
+      "high": { "min": 0.6, "max": 0.8 },
+      "critical": { "min": 0.8, "max": 1.0 }
+    }
+  }
+}

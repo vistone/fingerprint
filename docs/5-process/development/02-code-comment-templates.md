@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD009 MD034 MD037 MD041 -->
+
 // Package fingerprint 代码注释完整模板和示例
 //
 // 本文档提供了项目中各种代码注释的完整模板和实际示例
@@ -41,8 +43,8 @@ package fingerprint
 //
 //   GetRandomFingerprint() - 获取随机指纹
 //   GetRandomFingerprintByBrowser() - 按浏览器类型获取指纹
-//   ComputeJA3() - 计算 JA3 指纹
-//   ComputeJA4() - 计算 JA4 指纹
+//   ComputeJA3ByProfileName() - 计算 JA3 指纹
+//   ComputeJA4ByProfileName() - 计算 JA4 指纹
 //   RecognizeFromHeaders() - 从 Headers 识别浏览器
 //
 // 使用示例:

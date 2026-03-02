@@ -1,5 +1,7 @@
 .PHONY: help test benchmark lint format clean install-tools build
 
+GO ?= GOTOOLCHAIN=go1.25.4 go
+
 # 默认目标
 help:
 	@echo "Fingerprint Project - Available Targets"
@@ -25,12 +27,12 @@ help:
 # 运行所有测试
 test:
 	@echo "Running tests..."
-	go test ./... -v -race -timeout=5m
+	$(GO) test ./... -v -race -timeout=5m
 
 # 运行基准测试
 benchmark:
 	@echo "Running benchmarks..."
-	go test ./test -bench=. -benchmem -run=^$ -timeout=30m
+	$(GO) test ./test -bench=. -benchmem -run=^$ -timeout=30m
 	@echo "Benchmarks completed!"
 
 # 代码检查
@@ -38,7 +40,7 @@ lint: lint-vet lint-fmt lint-golangci
 
 lint-vet:
 	@echo "Running go vet..."
-	go vet ./...
+	$(GO) vet ./...
 	@echo "✓ go vet passed"
 
 lint-fmt:
@@ -54,7 +56,7 @@ lint-fmt:
 lint-golangci:
 	@echo "Running golangci-lint..."
 	@if command -v golangci-lint > /dev/null; then \
-		golangci-lint run ./... --timeout=5m; \
+		GOTOOLCHAIN=go1.25.4 golangci-lint run ./... --timeout=5m; \
 		echo "✓ golangci-lint passed"; \
 	else \
 		echo "⚠ golangci-lint not installed. Install with: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest"; \
@@ -72,7 +74,7 @@ build:
 	mkdir -p build
 	@for example in $$(find examples -maxdepth 1 -type d -name '*' ! -name 'examples'); do \
 		echo "Building $$(basename $$example)..."; \
-		go build -o build/$$(basename $$example) ./$$example; \
+		$(GO) build -o build/$$(basename $$example) ./$$example; \
 	done
 	@echo "✓ Build completed"
 
@@ -80,44 +82,45 @@ build:
 clean:
 	@echo "Cleaning build artifacts..."
 	rm -rf build/ *.test *.out coverage.* gosec-results.json
-	go clean ./...
+	$(GO) clean ./...
 	@echo "✓ Clean completed"
 
 # 安装开发工具
 install-tools:
 	@echo "Installing development tools..."
 	@echo "Installing golangci-lint..."
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	$(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	@echo "Installing gosec..."
-	go install github.com/securego/gosec/v2/cmd/gosec@latest
+	$(GO) install github.com/securego/gosec/v2/cmd/gosec@latest
 	@echo "Installing go-mod-upgrade..."
-	go install github.com/go-mod-upgrade/go-mod-upgrade@latest
+	$(GO) install github.com/go-mod-upgrade/go-mod-upgrade@latest
 	@echo "✓ All tools installed"
 
 # 生成 API 文档
 docs:
 	@echo "Generating API documentation..."
-	go doc -html ./... > docs/api.html
+	$(GO) doc -html ./... > docs/api.html
 	@echo "✓ Documentation generated at docs/api.html"
 
 # 代码覆盖
 coverage:
 	@echo "Running tests with coverage..."
-	go test ./... -coverprofile=coverage.out -html=coverage.html
+	$(GO) test ./... -coverprofile=coverage.out
+	$(GO) tool cover -html=coverage.out -o coverage.html
 	@echo "✓ Coverage report generated: coverage.html"
 
 # 更新依赖
 update-deps:
 	@echo "Updating dependencies..."
-	go get -u ./...
-	go mod tidy
+	$(GO) get -u ./...
+	$(GO) mod tidy
 	@echo "✓ Dependencies updated"
 
 # 安全检查
 security:
 	@echo "Running security checks..."
 	@if command -v gosec > /dev/null; then \
-		gosec ./...; \
+		GOTOOLCHAIN=go1.25.4 gosec ./...; \
 	else \
 		echo "⚠ gosec not installed. Install with: go install github.com/securego/gosec/v2/cmd/gosec@latest"; \
 	fi

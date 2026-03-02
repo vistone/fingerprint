@@ -200,7 +200,7 @@ func getMMSClientProfile3() ClientProfile {
 
 					//nolint:composites
 
-					&tls.KeyShareExtension{[]tls.KeyShare{
+					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.CurveID(tls.GREASE_PLACEHOLDER), Data: []byte{0}},
 						{Group: tls.X25519},
 					}},
@@ -230,7 +230,7 @@ func getMMSClientProfile3() ClientProfile {
 
 					//nolint:composites
 
-					&tls.UtlsCompressCertExtension{[]tls.CertCompressionAlgo{
+					&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{
 						tls.CertCompressionZlib,
 					}},
 					&tls.UtlsGREASEExtension{},

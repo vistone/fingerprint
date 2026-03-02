@@ -96,6 +96,16 @@ type ClientProfile struct {
 	pseudoHeaderOrder []string
 	settingsOrder     []http2.SettingID
 	connectionFlow    uint32
+
+	// 元数据字段（用于 Client Hints 和 User-Agent 生成）
+	BrowserType    string // "chrome", "firefox", "safari", "edge"
+	BrowserVersion string // "120.0.6099.109"
+	OS             string // "Windows NT 10.0; Win64; x64"
+	OSVersion      string // "10.0.19045"
+	OSArch         string // "x86", "arm"
+	OSBitness      string // "64", "32"
+	IsMobile       bool   // 是否为移动设备
+	DeviceModel    string // 移动设备型号（如 "Pixel 7"）
 }
 
 func NewClientProfile(clientHelloId tls.ClientHelloID, settings map[http2.SettingID]uint32, settingsOrder []http2.SettingID, pseudoHeaderOrder []string, connectionFlow uint32, priorities []http2.Priority, headerPriority *http2.PriorityParam) ClientProfile {
@@ -107,6 +117,15 @@ func NewClientProfile(clientHelloId tls.ClientHelloID, settings map[http2.Settin
 		connectionFlow:    connectionFlow,
 		priorities:        priorities,
 		headerPriority:    headerPriority,
+		// 元数据字段保持默认零值
+		BrowserType:    "",
+		BrowserVersion: "",
+		OS:             "",
+		OSVersion:      "",
+		OSArch:         "x86",
+		OSBitness:      "64",
+		IsMobile:       false,
+		DeviceModel:    "",
 	}
 }
 

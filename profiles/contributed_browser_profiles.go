@@ -944,7 +944,7 @@ var Firefox_123 = ClientProfile{
 
 					//nolint:composites
 
-					&tls.SupportedCurvesExtension{[]tls.CurveID{
+					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.X25519,
 						tls.CurveP256,
 						tls.CurveP384,
@@ -973,7 +973,7 @@ var Firefox_123 = ClientProfile{
 
 					//nolint:composites
 
-					&tls.KeyShareExtension{[]tls.KeyShare{
+					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.X25519},
 						{Group: tls.CurveP256},
 					}},
@@ -983,7 +983,7 @@ var Firefox_123 = ClientProfile{
 
 					//nolint:composites
 
-					&tls.SupportedVersionsExtension{[]uint16{
+					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.VersionTLS13,
 						tls.VersionTLS12,
 					}},
@@ -1006,7 +1006,7 @@ var Firefox_123 = ClientProfile{
 
 					//nolint:composites
 
-					&tls.PSKKeyExchangeModesExtension{[]uint8{
+					&tls.PSKKeyExchangeModesExtension{Modes: []uint8{
 						tls.PskModeDHE,
 					}},
 					//nolint:composites
@@ -1015,7 +1015,7 @@ var Firefox_123 = ClientProfile{
 
 					//nolint:composites
 
-					&tls.FakeRecordSizeLimitExtension{0x4001},
+					&tls.FakeRecordSizeLimitExtension{Limit: 0x4001},
 					tls.BoringGREASEECH(),
 				}}, nil
 		},
@@ -1116,7 +1116,7 @@ var Firefox_120 = ClientProfile{
 
 					//nolint:composites
 
-					&tls.SupportedCurvesExtension{[]tls.CurveID{
+					&tls.SupportedCurvesExtension{Curves: []tls.CurveID{
 						tls.X25519,
 						tls.CurveP256,
 						tls.CurveP384,
@@ -1144,7 +1144,7 @@ var Firefox_120 = ClientProfile{
 
 					//nolint:composites
 
-					&tls.KeyShareExtension{[]tls.KeyShare{
+					&tls.KeyShareExtension{KeyShares: []tls.KeyShare{
 						{Group: tls.X25519},
 						{Group: tls.CurveP256},
 					}},
@@ -1154,7 +1154,7 @@ var Firefox_120 = ClientProfile{
 
 					//nolint:composites
 
-					&tls.SupportedVersionsExtension{[]uint16{
+					&tls.SupportedVersionsExtension{Versions: []uint16{
 						tls.VersionTLS13,
 						tls.VersionTLS12,
 					}},
@@ -1177,7 +1177,7 @@ var Firefox_120 = ClientProfile{
 
 					//nolint:composites
 
-					&tls.FakeRecordSizeLimitExtension{0x4001},
+					&tls.FakeRecordSizeLimitExtension{Limit: 0x4001},
 					tls.BoringGREASEECH(),
 				}}, nil
 		},

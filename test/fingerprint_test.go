@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	tls "github.com/bogdanfinn/utls"
 	"github.com/vistone/fingerprint"
 )
 
@@ -107,8 +108,8 @@ func TestAllProfilesValid(t *testing.T) {
 
 			spec, err := profile.GetClientHelloSpec()
 			if err != nil {
-				// 如果错误是 "please implement this method"，这是使用预定义 ID 的正常情况
-				if err.Error() == "please implement this method" {
+				// 预定义 ID 的正常情况：未实现 ClientHelloSpec
+				if fingerprint.IsClientHelloSpecNotImplemented(err) {
 					predefinedCount++
 					t.Logf("Profile %s 使用预定义 ID，无法获取 Spec（这是正常的）", name)
 					return
@@ -291,6 +292,35 @@ func TestJA3Computation(t *testing.T) {
 	t.Logf("Chrome 133 JA3 原始: %s", result.RawString)
 }
 
+// TestJA3GREASEFiltering 测试 GREASE 过滤逻辑正确性
+func TestJA3GREASEFiltering(t *testing.T) {
+	spec := tls.ClientHelloSpec{
+		CipherSuites: []uint16{
+			tls.TLS_AES_128_GCM_SHA256, // 非 GREASE
+			0x0a0a,                     // GREASE
+			0x1a2a,                     // 非 GREASE（旧逻辑会误判）
+		},
+		Extensions: []tls.TLSExtension{
+			&tls.SupportedVersionsExtension{Versions: []uint16{tls.VersionTLS13}},
+		},
+	}
+
+	result, err := fingerprint.ComputeJA3FromSpec(spec)
+	if err != nil {
+		t.Fatalf("计算 JA3 失败: %v", err)
+	}
+
+	// 0x1a2a (6698) 非 GREASE，不应被过滤
+	if !strings.Contains(result.RawString, "6698") {
+		t.Fatalf("非 GREASE 值 6698 不应被过滤，JA3: %s", result.RawString)
+	}
+
+	// 0x0a0a (2570) 为 GREASE，应被过滤
+	if strings.Contains(result.RawString, "2570") {
+		t.Fatalf("GREASE 值 2570 应被过滤，JA3: %s", result.RawString)
+	}
+}
+
 // TestJA3AllProfiles 测试所有指纹的 JA3 计算
 func TestJA3AllProfiles(t *testing.T) {
 	successCount := 0
@@ -410,6 +440,43 @@ func TestPassiveRecognizer(t *testing.T) {
 		t.Errorf("置信度应大于 0.5，实际为 %f", result.Confidence)
 	}
 	t.Logf("识别结果: 浏览器=%s, 版本=%s, OS=%s, 置信度=%.2f", result.Browser, result.BrowserVersion, result.OS, result.Confidence)
+}
+
+// TestNilHTTPHeadersToMap 测试 nil HTTPHeaders 的 ToMap 安全性
+func TestNilHTTPHeadersToMap(t *testing.T) {
+	var headers *fingerprint.HTTPHeaders
+
+	result := headers.ToMap()
+	if result == nil {
+		t.Fatal("nil HTTPHeaders 调用 ToMap 应返回非 nil map")
+	}
+	if len(result) != 0 {
+		t.Fatalf("nil HTTPHeaders 的 ToMap 结果应为空，实际长度: %d", len(result))
+	}
+}
+
+// TestNilHTTPHeadersToMapWithCustom 测试 nil HTTPHeaders 的 ToMapWithCustom 合并行为
+func TestNilHTTPHeadersToMapWithCustom(t *testing.T) {
+	var headers *fingerprint.HTTPHeaders
+
+	result := headers.ToMapWithCustom(map[string]string{
+		"X-Test":     "ok",
+		"X-Empty":    "",
+		"User-Agent": "custom-ua",
+	})
+
+	if result == nil {
+		t.Fatal("nil HTTPHeaders 调用 ToMapWithCustom 应返回非 nil map")
+	}
+	if len(result) != 2 {
+		t.Fatalf("ToMapWithCustom 结果长度应为 2，实际: %d", len(result))
+	}
+	if result["X-Test"] != "ok" {
+		t.Fatal("应包含 X-Test=ok")
+	}
+	if result["User-Agent"] != "custom-ua" {
+		t.Fatal("应包含 User-Agent=custom-ua")
+	}
 }
 
 // TestNoiseInjector 测试噪声注入器

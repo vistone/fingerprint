@@ -1,5 +1,7 @@
 # 🚀 项目改进行动计划
 
+<!-- markdownlint-disable MD010 MD022 MD031 MD032 MD040 MD060 -->
+
 ## 阶段一：紧急修复 (第 1 周)
 
 ### 任务 1.1: 代码格式化 ⏱️ 5 分钟
@@ -52,8 +54,8 @@ ext := &tls.SupportedCurvesExtension{
 - KeyShareExtension → KeyShares 字段
 - SupportedVersionsExtension → Versions 字段
 - PSKKeyExchangeModesExtension → Modes 字段
-- FakeRecordSizeLimitExtension → RecordSizeLimit 字段
-- UtlsCompressCertExtension → AlgorithmsCert 字段
+- FakeRecordSizeLimitExtension → Limit 字段
+- UtlsCompressCertExtension → Algorithms 字段
 
 **验证**:
 ```bash

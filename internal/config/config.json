@@ -1,0 +1,77 @@
+{
+  "behavior_analysis": {
+    "min_requests_for_analysis": 5,
+    "regularity_threshold": 0.3,
+    "entropy_threshold": 0.5,
+    "anomalous_interval_rate_threshold": 0.2,
+    "request_history_capacity": 100,
+    "signal_capacity": 50
+  },
+  "risk_scoring": {
+    "critical_threshold": 0.9,
+    "high_threshold": 0.7,
+    "medium_threshold": 0.5,
+    "low_threshold": 0.3,
+    "min_confidence": 0.5,
+    "weights": {
+      "headless": 0.25,
+      "anomaly": 0.20,
+      "contradiction": 0.15,
+      "ech": 0.10,
+      "client_hints": 0.10,
+      "behavior_anomaly": 0.10,
+      "cipher_suite_risk": 0.05,
+      "extension_anomaly": 0.05
+    }
+  },
+  "features": {
+    "entropy_high_threshold": 7.5,
+    "entropy_low_threshold": 26,
+    "tool_markers": [
+      "HeadlessChrome",
+      "PhantomJS",
+      "webdriver",
+      "selenium",
+      "puppeteer"
+    ],
+    "headless_markers": [
+      "headlesschrome",
+      "phantomjs",
+      "selenium",
+      "webdriver",
+      "puppeteer",
+      "playwright",
+      "cypress",
+      "jsdom",
+      "zombie",
+      "htmlunit"
+    ],
+    "mobile_screen_width_max": 1920,
+    "desktop_screen_width_min": 800
+  },
+  "quic": {
+    "min_initial_max_data": 1024,
+    "min_stream_data": 256,
+    "supported_versions": [1, 1827880207],
+    "transport_param_capacity": 16
+  },
+  "tls": {
+    "weak_cipher_suites": [1, 2, 4],
+    "supported_versions": [771, 772],
+    "grease_extensions": [],
+    "anomaly_flags_capacity": 8
+  },
+  "global": {
+    "max_concurrency": 100,
+    "request_timeout": 30000,
+    "cache_size": 10000,
+    "debug_mode": false,
+    "max_input_size": 1048576
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "last_modified": "2026-02-28T00:00:00Z",
+    "author": "fingerprint-team",
+    "description": "Central configuration for fingerprint detection system with version management"
+  }
+}
