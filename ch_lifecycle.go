@@ -4,6 +4,8 @@ package fingerprint
 import (
 	"fmt"
 	"time"
+
+	"github.com/vistone/fingerprint/http/policy"
 )
 
 // CHPhase Client Hints 生命周期阶段
@@ -58,7 +60,7 @@ type ClientHintsLifecycle struct {
 	NegotiationStrategy *NegotiationStrategy
 
 	// 权限策略
-	PermissionsPolicy *PermissionsPolicy
+	PermissionsPolicy *policy.PermissionsPolicy
 
 	// 事件日志
 	EventLog []CHLifecycleEvent
@@ -81,7 +83,7 @@ type CHLifecycleManager struct {
 	lifecycles map[string]*ClientHintsLifecycle
 
 	negotiationAnalyzer *CHNegotiationAnalyzer
-	policyAnalyzer      *PermissionsPolicyAnalyzer
+	policyAnalyzer      *policy.PermissionsPolicyAnalyzer
 }
 
 // NewCHLifecycleManager 创建生命周期管理器
@@ -89,7 +91,7 @@ func NewCHLifecycleManager() *CHLifecycleManager {
 	return &CHLifecycleManager{
 		lifecycles:          make(map[string]*ClientHintsLifecycle),
 		negotiationAnalyzer: NewCHNegotiationAnalyzer(),
-		policyAnalyzer:      NewPermissionsPolicyAnalyzer(),
+		policyAnalyzer:      policy.NewPermissionsPolicyAnalyzer(),
 	}
 }
 
@@ -240,7 +242,7 @@ func (m *CHLifecycleManager) ProcessSubsequentRequest(primaryOriginURL string, r
 }
 
 // checkPermissionsPolicyCompliance 检查是否遵守 Permissions-Policy
-func (m *CHLifecycleManager) checkPermissionsPolicyCompliance(policy *PermissionsPolicy, hints []string) []string {
+func (m *CHLifecycleManager) checkPermissionsPolicyCompliance(pol *policy.PermissionsPolicy, hints []string) []string {
 	riskIndicators := []string{}
 
 	// Client Hints 相关的功能
@@ -267,7 +269,7 @@ func (m *CHLifecycleManager) checkPermissionsPolicyCompliance(policy *Permission
 			featureName = hint // 可能是非标准提示
 		}
 
-		if directive, exists := policy.Directives[featureName]; exists {
+		if directive, exists := pol.Directives[featureName]; exists {
 			if directive.HasNone {
 				riskIndicators = append(riskIndicators, fmt.Sprintf("POLICY_VIOLATION:%s", hint))
 			}

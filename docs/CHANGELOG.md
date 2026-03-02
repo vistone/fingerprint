@@ -9,95 +9,17 @@
 
 ### 未发布 - 新增
 
-- **Phase 3: 测试验证和文档增强**
-  - ✅ **Phase 2 迁移验证测试官方发布**：`test/phase2_migration_test.go`
-    - TestPhase2MigrationBasicFunctionality: 验证所有10个Phase 2迁移模块的API正常工作
-      - ✓ JA3.MatchJA3()
-      - ✓ JA4.ComputeJA4ByProfileName()
-      - ✓ JA4S.NewJA4SAnalyzer()
-      - ✓ ECH.NewECHAnalyzer()
-      - ✓ JA4H.NewJA4HAnalyzer()
-      - ✓ HTTP2.NewHTTP2SignatureAnalyzer()
-      - ✓ Policy.NewPermissionsPolicyAnalyzer()
-      - ✓ Behavior.NewBehaviorAnalyzer()
-      - ✓ QUIC.NewQUICSignatureAnalyzer()
-      - ✓ TCP.NewTCPIPAnalyzer()
-    - TestPhase2TypeAliasesWork: 验证根包类型别名的正确性
-      - ✓ BehaviorAnalysisConfig 类型别名
-      - ✓ RequestBehavior 类型别名
-      - ✓ PermissionDirective 类型别名
-    - **测试覆盖范围**：13个测试用例全部通过 ✅
-    - **验证内容**：确保10个迁移的模块保持100%向后兼容性，根包转发层正确运作
-
-- **模块化重构第二阶段继续（至 Behavior Analysis）**：核心 TLS 指纹算法、HTTP 签名、权限策略和行为分析实现已下沉到专用子模块
-  - ✅ **QUIC 签名模块**：`network/quic/signature.go` - 完整实现迁移，根包转为兼容转发层
-  - ✅ **TCP/IP 指纹模块**：`network/tcp/fingerprint.go` - 完整实现迁移，根包转为兼容别名层
-  - ✅ **JA3 TLS 指纹模块**：`tls/ja3/ja3.go` (280 行) - 完整实现迁移，支持 GREASE 过滤和多配置匹配
-    - 使用懒初始化 (`ensureJA3Initialized`) 避免循环依赖
-    - 根包提供 5 个转发函数：ComputeJA3FromSpec, ComputeJA3FromProfile, ComputeJA3ByProfileName, MatchJA3, FindProfileByJA3
-    - ✓ 所有 JA3 相关单元测试通过
-  - ✅ **JA4 TLS 签名模块**：`tls/ja4/ja4.go` (400+ 行) - 完整实现迁移，包含 JA4 和 JA4_r 变体
-    - 支持 SNI 提取、ALPN 处理、签名算法排序
-    - 根包提供类型别名和转发函数
-    - ✓ JA4 计算测试通过
-  - ✅ **JA4S 服务器指纹模块**：`tls/ja4s/ja4s.go` (387 行) - 完整实现迁移，包含异常检测与分析
-    - JA4SAnalyzer 类型、ServerHello 解析、弱密码检测
-    - 根包提供 3 个类型别名和转发函数
-    - ✓ JA4S 基础功能和弱密码检测测试通过
-  - ✅ **JA4H HTTP 请求头指纹模块**：`http/ja4h/ja4h.go` (661 行) - 完整实现迁移，HTTP 请求头异常检测
-    - JA4H 计算、路径签名、请求头顺序分析、查询参数签名
-    - 异常检测、浏览器匹配、Client Hints 分析
-    - 根包提供 5 个类型别名和 2 个转发函数
-    - ✓ 编译通过，相关测试通过
-  - ✅ **ECH (Encrypted Client Hello) 分析模块**：`tls/ech/ech.go` (384 行) - 完整实现迁移
-    - ECH 配置解析、可见字段签名、异常检测
-    - ECH 影响度评估和策略建议
-    - 根包提供 6 个类型别名和 2 个转发函数
-    - ✓ 编译通过，相关测试通过
-  - ✅ **HTTP/2 签名分析模块**：`http/http2/signature.go` (415 行) - 完整实现迁移
-    - HTTP/2 帧分析、Settings/Priority/Headers 签名计算
-    - 异常检测、已知客户端匹配、优先级树验证
-    - 根包提供 5 个类型别名和 2 个转发函数
-    - ✓ 编译通过，相关测试通过
-  - ✅ **Permissions-Policy 权限策略模块**：`http/policy/policy.go` (382 行) - 完整实现迁移
-    - 现代 Permissions-Policy 和传统 Feature-Policy 格式解析
-    - 权限指令解析、风险评估、危险组合检测
-    - 根包提供 3 个类型别名和 1 个转发函数
-    - ✓ 编译通过，兼容性验证成功
-  - ✅ **行为分析模块**：`security/behavior/analysis.go` (577 行) - 完整实现迁移
-    - 时序模式分析、协议比例检测、连接复用行为分析
-    - 行为信号生成、规律性指数计算、异常间隔检测
-    - 根包提供 6 个类型别名和 1 个转发函数
-    - ✓ 编译通过，兼容性验证成功
-  - ⏭️ **Risk Scoring 风险评分模块**：已评估但未迁移（循环依赖）
-    - Risk Scoring 使用其他指纹模块的结果类型（JA4SResult, HTTP2SignatureResult, JA4HResult, QUICSignatureResult, ECHAnalysisResult）
-    - 这些类型定义在根包的多个地方，完整迁移会形成循环导入
-    - 现有架构下完整迁移不可行，已保留在根包，适时规划专项重构
-  - ⏭️ **Defense 异常检测模块**：已评估但未迁移（循环依赖）
-    - Defense 模块使用根包的 BrowserType 和 OperatingSystem 类型
-    - 尝试迁移到 `security/defense/anomaly.go` 时引发循环导入：defense 包需要导入 fp 来获取类型，而 fp 需要导入 defense
-    - 现有架构下完整迁移不可行，已保留在根包，适时规划专项重构
-  - ⏭️ **Random 和 Noise 生成器**：已评估但未迁移（循环依赖复杂度高）
-    - 这两个模块有深层根包依赖（MappedTLSClients, UserAgent 生成，Headers 生成等）
-    - 现有架构下迁移会引入循环导入问题，需要更深层的重构，推迟至后续专项优化
-  - ⏭️ **Client Hints 协商/生命周期模块**：已评估但未迁移（循环依赖）
-    - Client Hints 生命周期管理器和协商分析器有根包依赖
-    - 已在 http/clienthints 子包创建桥接层（clienthints.go），保持原有实现在根包
-    - 待后续架构优化时完全迁移
-  
-  
-  **Phase 2 总计迁移**：
-  - 迁移代码量：**3,934+ 行**（QUIC 1100+ + TCP 200+ + JA3 280 + JA4 400+ + JA4S 387 + JA4H 661 + ECH 384 + HTTP2 415 + Permissions-Policy 382 + Behavior Analysis 577）
-  - 迁移模块数：**10 个**（网络层 2 个 + TLS 层 4 个 + HTTP 层 3 个 + Security 层 1 个）
-  - 测试状态：254+ 单元测试通过，所有新迁移模块编译通过
-  
-  迁移模式说明（同上）：
-  - **完整实现迁移**：将完整代码复制到子模块，仅改变 package 声明
-  - **类型兼容层**：根包使用 `type Alias = submodule.Type` 的类型别名或结构体转发
-  - **懒初始化**：通过 sync.Once 在首次使用时初始化跨包依赖，避免 init() 时的循环依赖问题
-  - **向后兼容**：所有根包 API 保持不变，现有代码无需修改，自动使用新子模块实现
-  
-  迁移模式说明：
+- **模块化架构重构**：指纹功能按分层组织到独立子包
+  - `tls/ja3/` - JA3 TLS 指纹计算
+  - `tls/ja4/` - JA4 TLS 签名分析
+  - `tls/ja4s/` - JA4S 服务器指纹
+  - `tls/ech/` - ECH (Encrypted Client Hello) 分析
+  - `http/ja4h/` - JA4H HTTP 请求头指纹
+  - `http/http2/` - HTTP/2 签名分析
+  - `http/policy/` - Permissions-Policy 权限策略
+  - `network/quic/` - QUIC 签名分析
+  - `network/tcp/` - TCP/IP 指纹识别
+  - `security/behavior/` - 行为分析模块
   - **完整实现迁移**：将完整代码复制到子模块，仅改变 package 声明
   - **类型兼容层**：根包使用 `type Alias = submodule.Type` 的类型别名（JA4S/JA4H/ECH/HTTP2/Permissions-Policy 等）或结构体转发（JA3/JA4）
   - **懒初始化**：通过 sync.Once 在首次使用时初始化跨包依赖，避免 init() 时的循环依赖问题

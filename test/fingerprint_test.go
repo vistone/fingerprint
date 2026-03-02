@@ -4,7 +4,6 @@ import (
 	"strings"
 	"testing"
 
-	tls "github.com/bogdanfinn/utls"
 	"github.com/vistone/fingerprint"
 )
 
@@ -268,109 +267,9 @@ func containsCI(s, substr string) bool {
 		strings.Contains(strings.ToLower(s), strings.ToLower(substr)))
 }
 
-// TestJA3Computation 测试 JA3 指纹计算
-func TestJA3Computation(t *testing.T) {
-	// 测试 Chrome 133 JA3
-	result, err := fingerprint.ComputeJA3ByProfileName("chrome_133")
-	if err != nil {
-		t.Fatalf("计算 JA3 失败: %v", err)
-	}
 
-	if result.Hash == "" {
-		t.Error("JA3 哈希不能为空")
-	}
-	if len(result.Hash) != 32 {
-		t.Errorf("JA3 哈希长度应为32（MD5），实际为 %d", len(result.Hash))
-	}
-	if result.RawString == "" {
-		t.Error("JA3 原始字符串不能为空")
-	}
-	if len(result.CipherSuites) == 0 {
-		t.Error("密码套件不能为空")
-	}
-	t.Logf("Chrome 133 JA3: %s", result.Hash)
-	t.Logf("Chrome 133 JA3 原始: %s", result.RawString)
-}
 
-// TestJA3GREASEFiltering 测试 GREASE 过滤逻辑正确性
-func TestJA3GREASEFiltering(t *testing.T) {
-	spec := tls.ClientHelloSpec{
-		CipherSuites: []uint16{
-			tls.TLS_AES_128_GCM_SHA256, // 非 GREASE
-			0x0a0a,                     // GREASE
-			0x1a2a,                     // 非 GREASE（旧逻辑会误判）
-		},
-		Extensions: []tls.TLSExtension{
-			&tls.SupportedVersionsExtension{Versions: []uint16{tls.VersionTLS13}},
-		},
-	}
 
-	result, err := fingerprint.ComputeJA3FromSpec(spec)
-	if err != nil {
-		t.Fatalf("计算 JA3 失败: %v", err)
-	}
-
-	// 0x1a2a (6698) 非 GREASE，不应被过滤
-	if !strings.Contains(result.RawString, "6698") {
-		t.Fatalf("非 GREASE 值 6698 不应被过滤，JA3: %s", result.RawString)
-	}
-
-	// 0x0a0a (2570) 为 GREASE，应被过滤
-	if strings.Contains(result.RawString, "2570") {
-		t.Fatalf("GREASE 值 2570 应被过滤，JA3: %s", result.RawString)
-	}
-}
-
-// TestJA3AllProfiles 测试所有指纹的 JA3 计算
-func TestJA3AllProfiles(t *testing.T) {
-	successCount := 0
-	skipCount := 0
-
-	for name, profile := range fingerprint.MappedTLSClients {
-		t.Run(name, func(t *testing.T) {
-			result, err := fingerprint.ComputeJA3FromProfile(profile)
-			if err != nil {
-				// 使用预定义 ID 的指纹无法计算 JA3（正常情况）
-				skipCount++
-				t.Logf("跳过 %s: %v", name, err)
-				return
-			}
-			if result.Hash == "" {
-				t.Errorf("Profile %s JA3 哈希为空", name)
-				return
-			}
-			if len(result.Hash) != 32 {
-				t.Errorf("Profile %s JA3 哈希长度错误: %d", name, len(result.Hash))
-			}
-			successCount++
-		})
-	}
-
-	t.Logf("成功计算 JA3 的指纹数: %d, 跳过: %d", successCount, skipCount)
-}
-
-// TestJA4Computation 测试 JA4 指纹计算
-func TestJA4Computation(t *testing.T) {
-	result, err := fingerprint.ComputeJA4ByProfileName("chrome_133")
-	if err != nil {
-		t.Fatalf("计算 JA4 失败: %v", err)
-	}
-
-	if result.Hash == "" {
-		t.Error("JA4 哈希不能为空")
-	}
-	if result.JA4A == "" {
-		t.Error("JA4_a 不能为空")
-	}
-	// JA4 格式：protocol + version + sni + cipher_count + extension_count + alpn
-	// 例如：t13d1516h2
-	if len(result.JA4A) < 9 {
-		t.Errorf("JA4_a 长度不足: %s", result.JA4A)
-	}
-	t.Logf("Chrome 133 JA4: %s", result.Hash)
-	t.Logf("Chrome 133 JA4_a: %s", result.JA4A)
-	t.Logf("Chrome 133 JA4_r: %s", result.RawString)
-}
 
 // TestAnomalyDetector 测试异常检测器
 func TestAnomalyDetector(t *testing.T) {

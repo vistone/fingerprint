@@ -4,6 +4,12 @@ package fingerprint
 import (
 	"fmt"
 	"math"
+
+	"github.com/vistone/fingerprint/http/http2"
+	"github.com/vistone/fingerprint/http/ja4h"
+	"github.com/vistone/fingerprint/network/quic"
+	"github.com/vistone/fingerprint/tls/ech"
+	"github.com/vistone/fingerprint/tls/ja4s"
 )
 
 // RiskScore 综合风险评分结果
@@ -85,19 +91,19 @@ type RiskInput struct {
 	JA4Hash string
 
 	// JA4S 结果
-	JA4SResult *JA4SResult
+	JA4SResult *ja4s.JA4SResult
 
 	// HTTP/2 签名结果
-	HTTP2Result *HTTP2SignatureResult
+	HTTP2Result *http2.HTTP2SignatureResult
 
 	// JA4H 结果
-	JA4HResult *JA4HResult
+	JA4HResult *ja4h.JA4HResult
 
 	// QUIC 签名结果
-	QUICResult *QUICSignatureResult
+	QUICResult *quic.QUICSignatureResult
 
 	// ECH 分析结果
-	ECHResult *ECHAnalysisResult
+	ECHResult *ech.ECHAnalysisResult
 
 	// 额外上下文
 	Context RiskContext

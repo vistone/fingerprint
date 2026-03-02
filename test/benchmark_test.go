@@ -114,20 +114,6 @@ func BenchmarkGetClientHelloSpec(b *testing.B) {
 	}
 }
 
-// BenchmarkFindProfileByJA3 基准测试：根据 JA3 哈希查找匹配 Profile
-func BenchmarkFindProfileByJA3(b *testing.B) {
-	ja3, err := fingerprint.ComputeJA3ByProfileName("chrome_133")
-	if err != nil {
-		b.Fatal(err)
-	}
-
-	b.ResetTimer()
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		_ = fingerprint.FindProfileByJA3(ja3.Hash)
-	}
-}
-
 // BenchmarkFullWorkflow 基准测试：完整工作流程
 func BenchmarkFullWorkflow(b *testing.B) {
 	b.ReportAllocs()
