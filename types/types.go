@@ -218,6 +218,18 @@ func (h *HTTPHeaders) ToMap() map[string]string {
 func (h *HTTPHeaders) ToMapWithCustom(customHeaders map[string]string) map[string]string {
 	headers := make(map[string]string)
 
+	// 处理 nil 接收者 - 只返回 customHeaders（过滤空值）
+	if h == nil {
+		if len(customHeaders) > 0 {
+			for key, value := range customHeaders {
+				if value != "" {
+					headers[key] = value
+				}
+			}
+		}
+		return headers
+	}
+
 	// 先添加系统生成的标准 headers
 	if h.Accept != "" {
 		headers["Accept"] = h.Accept

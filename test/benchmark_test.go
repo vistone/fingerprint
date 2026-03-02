@@ -3,14 +3,19 @@ package fingerprint_test
 import (
 	"testing"
 
-	"github.com/vistone/fingerprint"
+	"github.com/vistone/fingerprint/generator/random"
+	"github.com/vistone/fingerprint/http/headers"
+	"github.com/vistone/fingerprint/http/useragent"
+	"github.com/vistone/fingerprint/internal/errors"
+	"github.com/vistone/fingerprint/profiles"
+	"github.com/vistone/fingerprint/types"
 )
 
 // BenchmarkGetRandomFingerprint 基准测试：随机获取指纹
 func BenchmarkGetRandomFingerprint(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_, err := fingerprint.GetRandomFingerprint()
+		_, err := random.GetRandomFingerprint()
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -21,7 +26,7 @@ func BenchmarkGetRandomFingerprint(b *testing.B) {
 func BenchmarkGetRandomFingerprintWithOS(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_, err := fingerprint.GetRandomFingerprintWithOS(fingerprint.OSWindows10)
+		_, err := random.GetRandomFingerprintWithOS(types.OSWindows10)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -32,7 +37,7 @@ func BenchmarkGetRandomFingerprintWithOS(b *testing.B) {
 func BenchmarkGetRandomFingerprintByBrowser(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_, err := fingerprint.GetRandomFingerprintByBrowser("chrome")
+		_, err := random.GetRandomFingerprintByBrowser("chrome")
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -43,7 +48,7 @@ func BenchmarkGetRandomFingerprintByBrowser(b *testing.B) {
 func BenchmarkGetUserAgentByProfileName(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_, err := fingerprint.GetUserAgentByProfileName("chrome_133")
+		_, err := useragent.GetUserAgentByProfileName("chrome_133")
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -55,14 +60,14 @@ func BenchmarkGenerateHeaders(b *testing.B) {
 	b.ReportAllocs()
 	ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
 	for i := 0; i < b.N; i++ {
-		_ = fingerprint.GenerateHeaders(fingerprint.BrowserChrome, ua, false)
+		_ = headers.GenerateHeaders(types.BrowserChrome, ua, false)
 	}
 }
 
 // BenchmarkHeadersToMap 基准测试：Headers 转换为 Map
 func BenchmarkHeadersToMap(b *testing.B) {
 	ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
-	headers := fingerprint.GenerateHeaders(fingerprint.BrowserChrome, ua, false)
+	headers := headers.GenerateHeaders(types.BrowserChrome, ua, false)
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -74,7 +79,7 @@ func BenchmarkHeadersToMap(b *testing.B) {
 // BenchmarkHeadersClone 基准测试：Headers 克隆
 func BenchmarkHeadersClone(b *testing.B) {
 	ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
-	headers := fingerprint.GenerateHeaders(fingerprint.BrowserChrome, ua, false)
+	headers := headers.GenerateHeaders(types.BrowserChrome, ua, false)
 	headers.Set("Cookie", "session_id=abc123")
 	headers.Set("Authorization", "Bearer token")
 
@@ -89,7 +94,7 @@ func BenchmarkHeadersClone(b *testing.B) {
 func BenchmarkRandomLanguage(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_ = fingerprint.RandomLanguage()
+		_ = headers.RandomLanguage()
 	}
 }
 
@@ -97,13 +102,13 @@ func BenchmarkRandomLanguage(b *testing.B) {
 func BenchmarkRandomOS(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_ = fingerprint.RandomOS()
+		_ = useragent.RandomOS()
 	}
 }
 
 // BenchmarkGetClientHelloSpec 基准测试：获取 Client Hello Spec
 func BenchmarkGetClientHelloSpec(b *testing.B) {
-	profile := fingerprint.DefaultClientProfile
+	profile := profiles.DefaultClientProfile
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -119,14 +124,14 @@ func BenchmarkFullWorkflow(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		// 1. 获取随机指纹
-		result, err := fingerprint.GetRandomFingerprint()
+		result, err := random.GetRandomFingerprint()
 		if err != nil {
 			b.Fatal(err)
 		}
 
 		// 2. 获取 Client Hello Spec
 		_, err = result.Profile.GetClientHelloSpec()
-		if err != nil && !fingerprint.IsClientHelloSpecNotImplemented(err) {
+		if err != nil && !errors.IsClientHelloSpecNotImplemented(err) {
 			b.Fatal(err)
 		}
 
@@ -143,7 +148,7 @@ func BenchmarkParallelGetRandomFingerprint(b *testing.B) {
 	b.ReportAllocs()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			_, err := fingerprint.GetRandomFingerprint()
+			_, err := random.GetRandomFingerprint()
 			if err != nil {
 				b.Fatal(err)
 			}
@@ -156,7 +161,7 @@ func BenchmarkParallelRandomLanguage(b *testing.B) {
 	b.ReportAllocs()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			_ = fingerprint.RandomLanguage()
+			_ = headers.RandomLanguage()
 		}
 	})
 }
@@ -166,7 +171,7 @@ func BenchmarkParallelRandomOS(b *testing.B) {
 	b.ReportAllocs()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			_ = fingerprint.RandomOS()
+			_ = useragent.RandomOS()
 		}
 	})
 }

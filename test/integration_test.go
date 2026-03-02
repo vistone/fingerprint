@@ -10,12 +10,18 @@ import (
 	"time"
 
 	tls "github.com/bogdanfinn/utls"
-	"github.com/vistone/fingerprint"
+
+	"github.com/vistone/fingerprint/generator/random"
+	"github.com/vistone/fingerprint/http/headers"
+	"github.com/vistone/fingerprint/http/useragent"
+	"github.com/vistone/fingerprint/internal/errors"
+	"github.com/vistone/fingerprint/profiles"
+	"github.com/vistone/fingerprint/types"
 )
 
 // TestGetRandomFingerprintIntegration 集成测试：随机指纹完整流程
 func TestGetRandomFingerprintIntegration(t *testing.T) {
-	result, err := fingerprint.GetRandomFingerprint()
+	result, err := random.GetRandomFingerprint()
 	if err != nil {
 		t.Fatalf("获取随机指纹失败: %v", err)
 	}
@@ -60,7 +66,7 @@ func TestGetRandomFingerprintByBrowserIntegration(t *testing.T) {
 
 	for _, browser := range browsers {
 		t.Run(browser, func(t *testing.T) {
-			result, err := fingerprint.GetRandomFingerprintByBrowser(browser)
+			result, err := random.GetRandomFingerprintByBrowser(browser)
 			if err != nil {
 				t.Fatalf("获取 %s 指纹失败: %v", browser, err)
 			}
@@ -79,15 +85,15 @@ func TestGetRandomFingerprintByBrowserIntegration(t *testing.T) {
 
 // TestGetRandomFingerprintWithOSIntegration 集成测试：指定操作系统获取指纹
 func TestGetRandomFingerprintWithOSIntegration(t *testing.T) {
-	oses := []fingerprint.OperatingSystem{
-		fingerprint.OSWindows10,
-		fingerprint.OSMacOS14,
-		fingerprint.OSLinux,
+	oses := []types.OperatingSystem{
+		types.OSWindows10,
+		types.OSMacOS14,
+		types.OSLinux,
 	}
 
 	for _, os := range oses {
 		t.Run(string(os), func(t *testing.T) {
-			result, err := fingerprint.GetRandomFingerprintWithOS(os)
+			result, err := random.GetRandomFingerprintWithOS(os)
 			if err != nil {
 				t.Fatalf("获取指纹失败: %v", err)
 			}
@@ -106,7 +112,7 @@ func TestGetRandomFingerprintWithOSIntegration(t *testing.T) {
 
 // TestHeadersCustomizationIntegration 集成测试：自定义 Headers
 func TestHeadersCustomizationIntegration(t *testing.T) {
-	result, err := fingerprint.GetRandomFingerprint()
+	result, err := random.GetRandomFingerprint()
 	if err != nil {
 		t.Fatalf("获取随机指纹失败: %v", err)
 	}
@@ -147,7 +153,7 @@ func TestHeadersCustomizationIntegration(t *testing.T) {
 
 // TestHeadersCloneIntegration 集成测试：Headers 克隆
 func TestHeadersCloneIntegration(t *testing.T) {
-	result, err := fingerprint.GetRandomFingerprint()
+	result, err := random.GetRandomFingerprint()
 	if err != nil {
 		t.Fatalf("获取随机指纹失败: %v", err)
 	}
@@ -195,14 +201,14 @@ func TestTLSClientHelloIntegration(t *testing.T) {
 
 	for _, profileName := range testProfiles {
 		t.Run(profileName, func(t *testing.T) {
-			profile, ok := fingerprint.MappedTLSClients[profileName]
+			profile, ok := profiles.MappedTLSClients[profileName]
 			if !ok {
 				t.Fatalf("Profile %s 不存在", profileName)
 			}
 
 			spec, err := profile.GetClientHelloSpec()
 			if err != nil {
-				if fingerprint.IsClientHelloSpecNotImplemented(err) {
+				if errors.IsClientHelloSpecNotImplemented(err) {
 					t.Skipf("Profile %s 使用预定义 ID，跳过测试", profileName)
 					return
 				}
@@ -234,7 +240,7 @@ func TestConcurrentAccess(t *testing.T) {
 
 			for j := 0; j < iterations; j++ {
 				// 测试随机指纹获取
-				result, err := fingerprint.GetRandomFingerprint()
+				result, err := random.GetRandomFingerprint()
 				if err != nil {
 					errors <- fmt.Errorf("GetRandomFingerprint 失败: %v", err)
 					continue
@@ -248,10 +254,10 @@ func TestConcurrentAccess(t *testing.T) {
 				_ = result.Headers.Clone()
 
 				// 测试随机语言
-				_ = fingerprint.RandomLanguage()
+				_ = headers.RandomLanguage()
 
 				// 测试随机 OS
-				_ = fingerprint.RandomOS()
+				_ = useragent.RandomOS()
 			}
 		}()
 	}
@@ -287,14 +293,14 @@ func TestRealTLSConnection(t *testing.T) {
 		t.Skip("跳过网络测试（使用 -short 标志）")
 	}
 
-	result, err := fingerprint.GetRandomFingerprint()
+	result, err := random.GetRandomFingerprint()
 	if err != nil {
 		t.Fatalf("获取随机指纹失败: %v", err)
 	}
 
 	spec, err := result.Profile.GetClientHelloSpec()
 	if err != nil {
-		if fingerprint.IsClientHelloSpecNotImplemented(err) {
+		if errors.IsClientHelloSpecNotImplemented(err) {
 			t.Skip("跳过预定义 ID 的 TLS 连接测试")
 			return
 		}
@@ -362,9 +368,9 @@ func TestAllProfilesWithUserAgent(t *testing.T) {
 	failCount := 0
 	successCount := 0
 
-	for name := range fingerprint.MappedTLSClients {
+	for name := range profiles.MappedTLSClients {
 		t.Run(name, func(t *testing.T) {
-			ua, err := fingerprint.GetUserAgentByProfileName(name)
+			ua, err := useragent.GetUserAgentByProfileName(name)
 			if err != nil {
 				t.Errorf("Profile %s: 获取 User-Agent 失败: %v", name, err)
 				failCount++

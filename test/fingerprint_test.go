@@ -4,19 +4,24 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vistone/fingerprint"
+	"github.com/vistone/fingerprint/generator/noise"
+	"github.com/vistone/fingerprint/generator/random"
+	"github.com/vistone/fingerprint/internal/errors"
+	"github.com/vistone/fingerprint/profiles"
+	"github.com/vistone/fingerprint/security/defense"
+	"github.com/vistone/fingerprint/types"
 )
 
 // TestDefaultProfile 测试默认指纹
 func TestDefaultProfile(t *testing.T) {
-	if fingerprint.DefaultClientProfile.GetClientHelloStr() == "" {
+	if profiles.DefaultClientProfile.GetClientHelloStr() == "" {
 		t.Error("默认指纹的 ClientHelloStr 不能为空")
 	}
 }
 
 // TestMappedTLSClients 测试映射表完整性
 func TestMappedTLSClients(t *testing.T) {
-	if len(fingerprint.MappedTLSClients) == 0 {
+	if len(profiles.MappedTLSClients) == 0 {
 		t.Error("MappedTLSClients 不能为空")
 	}
 
@@ -30,7 +35,7 @@ func TestMappedTLSClients(t *testing.T) {
 	}
 
 	for _, key := range keyProfiles {
-		if _, ok := fingerprint.MappedTLSClients[key]; !ok {
+		if _, ok := profiles.MappedTLSClients[key]; !ok {
 			t.Errorf("关键指纹 %s 不存在", key)
 		}
 	}
@@ -38,7 +43,7 @@ func TestMappedTLSClients(t *testing.T) {
 
 // TestProfileMethods 测试所有 Profile 方法
 func TestProfileMethods(t *testing.T) {
-	profile := fingerprint.DefaultClientProfile
+	profile := profiles.DefaultClientProfile
 
 	// 测试 GetClientHelloStr
 	str := profile.GetClientHelloStr()
@@ -93,7 +98,7 @@ func TestAllProfilesValid(t *testing.T) {
 	workingCount := 0
 	predefinedCount := 0
 
-	for name, profile := range fingerprint.MappedTLSClients {
+	for name, profile := range profiles.MappedTLSClients {
 		t.Run(name, func(t *testing.T) {
 			// 测试每个 profile 的基本方法
 			str := profile.GetClientHelloStr()
@@ -108,7 +113,7 @@ func TestAllProfilesValid(t *testing.T) {
 			spec, err := profile.GetClientHelloSpec()
 			if err != nil {
 				// 预定义 ID 的正常情况：未实现 ClientHelloSpec
-				if fingerprint.IsClientHelloSpecNotImplemented(err) {
+				if errors.IsClientHelloSpecNotImplemented(err) {
 					predefinedCount++
 					t.Logf("Profile %s 使用预定义 ID，无法获取 Spec（这是正常的）", name)
 					return
@@ -144,7 +149,7 @@ func TestAllProfilesValid(t *testing.T) {
 // TestProfileCount 测试指纹数量
 func TestProfileCount(t *testing.T) {
 	expectedMinCount := 70 // 至少应该有70个指纹（含Edge系列）
-	actualCount := len(fingerprint.MappedTLSClients)
+	actualCount := len(profiles.MappedTLSClients)
 	if actualCount < expectedMinCount {
 		t.Errorf("指纹数量 %d 少于预期的最小值 %d", actualCount, expectedMinCount)
 	}
@@ -161,7 +166,7 @@ func TestChromeProfiles(t *testing.T) {
 	}
 
 	for _, version := range chromeVersions {
-		if _, ok := fingerprint.MappedTLSClients[version]; !ok {
+		if _, ok := profiles.MappedTLSClients[version]; !ok {
 			t.Errorf("Chrome 指纹 %s 不存在", version)
 		}
 	}
@@ -176,7 +181,7 @@ func TestFirefoxProfiles(t *testing.T) {
 	}
 
 	for _, version := range firefoxVersions {
-		if _, ok := fingerprint.MappedTLSClients[version]; !ok {
+		if _, ok := profiles.MappedTLSClients[version]; !ok {
 			t.Errorf("Firefox 指纹 %s 不存在", version)
 		}
 	}
@@ -191,7 +196,7 @@ func TestSafariProfiles(t *testing.T) {
 	}
 
 	for _, version := range safariVersions {
-		if _, ok := fingerprint.MappedTLSClients[version]; !ok {
+		if _, ok := profiles.MappedTLSClients[version]; !ok {
 			t.Errorf("Safari 指纹 %s 不存在", version)
 		}
 	}
@@ -212,7 +217,7 @@ func TestMobileProfiles(t *testing.T) {
 	}
 
 	for _, profile := range mobileProfiles {
-		if _, ok := fingerprint.MappedTLSClients[profile]; !ok {
+		if _, ok := profiles.MappedTLSClients[profile]; !ok {
 			t.Errorf("移动端指纹 %s 不存在", profile)
 		}
 	}
@@ -227,7 +232,7 @@ func TestAndroidProfiles(t *testing.T) {
 	}
 
 	for _, version := range androidVersions {
-		if _, ok := fingerprint.MappedTLSClients[version]; !ok {
+		if _, ok := profiles.MappedTLSClients[version]; !ok {
 			t.Errorf("Android 指纹 %s 不存在", version)
 		}
 	}
@@ -240,7 +245,7 @@ func TestEdgeProfiles(t *testing.T) {
 	}
 
 	for _, version := range edgeVersions {
-		if _, ok := fingerprint.MappedTLSClients[version]; !ok {
+		if _, ok := profiles.MappedTLSClients[version]; !ok {
 			t.Errorf("Edge 指纹 %s 不存在", version)
 		}
 	}
@@ -248,7 +253,7 @@ func TestEdgeProfiles(t *testing.T) {
 
 // TestGetRandomFingerprintByEdge 测试按 Edge 浏览器获取指纹
 func TestGetRandomFingerprintByEdge(t *testing.T) {
-	result, err := fingerprint.GetRandomFingerprintByBrowser("edge")
+	result, err := random.GetRandomFingerprintByBrowser("edge")
 	if err != nil {
 		t.Fatalf("获取 Edge 指纹失败: %v", err)
 	}
@@ -267,13 +272,9 @@ func containsCI(s, substr string) bool {
 		strings.Contains(strings.ToLower(s), strings.ToLower(substr)))
 }
 
-
-
-
-
 // TestAnomalyDetector 测试异常检测器
 func TestAnomalyDetector(t *testing.T) {
-	detector := fingerprint.NewAnomalyDetector()
+	detector := defense.NewAnomalyDetector()
 
 	// 测试正常数据
 	normalData := []byte("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
@@ -296,7 +297,7 @@ func TestAnomalyDetector(t *testing.T) {
 
 // TestContradictionDetector 测试矛盾检测器
 func TestContradictionDetector(t *testing.T) {
-	detector := fingerprint.NewContradictionDetector()
+	detector := defense.NewContradictionDetector()
 
 	// 测试无矛盾
 	attrs := map[string]string{
@@ -319,7 +320,7 @@ func TestContradictionDetector(t *testing.T) {
 
 // TestPassiveRecognizer 测试被动识别器
 func TestPassiveRecognizer(t *testing.T) {
-	recognizer := fingerprint.NewPassiveRecognizer()
+	recognizer := defense.NewPassiveRecognizer()
 
 	// 测试 Chrome UA 识别
 	headers := map[string]string{
@@ -329,7 +330,7 @@ func TestPassiveRecognizer(t *testing.T) {
 		"Sec-CH-UA":       `"Google Chrome";v="133", "Chromium";v="133"`,
 	}
 	result := recognizer.RecognizeFromHeaders(headers)
-	if result.Browser != fingerprint.BrowserChrome {
+	if result.Browser != types.BrowserChrome {
 		t.Errorf("应识别为 Chrome，实际为 %s", result.Browser)
 	}
 	if result.IsBot {
@@ -343,7 +344,7 @@ func TestPassiveRecognizer(t *testing.T) {
 
 // TestNilHTTPHeadersToMap 测试 nil HTTPHeaders 的 ToMap 安全性
 func TestNilHTTPHeadersToMap(t *testing.T) {
-	var headers *fingerprint.HTTPHeaders
+	var headers *types.HTTPHeaders
 
 	result := headers.ToMap()
 	if result == nil {
@@ -356,7 +357,7 @@ func TestNilHTTPHeadersToMap(t *testing.T) {
 
 // TestNilHTTPHeadersToMapWithCustom 测试 nil HTTPHeaders 的 ToMapWithCustom 合并行为
 func TestNilHTTPHeadersToMapWithCustom(t *testing.T) {
-	var headers *fingerprint.HTTPHeaders
+	var headers *types.HTTPHeaders
 
 	result := headers.ToMapWithCustom(map[string]string{
 		"X-Test":     "ok",
@@ -380,8 +381,8 @@ func TestNilHTTPHeadersToMapWithCustom(t *testing.T) {
 
 // TestNoiseInjector 测试噪声注入器
 func TestNoiseInjector(t *testing.T) {
-	config := fingerprint.DefaultNoiseConfig
-	injector := fingerprint.NewNoiseInjector(config)
+	config := noise.DefaultNoiseConfig
+	injector := noise.NewNoiseInjector(config)
 
 	// 测试 Canvas 噪声
 	canvasNoise := injector.GenerateCanvasNoise()
