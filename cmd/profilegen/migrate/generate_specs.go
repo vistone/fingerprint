@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/bogdanfinn/fhttp/http2"
 	"github.com/vistone/fingerprint/profiles"
 	"gopkg.in/yaml.v3"
 )
@@ -75,7 +76,7 @@ func generateSpec(name string, profile profiles.ClientProfile, outputDir string)
 		CipherSuites:         []string{},
 		CompressionMethods:   []string{"tls.CompressionNone"},
 		Extensions:           []ExtensionDef{},
-		Settings:             profile.GetSettings(),
+		Settings:             convertSettings(profile.GetSettings()),
 		SettingsOrder:        toSettingNames(profile.GetSettingsOrder()),
 		PseudoHeaderOrder:    profile.GetPseudoHeaderOrder(),
 		ConnectionFlow:       profile.GetConnectionFlow(),
@@ -136,7 +137,15 @@ func toPascalCase(s string) string {
 	return strings.Join(parts, "_")
 }
 
-func toSettingNames(order []uint32) []string {
+func convertSettings(settings map[http2.SettingID]uint32) map[string]uint32 {
+	result := make(map[string]uint32)
+	for k, v := range settings {
+		result[fmt.Sprintf("%d", k)] = v
+	}
+	return result
+}
+
+func toSettingNames(order []http2.SettingID) []string {
 	// 将 uint32 设置 ID 转换为名称
 	// 简化实现，实际需要映射表
 	names := []string{
