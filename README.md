@@ -53,15 +53,15 @@ import "github.com/vistone/fingerprint"
 analyzer := fingerprint.NewJA4SAnalyzer()
 
 // 从 ServerHello 字节数据生成指纹
-result, _ := analyzer.AnalyzeServerHello(serverHelloBytes)
+result, _ := analyzer.AnalyzeServerHelloBytes(serverHelloBytes)
 
-// 或从配置生成虚拟指纹
-result, _ := analyzer.GenerateServerHelloSignature(
-    0x0304,                          // TLS 1.3
-    0x1302,                          // TLS_AES_256_GCM_SHA384
-    []uint16{0, 10, 11, 16, 23, 35}, // extensions
-    0,                               // no compression
-)
+// 从结构化数据生成指纹
+result, _ = analyzer.AnalyzeServerHello(fingerprint.ServerHelloData{
+    TLSVersion:  0x0304,
+    CipherSuite: 0x1302,
+    Extensions:  []uint16{0x002b, 0x0033},
+    Compression: 0,
+})
 
 fmt.Printf("JA4S Hash: %s\n", result.Hash)
 fmt.Printf("Risk Score: %.2f\n", result.RiskScore)
@@ -605,6 +605,12 @@ MatchJA3(hash1, hash2 string) bool
 ComputeJA4ByProfileName(profileName string) (*JA4Result, error)
 ComputeJA4FromProfile(profile ClientProfile) (*JA4Result, error)
 ComputeJA4FromSpec(spec tls.ClientHelloSpec) (*JA4Result, error)
+
+// JA4S 服务端指纹 🆕
+ComputeJA4S(data ServerHelloData) (*JA4SResult, error)
+ComputeJA4SFromBytes(serverHelloBytes []byte) (*JA4SResult, error)
+MatchJA4S(hash1, hash2 string) bool
+NewJA4SAnalyzer() *JA4SAnalyzer
 
 // 被动识别 🆕
 RecognizeFromUserAgent(userAgent string) *RecognitionResult
