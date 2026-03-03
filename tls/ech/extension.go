@@ -27,11 +27,11 @@ const (
 type ECHClientHelloType uint8
 
 const (
-	// ECHClientHelloTypeInner 内层 ClientHello
-	ECHClientHelloTypeInner ECHClientHelloType = 0
+	// ECHClientHelloTypeOuter 外层 ClientHello（RFC draft-ietf-tls-esni: outer=0）
+	ECHClientHelloTypeOuter ECHClientHelloType = 0
 
-	// ECHClientHelloTypeOuter 外层 ClientHello
-	ECHClientHelloTypeOuter ECHClientHelloType = 1
+	// ECHClientHelloTypeInner 内层 ClientHello（RFC draft-ietf-tls-esni: inner=1）
+	ECHClientHelloTypeInner ECHClientHelloType = 1
 )
 
 // ECHExtension ECH 扩展结构

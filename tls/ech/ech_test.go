@@ -22,7 +22,7 @@ func TestParseECHExtension(t *testing.T) {
 				data := make([]byte, 3)
 				data[0] = 0xfe
 				data[1] = 0x0d // Version Draft 13
-				data[2] = 0x00 // Inner Hello
+				data[2] = 0x01 // Inner Hello (per ECH spec: inner=1)
 				return data
 			}(),
 			wantErr: false,
@@ -43,7 +43,7 @@ func TestParseECHExtension(t *testing.T) {
 				data := make([]byte, 10)
 				data[0] = 0xfe
 				data[1] = 0x0d // Version Draft 13
-				data[2] = 0x01 // Outer Hello
+				data[2] = 0x00 // Outer Hello (per ECH spec: outer=0)
 				data[3] = 0x00
 				data[4] = 0x01 // KDF ID
 				data[5] = 0x00
@@ -88,7 +88,7 @@ func TestParseECHExtension(t *testing.T) {
 		{
 			name:    "truncated_outer",
 			extType: ExtensionEncryptedClientHello,
-			data:    []byte{0xfe, 0x0d, 0x01},
+			data:    []byte{0xfe, 0x0d, 0x00},
 			wantErr: true,
 		},
 	}
@@ -205,7 +205,7 @@ func TestECHAnalyzer(t *testing.T) {
 		echData := make([]byte, 10)
 		echData[0] = 0xfe
 		echData[1] = 0x0d // Draft 13
-		echData[2] = 0x01 // Outer
+		echData[2] = 0x00 // Outer (per ECH spec: outer=0)
 		echData[3] = 0x00
 		echData[4] = 0x01 // KDF
 		echData[5] = 0x00
@@ -474,7 +474,7 @@ func BenchmarkECHExtensionParse(b *testing.B) {
 	data := make([]byte, 10)
 	data[0] = 0xfe
 	data[1] = 0x0d
-	data[2] = 0x01
+	data[2] = 0x00 // Outer (per ECH spec: outer=0)
 	data[3] = 0x00
 	data[4] = 0x01
 	data[5] = 0x00

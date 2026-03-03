@@ -218,8 +218,12 @@ func (a *JA4SAnalyzer) GenerateServerHelloSignature(
 func (a *JA4SAnalyzer) detectAnomalies(result *JA4SResult, sh *serverHelloData) {
 	baseScore := 0.0
 
-	// 异常检测 1: 未知的 TLS 版本
-	if !isSupportedTLSVersion(sh.Version) {
+	// 异常检测 1: TLS 版本检查
+	if isDeprecatedTLSVersion(sh.Version) {
+		// TLS 1.0/1.1/SSL 3.0 已弃用（RFC 8996），存在安全风险
+		result.AnomalyFlags = append(result.AnomalyFlags, "DEPRECATED_TLS_VERSION")
+		baseScore += 0.2
+	} else if !isSupportedTLSVersion(sh.Version) {
 		result.AnomalyFlags = append(result.AnomalyFlags, "UNSUPPORTED_TLS_VERSION")
 		baseScore += 0.3
 	}
@@ -240,16 +244,16 @@ func (a *JA4SAnalyzer) detectAnomalies(result *JA4SResult, sh *serverHelloData) 
 		baseScore += 0.15
 	}
 
-	// 异常检测 4: 扩展顺序异常（标准 TLS 有约定顺序）
+	// 异常检测 4: 扩展列表异常（检测重复扩展）
 	if !hasValidExtensionOrder(sh.Extensions) {
-		result.AnomalyFlags = append(result.AnomalyFlags, "UNUSUAL_EXTENSION_ORDER")
-		baseScore += 0.1
+		result.AnomalyFlags = append(result.AnomalyFlags, "DUPLICATE_EXTENSIONS")
+		baseScore += 0.2
 	}
 
-	// 异常检测 5: 压缩方法异常（现代应该是 null）
-	if sh.CompressionMethod != 0 && sh.CompressionMethod != 1 {
-		result.AnomalyFlags = append(result.AnomalyFlags, "UNUSUAL_COMPRESSION")
-		baseScore += 0.15
+	// 异常检测 5: 压缩方法异常（TLS 压缩存在 CRIME 攻击风险，仅 null=0 是安全的）
+	if sh.CompressionMethod != 0 {
+		result.AnomalyFlags = append(result.AnomalyFlags, "UNSAFE_COMPRESSION")
+		baseScore += 0.2
 	}
 
 	// 标准化评分
@@ -307,21 +311,47 @@ func parseServerHello(data []byte) (*serverHelloData, error) {
 		return nil, fmt.Errorf("data too short")
 	}
 
-	// 偏移量：跳过 HandshakeType(1) + Length(3) + Version(2) + Random(32)
-	sh := &serverHelloData{
-		Version:     uint16(data[4])<<8 | uint16(data[5]),
-		CipherSuite: uint16(data[37])<<8 | uint16(data[38]),
-	}
+	sh := &serverHelloData{}
 
-	if len(data) > 39 {
-		sh.CompressionMethod = data[39]
-	}
+	// 偏移量：HandshakeType(1) + Length(3) = 4 字节头部
+	// Version(2) 在偏移 4-5
+	sh.Version = uint16(data[4])<<8 | uint16(data[5])
 
-	// 提取扩展列表（简化版，实际应递归解析）
-	if len(data) > 41 {
-		_ = int(data[40])<<8 | int(data[41]) // 扩展长度信息（暂时保留以供后续扩展）
-		// 这里需要更复杂的解析逻辑，暂时使用占位符
-		sh.Extensions = []uint16{0, 10, 11, 16, 23, 35} // 示例扩展列表
+	// Random(32) 在偏移 6-37
+	// Session ID Length(1) 在偏移 38
+	sessionIDLen := int(data[38])
+	offset := 39 + sessionIDLen
+
+	// Cipher Suite(2) 紧跟在 Session ID 之后
+	if len(data) < offset+3 {
+		return nil, fmt.Errorf("data too short for cipher suite: need %d, have %d", offset+3, len(data))
+	}
+	sh.CipherSuite = uint16(data[offset])<<8 | uint16(data[offset+1])
+	offset += 2
+
+	// Compression Method(1)
+	sh.CompressionMethod = data[offset]
+	offset++
+
+	// 解析扩展列表
+	if len(data) > offset+2 {
+		extensionsLen := int(data[offset])<<8 | int(data[offset+1])
+		offset += 2
+
+		endOffset := offset + extensionsLen
+		if endOffset > len(data) {
+			endOffset = len(data)
+		}
+
+		for offset+4 <= endOffset {
+			extType := uint16(data[offset])<<8 | uint16(data[offset+1])
+			extLen := int(data[offset+2])<<8 | int(data[offset+3])
+			if offset+4+extLen > endOffset {
+				break // 扩展数据被截断，停止解析
+			}
+			sh.Extensions = append(sh.Extensions, extType)
+			offset += 4 + extLen
+		}
 	}
 
 	return sh, nil
@@ -386,33 +416,62 @@ func isSupportedTLSVersion(v uint16) bool {
 	return supportedVersions[v]
 }
 
+// isDeprecatedTLSVersion 检查是否为已弃用的 TLS 版本（RFC 8996）
+func isDeprecatedTLSVersion(v uint16) bool {
+	deprecatedVersions := map[uint16]bool{
+		0x0300: true, // SSL 3.0
+		0x0301: true, // TLS 1.0
+		0x0302: true, // TLS 1.1
+	}
+	return deprecatedVersions[v]
+}
+
 func isWeakCipherSuite(cipher uint16) bool {
-	// 已知弱密码的列表
+	// 已知弱密码的列表（RFC 7457, CRIME, BEAST, SWEET32 等攻击向量）
 	weakCiphers := map[uint16]bool{
-		0x0001: true, // TLS_NULL_WITH_NULL_NULL
-		0x0002: true, // TLS_RSA_WITH_NULL_MD5
+		0x0000: true, // TLS_NULL_WITH_NULL_NULL
+		0x0001: true, // TLS_RSA_WITH_NULL_MD5
+		0x0002: true, // TLS_RSA_WITH_NULL_SHA
+		0x0003: true, // TLS_RSA_EXPORT_WITH_RC4_40_MD5
 		0x0004: true, // TLS_RSA_WITH_RC4_128_MD5
+		0x0005: true, // TLS_RSA_WITH_RC4_128_SHA
+		0x0006: true, // TLS_RSA_EXPORT_WITH_RC2_CBC_40_MD5
+		0x0008: true, // TLS_RSA_EXPORT_WITH_DES40_CBC_SHA
+		0x0009: true, // TLS_RSA_WITH_DES_CBC_SHA
+		0x000A: true, // TLS_RSA_WITH_3DES_EDE_CBC_SHA (SWEET32)
+		0x0011: true, // TLS_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA
+		0x0012: true, // TLS_DHE_DSS_WITH_DES_CBC_SHA
+		0x0014: true, // TLS_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA
+		0x0015: true, // TLS_DHE_RSA_WITH_DES_CBC_SHA
+		0x0017: true, // TLS_DH_anon_EXPORT_WITH_RC4_40_MD5
+		0x0018: true, // TLS_DH_anon_WITH_RC4_128_MD5
+		0x0019: true, // TLS_DH_anon_EXPORT_WITH_DES40_CBC_SHA
+		0x001A: true, // TLS_DH_anon_WITH_DES_CBC_SHA
+		0x003B: true, // TLS_RSA_WITH_NULL_SHA256
+		0xC00A: true, // TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA (SWEET32)
+		0xC014: true, // TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA (SWEET32)
+		0xC011: true, // TLS_ECDHE_RSA_WITH_RC4_128_SHA
+		0xC007: true, // TLS_ECDHE_ECDSA_WITH_RC4_128_SHA
 	}
 	return weakCiphers[cipher]
 }
 
 func hasValidExtensionOrder(extensions []uint16) bool {
-	// 检查扩展列表是否大致按数字顺序排列（宽松检查）
-	// 实际的 TLS 有更复杂的约定
+	// ServerHello 扩展没有规范要求的排列顺序，
+	// 因此不应基于排序来判定异常。
+	// 仅检测重复扩展（重复扩展是不合法的）。
 	if len(extensions) < 2 {
 		return true
 	}
 
-	// 简单的顺序性检查（至少 70% 的扩展应遵循大致递增）
-	orderedCount := 0
-	for i := 1; i < len(extensions); i++ {
-		if extensions[i] > extensions[i-1] || extensions[i] == extensions[i-1] {
-			orderedCount++
+	seen := make(map[uint16]bool, len(extensions))
+	for _, ext := range extensions {
+		if seen[ext] {
+			return false // 重复扩展是异常的
 		}
+		seen[ext] = true
 	}
-
-	orderRatio := float64(orderedCount) / float64(len(extensions)-1)
-	return orderRatio >= 0.7
+	return true
 }
 
 // initKnownServerProfiles 初始化已知的服务端配置库

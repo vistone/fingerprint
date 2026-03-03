@@ -124,11 +124,11 @@ func (s *JA4Signature) computeJA4WithOrder(originalOrder bool) *JA4Result {
 		sniIndicator = "d"
 	}
 
-	// 密码套件数（2位十进制，最大99）- 使用原始数量（过滤前）
-	cipherCount := fmt.Sprintf("%02d", min99(len(s.CipherSuites)))
+	// 密码套件数（2位十进制，最大99）- 使用过滤 GREASE 后的数量（JA4 规范要求）
+	cipherCount := fmt.Sprintf("%02d", min99(len(filteredCiphers)))
 
-	// 扩展数（2位十进制，最大99）- 使用原始数量（过滤前）
-	extensionCount := fmt.Sprintf("%02d", min99(len(s.Extensions)))
+	// 扩展数（2位十进制，最大99）- 使用过滤 GREASE 后的数量（JA4 规范要求）
+	extensionCount := fmt.Sprintf("%02d", min99(len(filteredExtensions)))
 
 	// ALPN 首尾字符
 	alpnFirst, alpnLast := byte('0'), byte('0')
