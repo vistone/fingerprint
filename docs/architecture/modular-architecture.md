@@ -358,9 +358,8 @@ func BenchmarkParse(b *testing.B) {
 
 ## 文档和示例
 
-- [开发者指南](developer-guide.md) - 完整的 SDK 使用说明
-- [示例集合](../examples/) - 多个实现示例
-- [API 参考](API_REFERENCE.md) - 完整的 API 文档（即将推出）
+- [开发者指南](../sdk/developer-guide.md) - 完整的 SDK 使用说明
+- [API 参考](../3-references/00-quick-reference.md) - 完整的 API 文档
 
 ## 社区贡献
 

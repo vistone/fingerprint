@@ -260,11 +260,10 @@ A: 创建自定义 `FeatureConfig` 并修改阈值参数
 
 ## 下一步
 
-- 查看 [P0 完整实施文档](04-p0-feature-extractor-guide.md)
 - 阅读源代码注释（`internal/features/extractor.go`）
 - 浏览规则配置格式详解（默认 `rules.json`，统一入口 `extension.NewUnifiedConfigFromEnv()`）
 
 ---
 
 **相关链接**  
-- [开发流程规则](01-fingerprint-project-rules.md)
+- [开发流程规则](../../5-process/development/01-fingerprint-project-rules.md)

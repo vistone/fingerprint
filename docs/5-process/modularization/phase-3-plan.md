@@ -294,7 +294,7 @@ return nil, errors.Wrap(errors.ErrProfileNotFound, "profile lookup failed")
 
 ### 7.1 相关文档
 
-- [模块化架构计划](../architecture/modularization-plan.md)
+- [模块化架构计划](../../architecture/modularization-plan.md)
 - [Go 开发规范](../development/00-go-development-rules.md)
 - [项目规则](../development/01-fingerprint-project-rules.md)
 
