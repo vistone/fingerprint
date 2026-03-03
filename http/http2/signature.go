@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
+
+	"github.com/vistone/fingerprint/internal/metrics"
 )
 
 // HTTP2SignatureResult HTTP/2 签名结果
@@ -81,6 +84,12 @@ func NewHTTP2SignatureAnalyzer() *HTTP2SignatureAnalyzer {
 
 // AnalyzeHTTP2Stream 分析 HTTP/2 流特征
 func (a *HTTP2SignatureAnalyzer) AnalyzeHTTP2Stream(frames []HTTP2FrameData) (*HTTP2SignatureResult, error) {
+	start := time.Now()
+	defer func() {
+		durationMs := float64(time.Since(start).Nanoseconds()) / 1e6
+		metrics.HTTP2SignatureAnalysisDuration.Observe(durationMs)
+	}()
+
 	if len(frames) == 0 {
 		return nil, fmt.Errorf("no frames provided")
 	}

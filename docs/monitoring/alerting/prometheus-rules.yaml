@@ -1,0 +1,159 @@
+groups:
+  - name: fingerprint_alerts
+    interval: 30s
+    rules:
+      # 高错误率告警
+      - alert: FingerprintGenerationErrors
+        expr: |
+          (
+            sum(rate(fingerprint_generation_total{status="error"}[5m]))
+            /
+            sum(rate(fingerprint_generation_total[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High fingerprint generation error rate"
+          description: "Error rate is {{ $value | humanizePercentage }} for the last 5 minutes"
+          runbook_url: "https://wiki.example.com/runbooks/fingerprint-errors"
+
+      # 高延迟告警
+      - alert: FingerprintGenerationLatencyHigh
+        expr: |
+          histogram_quantile(0.99,
+            sum(rate(fingerprint_generation_duration_ms_bucket[5m])) by (le, browser)
+          ) > 50
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High fingerprint generation latency"
+          description: "p99 latency for {{ $labels.browser }} is {{ $value }}ms"
+
+      # 极高延迟 - 关键告警
+      - alert: FingerprintGenerationLatencyCritical
+        expr: |
+          histogram_quantile(0.99,
+            sum(rate(fingerprint_generation_duration_ms_bucket[5m])) by (le)
+          ) > 100
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Critical fingerprint generation latency"
+          description: "p99 latency is {{ $value }}ms, exceeding 100ms threshold"
+
+      # 缓存命中率低告警
+      - alert: FingerprintCacheHitRateLow
+        expr: |
+          (
+            sum(rate(fingerprint_profile_cache_hit_total[5m]))
+            /
+            (
+              sum(rate(fingerprint_profile_cache_hit_total[5m]))
+              +
+              sum(rate(fingerprint_profile_cache_miss_total[5m]))
+            )
+          ) < 0.90
+        for: 15m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Low profile cache hit rate"
+          description: "Cache hit rate is {{ $value | humanizePercentage }}, below 90% threshold"
+
+      # 活跃连接数异常
+      - alert: FingerprintTooManyConnections
+        expr: fingerprint_active_connections > 10000
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Too many active connections"
+          description: "Current active connections: {{ $value }}"
+
+      # 高危险行为信号告警
+      - alert: FingerprintHighRiskBehaviorDetected
+        expr: |
+          sum(increase(fingerprint_behavior_signals_total{risk_level="critical"}[1h])) > 10
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Critical behavior signals detected"
+          description: "{{ $value }} critical risk signals in the last hour"
+
+      # 中等风险行为信号增长
+      - alert: FingerprintMediumRiskBehaviorSpike
+        expr: |
+          sum(increase(fingerprint_behavior_signals_total{risk_level="high"}[1h])) > 50
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "High volume of high-risk behavior signals"
+          description: "{{ $value }} high-risk signals in the last hour"
+
+      # HTTP/2 分析延迟告警
+      - alert: FingerprintHTTP2AnalysisSlow
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(fingerprint_http2_analysis_duration_ms_bucket[5m])) by (le)
+          ) > 10
+        for: 10m
+        labels:
+          severity: info
+          team: platform
+        annotations:
+          summary: "HTTP/2 signature analysis is slow"
+          description: "p95 HTTP/2 analysis latency is {{ $value }}ms"
+
+      # 指纹生成率异常下降
+      - alert: FingerprintGenerationRateDrop
+        expr: |
+          (
+            sum(rate(fingerprint_generation_total[5m]))
+            /
+            sum(rate(fingerprint_generation_total[5m] offset 1d))
+          ) < 0.5
+        for: 15m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Fingerprint generation rate dropped significantly"
+          description: "Current rate is {{ $value | humanizePercentage }} of yesterday's rate"
+
+  - name: fingerprint_slo
+    interval: 60s
+    rules:
+      # SLO: 99% 的请求延迟 < 10ms
+      - record: fingerprint:slo:latency
+        expr: |
+          histogram_quantile(0.99,
+            sum(rate(fingerprint_generation_duration_ms_bucket[24h])) by (le)
+          ) <= 10
+
+      # SLO: 99.9% 的请求成功
+      - record: fingerprint:slo:availability
+        expr: |
+          (
+            sum(rate(fingerprint_generation_total{status!="error"}[24h]))
+            /
+            sum(rate(fingerprint_generation_total[24h]))
+          ) >= 0.999
+
+      # 错误预算消耗
+      - record: fingerprint:error_budget:consumption
+        expr: |
+          (
+            sum(increase(fingerprint_generation_total{status="error"}[1h]))
+            /
+            sum(increase(fingerprint_generation_total[1h]))
+          ) * 100

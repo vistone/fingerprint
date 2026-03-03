@@ -1,3 +1,6 @@
+//go:build profilegen
+// +build profilegen
+
 package main
 
 import (
@@ -11,21 +14,21 @@ import (
 
 // YAMLProfile 是 YAML 配置文件的根结构
 type YAMLProfile struct {
-	Name                 string                 `yaml:"name"`
-	VarName              string                 `yaml:"var_name"`
-	DisplayName          string                 `yaml:"display_name"`
-	Client               string                 `yaml:"client"`
-	Version              string                 `yaml:"version"`
-	RandomExtensionOrder bool                   `yaml:"random_extension_order"`
-	CipherSuites         []string               `yaml:"cipher_suites"`
-	CompressionMethods   []string               `yaml:"compression_methods"`
-	Extensions           []YAMLExtension        `yaml:"extensions"`
-	Settings             map[string]uint32      `yaml:"settings"`
-	SettingsOrder        []string               `yaml:"settings_order"`
-	PseudoHeaderOrder    []string               `yaml:"pseudo_header_order"`
-	ConnectionFlow       uint32                 `yaml:"connection_flow"`
-	HeaderPriority       *YAMLPriorityParam     `yaml:"header_priority,omitempty"`
-	Priorities           []YAMLPriority         `yaml:"priorities,omitempty"`
+	Name                 string             `yaml:"name"`
+	VarName              string             `yaml:"var_name"`
+	DisplayName          string             `yaml:"display_name"`
+	Client               string             `yaml:"client"`
+	Version              string             `yaml:"version"`
+	RandomExtensionOrder bool               `yaml:"random_extension_order"`
+	CipherSuites         []string           `yaml:"cipher_suites"`
+	CompressionMethods   []string           `yaml:"compression_methods"`
+	Extensions           []YAMLExtension    `yaml:"extensions"`
+	Settings             map[string]uint32  `yaml:"settings"`
+	SettingsOrder        []string           `yaml:"settings_order"`
+	PseudoHeaderOrder    []string           `yaml:"pseudo_header_order"`
+	ConnectionFlow       uint32             `yaml:"connection_flow"`
+	HeaderPriority       *YAMLPriorityParam `yaml:"header_priority,omitempty"`
+	Priorities           []YAMLPriority     `yaml:"priorities,omitempty"`
 }
 
 type YAMLExtension struct {
@@ -128,55 +131,55 @@ func generateExtensionCode(ext YAMLExtension) string {
 	switch ext.Type {
 	case "UtlsGREASEExtension":
 		return "&tls.UtlsGREASEExtension{}"
-	
+
 	case "SessionTicketExtension":
 		return "&tls.SessionTicketExtension{}"
-	
+
 	case "SignatureAlgorithmsExtension":
 		return generateSignatureAlgorithmsExtension(ext.Params)
-	
+
 	case "ApplicationSettingsExtensionNew":
 		return generateApplicationSettingsExtensionNew(ext.Params)
-	
+
 	case "KeyShareExtension":
 		return generateKeyShareExtension(ext.Params)
-	
+
 	case "SCTExtension":
 		return "&tls.SCTExtension{}"
-	
+
 	case "SupportedPointsExtension":
 		return generateSupportedPointsExtension(ext.Params)
-	
+
 	case "SupportedVersionsExtension":
 		return generateSupportedVersionsExtension(ext.Params)
-	
+
 	case "StatusRequestExtension":
 		return "&tls.StatusRequestExtension{}"
-	
+
 	case "ALPNExtension":
 		return generateALPNExtension(ext.Params)
-	
+
 	case "SNIExtension":
 		return "&tls.SNIExtension{}"
-	
+
 	case "BoringGREASEECH":
 		return "tls.BoringGREASEECH()"
-	
+
 	case "UtlsCompressCertExtension":
 		return generateCompressCertExtension(ext.Params)
-	
+
 	case "SupportedCurvesExtension":
 		return generateSupportedCurvesExtension(ext.Params)
-	
+
 	case "PSKKeyExchangeModesExtension":
 		return generatePSKKeyExchangeModesExtension(ext.Params)
-	
+
 	case "ExtendedMasterSecretExtension":
 		return "&tls.ExtendedMasterSecretExtension{}"
-	
+
 	case "RenegotiationInfoExtension":
 		return generateRenegotiationInfoExtension(ext.Params)
-	
+
 	default:
 		return fmt.Sprintf("// TODO: implement %s", ext.Type)
 	}
@@ -188,12 +191,12 @@ func generateSignatureAlgorithmsExtension(params map[string]interface{}) string 
 	if !ok {
 		return "&tls.SignatureAlgorithmsExtension{}"
 	}
-	
+
 	var parts []string
 	for _, alg := range algorithms {
 		parts = append(parts, fmt.Sprintf("tls.%v", alg))
 	}
-	
+
 	return fmt.Sprintf("&tls.SignatureAlgorithmsExtension{SupportedSignatureAlgorithms: []tls.SignatureScheme{%s}}",
 		strings.Join(parts, ", "))
 }
@@ -203,12 +206,12 @@ func generateApplicationSettingsExtensionNew(params map[string]interface{}) stri
 	if !ok {
 		return "&tls.ApplicationSettingsExtensionNew{}"
 	}
-	
+
 	var parts []string
 	for _, p := range protocols {
 		parts = append(parts, fmt.Sprintf("\"%v\"", p))
 	}
-	
+
 	return fmt.Sprintf("&tls.ApplicationSettingsExtensionNew{SupportedProtocols: []string{%s}}",
 		strings.Join(parts, ", "))
 }
@@ -218,13 +221,13 @@ func generateKeyShareExtension(params map[string]interface{}) string {
 	if !ok {
 		return "&tls.KeyShareExtension{}"
 	}
-	
+
 	var parts []string
 	for _, share := range shares {
 		if m, ok := share.(map[string]interface{}); ok {
 			group := m["group"]
 			data, hasData := m["data"].([]interface{})
-			
+
 			if hasData && len(data) > 0 {
 				parts = append(parts, fmt.Sprintf("{Group: tls.%v, Data: []byte{%v}}", group, data[0]))
 			} else {
@@ -232,7 +235,7 @@ func generateKeyShareExtension(params map[string]interface{}) string {
 			}
 		}
 	}
-	
+
 	return fmt.Sprintf("&tls.KeyShareExtension{KeyShares: []tls.KeyShare{%s}}",
 		strings.Join(parts, ", "))
 }
@@ -242,12 +245,12 @@ func generateSupportedPointsExtension(params map[string]interface{}) string {
 	if !ok {
 		return "&tls.SupportedPointsExtension{}"
 	}
-	
+
 	var parts []string
 	for _, p := range points {
 		parts = append(parts, fmt.Sprintf("tls.%v", p))
 	}
-	
+
 	return fmt.Sprintf("&tls.SupportedPointsExtension{SupportedPoints: []byte{%s}}",
 		strings.Join(parts, ", "))
 }
@@ -257,12 +260,12 @@ func generateSupportedVersionsExtension(params map[string]interface{}) string {
 	if !ok {
 		return "&tls.SupportedVersionsExtension{}"
 	}
-	
+
 	var parts []string
 	for _, v := range versions {
 		parts = append(parts, fmt.Sprintf("tls.%v", v))
 	}
-	
+
 	return fmt.Sprintf("&tls.SupportedVersionsExtension{Versions: []uint16{%s}}",
 		strings.Join(parts, ", "))
 }
@@ -272,12 +275,12 @@ func generateALPNExtension(params map[string]interface{}) string {
 	if !ok {
 		return "&tls.ALPNExtension{}"
 	}
-	
+
 	var parts []string
 	for _, p := range protocols {
 		parts = append(parts, fmt.Sprintf("\"%v\"", p))
 	}
-	
+
 	return fmt.Sprintf("&tls.ALPNExtension{AlpnProtocols: []string{%s}}",
 		strings.Join(parts, ", "))
 }
@@ -287,12 +290,12 @@ func generateCompressCertExtension(params map[string]interface{}) string {
 	if !ok {
 		return "&tls.UtlsCompressCertExtension{}"
 	}
-	
+
 	var parts []string
 	for _, alg := range algorithms {
 		parts = append(parts, fmt.Sprintf("tls.%v", alg))
 	}
-	
+
 	return fmt.Sprintf("&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{%s}}",
 		strings.Join(parts, ", "))
 }
@@ -302,12 +305,12 @@ func generateSupportedCurvesExtension(params map[string]interface{}) string {
 	if !ok {
 		return "&tls.SupportedCurvesExtension{}"
 	}
-	
+
 	var parts []string
 	for _, c := range curves {
 		parts = append(parts, fmt.Sprintf("tls.%v", c))
 	}
-	
+
 	return fmt.Sprintf("&tls.SupportedCurvesExtension{Curves: []tls.CurveID{%s}}",
 		strings.Join(parts, ", "))
 }
@@ -317,12 +320,12 @@ func generatePSKKeyExchangeModesExtension(params map[string]interface{}) string 
 	if !ok {
 		return "&tls.PSKKeyExchangeModesExtension{}"
 	}
-	
+
 	var parts []string
 	for _, m := range modes {
 		parts = append(parts, fmt.Sprintf("tls.%v", m))
 	}
-	
+
 	return fmt.Sprintf("&tls.PSKKeyExchangeModesExtension{Modes: []uint8{%s}}",
 		strings.Join(parts, ", "))
 }
@@ -332,7 +335,7 @@ func generateRenegotiationInfoExtension(params map[string]interface{}) string {
 	if !ok {
 		return "&tls.RenegotiationInfoExtension{}"
 	}
-	
+
 	return fmt.Sprintf("&tls.RenegotiationInfoExtension{Renegotiation: tls.%s}", reneg)
 }
 

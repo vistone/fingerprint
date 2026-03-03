@@ -5,6 +5,8 @@ import (
 	"math"
 	"sort"
 	"time"
+
+	"github.com/vistone/fingerprint/internal/metrics"
 )
 
 // BehaviorSignal 行为信号分析
@@ -427,6 +429,11 @@ func (ba *BehaviorAnalyzer) GenerateBehaviorSignals(origin string) []BehaviorSig
 	// 检测连接复用行为
 	if sig, shouldAdd := ba.detectConnectionReuse(origin); shouldAdd {
 		signals = append(signals, sig)
+	}
+
+	// 记录指标
+	for _, sig := range signals {
+		metrics.RecordBehaviorSignal(sig.RiskLevel)
 	}
 
 	ba.signals = append(ba.signals, signals...)

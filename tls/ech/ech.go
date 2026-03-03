@@ -189,15 +189,27 @@ func (a *ECHAnalyzer) analyzeECHExtension(ext *ExtensionData, result *ECHAnalysi
 	// ECH 版本在数据的前两个字节
 	result.ECHVersion = uint16(ext.Data[0])<<8 | uint16(ext.Data[1])
 
-	// 判断 ECH 类型
-	if ext.Type == 0xfd00 {
-		result.ECHType = "outer"
-		result.ClientHelloType = "outer"
-	} else if len(ext.Data) > 2 && ext.Data[2] == 0x00 {
+	// GREASE 检测：版本号为 0
+	if result.ECHVersion == 0x0000 {
 		result.ECHType = "grease"
+		return
+	}
+
+	// 判断 ClientHello 类型（版本后的第一个字节）
+	if len(ext.Data) > 2 {
+		clientHelloType := ext.Data[2]
+		switch clientHelloType {
+		case 0x00:
+			result.ECHType = "inner"
+			result.ClientHelloType = "inner"
+		case 0x01:
+			result.ECHType = "outer"
+			result.ClientHelloType = "outer"
+		default:
+			result.ECHType = "unknown"
+		}
 	} else {
-		result.ECHType = "inner"
-		result.ClientHelloType = "inner"
+		result.ECHType = "unknown"
 	}
 }
 

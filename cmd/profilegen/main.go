@@ -1,9 +1,13 @@
+//go:build profilegen
+// +build profilegen
+
 // profilegen - 浏览器指纹配置代码生成工具
 //
 // 该工具从 YAML 配置文件生成类型安全的 Go 代码，消除 nolint:composites 警告。
 //
 // 使用方式:
-//   go run ./cmd/profilegen -input profiles/specs -output profiles/generated.go
+//
+//	go run ./cmd/profilegen -input profiles/specs -output profiles/generated.go
 //
 // 配置文件格式见: profiles/specs/chrome_133.yaml
 package main

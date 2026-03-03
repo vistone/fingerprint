@@ -4,9 +4,11 @@ package random
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/vistone/fingerprint/http/headers"
 	"github.com/vistone/fingerprint/http/useragent"
+	"github.com/vistone/fingerprint/internal/metrics"
 	"github.com/vistone/fingerprint/internal/utils"
 	"github.com/vistone/fingerprint/profiles"
 	"github.com/vistone/fingerprint/types"
@@ -58,6 +60,8 @@ func GetRandomFingerprint() (*types.FingerprintResult, error) {
 //
 // 线程安全性: 是
 func GetRandomFingerprintWithOS(os types.OperatingSystem) (*types.FingerprintResult, error) {
+	start := time.Now()
+
 	// 检查 profiles.MappedTLSClients 是否为空
 	if len(profiles.MappedTLSClients) == 0 {
 		return nil, fmt.Errorf("no TLS client profiles available")
@@ -92,6 +96,14 @@ func GetRandomFingerprintWithOS(os types.OperatingSystem) (*types.FingerprintRes
 	browserTypeStr, _ := inferBrowserFromProfileName(randomName)
 	isMobile := isMobileProfile(randomName)
 	headers := headers.GenerateHeaders(types.BrowserType(browserTypeStr), ua, isMobile)
+
+	// 记录指标
+	durationMs := float64(time.Since(start).Nanoseconds()) / 1e6
+	osStr := string(os)
+	if osStr == "" {
+		osStr = "random"
+	}
+	metrics.RecordFingerprintGeneration(browserTypeStr, osStr, durationMs)
 
 	return &types.FingerprintResult{
 		Profile:       profile,
