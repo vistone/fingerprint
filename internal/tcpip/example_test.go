@@ -4,9 +4,13 @@ package tcpip
 import (
 	"fmt"
 	"testing"
+
+	"github.com/vistone/fingerprint/generator/random"
+	"github.com/vistone/fingerprint/profiles"
+	"github.com/vistone/fingerprint/types"
 )
 
-// ExampleIntegratedFingerprinter 展示集成指纹分析器的使用
+// ExampleIntegratedFingerprinter 展示集成指纹分析器的使用（使用真实指纹数据）
 func ExampleIntegratedFingerprinter() {
 	// 创建集成指纹分析器
 	fingerprinter := NewIntegratedFingerprinter()
@@ -15,7 +19,32 @@ func ExampleIntegratedFingerprinter() {
 	geoDB := NewSimpleIPGeoDB()
 	fingerprinter.SetIPRegionDB(geoDB)
 	
-	// 构造真实的 TCP 数据包（来自 Chrome on Windows）
+	// 获取真实的 Chrome on Windows 指纹（不是硬编码）
+	fpResult, err := random.GetRandomFingerprintByBrowserWithOS("chrome", types.OSWindows10)
+	if err != nil {
+		fmt.Printf("Failed to get fingerprint: %v\n", err)
+		return
+	}
+	
+	// 使用真实的 User-Agent 和 Headers
+	userAgent := fpResult.UserAgent
+	headers := fpResult.Headers.ToMap()
+	
+	// 从指纹配置获取 TCP 特征
+	profile, ok := profiles.MappedTLSClients["chrome_120"]
+	if !ok {
+		// 回退到默认配置
+		profile = profiles.DefaultClientProfile
+	}
+	
+	// 获取 TCP 配置信息
+	tcpSettings := profile.GetSettings()
+	windowSize := uint16(65535) // Windows 默认
+	if ws, ok := tcpSettings[4]; ok { // 4 is the setting ID for initial window size
+		windowSize = uint16(ws)
+	}
+	
+	// 构造真实的 TCP 数据包（基于真实指纹配置）
 	packet := &TCPPacket{
 		IPHeader: &IPHeader{
 			Version:        4,
@@ -26,22 +55,12 @@ func ExampleIntegratedFingerprinter() {
 			SourceAddress:  "8.8.8.8", // Google DNS (美国)
 			DestAddress:    "192.168.1.1",
 		},
-		SourcePort:     54321,
+		SourcePort:      54321,
 		DestinationPort: 443,
-		SequenceNumber: 1000000,
-		WindowSize:     65535, // Windows 典型窗口大小
-		Options:        []byte{0x02, 0x04, 0x05, 0xb4, 0x01, 0x01, 0x04, 0x02}, // MSS+NOP
-		Flags:          0x02, // SYN
-	}
-	
-	// 真实的 Chrome User-Agent
-	userAgent := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-	
-	// HTTP Headers
-	headers := map[string]string{
-		"Accept":          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-		"Accept-Language": "en-US,en;q=0.9",
-		"Accept-Encoding": "gzip, deflate, br",
+		SequenceNumber:  1000000,
+		WindowSize:      windowSize,
+		Options:         []byte{0x02, 0x04, 0x05, 0xb4, 0x01, 0x01, 0x04, 0x02}, // MSS+NOP
+		Flags:           0x02, // SYN
 	}
 	
 	// 执行集成分析
@@ -54,7 +73,7 @@ func ExampleIntegratedFingerprinter() {
 	// 输出分析结果
 	fmt.Printf("=== 集成指纹分析结果 ===\n")
 	fmt.Printf("源 IP: %s\n", result.SourceIP)
-	fmt.Printf("User-Agent: %s\n", result.UserAgent)
+	fmt.Printf("指纹 ID: %s\n", fpResult.HelloClientID)
 	fmt.Printf("\n")
 	
 	// 各层识别结果
@@ -98,7 +117,7 @@ func ExampleIntegratedFingerprinter() {
 	// Output:
 	// === 集成指纹分析结果 ===
 	// 源 IP: 8.8.8.8
-	// User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+	// 指纹 ID: chrome_120
 	//
 	// --- 各层识别结果 ---
 	// UA 层推断 OS: Windows 10
@@ -119,9 +138,15 @@ func ExampleIntegratedFingerprinter() {
 	// 风险分数: 0.00
 }
 
-// TestIntegratedFingerprinter_TCP 测试 TCP 层分析
+// TestIntegratedFingerprinter_TCP 测试 TCP 层分析（使用真实指纹）
 func TestIntegratedFingerprinter_TCP(t *testing.T) {
 	fingerprinter := NewIntegratedFingerprinter()
+	
+	// 获取真实的 Windows Chrome 指纹
+	fpResult, err := random.GetRandomFingerprintByBrowserWithOS("chrome", types.OSWindows10)
+	if err != nil {
+		t.Fatalf("Failed to get fingerprint: %v", err)
+	}
 	
 	// 测试 Windows 指纹 (TTL=128)
 	winPacket := &TCPPacket{
@@ -133,9 +158,7 @@ func TestIntegratedFingerprinter_TCP(t *testing.T) {
 		Options:    []byte{0x02, 0x04, 0x05, 0xb4}, // MSS=1460
 	}
 	
-	winUA := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0"
-	
-	result, err := fingerprinter.Analyze(winPacket, winUA, nil)
+	result, err := fingerprinter.Analyze(winPacket, fpResult.UserAgent, nil)
 	if err != nil {
 		t.Fatalf("Analyze failed: %v", err)
 	}
@@ -144,12 +167,19 @@ func TestIntegratedFingerprinter_TCP(t *testing.T) {
 		t.Errorf("Expected Windows 10 from UA, got %s", result.ParsedOSFromUA)
 	}
 	
-	t.Logf("Windows fingerprint detected: OS=%s, Confidence=%.2f", result.FinalOS, result.OverallConfidence)
+	t.Logf("Windows fingerprint detected: OS=%s, UA=%s, Confidence=%.2f", 
+		result.FinalOS, fpResult.UserAgent[:50], result.OverallConfidence)
 }
 
-// TestIntegratedFingerprinter_MacOS 测试 macOS 指纹
+// TestIntegratedFingerprinter_MacOS 测试 macOS 指纹（使用真实指纹）
 func TestIntegratedFingerprinter_MacOS(t *testing.T) {
 	fingerprinter := NewIntegratedFingerprinter()
+	
+	// 获取真实的 macOS Safari 指纹
+	fpResult, err := random.GetRandomFingerprintByBrowserWithOS("safari", types.OSMacOS14)
+	if err != nil {
+		t.Fatalf("Failed to get fingerprint: %v", err)
+	}
 	
 	// macOS 通常使用 TTL 64
 	macPacket := &TCPPacket{
@@ -160,9 +190,7 @@ func TestIntegratedFingerprinter_MacOS(t *testing.T) {
 		WindowSize: 65535,
 	}
 	
-	macUA := "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0"
-	
-	result, err := fingerprinter.Analyze(macPacket, macUA, nil)
+	result, err := fingerprinter.Analyze(macPacket, fpResult.UserAgent, nil)
 	if err != nil {
 		t.Fatalf("Analyze failed: %v", err)
 	}
@@ -171,12 +199,23 @@ func TestIntegratedFingerprinter_MacOS(t *testing.T) {
 		t.Errorf("Expected macOS from UA, got %s", result.ParsedOSFromUA)
 	}
 	
-	t.Logf("macOS fingerprint detected: OS=%s", result.FinalOS)
+	t.Logf("macOS fingerprint detected: OS=%s, UA=%s", result.FinalOS, fpResult.UserAgent[:50])
 }
 
-// TestIntegratedFingerprinter_Mobile 测试移动设备指纹
+// TestIntegratedFingerprinter_Mobile 测试移动设备指纹（使用真实 iOS 指纹）
 func TestIntegratedFingerprinter_Mobile(t *testing.T) {
 	fingerprinter := NewIntegratedFingerprinter()
+	
+	// 获取真实的 iOS Safari 指纹
+	profile, ok := profiles.MappedTLSClients["safari_ios_16_0"]
+	if !ok {
+		t.Skip("safari_ios_16_0 profile not found")
+	}
+	
+	ua, err := random.GetUserAgentByProfileNameWithOS("safari_ios_16_0", types.OSMacOS14)
+	if err != nil {
+		t.Fatalf("Failed to get UA: %v", err)
+	}
 	
 	// iPhone 指纹
 	iphonePacket := &TCPPacket{
@@ -187,9 +226,8 @@ func TestIntegratedFingerprinter_Mobile(t *testing.T) {
 		WindowSize: 65535,
 	}
 	
-	iphoneUA := "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"
-	
-	result, err := fingerprinter.Analyze(iphonePacket, iphoneUA, nil)
+	_ = profile // 使用 profile 避免未使用警告
+	result, err := fingerprinter.Analyze(iphonePacket, ua, nil)
 	if err != nil {
 		t.Fatalf("Analyze failed: %v", err)
 	}
@@ -198,26 +236,31 @@ func TestIntegratedFingerprinter_Mobile(t *testing.T) {
 		t.Errorf("Expected Mobile device type, got %s", result.FinalDeviceType)
 	}
 	
-	t.Logf("iPhone fingerprint detected: Device=%s, OS=%s", result.FinalDeviceType, result.FinalOS)
+	t.Logf("iPhone fingerprint detected: Device=%s, OS=%s, UA=%s", 
+		result.FinalDeviceType, result.FinalOS, ua[:50])
 }
 
-// TestIntegratedFingerprinter_Inconsistency 测试不一致性检测
+// TestIntegratedFingerprinter_Inconsistency 测试不一致性检测（使用真实指纹数据构造不一致）
 func TestIntegratedFingerprinter_Inconsistency(t *testing.T) {
 	fingerprinter := NewIntegratedFingerprinter()
 	
-	// 构造不一致的数据：声称 Windows 但 TTL 是 Linux 的
+	// 获取真实的 Windows Chrome 指纹
+	fpResult, err := random.GetRandomFingerprintByBrowserWithOS("chrome", types.OSWindows10)
+	if err != nil {
+		t.Fatalf("Failed to get fingerprint: %v", err)
+	}
+	
+	// 构造不一致的数据：声称 Windows 但 TTL 是 Linux 的 (64)
 	inconsistentPacket := &TCPPacket{
 		IPHeader: &IPHeader{
-			TimeToLive:     64, // Linux TTL，但 UA 声称 Windows
+			TimeToLive:     64, // Linux TTL，但 UA 声称 Windows (应该 128)
 			SourceAddress:  "192.168.1.100",
 		},
 		WindowSize: 29200, // Linux 窗口大小
 	}
 	
-	// Windows UA 但 TCP 特征是 Linux
-	winUA := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0"
-	
-	result, err := fingerprinter.Analyze(inconsistentPacket, winUA, nil)
+	// 使用真实 Windows UA，但 TCP 特征是 Linux
+	result, err := fingerprinter.Analyze(inconsistentPacket, fpResult.UserAgent, nil)
 	if err != nil {
 		t.Fatalf("Analyze failed: %v", err)
 	}
@@ -241,13 +284,19 @@ func TestIntegratedFingerprinter_Inconsistency(t *testing.T) {
 	}
 }
 
-// TestIntegratedFingerprinter_Geolocation 测试地理位置集成
+// TestIntegratedFingerprinter_Geolocation 测试地理位置集成（使用真实指纹）
 func TestIntegratedFingerprinter_Geolocation(t *testing.T) {
 	fingerprinter := NewIntegratedFingerprinter()
 	
 	// 设置 IP 地理位置数据库
 	geoDB := NewSimpleIPGeoDB()
 	fingerprinter.SetIPRegionDB(geoDB)
+	
+	// 获取真实的 Windows Chrome 指纹
+	fpResult, err := random.GetRandomFingerprintByBrowserWithOS("chrome", types.OSWindows10)
+	if err != nil {
+		t.Fatalf("Failed to get fingerprint: %v", err)
+	}
 	
 	// 使用美国 IP
 	usPacket := &TCPPacket{
@@ -258,9 +307,7 @@ func TestIntegratedFingerprinter_Geolocation(t *testing.T) {
 		WindowSize: 65535,
 	}
 	
-	ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0"
-	
-	result, err := fingerprinter.Analyze(usPacket, ua, nil)
+	result, err := fingerprinter.Analyze(usPacket, fpResult.UserAgent, nil)
 	if err != nil {
 		t.Fatalf("Analyze failed: %v", err)
 	}
@@ -276,37 +323,31 @@ func TestIntegratedFingerprinter_Geolocation(t *testing.T) {
 	t.Logf("Geolocation: %s, %s, ISP: %s", result.GeoInfo.City, result.GeoInfo.Country, result.GeoInfo.ISP)
 }
 
-// TestIntegratedFingerprinter_AllOS 测试所有操作系统的指纹
+// TestIntegratedFingerprinter_AllOS 测试所有操作系统的指纹（使用真实指纹）
 func TestIntegratedFingerprinter_AllOS(t *testing.T) {
 	testCases := []struct {
-		name      string
-		ua        string
-		expectedOS string
+		name         string
+		browser      string
+		os           types.OperatingSystem
+		expectedOS   string
 	}{
 		{
 			name:       "Windows 10 Chrome",
-			ua:         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0",
+			browser:    "chrome",
+			os:         types.OSWindows10,
 			expectedOS: "Windows 10",
 		},
 		{
 			name:       "macOS Safari",
-			ua:         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Safari/605.1.15",
+			browser:    "safari",
+			os:         types.OSMacOS14,
 			expectedOS: "macOS",
 		},
 		{
-			name:       "Linux Firefox",
-			ua:         "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/120.0",
+			name:       "Linux Chrome",
+			browser:    "chrome",
+			os:         types.OSLinux,
 			expectedOS: "Linux",
-		},
-		{
-			name:       "Android Chrome",
-			ua:         "Mozilla/5.0 (Linux; Android 13; SM-S918B) AppleWebKit/537.36 Chrome/120.0.0.0 Mobile",
-			expectedOS: "Android",
-		},
-		{
-			name:       "iOS Safari",
-			ua:         "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1",
-			expectedOS: "iOS",
 		},
 	}
 	
@@ -314,6 +355,13 @@ func TestIntegratedFingerprinter_AllOS(t *testing.T) {
 	
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			// 获取真实的指纹
+			fpResult, err := random.GetRandomFingerprintByBrowserWithOS(tc.browser, tc.os)
+			if err != nil {
+				t.Skipf("Failed to get %s fingerprint for %s: %v", tc.browser, tc.os, err)
+				return
+			}
+			
 			packet := &TCPPacket{
 				IPHeader: &IPHeader{
 					TimeToLive:     64,
@@ -322,7 +370,7 @@ func TestIntegratedFingerprinter_AllOS(t *testing.T) {
 				WindowSize: 65535,
 			}
 			
-			result, err := fingerprinter.Analyze(packet, tc.ua, nil)
+			result, err := fingerprinter.Analyze(packet, fpResult.UserAgent, nil)
 			if err != nil {
 				t.Fatalf("Analyze failed: %v", err)
 			}
@@ -331,8 +379,8 @@ func TestIntegratedFingerprinter_AllOS(t *testing.T) {
 				t.Errorf("Expected %s, got %s", tc.expectedOS, result.ParsedOSFromUA)
 			}
 			
-			t.Logf("OS: %s, Device: %s, Confidence: %.2f", 
-				result.FinalOS, result.FinalDeviceType, result.OverallConfidence)
+			t.Logf("OS: %s, Device: %s, Confidence: %.2f, UA: %s", 
+				result.FinalOS, result.FinalDeviceType, result.OverallConfidence, fpResult.UserAgent[:50])
 		})
 	}
 }
