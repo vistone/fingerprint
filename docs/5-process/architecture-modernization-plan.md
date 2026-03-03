@@ -27,8 +27,6 @@
 - 🚀 [快速启动指南（5分钟入门）](RESTRUCTURING_QUICKSTART.md)
 - 📖 [完整重构规划](PACKAGE_RESTRUCTURING_PLAN.md)
 - 📋 [Phase 1 import 变更清单](PHASE1_IMPORT_MAPPING.md)
-- 🗺️ [文档导航索引](RESTRUCTURING_INDEX.md)
-- 📝 [交付总结](RESTRUCTURING_DELIVERY_SUMMARY.md)
 - 🔧 自动迁移脚本：`scripts/phase1_tls_migration.sh`
 
 与灰度推出（Week 5-7）完全并行，无任何冲突。
