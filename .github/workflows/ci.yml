@@ -22,7 +22,7 @@ jobs:
         go-version: ${{ matrix.go-version }}
     
     - name: Cache Go modules
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -83,7 +83,7 @@ jobs:
       run: go test -bench=. -benchmem -run=^$ ./internal/... ./profiles/... ./tls/ech/... ./http/websocket/... | tee benchmark.txt
     
     - name: Upload benchmark results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: benchmark-results
         path: benchmark.txt
@@ -109,7 +109,7 @@ jobs:
         test -z "$(git diff go.mod go.sum)" || (echo "go.mod/go.sum not tidy" && exit 1)
     
     - name: golangci-lint
-      uses: golangci/golangci-lint-action@v3
+      uses: golangci/golangci-lint-action@v6
       with:
         version: latest
         args: --timeout=5m --skip-dirs=vendor
