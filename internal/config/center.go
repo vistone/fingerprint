@@ -181,7 +181,7 @@ func (cc *ConfigCenter) Update(newConfig *ManagedConfig, reason, changedBy strin
 	cc.recordVersion(newConfig, reason, changedBy)
 
 	// 保存到文件
-	if err := cc.SaveToFile(); err != nil {
+	if err := cc.saveToFileLocked(); err != nil {
 		// 回滚到旧配置
 		cc.current = oldConfig
 		return fmt.Errorf("failed to save config: %w", err)
@@ -194,6 +194,16 @@ func (cc *ConfigCenter) Update(newConfig *ManagedConfig, reason, changedBy strin
 func (cc *ConfigCenter) SaveToFile() error {
 	cc.mu.RLock()
 	defer cc.mu.RUnlock()
+
+	return cc.saveToFileLocked()
+}
+
+// saveToFileLocked 保存配置到文件（调用者必须已持有锁）
+func (cc *ConfigCenter) saveToFileLocked() error {
+	// 如果没有配置文件路径，跳过文件保存（仅内存模式）
+	if cc.configPath == "" {
+		return nil
+	}
 
 	data, err := json.MarshalIndent(cc.current, "", "  ")
 	if err != nil {
@@ -347,7 +357,7 @@ func (cc *ConfigCenter) Rollback(version string, reason, rolledBackBy string) er
 	cc.recordVersion(newConfig, reason+" (rolled back from "+version+")", rolledBackBy)
 
 	// 保存到文件
-	if err := cc.SaveToFile(); err != nil {
+	if err := cc.saveToFileLocked(); err != nil {
 		// 回滚到旧配置
 		cc.current = oldConfig
 		return fmt.Errorf("failed to save config: %w", err)
