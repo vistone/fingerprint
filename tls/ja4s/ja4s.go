@@ -218,14 +218,14 @@ func (a *JA4SAnalyzer) GenerateServerHelloSignature(
 func (a *JA4SAnalyzer) detectAnomalies(result *JA4SResult, sh *serverHelloData) {
 	baseScore := 0.0
 
-	// 异常检测 1: 未知的 TLS 版本
-	if !isSupportedTLSVersion(sh.Version) {
-		result.AnomalyFlags = append(result.AnomalyFlags, "UNSUPPORTED_TLS_VERSION")
-		baseScore += 0.3
-	} else if isDeprecatedTLSVersion(sh.Version) {
-		// TLS 1.0/1.1 已弃用（RFC 8996），存在安全风险
+	// 异常检测 1: TLS 版本检查
+	if isDeprecatedTLSVersion(sh.Version) {
+		// TLS 1.0/1.1/SSL 3.0 已弃用（RFC 8996），存在安全风险
 		result.AnomalyFlags = append(result.AnomalyFlags, "DEPRECATED_TLS_VERSION")
 		baseScore += 0.2
+	} else if !isSupportedTLSVersion(sh.Version) {
+		result.AnomalyFlags = append(result.AnomalyFlags, "UNSUPPORTED_TLS_VERSION")
+		baseScore += 0.3
 	}
 
 	// 异常检测 2: 已知弱密码套件
@@ -346,8 +346,11 @@ func parseServerHello(data []byte) (*serverHelloData, error) {
 		for offset+4 <= endOffset {
 			extType := uint16(data[offset])<<8 | uint16(data[offset+1])
 			extLen := int(data[offset+2])<<8 | int(data[offset+3])
-			offset += 4 + extLen
+			if offset+4+extLen > endOffset {
+				break // 扩展数据被截断，停止解析
+			}
 			sh.Extensions = append(sh.Extensions, extType)
+			offset += 4 + extLen
 		}
 	}
 
@@ -407,15 +410,13 @@ func formatCompressionCode(c uint8) string {
 
 func isSupportedTLSVersion(v uint16) bool {
 	supportedVersions := map[uint16]bool{
-		0x0301: true, // TLS 1.0 (deprecated, but valid)
-		0x0302: true, // TLS 1.1 (deprecated, but valid)
 		0x0303: true, // TLS 1.2
 		0x0304: true, // TLS 1.3
 	}
 	return supportedVersions[v]
 }
 
-// isDeprecatedTLSVersion 检查是否为已弃用的 TLS 版本
+// isDeprecatedTLSVersion 检查是否为已弃用的 TLS 版本（RFC 8996）
 func isDeprecatedTLSVersion(v uint16) bool {
 	deprecatedVersions := map[uint16]bool{
 		0x0300: true, // SSL 3.0
