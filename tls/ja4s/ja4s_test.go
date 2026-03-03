@@ -15,7 +15,7 @@ func TestComputeJA4SFromRealProfiles(t *testing.T) {
 	}
 
 	// 获取 ClientHelloSpec
-	clientSpec, err := chromeProfile.GetClientHelloSpec()
+	_, err := chromeProfile.GetClientHelloSpec()
 	if err != nil {
 		t.Skipf("chrome_133 does not support spec export: %v", err)
 		return

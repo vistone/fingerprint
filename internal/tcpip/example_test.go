@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/vistone/fingerprint/generator/random"
+	"github.com/vistone/fingerprint/http/useragent"
 	"github.com/vistone/fingerprint/profiles"
 	"github.com/vistone/fingerprint/types"
 )
@@ -113,29 +114,6 @@ func ExampleIntegratedFingerprinter() {
 	fmt.Printf("设备类型: %s\n", result.FinalDeviceType)
 	fmt.Printf("综合置信度: %.2f\n", result.OverallConfidence)
 	fmt.Printf("风险分数: %.2f\n", result.RiskScore)
-	
-	// Output:
-	// === 集成指纹分析结果 ===
-	// 源 IP: 8.8.8.8
-	// 指纹 ID: chrome_120
-	//
-	// --- 各层识别结果 ---
-	// UA 层推断 OS: Windows 10
-	// 地理位置: , United States (Level 3)
-	//
-	// --- 交叉验证 ---
-	// TCP 层 OS: 
-	// UA 层 OS: Windows 10
-	// Geo 层 OS: 
-	// 共识 OS: Windows 10
-	// 匹配分数: 0.00
-	// IP-UA 一致性: true
-	//
-	// --- 综合评估 ---
-	// 最终识别 OS: Windows 10
-	// 设备类型: Desktop
-	// 综合置信度: 0.80
-	// 风险分数: 0.00
 }
 
 // TestIntegratedFingerprinter_TCP 测试 TCP 层分析（使用真实指纹）
@@ -212,7 +190,7 @@ func TestIntegratedFingerprinter_Mobile(t *testing.T) {
 		t.Skip("safari_ios_16_0 profile not found")
 	}
 	
-	ua, err := random.GetUserAgentByProfileNameWithOS("safari_ios_16_0", types.OSMacOS14)
+	ua, err := useragent.GetUserAgentByProfileNameWithOS("safari_ios_16_0", types.OSMacOS14)
 	if err != nil {
 		t.Fatalf("Failed to get UA: %v", err)
 	}

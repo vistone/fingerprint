@@ -193,17 +193,31 @@ fmt.Printf("JA4: %s\n", fp)
 ### JA4S
 
 ```go
-func CalculateJA4S(serverHello []byte) (string, error)
+func ComputeJA4S(data ServerHelloData) (*JA4SResult, error)
+func ComputeJA4SFromBytes(serverHelloBytes []byte) (*JA4SResult, error)
+func MatchJA4S(hash1, hash2 string) bool
 ```
 
 计算 JA4S（Server Hello）指纹。
 
 ```go
-fp, err := ja4s.CalculateJA4S(serverHello)
+// 从结构化数据计算
+result, err := ja4s.ComputeJA4S(ja4s.ServerHelloData{
+    TLSVersion:  0x0304,
+    CipherSuite: 0x1301,
+    Extensions:  []uint16{0x002b, 0x0033},
+    Compression: 0,
+})
 if err != nil {
     log.Fatal(err)
 }
-fmt.Printf("JA4S: %s\n", fp)
+fmt.Printf("JA4S: %s\n", result.Hash)
+
+// 从原始字节数据计算
+result, err = ja4s.ComputeJA4SFromBytes(serverHelloBytes)
+
+// 比较两个 JA4S 哈希
+match := ja4s.MatchJA4S(hash1, hash2)
 ```
 
 ## HTTP API
