@@ -97,7 +97,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.25'
+        go-version: '1.24'
     
     - name: Verify gofmt
       run: |
@@ -111,8 +111,8 @@ jobs:
     - name: golangci-lint
       uses: golangci/golangci-lint-action@v6
       with:
-        version: latest
-        args: --timeout=5m --skip-dirs=vendor
+        version: v1.64.8
+        args: --timeout=5m
 
   security:
     runs-on: ubuntu-latest
