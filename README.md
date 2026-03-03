@@ -70,6 +70,7 @@ fmt.Printf("Risk Score: %.2f\n", result.RiskScore)
 ```
 
 **异常检测能力**：
+
 - 非标准 TLS 版本
 - 已知弱密码套件
 - 异常扩展配置
@@ -105,6 +106,7 @@ fmt.Printf("HTTP/2 Hash: %s\n", result.Hash)
 ```
 
 **分析维度**：
+
 - Settings 帧参数配置
 - Priority 优先级树结构
 - Headers 帧头顺序
@@ -141,6 +143,7 @@ fmt.Printf("Risk Score: %.2f\n", result.RiskScore)
 ```
 
 **异常检测能力**：
+
 - 请求头顺序异常
 - 缺失常见请求头
 - User-Agent 不一致
@@ -214,6 +217,7 @@ if pattern.RegularityIndex > 0.8 &&
 ```
 
 **性能指标**：
+
 - 添加请求：< 1μs
 - 时序分析：< 10μs  
 - 协议分析：< 50μs
@@ -258,6 +262,7 @@ fmt.Printf("Risk Score: %.2f\n", result.RiskScore)
 ```
 
 **异常检测能力**：
+
 - 草稿版本（draft versions）
 - 缺失 CRYPTO 帧
 - 可疑的传输参数限制
@@ -300,6 +305,7 @@ fmt.Printf("可见字段签名: %s\n", result.VisibleFieldsSignature)
 ```
 
 **分析维度**：
+
 - **ECH 类型识别**：GREASE（兼容测试）、Outer（完整加密）、Inner（内部 Hello）
 - **影响评估**：SNI 可见性、受影响的指纹方法、仍可用的替代方法
 - **异常检测**：配置错误（ECH 但 SNI 仍可见）、协议异常（旧 TLS 版本使用 ECH）
@@ -328,7 +334,7 @@ if result.ECHPresent && result.Impact.ImpactLevel == "high" {
 ### 统一特征提取框架（基础架构）
 
 | 新增功能 | 说明 |
-|---------|------|
+| --------- | ------ |
 | **统一 Feature Extractor** | 可扩展的特征提取接口，支持多种实现（规则引擎、ML 等） |
 | **JSON 规则配置** | `internal/config/rules.json`：阈值、工具标记、规则完全可配置（由 `internal/extension` 统一加载） |
 | **统一配置入口** | `extension.NewUnifiedConfigFromEnv()`：自动加载运行配置 + 规则配置 |
@@ -540,24 +546,30 @@ headers := result.Headers.ToMap()
 ### 浏览器指纹（71 个）
 
 **Chrome 系列** (19 个)
+
 - Chrome 103, 104, 105, 106, 107, 108, 109, 110, 111, 112
 - Chrome 116_PSK, 116_PSK_PQ, 117, 120, 124
 - Chrome 130_PSK, 131, 131_PSK, 133, 133_PSK
 
 **Firefox 系列** (12 个)
+
 - Firefox 102, 104, 105, 106, 108, 110, 117, 120, 123, 132, 133, 135
 
 **Safari 系列** (9 个)
+
 - Safari 15.6.1, 16.0, iPad 15.6
 - Safari iOS 15.5, 15.6, 16.0, 17.0, 18.0, 18.5
 
 **Opera 系列** (3 个)
+
 - Opera 89, 90, 91
 
 **Edge 系列** (5 个) 🆕
+
 - Edge 99, 101, 120, 131, 133
 
 **移动端和自定义** (23 个)
+
 - Zalando (2), Nike (2), MMS (3), Mesh (4), Confirmed (3)
 - OkHttp4 Android (7), Cloudflare (1)
 
@@ -680,7 +692,7 @@ BrowserChrome, BrowserFirefox, BrowserSafari, BrowserOpera, BrowserEdge
 
 ## 性能
 
-```
+```text
 GetRandomFingerprint:     1374 ns/op    1779 B/op   11 allocs
 GetUserAgentByProfileName: 149 ns/op     134 B/op    2 allocs
 GenerateHeaders:           244 ns/op     304 B/op    4 allocs
@@ -718,7 +730,7 @@ RandomOS:                   15 ns/op       0 B/op    0 allocs ⭐
 ### 当前进度：P0 ✅ | P1 ✅ | P2 ✅
 
 | 阶段 | 核心目标 | 预期周期 | 状态 |
-|------|---------|---------|------|
+| ------ | --------- | --------- | ------ |
 | **P0** | 特征提取统一层 + 规则配置化 | 1-2 周 | ✅ 完成 |
 | **P1** | JA4S/H + HTTP/2 签名 + QUIC + 综合评分 + UA-CH 协商 | 2-4 周 | ✅ 完成 |
 | **P2** | 行为信号分析 + 风险评分体系优化 | 4-8 周 | ✅ 完成 |

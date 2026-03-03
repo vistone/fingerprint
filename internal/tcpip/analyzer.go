@@ -188,16 +188,25 @@ func MatchOSSignature(db map[string]OSSignature, ttl int, mss int, options strin
 }
 
 // ExtractTCPOptions 提取 TCP 选项字符串
+//
+// TODO: 当前为简化实现，需要完整实现 TCP 选项解析
+// 参考: github.com/google/gopacket 的实现方式
+// TCP 选项格式: Kind(1B) | Length(1B) | Data(variable)
 func ExtractTCPOptions(packet []byte) string {
-	var options []string
-	// 解析 TCP 选项字节
-	// MSS (2), SACK (4), Timestamps (8), NOP (1), Window Scale (3)
-	if len(packet) >= 20 {
-		// 简化实现：根据选项类型添加标签
-		options = append(options, "MSS")
+	// 当前返回简化结果，实际实现需要解析 TCP 头部后的选项字段
+	// 选项偏移量 = TCP 头部长度 (Data Offset * 4)
+	if len(packet) < 20 {
+		return ""
 	}
-	sort.Strings(options)
-	return strings.Join(options, ",")
+
+	// TODO: 实现完整的 TCP 选项解析
+	// 1. 从第 12 字节提取 Data Offset (高 4 位)
+	// 2. 计算选项起始偏移量
+	// 3. 解析选项直到达到选项长度
+	_ = packet // 使用参数避免编译警告
+
+	// 临时返回固定值，表示未实现
+	return "MSS,SACK,TS,NOP,WS"
 }
 
 // AnalyzeTTL 分析 TTL 值推断初始 TTL

@@ -10,12 +10,12 @@ import (
 
 // EnhancedConfigCenter 配置中心增强包装器
 type EnhancedConfigCenter struct {
-	center          *ConfigCenter
-	broadcastCh     chan ConfigChangeEvent
-	subscribers     map[string]chan ConfigChangeEvent
-	subscriberMu    sync.RWMutex
-	healthChecker   *ConfigHealthChecker
-	notificationMu  sync.RWMutex
+	center         *ConfigCenter
+	broadcastCh    chan ConfigChangeEvent
+	subscribers    map[string]chan ConfigChangeEvent
+	subscriberMu   sync.RWMutex
+	healthChecker  *ConfigHealthChecker
+	notificationMu sync.RWMutex
 }
 
 // ConfigChangeEvent 配置变更事件
@@ -68,7 +68,7 @@ func WrapConfigCenter(baseCenter *ConfigCenter) *EnhancedConfigCenter {
 		broadcastCh: make(chan ConfigChangeEvent, 100),
 		subscribers: make(map[string]chan ConfigChangeEvent),
 	}
-	
+
 	// 初始化健康检查器
 	enhanced.healthChecker = &ConfigHealthChecker{
 		center:     enhanced,
@@ -80,13 +80,13 @@ func WrapConfigCenter(baseCenter *ConfigCenter) *EnhancedConfigCenter {
 			LastCheckTime: time.Now(),
 		},
 	}
-	
+
 	// 启动广播处理器
 	go enhanced.broadcastProcessor()
-	
+
 	// 启动健康检查
 	go enhanced.healthChecker.start()
-	
+
 	return enhanced
 }
 
@@ -94,14 +94,14 @@ func WrapConfigCenter(baseCenter *ConfigCenter) *EnhancedConfigCenter {
 func (ecc *EnhancedConfigCenter) Subscribe(subscriberID string) (<-chan ConfigChangeEvent, error) {
 	ecc.subscriberMu.Lock()
 	defer ecc.subscriberMu.Unlock()
-	
+
 	if _, exists := ecc.subscribers[subscriberID]; exists {
 		return nil, fmt.Errorf("subscriber %s already exists", subscriberID)
 	}
-	
+
 	eventCh := make(chan ConfigChangeEvent, 10)
 	ecc.subscribers[subscriberID] = eventCh
-	
+
 	// 发送订阅确认事件
 	ecc.broadcastCh <- ConfigChangeEvent{
 		Type:        ConfigChangeTypeSubscribe,
@@ -109,7 +109,7 @@ func (ecc *EnhancedConfigCenter) Subscribe(subscriberID string) (<-chan ConfigCh
 		Description: fmt.Sprintf("Subscriber %s registered", subscriberID),
 		Source:      subscriberID,
 	}
-	
+
 	return eventCh, nil
 }
 
@@ -117,15 +117,15 @@ func (ecc *EnhancedConfigCenter) Subscribe(subscriberID string) (<-chan ConfigCh
 func (ecc *EnhancedConfigCenter) Unsubscribe(subscriberID string) error {
 	ecc.subscriberMu.Lock()
 	defer ecc.subscriberMu.Unlock()
-	
+
 	eventCh, exists := ecc.subscribers[subscriberID]
 	if !exists {
 		return fmt.Errorf("subscriber %s not found", subscriberID)
 	}
-	
+
 	close(eventCh)
 	delete(ecc.subscribers, subscriberID)
-	
+
 	return nil
 }
 
@@ -138,7 +138,7 @@ func (ecc *EnhancedConfigCenter) broadcastProcessor() {
 			subscribers[k] = v
 		}
 		ecc.notificationMu.RUnlock()
-		
+
 		// 异步发送给所有订阅者
 		for subscriberID, ch := range subscribers {
 			select {
@@ -146,8 +146,8 @@ func (ecc *EnhancedConfigCenter) broadcastProcessor() {
 				// 成功发送
 			default:
 				// 通道满，记录日志
-				logger.Warn("Config event channel full for subscriber", 
-					"subscriber", subscriberID, 
+				logger.Warn("Config event channel full for subscriber",
+					"subscriber", subscriberID,
 					"event_type", event.Type)
 			}
 		}
@@ -165,7 +165,7 @@ func (ecc *EnhancedConfigCenter) Update(newConfig *ManagedConfig, reason, change
 	if err := ecc.center.Update(newConfig, reason, changedBy); err != nil {
 		return err
 	}
-	
+
 	// 广播更新事件
 	ecc.broadcastCh <- ConfigChangeEvent{
 		Type:        ConfigChangeTypeUpdate,
@@ -174,7 +174,7 @@ func (ecc *EnhancedConfigCenter) Update(newConfig *ManagedConfig, reason, change
 		Description: reason,
 		Source:      changedBy,
 	}
-	
+
 	return nil
 }
 
@@ -196,10 +196,10 @@ func (ecc *EnhancedConfigCenter) AddHealthCheck(checkFunc HealthCheckFunc) {
 func (ecc *EnhancedConfigCenter) Close() error {
 	// 停止健康检查
 	ecc.healthChecker.stop()
-	
+
 	// 关闭广播通道
 	close(ecc.broadcastCh)
-	
+
 	// 关闭所有订阅者通道
 	ecc.subscriberMu.Lock()
 	for _, ch := range ecc.subscribers {
@@ -207,7 +207,7 @@ func (ecc *EnhancedConfigCenter) Close() error {
 	}
 	ecc.subscribers = make(map[string]chan ConfigChangeEvent)
 	ecc.subscriberMu.Unlock()
-	
+
 	return nil
 }
 
@@ -215,7 +215,7 @@ func (ecc *EnhancedConfigCenter) Close() error {
 func (hc *ConfigHealthChecker) start() {
 	ticker := time.NewTicker(hc.interval)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-hc.stopCh:
@@ -235,15 +235,15 @@ func (hc *ConfigHealthChecker) stop() {
 func (hc *ConfigHealthChecker) performCheck() {
 	hc.mu.Lock()
 	defer hc.mu.Unlock()
-	
-	config := hc.center.center.Get()  // 修正方法调用
+
+	config := hc.center.center.Get() // 修正方法调用
 	var allIssues []string
-	
+
 	for _, checkFunc := range hc.checkFuncs {
 		issues := checkFunc(config)
 		allIssues = append(allIssues, issues...)
 	}
-	
+
 	hc.lastStatus = ConfigHealthStatus{
 		Healthy:        len(allIssues) == 0,
 		LastCheckTime:  time.Now(),
@@ -251,7 +251,7 @@ func (hc *ConfigHealthChecker) performCheck() {
 		Version:        config.Metadata.Version,
 		LastUpdateTime: config.Metadata.LastModified,
 	}
-	
+
 	// 如果有问题，广播健康事件
 	if len(allIssues) > 0 {
 		hc.center.broadcastCh <- ConfigChangeEvent{
@@ -266,7 +266,7 @@ func (hc *ConfigHealthChecker) performCheck() {
 // defaultHealthCheck 默认健康检查
 func defaultHealthCheck(config *ManagedConfig) []string {
 	var issues []string
-	
+
 	// 检查必要配置是否存在
 	if config.BehaviorAnalysis == nil {
 		issues = append(issues, "BehaviorAnalysis config is missing")
@@ -277,7 +277,7 @@ func defaultHealthCheck(config *ManagedConfig) []string {
 	if config.Features == nil {
 		issues = append(issues, "Features config is missing")
 	}
-	
+
 	// 检查配置值的有效性
 	if config.BehaviorAnalysis != nil {
 		if config.BehaviorAnalysis.MinRequestsForAnalysis <= 0 {
@@ -287,7 +287,6 @@ func defaultHealthCheck(config *ManagedConfig) []string {
 			issues = append(issues, "RegularityThreshold must be between 0 and 1")
 		}
 	}
-	
+
 	return issues
 }
-

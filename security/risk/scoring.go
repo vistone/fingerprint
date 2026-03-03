@@ -163,9 +163,26 @@ type ThreatThresholds struct {
 	Critical float64 // > 0.8
 }
 
+// MaliciousFingerprintEntry 恶意指纹条目
+type MaliciousFingerprintEntry struct {
+	// 指纹哈希 (JA3 或 JA4)
+	Hash string
+	// 指纹类型 ("JA3" 或 "JA4")
+	Type string
+	// 威胁类型 (e.g., "botnet", "scanner", "exploit_kit")
+	ThreatType string
+	// 严重程度 (0.0-1.0)
+	Severity float64
+	// 描述
+	Description string
+	// 最后发现时间 (可选)
+	LastSeen string
+}
+
 // RiskScorer 风险评分器
 type RiskScorer struct {
-	config ScoringConfig
+	config               ScoringConfig
+	maliciousFingerprints map[string]MaliciousFingerprintEntry
 }
 
 // NewRiskScorer 创建风险评分器
@@ -174,7 +191,8 @@ func NewRiskScorer(config *ScoringConfig) *RiskScorer {
 		config = DefaultScoringConfig()
 	}
 	return &RiskScorer{
-		config: *config,
+		config:               *config,
+		maliciousFingerprints: initMaliciousFingerprintDatabase(),
 	}
 }
 
@@ -259,9 +277,29 @@ func (s *RiskScorer) calculateTLSRisk(input RiskInput, result *RiskScore) {
 			Weight:      s.config.Weights.TLSFingerprint,
 			Confidence:  0.9,
 		})
+	} else {
+		// 检查是否匹配已知恶意指纹数据库
+		if entry, found := s.checkMaliciousFingerprint(input.JA3Hash, "JA3"); found {
+			score = entry.Severity
+			result.RiskFactors = append(result.RiskFactors, RiskFactor{
+				Type:        "MALICIOUS_TLS_FINGERPRINT",
+				Severity:    entry.Severity,
+				Description: fmt.Sprintf("检测到恶意指纹: %s (%s)", entry.ThreatType, entry.Description),
+				Weight:      s.config.Weights.TLSFingerprint,
+				Confidence:  0.95,
+			})
+		} else if entry, found := s.checkMaliciousFingerprint(input.JA4Hash, "JA4"); found {
+			score = entry.Severity
+			result.RiskFactors = append(result.RiskFactors, RiskFactor{
+				Type:        "MALICIOUS_TLS_FINGERPRINT",
+				Severity:    entry.Severity,
+				Description: fmt.Sprintf("检测到恶意指纹: %s (%s)", entry.ThreatType, entry.Description),
+				Weight:      s.config.Weights.TLSFingerprint,
+				Confidence:  0.95,
+			})
+		}
 	}
 
-	// TODO: 可以集成已知恶意指纹数据库进行匹配
 	result.Dimensions.TLSFingerprint = score
 }
 
@@ -629,4 +667,86 @@ func (r *RiskScore) GetSummary() string {
 func CalculateRisk(input RiskInput) (*RiskScore, error) {
 	scorer := NewRiskScorer(nil)
 	return scorer.CalculateRisk(input)
+}
+
+// checkMaliciousFingerprint 检查指纹是否在恶意指纹数据库中
+func (s *RiskScorer) checkMaliciousFingerprint(hash, fingerprintType string) (MaliciousFingerprintEntry, bool) {
+	if hash == "" {
+		return MaliciousFingerprintEntry{}, false
+	}
+	
+	key := fingerprintType + ":" + hash
+	entry, found := s.maliciousFingerprints[key]
+	return entry, found
+}
+
+// initMaliciousFingerprintDatabase 初始化恶意指纹数据库
+// 这里包含一些已知的恶意指纹示例，实际使用中应该从外部数据源加载
+func initMaliciousFingerprintDatabase() map[string]MaliciousFingerprintEntry {
+	db := make(map[string]MaliciousFingerprintEntry)
+	
+	// 示例：已知的恶意指纹条目
+	// 注意：这些是示例数据，实际部署时应该使用真实的威胁情报数据
+	
+	// Mirai 僵尸网络
+	db["JA3:6734f37431670b3ab4292b8f60f29984"] = MaliciousFingerprintEntry{
+		Hash:        "6734f37431670b3ab4292b8f60f29984",
+		Type:        "JA3",
+		ThreatType:  "botnet",
+		Severity:    0.9,
+		Description: "Mirai 僵尸网络变种",
+		LastSeen:    "2024-01",
+	}
+	
+	// Metasploit Framework
+	db["JA3:a0e9f5d64349fb13191bc781f81f42e1"] = MaliciousFingerprintEntry{
+		Hash:        "a0e9f5d64349fb13191bc781f81f42e1",
+		Type:        "JA3",
+		ThreatType:  "exploit_framework",
+		Severity:    0.85,
+		Description: "Metasploit 默认配置",
+		LastSeen:    "2024-02",
+	}
+	
+	// Nmap Scanner
+	db["JA3:c4d5c8a8e5d91e9e9f8d5b5c5d5e5f5a"] = MaliciousFingerprintEntry{
+		Hash:        "c4d5c8a8e5d91e9e9f8d5b5c5d5e5f5a",
+		Type:        "JA3",
+		ThreatType:  "scanner",
+		Severity:    0.7,
+		Description: "Nmap 网络扫描器",
+		LastSeen:    "2024-03",
+	}
+	
+	// SQLMap Injection Tool
+	db["JA3:b32309a26951912be7dba376398abc3b"] = MaliciousFingerprintEntry{
+		Hash:        "b32309a26951912be7dba376398abc3b",
+		Type:        "JA3",
+		ThreatType:  "injection_tool",
+		Severity:    0.95,
+		Description: "SQLMap SQL 注入工具",
+		LastSeen:    "2024-02",
+	}
+	
+	// ZGrab Scanner
+	db["JA3:f436b9416f37d134cadd04886327d3e8"] = MaliciousFingerprintEntry{
+		Hash:        "f436b9416f37d134cadd04886327d3e8",
+		Type:        "JA3",
+		ThreatType:  "scanner",
+		Severity:    0.65,
+		Description: "ZGrab 安全扫描器",
+		LastSeen:    "2024-01",
+	}
+	
+	// JA4 示例：恶意爬虫
+	db["JA4:t13d1516h2_8daaf6152771_b0da82dd1658"] = MaliciousFingerprintEntry{
+		Hash:        "t13d1516h2_8daaf6152771_b0da82dd1658",
+		Type:        "JA4",
+		ThreatType:  "malicious_crawler",
+		Severity:    0.75,
+		Description: "恶意数据采集爬虫",
+		LastSeen:    "2024-03",
+	}
+	
+	return db
 }
