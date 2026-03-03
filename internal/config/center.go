@@ -371,11 +371,9 @@ func (cc *ConfigCenter) detectChanges(old, new *ManagedConfig) []ConfigChange {
 }
 
 // copyConfig 深复制配置
+// 使用手写的 Clone 方法，性能优于 JSON 序列化
 func (cc *ConfigCenter) copyConfig(config *ManagedConfig) *ManagedConfig {
-	data, _ := json.Marshal(config)
-	var copy ManagedConfig
-	json.Unmarshal(data, &copy)
-	return &copy
+	return config.Clone()
 }
 
 // validateConfig 验证配置（基础验证）

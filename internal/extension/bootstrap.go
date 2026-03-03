@@ -1,6 +1,11 @@
+//go:build bootstrap
+// +build bootstrap
+
 package extension
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // ApplicationBootstrapper 应用级别启动引导程序
 // 负责协调依赖初始化，确保单一组合根原则

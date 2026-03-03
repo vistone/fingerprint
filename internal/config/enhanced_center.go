@@ -2,10 +2,9 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"sync"
 	"time"
-
-	"github.com/vistone/fingerprint/internal/logger"
 )
 
 // EnhancedConfigCenter 配置中心增强包装器
@@ -146,9 +145,8 @@ func (ecc *EnhancedConfigCenter) broadcastProcessor() {
 				// 成功发送
 			default:
 				// 通道满，记录日志
-				logger.Warn("Config event channel full for subscriber",
-					"subscriber", subscriberID,
-					"event_type", event.Type)
+				log.Printf("[WARN] Config event channel full for subscriber: %s, event_type: %v",
+					subscriberID, event.Type)
 			}
 		}
 	}

@@ -8,10 +8,48 @@ import (
 	"fmt"
 	"sync"
 	"time"
-
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 )
+
+// ========================================================================
+// 核心接口定义
+// ========================================================================
+
+// Tracer 追踪接口（简化版，避免依赖OpenTelemetry）
+type Tracer interface {
+	Start(ctx context.Context, name string) (context.Context, Span)
+}
+
+// Span 追踪Span接口
+type Span interface {
+	End()
+	SetAttributes(attrs ...Attribute)
+	RecordError(err error)
+}
+
+// Attribute 追踪属性
+type Attribute struct {
+	Key   string
+	Value interface{}
+}
+
+// NoOpTracer 空追踪器实现
+type NoOpTracer struct{}
+
+func (t NoOpTracer) Start(ctx context.Context, name string) (context.Context, Span) {
+	return ctx, NoOpSpan{}
+}
+
+// NoOpSpan 空Span实现
+type NoOpSpan struct{}
+
+func (s NoOpSpan) End()                             {}
+func (s NoOpSpan) SetAttributes(attrs ...Attribute) {}
+func (s NoOpSpan) RecordError(err error)            {}
+
+// DefaultTracer 返回默认的空追踪器
+func DefaultTracer() Tracer {
+	return NoOpTracer{}
+}
 
 // ========================================================================
 // 核心接口定义
@@ -64,11 +102,14 @@ type Pipeline struct {
 	middlewares []Middleware
 	stageIndex  map[string]int // 阶段名 -> 索引，用于快速查找依赖
 
-	tracer trace.Tracer
+	tracer Tracer
 }
 
 // NewPipeline 创建新流水线
-func NewPipeline(tracer trace.Tracer) *Pipeline {
+func NewPipeline(tracer Tracer) *Pipeline {
+	if tracer == nil {
+		tracer = DefaultTracer()
+	}
 	return &Pipeline{
 		stages:      []Stage{},
 		middlewares: []Middleware{},
@@ -152,10 +193,10 @@ func (p *Pipeline) Execute(ctx context.Context, input interface{}) (*StageData, 
 
 			stageSpan.RecordError(err)
 			stageSpan.SetAttributes(
-				attribute.String("stage.name", stageName),
-				attribute.Int("stage.index", i),
-				attribute.Int64("duration_ms", duration.Milliseconds()),
-				attribute.Bool("error", true),
+				Attribute{Key: "stage.name", Value: stageName},
+				Attribute{Key: "stage.index", Value: i},
+				Attribute{Key: "duration_ms", Value: duration.Milliseconds()},
+				Attribute{Key: "error", Value: true},
 			)
 			stageSpan.End()
 
@@ -167,17 +208,17 @@ func (p *Pipeline) Execute(ctx context.Context, input interface{}) (*StageData, 
 		data.Duration = duration
 
 		stageSpan.SetAttributes(
-			attribute.String("stage.name", stageName),
-			attribute.Int("stage.index", i),
-			attribute.Int64("duration_ms", duration.Milliseconds()),
-			attribute.Bool("error", false),
+			Attribute{Key: "stage.name", Value: stageName},
+			Attribute{Key: "stage.index", Value: i},
+			Attribute{Key: "duration_ms", Value: duration.Milliseconds()},
+			Attribute{Key: "error", Value: false},
 		)
 		stageSpan.End()
 	}
 
 	pipelineSpan.SetAttributes(
-		attribute.Int("stages.count", len(p.stages)),
-		attribute.Int64("total_duration_ms", data.Duration.Milliseconds()),
+		Attribute{Key: "stages.count", Value: len(p.stages)},
+		Attribute{Key: "total_duration_ms", Value: data.Duration.Milliseconds()},
 	)
 
 	return data, nil

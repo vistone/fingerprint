@@ -4,7 +4,6 @@ package tcpip
 import (
 	"crypto/md5"
 	"fmt"
-	"sort"
 	"strings"
 )
 
@@ -189,24 +188,97 @@ func MatchOSSignature(db map[string]OSSignature, ttl int, mss int, options strin
 
 // ExtractTCPOptions 提取 TCP 选项字符串
 //
-// TODO: 当前为简化实现，需要完整实现 TCP 选项解析
-// 参考: github.com/google/gopacket 的实现方式
+// 完整实现 TCP 选项解析，返回选项名称的逗号分隔字符串
+// 参考: RFC 793, RFC 1323, RFC 2018
 // TCP 选项格式: Kind(1B) | Length(1B) | Data(variable)
 func ExtractTCPOptions(packet []byte) string {
-	// 当前返回简化结果，实际实现需要解析 TCP 头部后的选项字段
-	// 选项偏移量 = TCP 头部长度 (Data Offset * 4)
+	// TCP 头部最小长度为 20 字节
 	if len(packet) < 20 {
 		return ""
 	}
 
-	// TODO: 实现完整的 TCP 选项解析
-	// 1. 从第 12 字节提取 Data Offset (高 4 位)
-	// 2. 计算选项起始偏移量
-	// 3. 解析选项直到达到选项长度
-	_ = packet // 使用参数避免编译警告
+	// 从第 12 字节提取 Data Offset (高 4 位)
+	// Data Offset 表示 TCP 头部长度，单位是 32 位字（4 字节）
+	dataOffset := (packet[12] >> 4) * 4
 
-	// 临时返回固定值，表示未实现
-	return "MSS,SACK,TS,NOP,WS"
+	// 验证头部长度
+	if dataOffset < 20 || int(dataOffset) > len(packet) {
+		return ""
+	}
+
+	// 选项从第 20 字节开始，到 Data Offset 结束
+	if dataOffset == 20 {
+		return "" // 没有选项
+	}
+
+	optionsData := packet[20:dataOffset]
+	var options []string
+
+	i := 0
+	for i < len(optionsData) {
+		kind := optionsData[i]
+
+		// Kind 0 (EOL) - End of Option List
+		if kind == 0 {
+			break
+		}
+
+		// Kind 1 (NOP) - No-Operation (单字节选项)
+		if kind == 1 {
+			options = append(options, "NOP")
+			i++
+			continue
+		}
+
+		// 其他选项至少需要 2 字节 (Kind + Length)
+		if i+1 >= len(optionsData) {
+			break
+		}
+
+		length := int(optionsData[i+1])
+
+		// 验证长度
+		if length < 2 || i+length > len(optionsData) {
+			break
+		}
+
+		// 解析具体选项
+		switch kind {
+		case 2:
+			options = append(options, "MSS")
+		case 3:
+			options = append(options, "WS")
+		case 4:
+			options = append(options, "SACK_PERMITTED")
+		case 5:
+			options = append(options, "SACK")
+		case 8:
+			options = append(options, "TS")
+		case 14:
+			options = append(options, "TCP_ALTCHK")
+		case 15:
+			options = append(options, "TCP_ALTCHK_DATA")
+		case 28:
+			options = append(options, "UTO")
+		case 29:
+			options = append(options, "TCP_AO")
+		case 30:
+			options = append(options, "MP_CAPABLE")
+		case 34:
+			options = append(options, "TFO")
+		default:
+			// 未知选项，记录其 Kind 值
+			options = append(options, fmt.Sprintf("OPT_%d", kind))
+		}
+
+		i += length
+	}
+
+	if len(options) == 0 {
+		return ""
+	}
+
+	return strings.Join(options, ",")
 }
 
 // AnalyzeTTL 分析 TTL 值推断初始 TTL

@@ -1,3 +1,6 @@
+//go:build instrumentation
+// +build instrumentation
+
 package behavior
 
 import (

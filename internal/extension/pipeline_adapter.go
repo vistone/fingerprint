@@ -1,3 +1,6 @@
+//go:build pipelineadapter
+// +build pipelineadapter
+
 package extension
 
 import (

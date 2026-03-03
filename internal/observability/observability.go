@@ -1,3 +1,6 @@
+//go:build instrumentation
+// +build instrumentation
+
 // internal/observability/observability.go
 // 完整的可观测性整合（现在就能用）
 
