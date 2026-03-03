@@ -10,6 +10,7 @@ import (
 )
 
 // ConfigCenter 配置中心 - 集中管理所有配置
+// 当 configPath 为空时，ConfigCenter 以内存模式运行，配置仅保存在内存中不持久化到文件。
 type ConfigCenter struct {
 	mu                sync.RWMutex
 	current           *ManagedConfig

@@ -456,7 +456,7 @@ func ComputeJA4SFromBytes(serverHelloBytes []byte) (*JA4SResult, error) {
 
 // MatchJA4S 比较两个 JA4S 哈希值是否匹配
 func MatchJA4S(hash1, hash2 string) bool {
-	return hash1 != "" && hash2 != "" && hash1 == hash2
+	return len(hash1) == 64 && len(hash2) == 64 && hash1 == hash2
 }
 
 // ComputeJA4SFromProfileData 从 Profile 数据计算 JA4S（用于客户端模拟）
