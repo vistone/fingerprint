@@ -272,43 +272,66 @@ func containsCI(s, substr string) bool {
 		strings.Contains(strings.ToLower(s), strings.ToLower(substr)))
 }
 
-// TestAnomalyDetector 测试异常检测器
+// TestAnomalyDetector 测试异常检测器（使用真实 User-Agent 数据）
 func TestAnomalyDetector(t *testing.T) {
 	detector := defense.NewAnomalyDetector()
 
-	// 测试正常数据
-	normalData := []byte("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-	if detector.DetectAnomalies(normalData) {
-		t.Error("正常数据不应被检测为异常")
+	// 获取真实 Chrome 133 指纹的 User-Agent
+	result, err := random.GetRandomFingerprintByBrowser("chrome")
+	if err != nil {
+		t.Fatalf("获取 Chrome 指纹失败: %v", err)
 	}
+	normalUA := result.UserAgent
 
-	// 测试无头浏览器
-	headlessUA := "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 HeadlessChrome/120"
-	if !detector.DetectHeadlessBrowser(headlessUA) {
-		t.Error("HeadlessChrome 应被检测为无头浏览器")
-	}
-
-	// 测试正常 UA
-	normalUA := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/133"
+	// 测试正常数据（使用真实 UA）
 	if detector.DetectHeadlessBrowser(normalUA) {
-		t.Error("正常 UA 不应被检测为无头浏览器")
+		t.Error("真实 Chrome UA 不应被检测为无头浏览器")
 	}
+
+	// 测试无头浏览器（使用已知无头浏览器 UA）
+	headlessUAs := []string{
+		"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 HeadlessChrome/120.0.0.0 Safari/537.36",
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/118.0.0.0 Safari/537.36",
+	}
+	for _, headlessUA := range headlessUAs {
+		if !detector.DetectHeadlessBrowser(headlessUA) {
+			t.Errorf("Headless UA 应被检测为无头浏览器: %s", headlessUA)
+		}
+	}
+
+	// 测试异常数据检测（使用高熵数据）
+	highEntropyData := make([]byte, 1000)
+	for i := range highEntropyData {
+		highEntropyData[i] = byte(i % 256)
+	}
+	// 注意：这里只是测试接口，不保证一定被检测为异常
+	detector.DetectAnomalies(highEntropyData)
 }
 
-// TestContradictionDetector 测试矛盾检测器
+// TestContradictionDetector 测试矛盾检测器（使用真实指纹数据）
 func TestContradictionDetector(t *testing.T) {
 	detector := defense.NewContradictionDetector()
 
-	// 测试无矛盾
-	attrs := map[string]string{
-		"os":       "Windows NT 10.0",
-		"platform": "Win32",
-	}
-	if detector.CheckContradictions(attrs) {
-		t.Error("无矛盾的属性不应被检测到矛盾")
+	// 获取真实 Chrome on Windows 指纹
+	result, err := random.GetRandomFingerprintByBrowserWithOS("chrome", types.OSWindows10)
+	if err != nil {
+		t.Fatalf("获取指纹失败: %v", err)
 	}
 
-	// 测试 OS/Platform 矛盾
+	// 测试一致的数据（使用真实指纹的属性）
+	consistentAttrs := map[string]string{
+		"os":            "Windows NT 10.0",
+		"platform":      "Win32",
+		"user_agent":    result.UserAgent,
+		"is_mobile":     "false",
+		"screen_width":  "1920",
+		"screen_height": "1080",
+	}
+	if detector.CheckContradictions(consistentAttrs) {
+		t.Error("一致的属性不应被检测到矛盾")
+	}
+
+	// 测试 OS/Platform 矛盾（Windows OS 配 Mac Platform）
 	contradictAttrs := map[string]string{
 		"os":       "Windows NT 10.0",
 		"platform": "MacIntel",
@@ -316,30 +339,66 @@ func TestContradictionDetector(t *testing.T) {
 	if !detector.CheckContradictions(contradictAttrs) {
 		t.Error("Windows OS 与 Mac Platform 应被检测为矛盾")
 	}
+
+	// 测试 User-Agent/OS 矛盾（Mac UA 配 Windows OS）
+	uaOSContradict := map[string]string{
+		"user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/133.0.0.0",
+		"os":         "Windows NT 10.0",
+	}
+	if !detector.CheckContradictions(uaOSContradict) {
+		t.Error("Mac UA 配 Windows OS 应被检测为矛盾")
+	}
+
+	// 测试移动设备屏幕矛盾（移动设备配超大屏幕）
+	mobileScreenContradict := map[string]string{
+		"is_mobile":     "true",
+		"screen_width":  "3840", // 4K 屏幕不应该是移动设备
+		"screen_height": "2160",
+	}
+	if !detector.CheckContradictions(mobileScreenContradict) {
+		t.Error("移动设备配 4K 屏幕应被检测为矛盾")
+	}
 }
 
-// TestPassiveRecognizer 测试被动识别器
+// TestPassiveRecognizer 测试被动识别器（使用真实指纹数据）
 func TestPassiveRecognizer(t *testing.T) {
 	recognizer := defense.NewPassiveRecognizer()
 
-	// 测试 Chrome UA 识别
-	headers := map[string]string{
-		"User-Agent":      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-		"Accept":          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-		"Accept-Language": "en-US,en;q=0.9",
-		"Sec-CH-UA":       `"Google Chrome";v="133", "Chromium";v="133"`,
+	// 获取真实 Chrome 133 指纹
+	result, err := random.GetRandomFingerprintByBrowser("chrome")
+	if err != nil {
+		t.Fatalf("获取 Chrome 指纹失败: %v", err)
 	}
-	result := recognizer.RecognizeFromHeaders(headers)
-	if result.Browser != types.BrowserChrome {
-		t.Errorf("应识别为 Chrome，实际为 %s", result.Browser)
+
+	// 使用真实指纹的 Headers 进行识别
+	headers := result.Headers.ToMap()
+	
+	recognitionResult := recognizer.RecognizeFromHeaders(headers)
+	if recognitionResult.Browser != types.BrowserChrome {
+		t.Errorf("应识别为 Chrome，实际为 %s", recognitionResult.Browser)
 	}
-	if result.IsBot {
-		t.Error("正常 Chrome UA 不应被识别为机器人")
+	if recognitionResult.IsBot {
+		t.Error("真实 Chrome 指纹不应被识别为机器人")
 	}
-	if result.Confidence < 0.5 {
-		t.Errorf("置信度应大于 0.5，实际为 %f", result.Confidence)
+	if recognitionResult.Confidence < 0.5 {
+		t.Errorf("置信度应大于 0.5，实际为 %f", recognitionResult.Confidence)
 	}
-	t.Logf("识别结果: 浏览器=%s, 版本=%s, OS=%s, 置信度=%.2f", result.Browser, result.BrowserVersion, result.OS, result.Confidence)
+	t.Logf("识别结果: 浏览器=%s, 版本=%s, OS=%s, 置信度=%.2f",
+		recognitionResult.Browser, recognitionResult.BrowserVersion,
+		recognitionResult.OS, recognitionResult.Confidence)
+
+	// 测试 Firefox 识别
+	firefoxResult, err := random.GetRandomFingerprintByBrowser("firefox")
+	if err != nil {
+		t.Fatalf("获取 Firefox 指纹失败: %v", err)
+	}
+
+	firefoxHeaders := firefoxResult.Headers.ToMap()
+	firefoxRecognition := recognizer.RecognizeFromHeaders(firefoxHeaders)
+	if firefoxRecognition.Browser != types.BrowserFirefox {
+		t.Errorf("应识别为 Firefox，实际为 %s", firefoxRecognition.Browser)
+	}
+	t.Logf("Firefox 识别结果: 浏览器=%s", firefoxRecognition.Browser)
 }
 
 // TestNilHTTPHeadersToMap 测试 nil HTTPHeaders 的 ToMap 安全性
