@@ -24,8 +24,8 @@ docs/
 ├── 3-references/        (参考文档 - API文档、配置说明)
 ├── 4-templates/         (模板文件 - CI/CD、问题模板等)
 ├── 5-process/           (流程文档 - 开发流程、发布流程)
-├── README.md            (文档导航首页)
-└── RULES.md             (本文件 - 文档规则)
+├── readme.md            (文档导航首页)
+└── rules.md             (本文件 - 文档规则)
 ```
 
 ### 3. 文件命名规则
@@ -298,7 +298,7 @@ A: 答案
 
 ## 相关文档
 - [改进计划](./2-guides/02-improvement-plan.md)
-- [开发规范](./5-process/development/README.md)
+- [开发规范](./5-process/development/readme.md)
 
 ## 变更历史
 - v1.0 (2026-02-28): 初始版本
@@ -433,7 +433,7 @@ A: 答案
 ## 🔗 文档发现机制
 
 ### 导航首页
-`docs/README.md` - 所有文档的入口点
+`docs/readme.md` - 所有文档的入口点
 
 ### 自动生成的索引
 定期扫描 `docs/` 目录生成索引 (可选)

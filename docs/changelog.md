@@ -11,7 +11,7 @@
 
 - **Phase 3 模块化深度优化计划**（2026-03-02）
   - 创建 `docs/5-process/modularization/` 目录结构
-  - 编写完整的 Phase 3 优化计划文档（PHASE_3_PLAN.md，357行）
+  - 编写完整的 Phase 3 优化计划文档（phase-3-plan.md，357行）
   - 详细的 9 个模块优化任务清单（P1 高优先级 3个，P2 中优先级 4个）
   - 性能优化目标：GetRandomFingerprint 从 7.1µs 优化到 6µs
   - 测试覆盖率目标：核心模块 > 80%，辅助模块 > 70%
@@ -66,7 +66,7 @@
     - `/metrics` 端点集成支持
   - **示例和文档**：
     - 完整的监控演示程序（examples/monitoring/main.go）
-    - 详细的使用文档和最佳实践（docs/monitoring/README.md）
+    - 详细的使用文档和最佳实践（docs/monitoring/readme.md）
     - HTTP 中间件集成示例
 
 - **TCP/IP 层指纹识别系统**：完整的 TCP/IP 网络层特征分析
@@ -161,7 +161,7 @@
   - 所有编译错误和测试通过
 
 - **GitHub 标准化**（2026-03-01）
-  - 创建根目录文档符号链接：CHANGELOG.md、CONTRIBUTING.md、SECURITY.md
+  - 创建根目录文档符号链接：changelog.md、contributing.md、security.md
   - 符合 GitHub 开源项目最佳实践
   - 提升关键文档的可发现性
 
@@ -174,7 +174,7 @@
   - `docs/COMPLETION_REPORT.md`
   - `docs/2-guides/developer/02-error-fixes-summary.md`
   - `docs/sdk/IMPLEMENTATION_SUMMARY.md`
-  - 新增统一指引：后续变更统一记录到 `docs/CHANGELOG.md`
+  - 新增统一指引：后续变更统一记录到 `docs/changelog.md`
 
 - **架构改进：依赖注入模式** (`internal/extension/container.go`)
   - 集中式依赖注入容器管理组件生命周期
@@ -328,7 +328,7 @@
 
 ## 支持
 
-- 📖 [文档](./README.md)
+- 📖 [文档](./readme.md)
 - 🐛 [问题追踪](https://github.com/vistone/fingerprint/issues)
 - 💬 [讨论](https://github.com/vistone/fingerprint/discussions)
 - 📧 [邮件支持](mailto:support@example.com)
@@ -349,6 +349,6 @@
 
 - [GitHub 仓库](https://github.com/vistone/fingerprint)
 - [包文档](https://pkg.go.dev/github.com/vistone/fingerprint)
-- [贡献指南](./CONTRIBUTING.md)
-- [安全政策](./SECURITY.md)
+- [贡献指南](./contributing.md)
+- [安全政策](./security.md)
 - [许可证](../LICENSE)

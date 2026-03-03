@@ -483,10 +483,10 @@ package fingerprint
 // ============================================================================
 //
 // 12.1 CHANGELOG 变更记录
-// 所有代码变更必须在 CHANGELOG.md 中记录:
+// 所有代码变更必须在 changelog.md 中记录:
 //
 // ✅ 必须:
-//   - 每次提交功能/修复时更新 CHANGELOG.md
+//   - 每次提交功能/修复时更新 changelog.md
 //   - 使用标准分类: Added/Changed/Fixed/Deprecated/Removed/Security
 //   - 描述简洁明确，说明"是什么"而非"为什么"
 //   - 按时间倒序排列（最新的在最上面）

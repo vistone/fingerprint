@@ -196,8 +196,8 @@ Week 6 (优化和总结):
 为后续维护和扩展奠定基础
 
 **文档清单**:
-- [ ] MIGRATION_GUIDE.md (已有，可能需要更新)
-- [ ] PIPELINE_BEST_PRACTICES.md
+- [ ] migration-guide.md (已有，可能需要更新)
+- [ ] pipeline-best-practices.md
   - 何时使用 ProcessWithPipeline
   - 如何选择中间件
   - 常见陷阱和解决方案
@@ -223,7 +223,7 @@ Week 6 (优化和总结):
       - 对每个示例的测试
       - 验证示例代码的正确性
 
-[ ] 3. 创建文档 docs/sdk/INTEGRATION_GUIDE.md
+[ ] 3. 创建文档 docs/sdk/integration-guide.md
       - 快速开始指南
       - 选择性迁移决策树
 ```
@@ -308,9 +308,9 @@ Week 6 (优化和总结):
 - 更新: internal/extension/pipeline.go (如需优化)
 
 ### 文档交付
-- [ ] 更新 MIGRATION_GUIDE.md
-- [ ] 创建 INTEGRATION_GUIDE.md (新)
-- [ ] 创建 PIPELINE_BEST_PRACTICES.md (新)
+- [ ] 更新 migration-guide.md
+- [ ] 创建 integration-guide.md (新)
+- [ ] 创建 pipeline-best-practices.md (新)
 - [ ] WEEK3-4-REPORT.md (最终总结)
 
 ### 决策输出

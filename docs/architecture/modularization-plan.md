@@ -297,13 +297,13 @@ func ComputeJA4(profile ClientProfile) (JA4Result, error) {
 1. 更新所有测试文件的 import 路径
 2. 更新 examples/ 中的示例代码
 3. 更新 docs/ 中的文档
-4. 更新 README.md
+4. 更新 readme.md
 
 ### Phase 6: 验证和清理
 
 1. 运行完整测试套件
 2. 运行基准测试确保性能无回归
-3. 更新 CHANGELOG.md
+3. 更新 changelog.md
 4. 删除根目录下的旧文件标记
 
 ## 向后兼容策略
@@ -415,9 +415,9 @@ func ComputeJA3(profile ClientProfile) (JA3Result, error) {
 
 ### 文档完整性
 - ✅ 所有公开 API 有文档注释
-- ✅ README.md 更新
+- ✅ readme.md 更新
 - ✅ 迁移指南完成
-- ✅ CHANGELOG.md 更新
+- ✅ changelog.md 更新
 
 ## 迁移指南（用户）
 
@@ -486,4 +486,4 @@ func main() {
 - [Effective Go](https://golang.org/doc/effective_go)
 - [Go 代码审查评论](https://github.com/golang/go/wiki/CodeReviewComments)
 - [项目开发规范](../5-process/development/00-go-development-rules.md)
-- [模块化架构设计](./MODULAR_ARCHITECTURE.md)
+- [模块化架构设计](./modular-architecture.md)

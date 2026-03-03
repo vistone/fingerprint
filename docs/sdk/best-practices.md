@@ -76,7 +76,7 @@ your-extension/
 ├── docs/
 │   ├── API.md
 │   └── USAGE.md
-└── README.md
+└── readme.md
 ```
 
 ### 模块初始化
@@ -554,8 +554,8 @@ A: 添加基准测试，使用 pprof 分析性能
 
 ## 10. 资源
 
-- [官方 SDK 指南](DEVELOPER_GUIDE.md)
-- [架构文档](../architecture/MODULAR_ARCHITECTURE.md)
+- [官方 SDK 指南](developer-guide.md)
+- [架构文档](../architecture/modular-architecture.md)
 - [示例代码](../../examples/)
 - [API 参考](API_REFERENCE.md)（即将推出）
 

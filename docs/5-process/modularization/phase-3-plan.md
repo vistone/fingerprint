@@ -264,7 +264,7 @@ return nil, errors.Wrap(errors.ErrProfileNotFound, "profile lookup failed")
 
 ### 5.4 文档完整性
 
-- ✅ 每个模块有 README.md
+- ✅ 每个模块有 readme.md
 - ✅ 所有公开函数有 GoDoc 注释
 - ✅ 有使用示例的 examples/ 代码
 - ✅ API 文档已更新
@@ -294,7 +294,7 @@ return nil, errors.Wrap(errors.ErrProfileNotFound, "profile lookup failed")
 
 ### 7.1 相关文档
 
-- [模块化架构计划](../architecture/MODULARIZATION_PLAN.md)
+- [模块化架构计划](../architecture/modularization-plan.md)
 - [Go 开发规范](../development/00-go-development-rules.md)
 - [项目规则](../development/01-fingerprint-project-rules.md)
 
@@ -311,7 +311,7 @@ return nil, errors.Wrap(errors.ErrProfileNotFound, "profile lookup failed")
 ### 立即执行（本周）
 
 1. ✅ **创建本文档** - 已完成
-2. ✅ **建立性能基线** - 已完成（见 PHASE_3_BASELINE.md）
+2. ✅ **建立性能基线** - 已完成（见 phase-3-baseline.md）
 3. 🔲 **创建 feature/phase-3-optimization 分支**
 4. 🔲 **团队评审本计划**
 5. 🔲 **开始 P1 任务**

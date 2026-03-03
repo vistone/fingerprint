@@ -4,7 +4,7 @@
 
 ## 📁 文档清单
 
-### [PHASE_3_PLAN.md](PHASE_3_PLAN.md)
+### [phase-3-plan.md](phase-3-plan.md)
 **Phase 3: 模块化深度优化计划**
 
 - **状态**: 📋 规划中
@@ -16,7 +16,7 @@
   - 测试覆盖率提升（> 80% 核心模块）
   - 文档完善
 
-### [PHASE_3_BASELINE.md](PHASE_3_BASELINE.md)
+### [phase-3-baseline.md](phase-3-baseline.md)
 **Phase 3: 性能基线报告**
 
 - **状态**: ✅ 已建立
@@ -55,13 +55,13 @@
 
 ## 📖 相关文档
 
-- [模块化架构计划](../../architecture/MODULARIZATION_PLAN.md) - 总体架构文档
+- [模块化架构计划](../../architecture/modularization-plan.md) - 总体架构文档
 - [Go 开发规范](../development/00-go-development-rules.md) - 代码标准
 - [项目规则](../development/01-fingerprint-project-rules.md) - 项目约定
 
 ## 🚀 如何参与
 
-1. 阅读 [PHASE_3_PLAN.md](PHASE_3_PLAN.md) 了解详细计划
+1. 阅读 [phase-3-plan.md](phase-3-plan.md) 了解详细计划
 2. 选择一个模块任务
 3. 创建 feature 分支开始工作
 4. 提交 PR 并确保通过 CI/CD

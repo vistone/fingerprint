@@ -337,6 +337,6 @@ git reset --hard HEAD
 
 ## 相关文档
 
-- 完整重构计划: [PACKAGE_RESTRUCTURING_PLAN.md](PACKAGE_RESTRUCTURING_PLAN.md)
+- 完整重构计划: [package-restructuring-plan.md](package-restructuring-plan.md)
 - Phase 2 HTTP 层: 见完整计划
 - Phase 3 pkg API: 见完整计划

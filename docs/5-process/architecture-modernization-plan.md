@@ -12,7 +12,7 @@
     - `set_canary_stage.sh`：灰度阶段切换（5/25/50/100/off）
     - `monitor_canary.sh`：周期监控并在严重阈值触发时返回非零状态
     - `rollback_canary.sh`：快速回滚并采集诊断数据
-- 操作说明：`scripts/canary/README.md`
+- 操作说明：`scripts/canary/readme.md`
 - 下一执行窗口：Week 5 Day 1（2026-03-09）按 5% 灰度流程落地。
 - 一键编排入口：`scripts/canary/run_day1_canary.sh`（预检→切换→监控→自动回滚）。
 
@@ -24,9 +24,9 @@
 - **Phase 3 pkg化**: Week 7-8，高风险但带来长期收益
 
 文档与工具已完全就绪：
-- 🚀 [快速启动指南（5分钟入门）](RESTRUCTURING_QUICKSTART.md)
-- 📖 [完整重构规划](PACKAGE_RESTRUCTURING_PLAN.md)
-- 📋 [Phase 1 import 变更清单](PHASE1_IMPORT_MAPPING.md)
+- 🚀 [快速启动指南（5分钟入门）](restructuring-quickstart.md)
+- 📖 [完整重构规划](package-restructuring-plan.md)
+- 📋 [Phase 1 import 变更清单](phase1-import-mapping.md)
 - 🔧 自动迁移脚本：`scripts/phase1_tls_migration.sh`
 
 与灰度推出（Week 5-7）完全并行，无任何冲突。

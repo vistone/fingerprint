@@ -177,11 +177,11 @@
 
 ## 📚 文档完善 (第 3-4 周)
 
-### 创建 CHANGELOG.md
+### 创建 changelog.md
 
 - [ ] 在项目根目录创建文件
   ```bash
-  touch CHANGELOG.md
+  touch changelog.md
   ```
 
 - [ ] 编辑文件，添加以下部分
@@ -200,8 +200,8 @@
 
 - [ ] 提交文件
   ```bash
-  git add CHANGELOG.md
-  git commit -m "docs: add CHANGELOG.md with version history"
+  git add changelog.md
+  git commit -m "docs: add changelog.md with version history"
   git push origin main
   ```
 
@@ -209,11 +209,11 @@
 
 ---
 
-### 创建 CONTRIBUTING.md
+### 创建 contributing.md
 
 - [ ] 创建文件
   ```bash
-  touch CONTRIBUTING.md
+  touch contributing.md
   ```
 
 - [ ] 编辑文件，添加以下部分
@@ -234,8 +234,8 @@
 
 - [ ] 提交文件
   ```bash
-  git add CONTRIBUTING.md
-  git commit -m "docs: add CONTRIBUTING.md with contribution guidelines"
+  git add contributing.md
+  git commit -m "docs: add contributing.md with contribution guidelines"
   git push origin main
   ```
 
@@ -243,11 +243,11 @@
 
 ---
 
-### 创建 SECURITY.md
+### 创建 security.md
 
 - [ ] 创建文件
   ```bash
-  touch SECURITY.md
+  touch security.md
   ```
 
 - [ ] 编辑文件，添加以下部分
@@ -265,8 +265,8 @@
 
 - [ ] 提交文件
   ```bash
-  git add SECURITY.md
-  git commit -m "docs: add SECURITY.md with security policy"
+  git add security.md
+  git commit -m "docs: add security.md with security policy"
   git push origin main
   ```
 
@@ -367,7 +367,7 @@
 
 - [ ] 创建文件
   ```bash
-  touch docs/BEST_PRACTICES.md
+  touch docs/best-practices.md
   ```
 
 - [ ] 编辑文件，添加以下部分
@@ -393,7 +393,7 @@
 - [ ] 提交文件
   ```bash
   git add docs/
-  git commit -m "docs: add BEST_PRACTICES.md with usage guidelines"
+  git commit -m "docs: add best-practices.md with usage guidelines"
   git push origin main
   ```
 
@@ -526,7 +526,7 @@
 **A**: 使用编辑器搜索功能，搜索 `Extension{` 并逐个替换为带字段名的格式
 
 ### Q4: 提交信息有格式要求吗?
-**A**: 建议遵循 `<type>(<scope>): <subject>` 格式，详见 CONTRIBUTING.md
+**A**: 建议遵循 `<type>(<scope>): <subject>` 格式，详见 contributing.md
 
 ### Q5: 修改过程中需要创建分支吗?
 **A**: 建议创建 `develop` 分支进行所有修改，完成后再合并到 `main`
@@ -537,7 +537,7 @@
 
 - 📄 ../02-improvement-plan.md - 详细改进计划
 - 📄 ../../3-references/00-quick-reference.md - 快速参考指南
-- 📄 ../../README.md - 文档导航首页
+- 📄 ../../readme.md - 文档导航首页
 
 ---
 

@@ -10,7 +10,7 @@
 - 🆕 第一次来？→ [改进计划](./2-guides/02-improvement-plan.md)
 - 💻 开发者 → [开发者检查清单](./2-guides/developer/01-developer-checklist.md)
 - 📖 API 文档 → [快速参考](./3-references/00-quick-reference.md)
-- 🤝 贡献者 → [贡献指南](./CONTRIBUTING.md)
+- 🤝 贡献者 → [贡献指南](./contributing.md)
 
 ## 📁 目录结构
 
@@ -21,7 +21,7 @@
 
 ## 📏 文档规则
 
-所有文档必须遵循严格的组织规则。详见 [RULES.md](./RULES.md)
+所有文档必须遵循严格的组织规则。详见 [rules.md](./rules.md)
 
 **核心原则**:
 

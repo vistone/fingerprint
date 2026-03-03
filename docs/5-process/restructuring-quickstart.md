@@ -1,7 +1,7 @@
 # 包结构重构 - 快速启动指南
 
 > **如果你只有 5 分钟**：看这份文档  
-> **如果你需要完整细节**：看 [PACKAGE_RESTRUCTURING_PLAN.md](PACKAGE_RESTRUCTURING_PLAN.md)  
+> **如果你需要完整细节**：看 [package-restructuring-plan.md](package-restructuring-plan.md)  
 
 ---
 
@@ -77,7 +77,7 @@ git checkout tls/    # 恢复整个 tls 目录
 ```
 
 ### Q3: 哪些文件会被修改？
-**A**: ~12 个文件，主要是 import 语句。参考 [PHASE1_IMPORT_MAPPING.md](PHASE1_IMPORT_MAPPING.md)
+**A**: ~12 个文件，主要是 import 语句。参考 [phase1-import-mapping.md](phase1-import-mapping.md)
 
 ### Q4: 需要手工修改代码吗？
 **A**: 否，脚本自动处理所有 import 替换和文件移动。
@@ -292,8 +292,8 @@ grep -r "import.*tlsutil" --include="*.go" .
 ## 📞 后续支持
 
 如需帮助：
-1. 查阅完整计划: [PACKAGE_RESTRUCTURING_PLAN.md](PACKAGE_RESTRUCTURING_PLAN.md)
-2. 查阅 import 清单: [PHASE1_IMPORT_MAPPING.md](PHASE1_IMPORT_MAPPING.md)
+1. 查阅完整计划: [package-restructuring-plan.md](package-restructuring-plan.md)
+2. 查阅 import 清单: [phase1-import-mapping.md](phase1-import-mapping.md)
 3. 查看脚本日志输出
 4. 使用 `git diff` 查看具体变更
 

@@ -66,7 +66,7 @@ git checkout -b fix/your-bug-fix
 
 2. **文档**
    - 为公开 API 添加/更新注释
-   - 使用您的更改更新 CHANGELOG.md
+   - 使用您的更改更新 changelog.md
    - 更新相关文档文件
 
 3. **测试**
@@ -163,8 +163,8 @@ git push origin feature/your-feature-name
 
 - ✅ 公开函数/类型有 godoc 注释
 - ✅ 复杂逻辑有行内注释
-- ✅ CHANGELOG.md 已更新
-- ✅ README.md 已更新（如需要）
+- ✅ changelog.md 已更新
+- ✅ readme.md 已更新（如需要）
 - ✅ docs/examples 中的示例有效
 
 ### 性能要求
@@ -278,11 +278,11 @@ func TestGetRandomFingerprint(t *testing.T) {
 - 潜在影响
 - 建议修复（如有）
 
-详见 [SECURITY.md](./SECURITY.md)
+详见 [security.md](./security.md)
 
 ## 其他资源
 
-- 📖 [开发指南](./5-process/development/README.md)
+- 📖 [开发指南](./5-process/development/readme.md)
 - 🚀 [快速开始](./2-guides/)
 - 📋 [开发检查清单](./2-guides/developer/)
 - 🔍 [Go 开发规范](./5-process/development/)
@@ -291,7 +291,7 @@ func TestGetRandomFingerprint(t *testing.T) {
 
 - 📧 邮箱: support@example.com
 - 💬 讨论: GitHub Discussions
-- 📝 文档: 见 docs/README.md
+- 📝 文档: 见 docs/readme.md
 
 ---
 

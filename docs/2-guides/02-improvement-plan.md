@@ -232,10 +232,10 @@ install-tools:
 
 ## 阶段三：文档完善 (第 3 周)
 
-### 任务 3.1: 创建 CHANGELOG.md ⏱️ 1 小时
+### 任务 3.1: 创建 changelog.md ⏱️ 1 小时
 **优先级**: 🟡 P2
 
-**创建文件**: `CHANGELOG.md`
+**创建文件**: `changelog.md`
 
 ```markdown
 # Changelog
@@ -287,10 +287,10 @@ install-tools:
 
 ---
 
-### 任务 3.2: 创建 CONTRIBUTING.md ⏱️ 1 小时
+### 任务 3.2: 创建 contributing.md ⏱️ 1 小时
 **优先级**: 🟡 P2
 
-**创建文件**: `CONTRIBUTING.md`
+**创建文件**: `contributing.md`
 
 ```markdown
 # 贡献指南
@@ -367,10 +367,10 @@ Closes #123
 
 ---
 
-### 任务 3.3: 创建 SECURITY.md ⏱️ 30 分钟
+### 任务 3.3: 创建 security.md ⏱️ 30 分钟
 **优先级**: 🟡 P2
 
-**创建文件**: `SECURITY.md`
+**创建文件**: `security.md`
 
 ```markdown
 # 安全政策
@@ -496,7 +496,7 @@ func GetRandomFingerprint() (*FingerprintResult, error) {
 ### 任务 4.2: 创建最佳实践指南 ⏱️ 2 小时
 **优先级**: 🟡 P2
 
-**创建文件**: `docs/BEST_PRACTICES.md`
+**创建文件**: `docs/best-practices.md`
 
 ```markdown
 # 最佳实践指南
@@ -625,9 +625,9 @@ if result.Confidence > 0.9 {
 - [ ] 代码通过 `go vet ./...` (无警告)
 - [ ] 所有测试通过: `go test ./... -v`
 - [ ] GitHub Actions 工作流正常运行
-- [ ] CHANGELOG.md 已创建
-- [ ] CONTRIBUTING.md 已创建
-- [ ] SECURITY.md 已创建
+- [ ] changelog.md 已创建
+- [ ] contributing.md 已创建
+- [ ] security.md 已创建
 - [ ] .editorconfig 已创建
 - [ ] API 文档已扩展
 - [ ] 最佳实践指南已创建

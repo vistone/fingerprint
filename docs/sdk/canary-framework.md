@@ -487,9 +487,9 @@ if errorRate > 3% {
 ## 🎓 深度学习
 
 ### 相关文档
-- [Pipeline 最佳实践](./PIPELINE_BEST_PRACTICES.md)
-- [集成指南](./INTEGRATION_GUIDE.md)
-- [Week 5-6 灰度推出实施指南](../5-process/WEEK5-6-EXECUTION-GUIDE.md)
+- [Pipeline 最佳实践](./pipeline-best-practices.md)
+- [集成指南](./integration-guide.md)
+- [Week 5-6 灰度推出实施指南](../5-process/week5-6-execution-guide.md)
 
 ### 测试代码
 - [灰度框架测试](../../internal/extension/canary_framework_test.go)

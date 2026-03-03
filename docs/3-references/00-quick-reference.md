@@ -122,9 +122,9 @@ git push origin main
 └─ 创建 Makefile (1 小时)
 
 优先级 3 (第三周)
-├─ 创建 CHANGELOG.md (1 小时)
-├─ 创建 CONTRIBUTING.md (1 小时)
-├─ 创建 SECURITY.md (30 分钟)
+├─ 创建 changelog.md (1 小时)
+├─ 创建 contributing.md (1 小时)
+├─ 创建 security.md (30 分钟)
 └─ 创建 .editorconfig (15 分钟)
 
 优先级 4 (第四周)
@@ -179,9 +179,9 @@ fingerprint/
 │       └── ...
 │
 └── 📁 文档
-    ├── CHANGELOG.md                    # ✅ 已创建
-    ├── CONTRIBUTING.md                 # ✅ 已创建
-    ├── SECURITY.md                     # ✅ 已创建
+    ├── changelog.md                    # ✅ 已创建
+    ├── contributing.md                 # ✅ 已创建
+    ├── security.md                     # ✅ 已创建
     ├── 2-guides/02-improvement-plan.md # ✅ 已创建
     └── 3-references/00-quick-reference.md
 ```
@@ -401,13 +401,13 @@ ua, _ := fingerprint.GetUserAgentByProfileName("firefox_135")  // 不匹配!
 ### 报告问题
 - GitHub Issues: 用于功能请求和 bug 报告
 - Discussions: 用于一般讨论
-- Security: 参见 SECURITY.md
+- Security: 参见 security.md
 
 ### 参与贡献
 - Fork 项目
 - 创建特性分支
 - 提交 Pull Request
-- 遵循 CONTRIBUTING.md 指南
+- 遵循 contributing.md 指南
 
 ---
 

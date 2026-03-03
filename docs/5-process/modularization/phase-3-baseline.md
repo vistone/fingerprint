@@ -201,7 +201,7 @@ Arch: amd64
 
 ## 10. 参考资料
 
-- [Phase 3 优化计划](PHASE_3_PLAN.md)
+- [Phase 3 优化计划](phase-3-plan.md)
 - [Go 性能优化最佳实践](https://dave.cheney.net/high-performance-go-workshop/dotgo-paris.html)
 - [pprof 性能分析工具](https://github.com/google/pprof)
 

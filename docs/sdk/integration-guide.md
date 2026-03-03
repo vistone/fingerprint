@@ -360,9 +360,9 @@ if useNew {
 - ✅ `internal/extension/benchmark_ab_test.go` - A/B 性能测试
 
 ### 文档文件
-- ✅ `docs/sdk/INTEGRATION_GUIDE.md` - 本文件
-- ✅ `docs/sdk/PIPELINE_BEST_PRACTICES.md` - 最佳实践（另见）
-- ✅ `docs/sdk/MIGRATION_GUIDE.md` - 迁移指南（已更新）
+- ✅ `docs/sdk/integration-guide.md` - 本文件
+- ✅ `docs/sdk/pipeline-best-practices.md` - 最佳实践（另见）
+- ✅ `docs/sdk/migration-guide.md` - 迁移指南（已更新）
 - ✅ `docs/5-process/architecture-modernization-plan.md` - 架构现代化计划
 
 ---

@@ -519,7 +519,7 @@ git checkout ech-migration-backup
 
 完成迁移后：
 
-1. 📖 阅读 [开发者指南](DEVELOPER_GUIDE.md)
+1. 📖 阅读 [开发者指南](developer-guide.md)
 2. 🔧 实现你的第一个自定义扩展
 3. 🤝 对社区项目做出贡献
 4. 📢 分享你的想法和建议
