@@ -200,11 +200,11 @@ func (a *ECHAnalyzer) analyzeECHExtension(ext *ExtensionData, result *ECHAnalysi
 		clientHelloType := ext.Data[2]
 		switch clientHelloType {
 		case 0x00:
-			result.ECHType = "inner"
-			result.ClientHelloType = "inner"
-		case 0x01:
 			result.ECHType = "outer"
 			result.ClientHelloType = "outer"
+		case 0x01:
+			result.ECHType = "inner"
+			result.ClientHelloType = "inner"
 		default:
 			result.ECHType = "unknown"
 		}
