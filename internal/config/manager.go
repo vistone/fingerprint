@@ -2,13 +2,12 @@ package config
 
 import (
 	"fmt"
-	"sync"
 )
 
 // ConfigManager 配置管理器 - 提供统一的配置访问接口
+// 注意：ConfigManager 本身不需要锁，因为 ConfigCenter 已经有完整的锁机制
 type ConfigManager struct {
 	center *ConfigCenter
-	mu     sync.RWMutex
 }
 
 // NewConfigManager 创建配置管理器
@@ -20,9 +19,6 @@ func NewConfigManager(center *ConfigCenter) *ConfigManager {
 
 // GetBehaviorAnalysisConfig 获取行为分析配置
 func (cm *ConfigManager) GetBehaviorAnalysisConfig() *BehaviorAnalysisConfig {
-	cm.mu.RLock()
-	defer cm.mu.RUnlock()
-
 	config := cm.center.Get()
 	if config.BehaviorAnalysis == nil {
 		return &BehaviorAnalysisConfig{}
@@ -32,9 +28,6 @@ func (cm *ConfigManager) GetBehaviorAnalysisConfig() *BehaviorAnalysisConfig {
 
 // GetRiskScoringConfig 获取风险评分配置
 func (cm *ConfigManager) GetRiskScoringConfig() *RiskScoringConfig {
-	cm.mu.RLock()
-	defer cm.mu.RUnlock()
-
 	config := cm.center.Get()
 	if config.RiskScoring == nil {
 		return &RiskScoringConfig{}
@@ -44,9 +37,6 @@ func (cm *ConfigManager) GetRiskScoringConfig() *RiskScoringConfig {
 
 // GetFeatureExtractionConfig 获取特征提取配置
 func (cm *ConfigManager) GetFeatureExtractionConfig() *FeatureExtractionConfig {
-	cm.mu.RLock()
-	defer cm.mu.RUnlock()
-
 	config := cm.center.Get()
 	if config.Features == nil {
 		return &FeatureExtractionConfig{}
@@ -56,9 +46,6 @@ func (cm *ConfigManager) GetFeatureExtractionConfig() *FeatureExtractionConfig {
 
 // GetQUICConfig 获取 QUIC 配置
 func (cm *ConfigManager) GetQUICConfig() *QUICConfig {
-	cm.mu.RLock()
-	defer cm.mu.RUnlock()
-
 	config := cm.center.Get()
 	if config.QUIC == nil {
 		return &QUICConfig{}
@@ -68,9 +55,6 @@ func (cm *ConfigManager) GetQUICConfig() *QUICConfig {
 
 // GetTLSConfig 获取 TLS 配置
 func (cm *ConfigManager) GetTLSConfig() *TLSConfig {
-	cm.mu.RLock()
-	defer cm.mu.RUnlock()
-
 	config := cm.center.Get()
 	if config.TLS == nil {
 		return &TLSConfig{}
@@ -80,9 +64,6 @@ func (cm *ConfigManager) GetTLSConfig() *TLSConfig {
 
 // GetGlobalConfig 获取全局配置
 func (cm *ConfigManager) GetGlobalConfig() *GlobalConfig {
-	cm.mu.RLock()
-	defer cm.mu.RUnlock()
-
 	config := cm.center.Get()
 	if config.Global == nil {
 		return &GlobalConfig{}
@@ -92,9 +73,6 @@ func (cm *ConfigManager) GetGlobalConfig() *GlobalConfig {
 
 // UpdateBehaviorAnalysisConfig 更新行为分析配置
 func (cm *ConfigManager) UpdateBehaviorAnalysisConfig(newConfig *BehaviorAnalysisConfig, reason, changedBy string) error {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-
 	config := cm.center.Get()
 	config.BehaviorAnalysis = newConfig
 
@@ -103,9 +81,6 @@ func (cm *ConfigManager) UpdateBehaviorAnalysisConfig(newConfig *BehaviorAnalysi
 
 // UpdateRiskScoringConfig 更新风险评分配置
 func (cm *ConfigManager) UpdateRiskScoringConfig(newConfig *RiskScoringConfig, reason, changedBy string) error {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-
 	config := cm.center.Get()
 	config.RiskScoring = newConfig
 
@@ -114,9 +89,6 @@ func (cm *ConfigManager) UpdateRiskScoringConfig(newConfig *RiskScoringConfig, r
 
 // UpdateFeatureExtractionConfig 更新特征提取配置
 func (cm *ConfigManager) UpdateFeatureExtractionConfig(newConfig *FeatureExtractionConfig, reason, changedBy string) error {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-
 	config := cm.center.Get()
 	config.Features = newConfig
 
@@ -125,9 +97,6 @@ func (cm *ConfigManager) UpdateFeatureExtractionConfig(newConfig *FeatureExtract
 
 // GetConfigValue 获取指定路径的配置值
 func (cm *ConfigManager) GetConfigValue(path string) (interface{}, error) {
-	cm.mu.RLock()
-	defer cm.mu.RUnlock()
-
 	// 简化实现 - 支持基本的路径查询
 	// 实际应该使用反射或 JSON 路径库
 

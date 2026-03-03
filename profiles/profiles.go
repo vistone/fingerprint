@@ -164,3 +164,52 @@ func (c ClientProfile) GetClientHelloId() tls.ClientHelloID {
 func (c ClientProfile) GetPriorities() []http2.Priority {
 	return c.priorities
 }
+
+// GetClientHelloID 获取 ClientHelloID
+func (c ClientProfile) GetClientHelloID() tls.ClientHelloID {
+	return c.clientHelloId
+}
+
+// GetMetadata 获取元数据信息
+func (c ClientProfile) GetMetadata() (browserType, browserVersion, os, osVersion string, isMobile bool) {
+	return c.BrowserType, c.BrowserVersion, c.OS, c.OSVersion, c.IsMobile
+}
+
+// Clone 创建 ClientProfile 的深拷贝
+func (c ClientProfile) Clone() ClientProfile {
+	// 拷贝 settings
+	newSettings := make(map[http2.SettingID]uint32, len(c.settings))
+	for k, v := range c.settings {
+		newSettings[k] = v
+	}
+
+	// 拷贝 priorities
+	newPriorities := make([]http2.Priority, len(c.priorities))
+	copy(newPriorities, c.priorities)
+
+	// 拷贝 pseudoHeaderOrder
+	newPseudoHeaderOrder := make([]string, len(c.pseudoHeaderOrder))
+	copy(newPseudoHeaderOrder, c.pseudoHeaderOrder)
+
+	// 拷贝 settingsOrder
+	newSettingsOrder := make([]http2.SettingID, len(c.settingsOrder))
+	copy(newSettingsOrder, c.settingsOrder)
+
+	return ClientProfile{
+		clientHelloId:     c.clientHelloId,
+		headerPriority:    c.headerPriority,
+		settings:          newSettings,
+		priorities:        newPriorities,
+		pseudoHeaderOrder: newPseudoHeaderOrder,
+		settingsOrder:     newSettingsOrder,
+		connectionFlow:    c.connectionFlow,
+		BrowserType:       c.BrowserType,
+		BrowserVersion:    c.BrowserVersion,
+		OS:                c.OS,
+		OSVersion:         c.OSVersion,
+		OSArch:            c.OSArch,
+		OSBitness:         c.OSBitness,
+		IsMobile:          c.IsMobile,
+		DeviceModel:       c.DeviceModel,
+	}
+}

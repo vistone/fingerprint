@@ -12,28 +12,54 @@ type NetworkBehaviorAnalyzer struct {
 	sequenceNumbers []uint32
 	ipIDs           []uint16
 	timestamps      []time.Time
+	maxSamples      int // 最大样本数，防止内存无限增长
 }
+
+// DefaultMaxSamples 默认最大样本数
+const DefaultMaxSamples = 10000
 
 // NewNetworkBehaviorAnalyzer 创建新的网络行为分析器
 func NewNetworkBehaviorAnalyzer() *NetworkBehaviorAnalyzer {
+	return NewNetworkBehaviorAnalyzerWithLimit(DefaultMaxSamples)
+}
+
+// NewNetworkBehaviorAnalyzerWithLimit 创建带样本数限制的网络行为分析器
+func NewNetworkBehaviorAnalyzerWithLimit(maxSamples int) *NetworkBehaviorAnalyzer {
+	if maxSamples <= 0 {
+		maxSamples = DefaultMaxSamples
+	}
 	return &NetworkBehaviorAnalyzer{
-		packets:         make([]*TCPPacket, 0),
-		rttMeasurements: make([]time.Duration, 0),
-		sequenceNumbers: make([]uint32, 0),
-		ipIDs:           make([]uint16, 0),
-		timestamps:      make([]time.Time, 0),
+		packets:         make([]*TCPPacket, 0, 1024),
+		rttMeasurements: make([]time.Duration, 0, 1024),
+		sequenceNumbers: make([]uint32, 0, 1024),
+		ipIDs:           make([]uint16, 0, 1024),
+		timestamps:      make([]time.Time, 0, 1024),
+		maxSamples:      maxSamples,
 	}
 }
 
-// RecordPacket 记录数据包
+// RecordPacket 记录数据包（使用滑动窗口限制样本数）
 func (nba *NetworkBehaviorAnalyzer) RecordPacket(packet *TCPPacket, rtt time.Duration) {
-	nba.packets = append(nba.packets, packet)
-	nba.rttMeasurements = append(nba.rttMeasurements, rtt)
-	nba.sequenceNumbers = append(nba.sequenceNumbers, packet.SequenceNumber)
+	nba.packets = appendWithLimit(nba.packets, packet, nba.maxSamples)
+	nba.rttMeasurements = appendWithLimit(nba.rttMeasurements, rtt, nba.maxSamples)
+	nba.sequenceNumbers = appendWithLimit(nba.sequenceNumbers, packet.SequenceNumber, nba.maxSamples)
 	if packet.IPHeader != nil {
-		nba.ipIDs = append(nba.ipIDs, packet.IPHeader.Identification)
+		nba.ipIDs = appendWithLimit(nba.ipIDs, packet.IPHeader.Identification, nba.maxSamples)
 	}
-	nba.timestamps = append(nba.timestamps, time.Now())
+	nba.timestamps = appendWithLimit(nba.timestamps, time.Now(), nba.maxSamples)
+}
+
+// appendWithLimit 带限制的切片追加（滑动窗口，使用泛型）
+func appendWithLimit[T any](slice []T, item T, maxSamples int) []T {
+	if len(slice) >= maxSamples {
+		// 滑动窗口：移除最早的 25% 数据
+		removeCount := maxSamples / 4
+		if removeCount < 1 {
+			removeCount = 1
+		}
+		return append(slice[removeCount:], item)
+	}
+	return append(slice, item)
 }
 
 // AnalyzeBehavior 分析网络行为

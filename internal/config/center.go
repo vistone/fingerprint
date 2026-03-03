@@ -22,6 +22,7 @@ type ConfigCenter struct {
 	autoReload        bool
 	reloadInterval    time.Duration
 	stopReloadChan    chan struct{}
+	reloadOnce        sync.Once // 确保 autoReloadWorker 只启动一次
 	validationEnabled bool
 }
 
@@ -224,42 +225,70 @@ func (cc *ConfigCenter) RegisterListener(listener ConfigChangeListener) {
 func (cc *ConfigCenter) EnableAutoReload(interval time.Duration) {
 	cc.mu.Lock()
 	cc.autoReload = true
+	if interval < time.Second {
+		interval = time.Second // 最小间隔 1 秒，防止过于频繁的检查
+	}
 	cc.reloadInterval = interval
 	cc.mu.Unlock()
 
-	// 启动重新加载 goroutine
-	go cc.autoReloadWorker()
+	// 使用 sync.Once 确保只启动一个 autoReloadWorker
+	cc.reloadOnce.Do(func() {
+		go cc.autoReloadWorker()
+	})
 }
 
 // DisableAutoReload 禁用自动重新加载
 func (cc *ConfigCenter) DisableAutoReload() {
 	cc.mu.Lock()
 	defer cc.mu.Unlock()
-	cc.autoReload = false
-	close(cc.stopReloadChan)
-	cc.stopReloadChan = make(chan struct{})
+	if cc.autoReload {
+		cc.autoReload = false
+		close(cc.stopReloadChan)
+	}
 }
 
 // autoReloadWorker 自动重新加载 worker
 func (cc *ConfigCenter) autoReloadWorker() {
-	ticker := time.NewTicker(cc.reloadInterval)
-	defer ticker.Stop()
-
 	for {
-		select {
-		case <-cc.stopReloadChan:
-			return
-		case <-ticker.C:
-			fileInfo, err := os.Stat(cc.configPath)
-			if err != nil {
-				continue
-			}
+		// 获取当前的停止通道和间隔
+		cc.mu.RLock()
+		stopChan := cc.stopReloadChan
+		interval := cc.reloadInterval
+		cc.mu.RUnlock()
 
-			if fileInfo.ModTime().After(cc.lastModTime) {
-				if err := cc.Load(); err == nil {
-					// 通知监听器配置已重新加载
-					for _, listener := range cc.listeners {
-						listener.OnConfigChange(nil, cc.Get(), nil)
+		ticker := time.NewTicker(interval)
+		stopped := false
+
+		for !stopped {
+			select {
+			case <-stopChan:
+				ticker.Stop()
+				stopped = true
+			case <-ticker.C:
+				cc.mu.RLock()
+				isAutoReload := cc.autoReload
+				configPath := cc.configPath
+				lastModTime := cc.lastModTime
+				listeners := make([]ConfigChangeListener, len(cc.listeners))
+				copy(listeners, cc.listeners)
+				cc.mu.RUnlock()
+
+				if !isAutoReload {
+					continue
+				}
+
+				fileInfo, err := os.Stat(configPath)
+				if err != nil {
+					continue
+				}
+
+				if fileInfo.ModTime().After(lastModTime) {
+					if err := cc.Load(); err == nil {
+						// 通知监听器配置已重新加载
+						current := cc.Get()
+						for _, listener := range listeners {
+							listener.OnConfigChange(nil, current, nil)
+						}
 					}
 				}
 			}

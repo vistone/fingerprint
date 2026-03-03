@@ -1,6 +1,7 @@
 package features
 
 import (
+	"bytes"
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
@@ -80,26 +81,29 @@ func NewBaseFeatureExtractor(config *FeatureConfig) *BaseFeatureExtractor {
 }
 
 // ExtractFeature 实现统一的特征提取接口
+// 注意：此方法并发安全，但 config 参数仅在本次调用中生效，不会修改提取器的默认配置
 func (b *BaseFeatureExtractor) ExtractFeature(featureType FeatureType, data interface{}, config *FeatureConfig) (float64, bool) {
+	// 使用传入的 config 或默认 config，不修改提取器的状态
+	cfg := b.config
 	if config != nil {
-		b.config = config
+		cfg = config
 	}
 
 	switch featureType {
 	case FeatureEntropy:
-		return b.extractEntropyFeature(data)
+		return b.extractEntropyFeature(data, cfg)
 	case FeatureToolMarker:
-		return b.extractToolMarkerFeature(data)
+		return b.extractToolMarkerFeature(data, cfg)
 	case FeatureOSPlatformContradiction:
 		return b.extractOSPlatformContradictionFeature(data)
 	case FeatureUAOSContradiction:
 		return b.extractUAOSContradictionFeature(data)
 	case FeatureMobileScreenContradiction:
-		return b.extractMobileScreenContradictionFeature(data)
+		return b.extractMobileScreenContradictionFeature(data, cfg)
 	case FeatureUAFeatureContradiction:
 		return b.extractUAFeatureContradictionFeature(data)
 	case FeatureHeadlessBrowser:
-		return b.extractHeadlessBrowserFeature(data)
+		return b.extractHeadlessBrowserFeature(data, cfg)
 	default:
 		return 0.0, false
 	}
@@ -128,7 +132,7 @@ func (b *BaseFeatureExtractor) GetFeatureName(featureType FeatureType) string {
 }
 
 // extractEntropyFeature 从字节数据提取熵特征
-func (b *BaseFeatureExtractor) extractEntropyFeature(data interface{}) (float64, bool) {
+func (b *BaseFeatureExtractor) extractEntropyFeature(data interface{}, cfg *FeatureConfig) (float64, bool) {
 	var bytes []byte
 
 	// 类型转换
@@ -158,7 +162,7 @@ func (b *BaseFeatureExtractor) extractEntropyFeature(data interface{}) (float64,
 	}
 
 	// 低熵异常
-	if uniqueBytes < b.config.EntropyLowThreshold {
+	if uniqueBytes < cfg.EntropyLowThreshold {
 		return 0.95, true
 	}
 
@@ -174,7 +178,7 @@ func (b *BaseFeatureExtractor) extractEntropyFeature(data interface{}) (float64,
 		}
 
 		// 高熵异常
-		if entropy > b.config.EntropyHighThreshold {
+		if entropy > cfg.EntropyHighThreshold {
 			return 0.85, true
 		}
 	}
@@ -183,30 +187,45 @@ func (b *BaseFeatureExtractor) extractEntropyFeature(data interface{}) (float64,
 }
 
 // extractToolMarkerFeature 检测工具特征
-func (b *BaseFeatureExtractor) extractToolMarkerFeature(data interface{}) (float64, bool) {
-	var bytes []byte
+// 优化：对大文本使用 strings.Contains 进行高效匹配
+func (b *BaseFeatureExtractor) extractToolMarkerFeature(data interface{}, cfg *FeatureConfig) (float64, bool) {
+	var text string
 
 	switch v := data.(type) {
 	case []byte:
-		bytes = v
+		// 如果数据量很大，先尝试转为字符串进行高效匹配
+		if len(v) > 1024 {
+			// 对大文本使用更高效的 Boyer-Moore 类算法（strings.Contains 内部实现）
+			text = string(v)
+		} else {
+			// 小数据量使用逐字节匹配
+			return b.extractToolMarkerFromBytes(v, cfg.ToolMarkers)
+		}
 	case string:
-		bytes = []byte(v)
+		text = v
 	default:
 		return 0.0, false
 	}
 
-	// 逐字节模式匹配
-	for _, pattern := range b.config.ToolMarkers {
-		patternBytes := []byte(pattern)
-		if len(patternBytes) <= len(bytes) {
-			for i := 0; i <= len(bytes)-len(patternBytes); i++ {
-				if memEquals(bytes[i:i+len(patternBytes)], patternBytes) {
-					return 0.9, true
-				}
-			}
+	// 使用 strings.Contains 进行高效匹配（内部使用优化的字符串搜索算法）
+	textLower := strings.ToLower(text)
+	for _, pattern := range cfg.ToolMarkers {
+		if strings.Contains(textLower, strings.ToLower(pattern)) {
+			return 0.9, true
 		}
 	}
 
+	return 0.0, false
+}
+
+// extractToolMarkerFromBytes 对小字节切片进行工具特征检测
+func (b *BaseFeatureExtractor) extractToolMarkerFromBytes(data []byte, patterns []string) (float64, bool) {
+	dataLower := bytes.ToLower(data)
+	for _, pattern := range patterns {
+		if bytes.Contains(dataLower, bytes.ToLower([]byte(pattern))) {
+			return 0.9, true
+		}
+	}
 	return 0.0, false
 }
 
@@ -274,7 +293,7 @@ func (b *BaseFeatureExtractor) extractUAOSContradictionFeature(data interface{})
 }
 
 // extractMobileScreenContradictionFeature 移动设备屏幕分辨率矛盾
-func (b *BaseFeatureExtractor) extractMobileScreenContradictionFeature(data interface{}) (float64, bool) {
+func (b *BaseFeatureExtractor) extractMobileScreenContradictionFeature(data interface{}, cfg *FeatureConfig) (float64, bool) {
 	attrs, ok := data.(map[string]string)
 	if !ok {
 		return 0.0, false
@@ -295,11 +314,11 @@ func (b *BaseFeatureExtractor) extractMobileScreenContradictionFeature(data inte
 	}
 
 	// 移动设备不应使用超大分辨率
-	if isMobile == "true" && width > b.config.MobileScreenWidthMax {
+	if isMobile == "true" && width > cfg.MobileScreenWidthMax {
 		return 0.85, true
 	}
 	// 桌面设备不应使用超小分辨率
-	if isMobile == "false" && width < b.config.DesktopScreenWidthMin {
+	if isMobile == "false" && width < cfg.DesktopScreenWidthMin {
 		return 0.85, true
 	}
 
@@ -336,7 +355,7 @@ func (b *BaseFeatureExtractor) extractUAFeatureContradictionFeature(data interfa
 }
 
 // extractHeadlessBrowserFeature 无头浏览器检测
-func (b *BaseFeatureExtractor) extractHeadlessBrowserFeature(data interface{}) (float64, bool) {
+func (b *BaseFeatureExtractor) extractHeadlessBrowserFeature(data interface{}, cfg *FeatureConfig) (float64, bool) {
 	var ua string
 
 	switch v := data.(type) {
@@ -353,7 +372,7 @@ func (b *BaseFeatureExtractor) extractHeadlessBrowserFeature(data interface{}) (
 	}
 
 	uaLower := strings.ToLower(ua)
-	for _, marker := range b.config.HeadlessMarkers {
+	for _, marker := range cfg.HeadlessMarkers {
 		if strings.Contains(uaLower, strings.ToLower(marker)) {
 			return 0.95, true
 		}
@@ -388,9 +407,12 @@ type FeatureVector struct {
 }
 
 // ExtractFeatureVector 从多个数据源提取完整的特征向量
+// 注意：此方法并发安全，但 config 参数仅在本次调用中生效
 func (b *BaseFeatureExtractor) ExtractFeatureVector(data map[string]interface{}, config *FeatureConfig) *FeatureVector {
+	// 使用传入的 config 或默认 config，不修改提取器的状态
+	cfg := b.config
 	if config != nil {
-		b.config = config
+		cfg = config
 	}
 
 	vector := &FeatureVector{
@@ -411,7 +433,7 @@ func (b *BaseFeatureExtractor) ExtractFeatureVector(data map[string]interface{},
 
 	// 提取所有特征
 	for _, fType := range featuresToExtract {
-		score, isAnomaly := b.ExtractFeature(fType, data, nil)
+		score, isAnomaly := b.ExtractFeature(fType, data, cfg)
 		vector.Scores[fType] = score
 		if isAnomaly {
 			vector.Anomalies = append(vector.Anomalies, fType)

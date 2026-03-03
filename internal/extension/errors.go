@@ -75,51 +75,65 @@ type ErrorCode int
 
 const (
 	// 注册表错误（1000-1999）
-	ErrCodeNotFound ErrorCode = iota + 1000
+	ErrCodeNotFound ErrorCode = 1000 + iota
 	ErrCodeAlreadyRegistered
 	ErrCodeInvalidMetadata
 	ErrCodeRegistryFull
+)
 
+const (
 	// 验证错误（2000-2999）
-	ErrCodeValidationFailed ErrorCode = iota + 2000 - 4
+	ErrCodeValidationFailed ErrorCode = 2000 + iota
 	ErrCodeInvalidInput
 	ErrCodeMissingField
 	ErrCodeFieldSizeMismatch
 	ErrCodeEncodingError
 	ErrCodeVersionMismatch
+)
 
+const (
 	// 解析错误（3000-3999）
-	ErrCodeParseFailed ErrorCode = iota + 3000 - 10
+	ErrCodeParseFailed ErrorCode = 3000 + iota
 	ErrCodeInvalidFormat
 	ErrCodeUnexpectedEOF
 	ErrCodeInvalidOffset
 	ErrCodeMalformedData
+)
 
+const (
 	// 分析错误（4000-4999）
-	ErrCodeAnalysisFailed ErrorCode = iota + 4000 - 15
+	ErrCodeAnalysisFailed ErrorCode = 4000 + iota
 	ErrCodeAnalysisTimeout
 	ErrCodeResourceExhausted
 	ErrCodeInternalError
+)
 
+const (
 	// 配置错误（5000-5999）
-	ErrCodeInvalidConfig ErrorCode = iota + 5000 - 19
+	ErrCodeInvalidConfig ErrorCode = 5000 + iota
 	ErrCodeMissingConfig
 	ErrCodeConfigConflict
+)
 
+const (
 	// 插件错误（6000-6999）
-	ErrCodePluginNotFound ErrorCode = iota + 6000 - 22
+	ErrCodePluginNotFound ErrorCode = 6000 + iota
 	ErrCodePluginInitFailed
 	ErrCodePluginLoadFailed
 	ErrCodePluginVersionMismatch
+)
 
+const (
 	// 系统错误（7000-7999）
-	ErrCodeSystemError ErrorCode = iota + 7000 - 27
+	ErrCodeSystemError ErrorCode = 7000 + iota
 	ErrCodeMemoryExhausted
 	ErrCodeTimeout
 	ErrCodeCancelled
+)
 
+const (
 	// 安全错误（8000-8999）
-	ErrCodeSecurityViolation ErrorCode = iota + 8000 - 31
+	ErrCodeSecurityViolation ErrorCode = 8000 + iota
 	ErrCodeUnauthorized
 	ErrCodeForbidden
 )
@@ -333,11 +347,13 @@ func (ph *PanicHandler) GetName() string {
 }
 
 // SafeExecute 安全执行函数，捕获 panic
-func SafeExecute(fn func() error) error {
+// 如果发生 panic，会返回一个包含 panic 信息的错误
+func SafeExecute(fn func() error) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			// panic 已被捕获，但我们在这里无法修改返回值
-			// 所以需要通过返回值进行处理
+			// panic 已被捕获，将 panic 转换为错误返回
+			err = NewErrorWithCause(ErrCodeSystemError,
+				fmt.Sprintf("panic recovered: %v", r), nil)
 		}
 	}()
 

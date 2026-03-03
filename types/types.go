@@ -74,34 +74,25 @@ type UserAgentTemplate struct {
 }
 
 // Clone 克隆 HTTPHeaders 对象，返回一个新的副本
+// 性能优化：预分配 map 容量，减少内存分配
 func (h *HTTPHeaders) Clone() *HTTPHeaders {
 	if h == nil {
 		return nil
 	}
-	cloned := &HTTPHeaders{
-		Accept:                  h.Accept,
-		AcceptLanguage:          h.AcceptLanguage,
-		AcceptEncoding:          h.AcceptEncoding,
-		UserAgent:               h.UserAgent,
-		SecFetchSite:            h.SecFetchSite,
-		SecFetchMode:            h.SecFetchMode,
-		SecFetchUser:            h.SecFetchUser,
-		SecFetchDest:            h.SecFetchDest,
-		SecCHUA:                 h.SecCHUA,
-		SecCHUAMobile:           h.SecCHUAMobile,
-		SecCHUAPlatform:         h.SecCHUAPlatform,
-		UpgradeInsecureRequests: h.UpgradeInsecureRequests,
-	}
+	// 使用值拷贝快速复制所有字段
+	cloned := *h
 
-	// 克隆 Custom map
-	if h.Custom != nil {
-		cloned.Custom = make(map[string]string)
+	// 仅当 Custom 有数据时才进行深拷贝
+	if len(h.Custom) > 0 {
+		cloned.Custom = make(map[string]string, len(h.Custom))
 		for k, v := range h.Custom {
 			cloned.Custom[k] = v
 		}
+	} else {
+		cloned.Custom = nil
 	}
 
-	return cloned
+	return &cloned
 }
 
 // Set 设置用户自定义的 header（系统会自动合并到 ToMap() 中）
@@ -216,73 +207,63 @@ func (h *HTTPHeaders) ToMap() map[string]string {
 // customHeaders: 用户自定义的 headers（如 session、cookie、apikey 等）
 // 用户自定义的 headers 优先级更高，会覆盖系统生成的 headers
 func (h *HTTPHeaders) ToMapWithCustom(customHeaders map[string]string) map[string]string {
-	headers := make(map[string]string)
+	// 预分配足够容量：标准头 + Custom + customHeaders
+	capacity := 12
+	if h != nil && len(h.Custom) > 0 {
+		capacity += len(h.Custom)
+	}
+	if len(customHeaders) > 0 {
+		capacity += len(customHeaders)
+	}
+	headers := make(map[string]string, capacity)
 
 	// 处理 nil 接收者 - 只返回 customHeaders（过滤空值）
 	if h == nil {
-		if len(customHeaders) > 0 {
-			for key, value := range customHeaders {
-				if value != "" {
-					headers[key] = value
-				}
+		for key, value := range customHeaders {
+			if value != "" {
+				headers[key] = value
 			}
 		}
 		return headers
 	}
 
-	// 先添加系统生成的标准 headers
-	if h.Accept != "" {
-		headers["Accept"] = h.Accept
+	// 使用字段数组简化代码，提高可维护性
+	fields := []struct {
+		key   string
+		value string
+	}{
+		{"Accept", h.Accept},
+		{"Accept-Language", h.AcceptLanguage},
+		{"Accept-Encoding", h.AcceptEncoding},
+		{"User-Agent", h.UserAgent},
+		{"Sec-Fetch-Site", h.SecFetchSite},
+		{"Sec-Fetch-Mode", h.SecFetchMode},
+		{"Sec-Fetch-User", h.SecFetchUser},
+		{"Sec-Fetch-Dest", h.SecFetchDest},
+		{"Sec-CH-UA", h.SecCHUA},
+		{"Sec-CH-UA-Mobile", h.SecCHUAMobile},
+		{"Sec-CH-UA-Platform", h.SecCHUAPlatform},
+		{"Upgrade-Insecure-Requests", h.UpgradeInsecureRequests},
 	}
-	if h.AcceptLanguage != "" {
-		headers["Accept-Language"] = h.AcceptLanguage
-	}
-	if h.AcceptEncoding != "" {
-		headers["Accept-Encoding"] = h.AcceptEncoding
-	}
-	if h.UserAgent != "" {
-		headers["User-Agent"] = h.UserAgent
-	}
-	if h.SecFetchSite != "" {
-		headers["Sec-Fetch-Site"] = h.SecFetchSite
-	}
-	if h.SecFetchMode != "" {
-		headers["Sec-Fetch-Mode"] = h.SecFetchMode
-	}
-	if h.SecFetchUser != "" {
-		headers["Sec-Fetch-User"] = h.SecFetchUser
-	}
-	if h.SecFetchDest != "" {
-		headers["Sec-Fetch-Dest"] = h.SecFetchDest
-	}
-	if h.SecCHUA != "" {
-		headers["Sec-CH-UA"] = h.SecCHUA
-	}
-	if h.SecCHUAMobile != "" {
-		headers["Sec-CH-UA-Mobile"] = h.SecCHUAMobile
-	}
-	if h.SecCHUAPlatform != "" {
-		headers["Sec-CH-UA-Platform"] = h.SecCHUAPlatform
-	}
-	if h.UpgradeInsecureRequests != "" {
-		headers["Upgrade-Insecure-Requests"] = h.UpgradeInsecureRequests
+
+	// 添加非空的标准 headers
+	for _, f := range fields {
+		if f.value != "" {
+			headers[f.key] = f.value
+		}
 	}
 
 	// 合并 HTTPHeaders 中的 Custom headers
-	if h.Custom != nil {
-		for key, value := range h.Custom {
-			if value != "" {
-				headers[key] = value
-			}
+	for key, value := range h.Custom {
+		if value != "" {
+			headers[key] = value
 		}
 	}
 
 	// 合并传入的 customHeaders（优先级最高，会覆盖所有已有的 headers）
-	if len(customHeaders) > 0 {
-		for key, value := range customHeaders {
-			if value != "" {
-				headers[key] = value
-			}
+	for key, value := range customHeaders {
+		if value != "" {
+			headers[key] = value
 		}
 	}
 

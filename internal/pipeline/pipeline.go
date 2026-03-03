@@ -371,8 +371,8 @@ func NewCachingMiddleware() *CachingMiddleware {
 }
 
 func (cm *CachingMiddleware) Process(ctx context.Context, stageName string, data *StageData, next ExecutionFunc) error {
-	// 尝试从缓存读取
-	cacheKey := fmt.Sprintf("%s:%v", stageName, data.Input)
+	// 生成缓存键（使用哈希避免大对象问题）
+	cacheKey := cm.generateCacheKey(stageName, data.Input)
 
 	cm.mu.RLock()
 	if cached, exists := cm.cache[cacheKey]; exists {
@@ -387,12 +387,76 @@ func (cm *CachingMiddleware) Process(ctx context.Context, stageName string, data
 		return err
 	}
 
-	// 缓存结果
+	// 缓存结果（限制缓存大小）
 	cm.mu.Lock()
+	// 简单的缓存淘汰策略：当缓存过大时清空
+	if len(cm.cache) >= 10000 {
+		cm.cache = make(map[string]interface{})
+	}
 	cm.cache[cacheKey] = data.Output
 	cm.mu.Unlock()
 
 	return nil
+}
+
+// generateCacheKey 生成缓存键（使用哈希避免大对象问题）
+func (cm *CachingMiddleware) generateCacheKey(stageName string, input interface{}) string {
+	// 使用指针地址作为键的基础（对对象有效）
+	// 对于字符串或基本类型，直接使用值
+	switch v := input.(type) {
+	case string:
+		// 对长字符串使用哈希
+		if len(v) > 128 {
+			return fmt.Sprintf("%s:%x", stageName, hashString(v))
+		}
+		return fmt.Sprintf("%s:%s", stageName, v)
+	case []byte:
+		// 对字节切片使用哈希
+		if len(v) > 128 {
+			return fmt.Sprintf("%s:%x", stageName, hashBytes(v))
+		}
+		return fmt.Sprintf("%s:%x", stageName, v)
+	case int, int8, int16, int32, int64,
+		uint, uint8, uint16, uint32, uint64,
+		float32, float64, bool:
+		return fmt.Sprintf("%s:%v", stageName, v)
+	default:
+		// 对其他类型使用指针地址
+		return fmt.Sprintf("%s:%p", stageName, input)
+	}
+}
+
+// hashString 计算字符串的简化哈希
+func hashString(s string) uint64 {
+	// 使用 FNV-1a 哈希算法
+	const (
+		offset64 = 14695981039346656037
+		prime64  = 1099511628211
+	)
+	hash := uint64(offset64)
+	for i := 0; i < len(s) && i < 1024; i++ {
+		hash ^= uint64(s[i])
+		hash *= prime64
+	}
+	return hash
+}
+
+// hashBytes 计算字节切片的简化哈希
+func hashBytes(b []byte) uint64 {
+	const (
+		offset64 = 14695981039346656037
+		prime64  = 1099511628211
+	)
+	hash := uint64(offset64)
+	limit := len(b)
+	if limit > 1024 {
+		limit = 1024 // 限制哈希计算的数据量
+	}
+	for i := 0; i < limit; i++ {
+		hash ^= uint64(b[i])
+		hash *= prime64
+	}
+	return hash
 }
 
 // ========================================================================
