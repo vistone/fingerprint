@@ -536,7 +536,6 @@
 ## 📞 相关资源
 
 - 📄 ../02-improvement-plan.md - 详细改进计划
-- 📄 ../../1-analysis/01-project-health-dashboard.md - 项目健康报告
 - 📄 ../../3-references/00-quick-reference.md - 快速参考指南
 - 📄 ../../README.md - 文档导航首页
 

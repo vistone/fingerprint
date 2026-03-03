@@ -259,7 +259,6 @@ A: 单请求耗时增加 < 100µs，可忽略不计
 - 📖 [快速开始指南](03-feature-extractor-quickstart.md)
 - 📖 [P0 实施详解](../../5-process/development/04-p0-feature-extractor-guide.md)
 - 📖 [完成报告](04-p0-completion-report.md)
-- 📖 [缺口分析](../../1-analysis/02-fingerprint-gap-analysis-2026-02-28.md)
 
 ---
 

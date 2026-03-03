@@ -11,11 +11,9 @@
 - 💻 开发者 → [开发者检查清单](./2-guides/developer/01-developer-checklist.md)
 - 📖 API 文档 → [快速参考](./3-references/00-quick-reference.md)
 - 🤝 贡献者 → [贡献指南](./CONTRIBUTING.md)
-- 🔍 项目分析 → [项目健康报告](./1-analysis/01-project-health-dashboard.md)
 
 ## 📁 目录结构
 
-- **1-analysis/** - 分析报告（项目质量、性能等）
 - **2-guides/** - 用户指南（快速开始、最佳实践等）
 - **3-references/** - 参考文档（API、配置等）
 - **4-templates/** - 模板文件（GitHub、CI/CD 等）

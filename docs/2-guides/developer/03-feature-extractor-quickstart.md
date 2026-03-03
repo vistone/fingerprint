@@ -267,5 +267,4 @@ A: 创建自定义 `FeatureConfig` 并修改阈值参数
 ---
 
 **相关链接**  
-- [缺口分析](../../1-analysis/02-fingerprint-gap-analysis-2026-02-28.md)
 - [开发流程规则](01-fingerprint-project-rules.md)
