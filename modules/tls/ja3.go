@@ -76,7 +76,8 @@ func CalculateJA3FromProfile(profile profiles.ClientProfile) *JA3Result {
 // IsGREASEUint16 检查是否为 GREASE 值
 func IsGREASEUint16(v uint16) bool {
 	// GREASE 值模式: 0x0A0A, 0x1A1A, 0x2A2A, ..., 0xFAFA
-	return (v&0x0F0F) == 0x0A0A && ((v>>4)&0xFF) == ((v>>12)&0xFF)
+	// 高字节和低字节相等，且低字节的形式为 0xXA (X 是任意值)
+	return ((v >> 8) & 0xFF) == (v & 0xFF) && (v&0x0F) == 0x0A
 }
 
 // filterGREASEUint16 过滤 GREASE 值

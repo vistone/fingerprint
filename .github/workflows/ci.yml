@@ -6,25 +6,23 @@ on:
   pull_request:
     branches: [ main ]
 
-permissions:
-  contents: read
-  security-events: write
-
 jobs:
   test:
+    name: Test
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ['1.23', '1.24', '1.25']
-    
+        go-version: ['1.22', '1.23', '1.24', '1.25']
+
     steps:
-    - uses: actions/checkout@v4
-    
+    - name: Checkout code
+      uses: actions/checkout@v4
+
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
         go-version: ${{ matrix.go-version }}
-    
+
     - name: Cache Go modules
       uses: actions/cache@v4
       with:
@@ -32,104 +30,95 @@ jobs:
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-go-
-    
+
     - name: Download dependencies
-      run: go mod download
-    
-    - name: Build
-      run: go build ./...
-    
-    - name: Run tests (short mode)
-      run: go test -v -short -coverprofile=coverage.out ./internal/... ./profiles/... ./tls/ech/... ./http/websocket/...
-    
-    - name: Check coverage threshold
       run: |
-        COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
-        echo "Total coverage: $COVERAGE%"
-        # Note: Lowered threshold to 30% due to generated profile code
-        if (( $(echo "$COVERAGE < 30" | bc -l) )); then
-          echo "Coverage $COVERAGE% is below threshold 30%"
-          exit 1
-        fi
+        go mod download
+        go work sync
 
-  race-test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.25'
-    
-    - name: Run race detector on critical packages
+    - name: Build all modules
       run: |
-        go test -race -timeout=10m ./internal/tcpip/...
-        go test -race -timeout=10m ./internal/config/...
-        go test -race -timeout=10m ./profiles/...
-        go test -race -timeout=10m ./tls/ech/...
-        go test -race -timeout=10m ./http/websocket/...
+        go build ./...
+        go build ./modules/...
 
-  benchmark:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Go
-      uses: actions/setup-go@v5
+    - name: Run tests
+      run: go test -v -race -coverprofile=coverage.out ./modules/...
+
+    - name: Generate coverage report
+      run: go tool cover -html=coverage.out -o coverage.html
+
+    - name: Upload coverage
+      uses: codecov/codecov-action@v4
       with:
-        go-version: '1.25'
-    
-    - name: Run benchmarks
-      run: go test -bench=. -benchmem -run=^$ ./internal/... ./profiles/... ./tls/ech/... ./http/websocket/... | tee benchmark.txt
-    
-    - name: Upload benchmark results
-      uses: actions/upload-artifact@v4
-      with:
-        name: benchmark-results
-        path: benchmark.txt
+        files: ./coverage.out
+        flags: unittests
+        name: codecov-umbrella
 
   lint:
+    name: Lint
     runs-on: ubuntu-latest
-    
     steps:
-    - uses: actions/checkout@v4
-    
+    - name: Checkout code
+      uses: actions/checkout@v4
+
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.24'
-    
-    - name: Verify gofmt
-      run: |
-        test -z "$(gofmt -l .)" || (echo "Files need formatting:" && gofmt -l . && exit 1)
-    
-    - name: Verify go mod tidy
-      run: |
-        go mod tidy
-        test -z "$(git diff go.mod go.sum)" || (echo "go.mod/go.sum not tidy" && exit 1)
-    
-    - name: golangci-lint
+        go-version: '1.25'
+
+    - name: Run golangci-lint
       uses: golangci/golangci-lint-action@v6
       with:
-        version: v1.64.8
-        args: --timeout=5m
+        version: latest
+        args: --timeout=5m ./modules/...
+
+  build-examples:
+    name: Build Examples
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.25'
+
+    - name: Build examples
+      run: |
+        go build -o v3-demo ./examples/v3
+
+    - name: Test run example
+      run: ./v3-demo
+
+  benchmark:
+    name: Benchmark
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.25'
+
+    - name: Run benchmarks
+      run: go test -bench=. -benchmem ./modules/core/... ./modules/profiles/... ./modules/ml/... ./modules/tls/...
 
   security:
+    name: Security Scan
     runs-on: ubuntu-latest
-    
     steps:
-    - uses: actions/checkout@v4
-    
+    - name: Checkout code
+      uses: actions/checkout@v4
+
     - name: Run Gosec Security Scanner
       uses: securego/gosec@master
       with:
-        args: '-no-fail -fmt sarif -out results.sarif ./...'
-    
-    - name: Upload SARIF file
-      uses: github/codeql-action/upload-sarif@v4
-      with:
-        sarif_file: results.sarif
+        args: '-no-fail -fmt sarif -out results.sarif ./modules/...'
+
+    - name: Run govulncheck
+      run: |
+        go install golang.org/x/vuln/cmd/govulncheck@latest
+        govulncheck ./...

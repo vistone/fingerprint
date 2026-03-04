@@ -1,0 +1,80 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.25'
+
+    - name: Build artifacts
+      run: |
+        mkdir -p dist
+        # Build example binary for multiple platforms
+        GOOS=linux GOARCH=amd64 go build -o dist/fingerprint-demo-linux-amd64 ./examples/v3
+        GOOS=darwin GOARCH=amd64 go build -o dist/fingerprint-demo-darwin-amd64 ./examples/v3
+        GOOS=windows GOARCH=amd64 go build -o dist/fingerprint-demo-windows-amd64.exe ./examples/v3
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: dist/*
+        draft: false
+        prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') }}
+        body: |
+          ## Changes
+          See [CHANGELOG.md](./CHANGELOG.md) for details.
+          
+          ## Modules
+          This release includes updates to the following Go modules:
+          - `github.com/vistone/fingerprint/modules/core`
+          - `github.com/vistone/fingerprint/modules/profiles`
+          - `github.com/vistone/fingerprint/modules/tls`
+          - `github.com/vistone/fingerprint/modules/http`
+          - `github.com/vistone/fingerprint/modules/ml`
+          - `github.com/vistone/fingerprint/modules/defense`
+          - `github.com/vistone/fingerprint/modules/frontend`
+          - `github.com/vistone/fingerprint/modules/gateway`
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-modules:
+    name: Publish Go Modules
+    runs-on: ubuntu-latest
+    needs: release
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.25'
+
+    - name: Verify modules
+      run: |
+        for module in core profiles tls http ml defense frontend gateway; do
+          echo "Verifying modules/$module"
+          cd modules/$module
+          go mod verify
+          cd ../..
+        done
+
+    - name: Update pkg.go.dev
+      run: |
+        # Trigger pkg.go.dev to update
+        curl -s https://proxy.golang.org/github.com/vistone/fingerprint/@v/${{ github.ref_name }}.info || true
