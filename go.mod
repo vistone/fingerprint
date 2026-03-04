@@ -6,6 +6,14 @@ require (
 	github.com/bogdanfinn/fhttp v0.6.3
 	github.com/bogdanfinn/utls v1.7.4-barnius
 	github.com/prometheus/client_golang v1.23.2
+	github.com/vistone/fingerprint/modules/core v0.0.0
+	github.com/vistone/fingerprint/modules/defense v0.0.0
+	github.com/vistone/fingerprint/modules/frontend v0.0.0
+	github.com/vistone/fingerprint/modules/gateway v0.0.0
+	github.com/vistone/fingerprint/modules/http v0.0.0
+	github.com/vistone/fingerprint/modules/ml v0.0.0
+	github.com/vistone/fingerprint/modules/profiles v0.0.0
+	github.com/vistone/fingerprint/modules/tls v0.0.0
 	go.opentelemetry.io/otel v1.41.0
 	go.opentelemetry.io/otel/sdk v1.41.0
 	go.opentelemetry.io/otel/trace v1.41.0
@@ -35,4 +43,15 @@ require (
 	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
 	google.golang.org/protobuf v1.36.8 // indirect
+)
+
+replace (
+	github.com/vistone/fingerprint/modules/core => ./modules/core
+	github.com/vistone/fingerprint/modules/defense => ./modules/defense
+	github.com/vistone/fingerprint/modules/frontend => ./modules/frontend
+	github.com/vistone/fingerprint/modules/gateway => ./modules/gateway
+	github.com/vistone/fingerprint/modules/http => ./modules/http
+	github.com/vistone/fingerprint/modules/ml => ./modules/ml
+	github.com/vistone/fingerprint/modules/profiles => ./modules/profiles
+	github.com/vistone/fingerprint/modules/tls => ./modules/tls
 )
