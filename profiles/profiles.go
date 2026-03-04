@@ -1,17 +1,20 @@
 // Package profiles 包含浏览器 TLS 指纹配置。
-// 注意: 本包使用了来自 utls 库的无键字段结构体初始化，
+// 注意：本包使用了来自 utls 库的无键字段结构体初始化，
 // 这是为了与库的设计兼容，由此产生的 go vet 警告应被忽略。
 //
 //nolint:composites
 package profiles
 
 import (
+	"sync"
+
 	"github.com/bogdanfinn/fhttp/http2"
 	tls "github.com/bogdanfinn/utls"
 )
 
 var DefaultClientProfile = Chrome_133
 
+// MappedTLSClients 存储所有 TLS 客户端指纹配置（并发安全）
 var MappedTLSClients = map[string]ClientProfile{
 	"chrome_103":        Chrome_103,
 	"chrome_104":        Chrome_104,
@@ -86,6 +89,36 @@ var MappedTLSClients = map[string]ClientProfile{
 	"edge_120": Edge_120,
 	"edge_131": Edge_131,
 	"edge_133": Edge_133,
+}
+
+// clientsMu 保护 MappedTLSClients 的并发访问
+var clientsMu sync.RWMutex
+
+// GetClientProfile 并发安全地获取客户端配置
+func GetClientProfile(name string) (ClientProfile, bool) {
+	clientsMu.RLock()
+	defer clientsMu.RUnlock()
+	profile, ok := MappedTLSClients[name]
+	return profile, ok
+}
+
+// GetAllProfiles 并发安全地获取所有配置名称列表
+func GetAllProfiles() []string {
+	clientsMu.RLock()
+	defer clientsMu.RUnlock()
+	names := make([]string, 0, len(MappedTLSClients))
+	for name := range MappedTLSClients {
+		names = append(names, name)
+	}
+	return names
+}
+
+// HasProfile 并发安全地检查配置是否存在
+func HasProfile(name string) bool {
+	clientsMu.RLock()
+	defer clientsMu.RUnlock()
+	_, ok := MappedTLSClients[name]
+	return ok
 }
 
 type ClientProfile struct {

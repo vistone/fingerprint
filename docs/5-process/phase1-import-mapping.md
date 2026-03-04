@@ -10,7 +10,7 @@
 ### 类型 1: internal/tlsutil -> tls/internal/utils
 
 | 源文件 | 旧 import | 新 import |
-|--------|----------|----------|
+| -------- | ---------- | ---------- |
 | tls/ja3/ja3.go | `"github.com/vistone/fingerprint/internal/tlsutil"` | `"github.com/vistone/fingerprint/tls/internal/utils"` |
 | tls/ja3/errors.go | 同上 | 同上 |
 | tls/ja4/ja4.go | 同上 | 同上 |
@@ -27,13 +27,13 @@
 **注**: 如果有相对 import `../utils` 则改为 `../internal/utils`
 
 | 源文件 | 旧 import | 新 import |
-|--------|----------|----------|
+| -------- | ---------- | ---------- |
 | tls/*/file.go | 相对 import `../utils` | 相对 import `../internal/utils` |
 
 ### 类型 3: tls/ech -> tls/internal/ech
 
 | 源文件 | 旧 import | 新 import |
-|--------|----------|----------|
+| -------- | ---------- | ---------- |
 | tls/tls.go | `"github.com/vistone/fingerprint/tls/ech"` | `"github.com/vistone/fingerprint/tls/internal/ech"` |
 | tls/types.go | 同上 | 同上 |
 
@@ -60,19 +60,19 @@ import (
 
 // 使用方式不变
 // tlsutil.GenerateGREASE() -> utils.GenerateGREASE()
-```
+```plaintext
 
 ### tls/ja3/errors.go
 
 ```go
 // 同上（如果有 import）
-```
+```plaintext
 
 ### tls/ja4/ja4.go, ja4s/ja4s.go
 
 ```go
 // 同上
-```
+```plaintext
 
 ### tls/tls.go
 
@@ -88,7 +88,7 @@ import (
     "github.com/vistone/fingerprint/tls/internal/utils"
     "github.com/vistone/fingerprint/tls/internal/ech"  // 新位置
 )
-```
+```plaintext
 
 ### internal/extension/canary_framework.go 及其他
 
@@ -99,7 +99,7 @@ import "github.com/vistone/fingerprint/internal/tlsutil"
 
 // 新
 import "github.com/vistone/fingerprint/tls/internal/utils"
-```
+```plaintext
 
 ### test/ 下的文件
 
@@ -112,7 +112,7 @@ import "github.com/vistone/fingerprint/internal/tlsutil"
 
 // 新
 import "github.com/vistone/fingerprint/tls/internal/utils"
-```
+```plaintext
 
 ---
 
@@ -129,12 +129,12 @@ import "../utils"
 
 // 新（相对）  
 import "../internal/utils"
-```
+```plaintext
 
 **检查方式**:
 ```bash
 grep -E "^\s*import\s+\"\.\./.*\"" tls/**/*.go
-```
+```plaintext
 
 ---
 
@@ -146,7 +146,7 @@ grep -E "^\s*import\s+\"\.\./.*\"" tls/**/*.go
 
 ```bash
 go build ./tls/...
-```
+```plaintext
 
 期望: 全部编译成功
 
@@ -156,7 +156,7 @@ go build ./tls/...
 go test ./tls/ja3 -v
 go test ./tls/ja4 -v
 go test ./tls/ja4s -v
-```
+```plaintext
 
 期望: 所有测试通过
 
@@ -164,7 +164,7 @@ go test ./tls/ja4s -v
 
 ```bash
 go test ./test/... -v -short
-```
+```plaintext
 
 期望: 集成测试通过（特别是涉及 TLS 的部分）
 
@@ -172,7 +172,7 @@ go test ./test/... -v -short
 
 ```bash
 go build ./...
-```
+```plaintext
 
 期望: 整个项目成功编译
 
@@ -183,13 +183,13 @@ go build ./...
 grep -r "internal/tlsutil" --include="*.go" .
 
 # 不应该有输出（除了本文档）
-```
+```plaintext
 
 ---
 
 ## 📊 文件影响矩阵
 
-```
+```plaintext
 文件分类        | 文件数 | import 行数 | 风险等级
 ─────────────────────────────────────────────────
 TLS 主包        | 3     | 5          | 低
@@ -198,7 +198,7 @@ TLS ja3/ja4/ja4s| 6     | 12         | 低
 测试文件        | 3+    | 8+         | 低
 ─────────────────────────────────────────────────
 合计            | ~15   | ~30+       | 低
-```
+```plaintext
 
 ---
 
@@ -217,7 +217,7 @@ bash scripts/phase1_tls_migration.sh execute
 go mod tidy
 go build ./...
 go test ./...
-```
+```plaintext
 
 ### 手工方式
 
@@ -247,7 +247,7 @@ rm -rf tls/utils tls/ech internal/tlsutil
 go mod tidy
 go build ./...
 go test ./...
-```
+```plaintext
 
 ---
 
@@ -277,7 +277,7 @@ func (j *JA3Generator) Generate(clientHello []byte) (*types.Fingerprint, error) 
 	
 	// ... 代码 ...
 }
-```
+```plaintext
 
 **变更后**:
 ```go
@@ -301,7 +301,7 @@ func (j *JA3Generator) Generate(clientHello []byte) (*types.Fingerprint, error) 
 	
 	// ... 代码 ...
 }
-```
+```plaintext
 
 ---
 
@@ -320,7 +320,7 @@ git reset --hard <commit-sha>
 # 方式 3: 完全撤销（危险操作）
 git clean -fd
 git reset --hard HEAD
-```
+```plaintext
 
 ---
 

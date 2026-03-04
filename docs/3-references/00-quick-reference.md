@@ -4,7 +4,7 @@
 
 ## 📊 项目健康检查指标
 
-```
+```plaintext
 项目状态: ✅ 稳定发布版本 (v2.0.0)
 
 ┌─────────────────────────────────────────┐
@@ -19,7 +19,7 @@
 │ 文档完整度:          80%                 │
 │ CI/CD 配置:          已建立（测试/构建） ✅ │
 └─────────────────────────────────────────┘
-```
+```plaintext
 
 ---
 
@@ -32,37 +32,37 @@ result, _ := fingerprint.GetRandomFingerprint()
 // - TLS 指纹配置
 // - User-Agent
 // - HTTP Headers
-```
+```plaintext
 
 ### 指定浏览器
 ```go
 result, _ := fingerprint.GetRandomFingerprintByBrowser("chrome")
 result, _ := fingerprint.GetRandomFingerprintByBrowserWithOS("firefox", fingerprint.OSMacOS14)
-```
+```plaintext
 
 ### 计算指纹哈希
 ```go
 ja3, _ := fingerprint.ComputeJA3ByProfileName("chrome_133")
 ja4, _ := fingerprint.ComputeJA4ByProfileName("chrome_133")
-```
+```plaintext
 
 ### 被动识别
 ```go
 recognizer := fingerprint.NewPassiveRecognizer()
 result := recognizer.RecognizeFromHeaders(headers)
-```
+```plaintext
 
 ### 异常检测
 ```go
 detector := fingerprint.NewAnomalyDetector()
 isHeadless := detector.DetectHeadlessBrowser(userAgent)
-```
+```plaintext
 
 ### 噪声注入
 ```go
 injector := fingerprint.NewNoiseInjector(config)
 canvasNoise := injector.GenerateCanvasNoise()
-```
+```plaintext
 
 ---
 
@@ -91,27 +91,27 @@ canvasNoise := injector.GenerateCanvasNoise()
 ```bash
 cd /media/stone/data/dev
 gofmt -w .
-```
+```plaintext
 
 ### 步骤 2: 验证修复
 ```bash
 gofmt -l .        # 应无输出
 go vet ./...      # 检查剩余 vet 警告
 go test ./... -v  # 运行所有测试
-```
+```plaintext
 
 ### 步骤 3: 提交修改
 ```bash
 git add -A
 git commit -m "style: fix code formatting with gofmt"
 git push origin main
-```
+```plaintext
 
 ---
 
 ## 📈 改进优先级
 
-```
+```plaintext
 优先级 1 (本周完成)
 ├─ 代码格式化 (5 分钟)
 └─ 修复 vet 问题 (3-4 小时)
@@ -130,13 +130,13 @@ git push origin main
 优先级 4 (第四周)
 ├─ 扩展 API 文档 (2-3 小时)
 └─ 最佳实践指南 (2 小时)
-```
+```plaintext
 
 ---
 
 ## 📂 项目结构
 
-```
+```plaintext
 fingerprint/
 ├── 📄 核心功能
 │   ├── types.go              # 类型定义
@@ -184,7 +184,7 @@ fingerprint/
     ├── security.md                     # ✅ 已创建
     ├── 2-guides/02-improvement-plan.md # ✅ 已创建
     └── 3-references/00-quick-reference.md
-```
+```plaintext
 
 ---
 
@@ -193,7 +193,7 @@ fingerprint/
 ### 操作耗时
 
 | 操作 | 耗时 | 等级 |
-|------|------|------|
+| ------ | ------ | ------ |
 | GetRandomFingerprint | 7.4 µs | ⭐⭐⭐⭐⭐ |
 | GetUserAgentByProfileName | 796 ns | ⭐⭐⭐⭐⭐ |
 | GenerateHeaders | 1.2 µs | ⭐⭐⭐⭐⭐ |
@@ -205,7 +205,7 @@ fingerprint/
 ### 内存分配
 
 | 操作 | 堆分配 | 分配次数 |
-|------|--------|---------|
+| ------ | -------- | --------- |
 | GetRandomFingerprint | 1.8 KB | 11 次 |
 | GetUserAgentByProfileName | 134 B | 2 次 |
 | GenerateHeaders | 304 B | 4 次 |
@@ -222,13 +222,13 @@ fingerprint/
 ## 📝 依赖分析
 
 ### 直接依赖
-```
+```plaintext
 github.com/bogdanfinn/fhttp v0.6.3        # HTTP/2 支持
 github.com/bogdanfinn/utls v1.7.4-barnius # TLS 指纹核心
-```
+```plaintext
 
 ### 间接依赖
-```
+```plaintext
 github.com/andybalholm/brotli v1.2.0
 github.com/cloudflare/circl v1.6.1
 github.com/klauspost/compress v1.18.2
@@ -236,16 +236,16 @@ golang.org/x/crypto v0.46.0
 golang.org/x/net v0.48.0
 golang.org/x/sys v0.39.0
 golang.org/x/text v0.32.0
-```
+```plaintext
 
 ### 本地替换依赖 (开发模式)
-```
+```plaintext
 github.com/vistone/domaindns   => ../domaindns
 github.com/vistone/localippool => ../localippool
 github.com/vistone/logs        => ../logs
 github.com/vistone/netconnpool => ../netconnpool
 github.com/vistone/quic        => ../quic
-```
+```plaintext
 
 ---
 
@@ -319,7 +319,7 @@ go get -u                      # 更新依赖
 # 文档
 go doc ./...                   # 查看文档
 go doc -html ./... > doc.html  # 生成 HTML 文档
-```
+```plaintext
 
 ### 示例运行
 ```bash
@@ -331,7 +331,7 @@ go run examples/useragent/main.go
 # 基准测试
 go test ./test -bench=GetRandomFingerprint -benchmem
 go test ./test -bench=RandomLanguage -benchmem
-```
+```plaintext
 
 ---
 
@@ -358,7 +358,7 @@ detector := fingerprint.NewAnomalyDetector()
 if detector.DetectHeadlessBrowser(ua) {
     return errors.New("headless browser detected")
 }
-```
+```plaintext
 
 ### ❌ DON'T - 避免做法
 ```go
@@ -374,7 +374,7 @@ result, _ := fingerprint.GetRandomFingerprint()
 // 不要混用不兼容的指纹
 profile := fingerprint.MappedTLSClients["chrome_133"]
 ua, _ := fingerprint.GetUserAgentByProfileName("firefox_135")  // 不匹配!
-```
+```plaintext
 
 ---
 

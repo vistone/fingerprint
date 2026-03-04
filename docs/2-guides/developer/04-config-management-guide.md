@@ -26,7 +26,7 @@ if err := center.Load(); err != nil {
 // 获取当前配置
 cfg := center.Get()
 fmt.Println(cfg.BehaviorAnalysis.MinRequestsForAnalysis)  // 5
-```
+```plaintext
 
 ### 2. ConfigManager - 配置管理器
 提供类型安全的配置访问接口。
@@ -41,7 +41,7 @@ riskCfg := manager.GetRiskScoringConfig()
 // 获取特定配置值
 val, _ := manager.GetConfigValue("behavior_analysis.min_requests")
 fmt.Println(val)  // 5
-```
+```plaintext
 
 ### 3. ConfigValidator - 配置验证器
 验证配置的完整性和正确性。
@@ -64,7 +64,7 @@ validator.AddRule("custom_check", func(cfg *config.ManagedConfig) error {
     }
     return nil
 })
-```
+```plaintext
 
 ### 4. HealthChecker - 健康检查
 监控配置系统的整体健康状态。
@@ -81,7 +81,7 @@ fmt.Printf("Overall: %v\n", result.Overall)
 for _, item := range result.Checks {
     fmt.Printf("✓ %s: %s\n", item.Name, item.Message)
 }
-```
+```plaintext
 
 ## 🔄 配置更新流程
 
@@ -104,7 +104,7 @@ if err := center.Update(newConfig, "increase min requests", "admin"); err != nil
 }
 
 // 更改立即生效，无需重启应用
-```
+```plaintext
 
 ### B. 版本管理与回滚
 
@@ -122,7 +122,7 @@ for _, vc := range history {
 if err := center.Rollback("v5", "revert problematic config", "admin"); err != nil {
     log.Fatal(err)
 }
-```
+```plaintext
 
 ## 📡 配置变更监听与热更新
 
@@ -150,7 +150,7 @@ func (mcl *MyConfigListener) OnConfigChange(old, new *config.ManagedConfig, chan
 center.RegisterListener(&MyConfigListener{})
 
 // 现在任何配置更新都会自动触发监听器
-```
+```plaintext
 
 ### 启用自动重新加载
 
@@ -161,7 +161,7 @@ center.EnableAutoReload(30 * time.Second)
 
 // 禁用自动重新加载
 center.DisableAutoReload()
-```
+```plaintext
 
 ## 🔧 配置结构
 
@@ -177,7 +177,7 @@ center.DisableAutoReload()
     "signal_capacity": 50
   }
 }
-```
+```plaintext
 
 ### RiskScoringConfig
 ```json
@@ -200,7 +200,7 @@ center.DisableAutoReload()
     }
   }
 }
-```
+```plaintext
 
 ### FeatureExtractionConfig
 ```json
@@ -214,7 +214,7 @@ center.DisableAutoReload()
     "desktop_screen_width_min": 800
   }
 }
-```
+```plaintext
 
 ## 🚀 全局初始化
 
@@ -243,7 +243,7 @@ func main() {
     manager := config.GetConfigManager()
     behaviorCfg := manager.GetBehaviorAnalysisConfig()
 }
-```
+```plaintext
 
 ### 方法2：使用默认配置初始化
 
@@ -252,7 +252,7 @@ func main() {
 if err := config.InitializeConfigCenterWithDefaults(); err != nil {
     log.Fatal(err)
 }
-```
+```plaintext
 
 ## 💡 实际应用示例
 
@@ -270,7 +270,7 @@ func NewBehaviorAnalyzer(config *BehaviorAnalysisConfig) *BehaviorAnalyzer {
     }
     // ...
 }
-```
+```plaintext
 
 **改进代码（配置中心）：**
 ```go
@@ -284,7 +284,7 @@ func NewBehaviorAnalyzer(cfg *BehaviorAnalysisConfig) *BehaviorAnalyzer {
     }
     // ...
 }
-```
+```plaintext
 
 ### 示例2：在 QUIC 分析中使用配置中心
 
@@ -303,7 +303,7 @@ func (qs *QUICSignatureAnalyzer) AnalyzeQUICInitial(initial QUICInitialData) (*Q
     
     // ...
 }
-```
+```plaintext
 
 ### 示例3：动态更新风险评分阈值
 
@@ -324,7 +324,7 @@ func UpdateRiskThresholds(critical, high, medium, low float64) error {
         "operator",
     )
 }
-```
+```plaintext
 
 ## 📊 健康检查示例
 
@@ -344,7 +344,7 @@ func PerformHealthCheck() {
         }
     }
 }
-```
+```plaintext
 
 ## ⚙️ 环境变量支持
 
@@ -358,7 +358,7 @@ export FINGERPRINT_DEBUG=true
 # 启用自动重新加载
 export FINGERPRINT_AUTO_RELOAD=true
 export FINGERPRINT_RELOAD_INTERVAL=30
-```
+```plaintext
 
 ## 🔐 最佳实践
 
@@ -394,7 +394,7 @@ export FINGERPRINT_RELOAD_INTERVAL=30
 manager := config.GetConfigManager()
 cfg := manager.GetBehaviorAnalysisConfig()
 minRequests := cfg.MinRequestsForAnalysis
-```
+```plaintext
 
 ### 步骤3：测试配置更新
 验证应用能够正确处理动态配置更新
@@ -410,7 +410,7 @@ center := config.GetConfigCenter()
 if !center.IsLoaded() {
     log.Fatal("Configuration not loaded")
 }
-```
+```plaintext
 
 ### 验证失败
 ```go
@@ -419,7 +419,7 @@ errs := validator.Validate(cfg)
 for _, err := range errs {
     log.Printf("Validation error: %v", err)
 }
-```
+```plaintext
 
 ### 健康检查报警
 ```go
@@ -430,7 +430,7 @@ for _, item := range result.Checks {
         log.Printf("Health warning: %s - %s", item.Name, item.Message)
     }
 }
-```
+```plaintext
 
 ---
 

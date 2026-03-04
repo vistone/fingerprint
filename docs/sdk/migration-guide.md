@@ -42,7 +42,7 @@ import "github.com/vistone/fingerprint/internal/extension"
 appCfg := extension.NewUnifiedConfigFromEnv()
 rules := appCfg.Rules
 _ = rules
-```
+```plaintext
 
 ### 环境变量
 
@@ -57,7 +57,7 @@ _ = rules
 
 ## 迁移路线图
 
-```
+```plaintext
 阶段 1: 准备            2 周
 ├─ 理解新架构
 ├─ 设置开发环境
@@ -77,14 +77,14 @@ _ = rules
 ├─ 单元测试
 ├─ 集成测试
 └─ 性能优化
-```
+```plaintext
 
 ## 第一步：理解新架构
 
 ### 核心概念
 
 | 概念 | 说明 | 责任 |
-|------|------|------|
+| ------ | ------ | ------ |
 | **注册表** | 管理所有扩展和组件 | 集中管理 |
 | **解析器** | 原始字节 → 结构化数据 | 数据转换 |
 | **分析器** | 数据分析 → 风险评分 | 逻辑评估 |
@@ -120,7 +120,7 @@ RegisterParserBuilder(0xfe0d, func() (Parser, error) {
 // 3. 使用
 parser, _ := GetParser(0xfe0d)
 result, _ := parser.Parse(data, ctx)
-```
+```plaintext
 
 ## 第二步：准备迁移
 
@@ -135,7 +135,7 @@ go list -m all | grep fingerprint
 
 # 查看现有扩展
 grep -r "0xfe0d\|0xfd00" .
-```
+```plaintext
 
 ### 备份现有代码
 
@@ -146,7 +146,7 @@ git push origin ech-migration-backup
 
 # 返回主分支
 git checkout main
-```
+```plaintext
 
 ## 第三步：迁移 ECH 分析器
 
@@ -167,7 +167,7 @@ RegisterExtension(&ExtensionMetadata{
     IsExperimental:        false,
     CompatibleTLSVersions: []uint16{0x0304},
 })
-```
+```plaintext
 
 ### 步骤 2：实现解析器
 
@@ -192,7 +192,7 @@ func (p *ECHParser) Parse(data []byte, parentContext context.Context) (
     
     return echData, nil
 }
-```
+```plaintext
 
 **注册解析器**：
 
@@ -201,7 +201,7 @@ func (p *ECHParser) Parse(data []byte, parentContext context.Context) (
 RegisterParserBuilder(ExtensionEncryptedClientHello, func() (Parser, error) {
     return NewECHParser(), nil
 })
-```
+```plaintext
 
 ### 步骤 3：实现分析器
 
@@ -230,7 +230,7 @@ func (a *ECHAnalyzerImpl) Analyze(data ExtensionData,
     
     return result, nil
 }
-```
+```plaintext
 
 **注册分析器**：
 
@@ -238,7 +238,7 @@ func (a *ECHAnalyzerImpl) Analyze(data ExtensionData,
 RegisterAnalyzerBuilder(ExtensionEncryptedClientHello, func() (Analyzer, error) {
     return NewECHAnalyzerImpl(), nil
 })
-```
+```plaintext
 
 ### 步骤 4：创建初始化函数
 
@@ -256,7 +256,7 @@ func InitializeECHExtension() error {
     }
     return nil
 }
-```
+```plaintext
 
 ### 步骤 5：集成到主程序
 
@@ -268,7 +268,7 @@ func init() {
         log.Fatalf("Failed to init ECH: %v", err)
     }
 }
-```
+```plaintext
 
 ## 第四步：更新现有代码
 
@@ -299,7 +299,7 @@ func (a *ECHAnalyzerAdapter) Analyze(data extension.ExtensionData,
     // 调用旧分析器
     // 转换结果回新格式
 }
-```
+```plaintext
 
 ### 更新客户端代码
 
@@ -307,7 +307,7 @@ func (a *ECHAnalyzerAdapter) Analyze(data extension.ExtensionData,
 ```go
 analyzer := fingerprint.NewECHAnalyzer()
 result, _ := analyzer.AnalyzeClientHello(data)
-```
+```plaintext
 
 **新用法（推荐）**：
 ```go
@@ -325,7 +325,7 @@ result := engine.Process(&extension.ProcessingRequest{
     RawData:       rawData,
     Steps:         []string{"parse", "analyze"},
 })
-```
+```plaintext
 
 ## 第五步：测试迁移
 
@@ -364,7 +364,7 @@ func TestECHExtensionMigration(t *testing.T) {
         t.Fatal("Analysis result is nil")
     }
 }
-```
+```plaintext
 
 ### 集成测试
 
@@ -385,7 +385,7 @@ func TestECHProcessingEngine(t *testing.T) {
         t.Errorf("Processing failed: %s", result.Error)
     }
 }
-```
+```plaintext
 
 ### 性能对比
 
@@ -414,7 +414,7 @@ func BenchmarkNewECHAnalyzer(b *testing.B) {
         analyzer.Analyze(echData, nil)
     }
 }
-```
+```plaintext
 
 ## 第六步：验证和优化
 
@@ -440,7 +440,7 @@ engine := extension.NewProcessingEngine(config)
 // 启用并发
 config.ConcurrentProcessing = true
 config.MaxConcurrency = 16
-```
+```plaintext
 
 ### 监控指标
 
@@ -450,7 +450,7 @@ stats := extension.GetRegistryStats()
 fmt.Printf("Registered extensions: %d\n", stats["total_extensions"])
 fmt.Printf("Registered parsers: %d\n", stats["registered_parsers"])
 fmt.Printf("Registered analyzers: %d\n", stats["registered_analyzers"])
-```
+```plaintext
 
 ## 第七步：部署和回滚
 
@@ -468,7 +468,7 @@ go mod graph | grep fingerprint
 
 # 构建验证
 go build ./...
-```
+```plaintext
 
 ### 灰度部署
 
@@ -485,7 +485,7 @@ func AnalyzeECH(...) {
         return analyzeECHLegacy(...)
     }
 }
-```
+```plaintext
 
 ### 回滚计划
 
@@ -496,7 +496,7 @@ git push origin main
 
 # 恢复到备份分支
 git checkout ech-migration-backup
-```
+```plaintext
 
 ## 常见问题
 

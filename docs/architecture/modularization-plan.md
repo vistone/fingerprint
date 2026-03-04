@@ -11,7 +11,7 @@
 ### 文件分类统计
 
 | 类别 | 文件数 | 代码行数 | 说明 |
-|------|--------|----------|------|
+| ------ | -------- | ---------- | ------ |
 | TLS 指纹 | 4 | 1,896 | ja3, ja4, ja4s, ech_analysis |
 | HTTP 分析 | 6 | 2,281 | headers, useragent, ja4h, client_hints, ch_* |
 | 网络协议 | 3 | 1,064 | tcp_ip, http2, quic |
@@ -24,7 +24,7 @@
 
 ### 1. 顶层模块划分
 
-```
+```plaintext
 fingerprint/                          # 根包 - 公开 API 入口
 ├── api.go                            # 公开 API 总入口（向后兼容）
 ├── types.go                          # 公共类型定义
@@ -132,7 +132,7 @@ fingerprint/                          # 根包 - 公开 API 入口
 │   └── lifecycle.go
 │
 └── examples/                         # 示例代码 (保持不变)
-```
+```plaintext
 
 ### 2. 根包保留内容
 
@@ -180,7 +180,7 @@ type Client struct {
 }
 
 func NewClient(config *Config) *Client
-```
+```plaintext
 
 ## 重构实施步骤
 
@@ -219,7 +219,7 @@ git mv ja4s.go tls/ja4s/ja4s.go
 
 # 迁移 ECH
 git mv ech_analysis.go tls/ech/analysis.go
-```
+```plaintext
 
 #### Batch 2: HTTP 模块
 ```bash
@@ -231,13 +231,13 @@ git mv client_hints.go http/clienthints/clienthints.go
 git mv ch_lifecycle.go http/clienthints/lifecycle.go
 git mv ch_negotiation.go http/clienthints/negotiation.go
 git mv http2_signature.go http/http2/signature.go
-```
+```plaintext
 
 #### Batch 3: Network 模块
 ```bash
 git mv tcp_ip_fingerprint.go network/tcp/fingerprint.go
 git mv quic_signature.go network/quic/signature.go
-```
+```plaintext
 
 #### Batch 4: Security 模块
 ```bash
@@ -245,18 +245,18 @@ git mv defense.go security/defense/anomaly.go
 git mv behavior_analysis.go security/behavior/analysis.go
 git mv risk_scoring.go security/risk/scoring.go
 git mv permissions_policy.go security/policy/permissions.go
-```
+```plaintext
 
 #### Batch 5: Generator 模块
 ```bash
 git mv random.go generator/random.go
 git mv noise.go generator/noise.go
-```
+```plaintext
 
 #### Batch 6: 内部模块
 ```bash
 git mv errors_helper.go internal/errors/helper.go
-```
+```plaintext
 
 ### Phase 3: 更新导入路径
 
@@ -290,7 +290,7 @@ func ComputeJA4(profile ClientProfile) (JA4Result, error) {
 }
 
 // ... 其他 API
-```
+```plaintext
 
 ### Phase 5: 更新测试和文档
 
@@ -317,7 +317,7 @@ func ComputeJA4(profile ClientProfile) (JA4Result, error) {
 import "github.com/vistone/fingerprint"
 
 result, err := fingerprint.ComputeJA3(profile)
-```
+```plaintext
 
 ### 2. 提供新 API
 
@@ -328,7 +328,7 @@ result, err := fingerprint.ComputeJA3(profile)
 import "github.com/vistone/fingerprint/tls/ja3"
 
 result, err := ja3.Compute(profile)
-```
+```plaintext
 
 ### 3. 废弃警告
 
@@ -340,7 +340,7 @@ result, err := ja3.Compute(profile)
 func ComputeJA3(profile ClientProfile) (JA3Result, error) {
     return ja3.Compute(profile)
 }
-```
+```plaintext
 
 ## 优势分析
 
@@ -385,7 +385,7 @@ func ComputeJA3(profile ClientProfile) (JA3Result, error) {
 ## 实施时间表
 
 | Phase | 工作量 | 时间 | 依赖 |
-|-------|--------|------|------|
+| ------- | -------- | ------ | ------ |
 | Phase 1: 准备 | 小 | 1 天 | 无 |
 | Phase 2.1: TLS | 中 | 2 天 | Phase 1 |
 | Phase 2.2: HTTP | 大 | 3 天 | Phase 1 |
@@ -434,7 +434,7 @@ func main() {
     result, err := fingerprint.ComputeJA3(profile)
     // ... 完全兼容
 }
-```
+```plaintext
 
 ### 推荐的新用法
 
@@ -456,7 +456,7 @@ func main() {
         Language: "en-US",
     })
 }
-```
+```plaintext
 
 ## 下一步行动
 

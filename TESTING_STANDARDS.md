@@ -88,7 +88,7 @@ func TestComputeJA3FromRealProfiles(t *testing.T) {
         t.Error("Expected non-empty hash for chrome_133")
     }
 }
-```
+```plaintext
 
 ### 示例 2: 测试异常检测
 
@@ -109,7 +109,7 @@ func TestAnomalyDetector(t *testing.T) {
         t.Error("真实 Chrome UA 不应被检测为无头浏览器")
     }
 }
-```
+```plaintext
 
 ### 示例 3: 测试 Headers 操作
 
@@ -129,7 +129,7 @@ func TestHeadersCustomization(t *testing.T) {
         t.Error("Cookie header 设置失败")
     }
 }
-```
+```plaintext
 
 ## 例外情况
 
@@ -163,7 +163,7 @@ func TestParseECHExtension(t *testing.T) {
         t.Fatalf("ParseECHExtension() error = %v", err)
     }
 }
-```
+```plaintext
 
 ## 测试数据检查清单
 
@@ -195,7 +195,7 @@ func TestAllProfiles(t *testing.T) {
         })
     }
 }
-```
+```plaintext
 
 ### 模式 2: 测试特定浏览器系列
 
@@ -216,7 +216,7 @@ func TestChromeProfiles(t *testing.T) {
         })
     }
 }
-```
+```plaintext
 
 ### 模式 3: 使用多浏览器测试
 
@@ -234,7 +234,7 @@ func TestMultipleBrowsers(t *testing.T) {
         })
     }
 }
-```
+```plaintext
 
 ## 违规检查
 
@@ -249,7 +249,7 @@ grep -r "\[\]byte{" --include="*_test.go" .
 
 # 检查手动的 TLS 版本
 grep -r "VersionTLS" --include="*_test.go" .
-```
+```plaintext
 
 ## 文档维护
 

@@ -12,7 +12,7 @@
 ## 执行摘要
 
 | 风险等级 | 数量 | 描述 |
-|----------|------|------|
+| ---------- | ------ | ------ |
 | 严重 (Critical) | 0 | 无 |
 | 高 (High) | 2 | 输入验证不足、配置注入风险 |
 | 中 (Medium) | 4 | 信息泄露、DoS 风险、日志敏感数据 |
@@ -31,7 +31,7 @@
 // 当前实现
 parts := strings.Split(ja3, ",")
 version, _ := strconv.Atoi(parts[0])  // 可能 panic
-```
+```plaintext
 
 **风险**:
 - 超长输入导致内存分配过多
@@ -59,7 +59,7 @@ func Parse(ja3 string) (*JA3, error) {
     
     // ...
 }
-```
+```plaintext
 
 **优先级**: High
 **状态**: 待修复
@@ -77,7 +77,7 @@ func Parse(ja3 string) (*JA3, error) {
 // 当前实现直接解析 YAML
 data, _ := os.ReadFile(path)
 yaml.Unmarshal(data, &profile)
-```
+```plaintext
 
 **风险**:
 - YAML 反序列化可能执行任意代码
@@ -124,7 +124,7 @@ func LoadProfile(path string) (*Profile, error) {
     
     return &profile, nil
 }
-```
+```plaintext
 
 **优先级**: High
 **状态**: 待修复
@@ -141,7 +141,7 @@ func LoadProfile(path string) (*Profile, error) {
 ```go
 // 可能泄露 SNI
 logger.Debug("parsed extensions", "extensions", spew.Sdump(extensions))
-```
+```plaintext
 
 **风险**:
 - 日志文件泄露用户隐私
@@ -165,7 +165,7 @@ type Extension interface {
     // ...
     Sanitize() Extension  // 返回副本，移除敏感字段
 }
-```
+```plaintext
 
 **优先级**: Medium
 **状态**: 待修复
@@ -183,7 +183,7 @@ type Extension interface {
 // 可能存在回溯问题
 uaPattern := regexp.MustCompile(`(?i)chrome/([\d\.]+)`)
 matches := uaPattern.FindStringSubmatch(ua)  // 在特定输入下可能很慢
-```
+```plaintext
 
 **风险**:
 - 恶意构造的 User-Agent 导致 CPU 耗尽
@@ -213,7 +213,7 @@ func ParseUserAgent(ua string) (*UserAgentInfo, error) {
         return nil, fmt.Errorf("User-Agent parsing timeout")
     }
 }
-```
+```plaintext
 
 **优先级**: Medium
 **状态**: 待修复
@@ -245,7 +245,7 @@ func ParseClientHello(data []byte) (*ClientHello, error) {
     }
     // ...
 }
-```
+```plaintext
 
 **优先级**: Medium
 **状态**: 待修复
@@ -267,7 +267,7 @@ var ErrInternal = errors.New("internal error")  // 通用错误
 if logger.Level() == DebugLevel {
     logger.Debug("library version", "version", Version)
 }
-```
+```plaintext
 
 **优先级**: Medium
 **状态**: 待修复
@@ -316,7 +316,7 @@ jobs:
       - uses: snyk/actions/golang@master
         with:
           args: --severity-threshold=high
-```
+```plaintext
 
 **优先级**: Low
 **状态**: 待处理
@@ -366,7 +366,7 @@ func (v *Validator) ValidateString(s string, rules ...ValidationRule) error {
     
     return nil
 }
-```
+```plaintext
 
 ### 2. 资源限制
 
@@ -395,7 +395,7 @@ func (l *ResourceLimiter) Wrap(handler Handler) Handler {
         return handler(ctx, req)
     }
 }
-```
+```plaintext
 
 ### 3. 安全日志
 
@@ -424,7 +424,7 @@ func NewSecureLogger(inner Logger) *SecureLogger {
         ),
     }
 }
-```
+```plaintext
 
 ### 4. 安全头部
 
@@ -450,7 +450,7 @@ func SecurityHeaders(next http.Handler) http.Handler {
         next.ServeHTTP(w, r)
     })
 }
-```
+```plaintext
 
 ## 安全配置检查清单
 
@@ -480,11 +480,11 @@ func SecurityHeaders(next http.Handler) http.Handler {
 - [ ] 依赖漏洞扫描
 - [ ] 定期更新依赖
 - [ ] 最小权限原则
-```
+```plaintext
 
 ## 漏洞报告流程
 
-```
+```plaintext
 1. 发现潜在漏洞
    ↓
 2. 私下报告 security@example.com
@@ -499,12 +499,12 @@ func SecurityHeaders(next http.Handler) http.Handler {
 5. 安全更新发布
    ↓
 6. 公开披露 (修复后 30 天)
-```
+```plaintext
 
 ## 行动计划
 
 | 任务 | 优先级 | 负责人 | 截止日期 |
-|------|--------|--------|----------|
+| ------ | -------- | -------- | ---------- |
 | 修复 HIGH-1: JA3 输入验证 | High | TBD | 1周内 |
 | 修复 HIGH-2: Profile 配置注入 | High | TBD | 1周内 |
 | 修复 MEDIUM-1: 敏感日志 | Medium | TBD | 2周内 |

@@ -33,7 +33,7 @@ func main() {
     println("Bot detected with risk score:", score)
   }
 }
-```
+```plaintext
 
 ### 2. 从 JSON 配置加载
 
@@ -74,7 +74,7 @@ func getToolMarkers(cfg *config.RulesConfig) []string {
   }
   return markers
 }
-```
+```plaintext
 
 ### 3. 提取完整特征向量
 
@@ -112,12 +112,12 @@ func main() {
   }
   fmt.Printf("Hash (for deduplication): %s\n", vector.Hash)
 }
-```
+```plaintext
 
 ## 特征类型参考
 
 | 特征类型 | 说明 | 应用场景 |
-|---------|------|---------|
+| --------- | ------ | --------- |
 | `FeatureEntropy` | 数据熵异常（低/高） | 检测重复模式或过度随机化 |
 | `FeatureToolMarker` | 自动化工具特征 | 识别 Selenium、Puppeteer 等工具 |
 | `FeatureHeadlessBrowser` | 无头浏览器 UA | 检测 HeadlessChrome、PhantomJS |
@@ -151,7 +151,7 @@ attrs := map[string]string{
 if adapter.CheckContradictions(attrs) {
   // ... 处理
 }
-```
+```plaintext
 
 ## 配置文件格式
 
@@ -178,7 +178,7 @@ if adapter.CheckContradictions(attrs) {
     "desktop_screen_width_min": 800     // 桌面设备最小宽度
   }
 }
-```
+```plaintext
 
 ## 常见用例
 
@@ -200,7 +200,7 @@ if score, isBot := extractor.ExtractFeature(
 ); isBot && score > 0.8 {
   return blockRequest()
 }
-```
+```plaintext
 
 ### 用例 2: 全面指纹异常检查
 
@@ -221,7 +221,7 @@ vector := extractor.ExtractFeatureVector(data, nil)
 if vector.RiskScore > 0.7 && len(vector.Anomalies) > 2 {
   triggerSecurityEvent(vector)
 }
-```
+```plaintext
 
 ### 用例 3: 自定义规则阈值
 
@@ -236,7 +236,7 @@ extractor := features.NewBaseFeatureExtractor(customConfig)
 
 // 使用自定义配置
 vector := extractor.ExtractFeatureVector(data, customConfig)
-```
+```plaintext
 
 ## 性能考虑
 

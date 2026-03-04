@@ -212,6 +212,11 @@ func uint8SliceToString(values []uint8) string {
 // ComputeJA3FromSpec 从 TLS ClientHello 规范计算 JA3 指纹
 // JA3 算法：MD5(TLSVersion,Ciphers,Extensions,EllipticCurves,EllipticCurvePointFormats)
 func ComputeJA3FromSpec(spec tls.ClientHelloSpec) (*JA3Result, error) {
+	// 输入验证：检查 spec 是否为空
+	if err := validateClientHelloSpec(spec); err != nil {
+		return nil, err
+	}
+
 	result := &JA3Result{}
 
 	// 提取 TLS 版本（默认为 TLS 1.2）
@@ -219,6 +224,11 @@ func ComputeJA3FromSpec(spec tls.ClientHelloSpec) (*JA3Result, error) {
 
 	// 提取密码套件（过滤 GREASE）
 	ciphers := filterGREASEUint16(spec.CipherSuites)
+	
+	// 验证密码套件列表
+	if len(ciphers) == 0 {
+		return nil, fmt.Errorf("%w: no valid cipher suites", ErrInvalidClientHelloSpec)
+	}
 	result.CipherSuites = ciphers
 
 	// 提取扩展信息
@@ -227,8 +237,16 @@ func ComputeJA3FromSpec(spec tls.ClientHelloSpec) (*JA3Result, error) {
 	var pointFormats []uint8
 
 	for _, ext := range spec.Extensions {
+		if ext == nil {
+			continue // 跳过空扩展
+		}
+		
 		switch e := ext.(type) {
 		case *tls.SupportedVersionsExtension:
+			// 验证扩展数据
+			if e.Versions == nil {
+				continue
+			}
 			// 提取最高 TLS 版本
 			for _, v := range e.Versions {
 				if !isGREASEValue(v) && v > result.TLSVersion {
@@ -238,10 +256,16 @@ func ComputeJA3FromSpec(spec tls.ClientHelloSpec) (*JA3Result, error) {
 			extensions = append(extensions, 43) // extension_type_supported_versions
 
 		case *tls.SupportedCurvesExtension:
+			if e.Curves == nil {
+				continue
+			}
 			curves = filterGREASECurveID(e.Curves)
 			extensions = append(extensions, 10) // extension_type_supported_groups
 
 		case *tls.SupportedPointsExtension:
+			if e.SupportedPoints == nil {
+				continue
+			}
 			pointFormats = e.SupportedPoints
 			extensions = append(extensions, 11) // extension_type_ec_point_formats
 
@@ -314,6 +338,34 @@ func ComputeJA3FromSpec(spec tls.ClientHelloSpec) (*JA3Result, error) {
 	result.Hash = fmt.Sprintf("%x", hash)
 
 	return result, nil
+}
+
+// validateClientHelloSpec 验证 ClientHello 规范的有效性
+func validateClientHelloSpec(spec tls.ClientHelloSpec) error {
+	// 检查密码套件列表长度
+	if len(spec.CipherSuites) == 0 {
+		return fmt.Errorf("%w: cipher suites list is empty", ErrInvalidClientHelloSpec)
+	}
+	if len(spec.CipherSuites) > 255 {
+		return fmt.Errorf("%w: cipher suites list too long (%d > 255)", ErrInvalidClientHelloSpec, len(spec.CipherSuites))
+	}
+
+	// 检查扩展列表长度
+	if len(spec.Extensions) == 0 {
+		return fmt.Errorf("%w: extensions list is empty", ErrInvalidClientHelloSpec)
+	}
+	if len(spec.Extensions) > 255 {
+		return fmt.Errorf("%w: extensions list too long (%d > 255)", ErrInvalidClientHelloSpec, len(spec.Extensions))
+	}
+
+	// 检查每个密码套件值的有效性
+	for i, cipher := range spec.CipherSuites {
+		if cipher == 0 {
+			return fmt.Errorf("%w: cipher suite at index %d is zero", ErrInvalidClientHelloSpec, i)
+		}
+	}
+
+	return nil
 }
 
 // ComputeJA3FromProfile 从 ClientProfile 计算 JA3 指纹

@@ -41,12 +41,12 @@ if result.Success {
         // 使用分析结果
     }
 }
-```
+```plaintext
 
 ### 对比：新旧处理方式
 
 | 特性 | Process (旧) | ProcessWithPipeline (新) |
-|------|-------------|----------------------|
+| ------ | ------------- | ---------------------- |
 | 基础功能 | ✅ | ✅ 相同 |
 | 中间件系统 | ❌ | ✅ 日志、缓存、指标等 |
 | 可观测性 | 基础 | 🔝 完整追踪 |
@@ -74,7 +74,7 @@ if extension.ShouldUseProcessWithPipeline(scenario) {
 } else {
     // 继续使用 Process
 }
-```
+```plaintext
 
 ### 步骤 2：集成日志（可选）
 
@@ -92,7 +92,7 @@ adapter := &extension.ZapLoggerAdapter{
 
 // 获取 Pipeline
 // （在 ProcessWithPipeline 中自动使用）
-```
+```plaintext
 
 ### 步骤 3：配置缓存（推荐）
 
@@ -105,7 +105,7 @@ result := engine.ProcessWithPipeline(request)
 if cacheStats, ok := result.Metadata["cache_stats"]; ok {
     fmt.Printf("缓存命中率: %.1f%%\n", cacheStats)
 }
-```
+```plaintext
 
 ### 步骤 4：验证结果一致性
 
@@ -125,7 +125,7 @@ if len(oldResult.AnalysisResults) != len(newResult.AnalysisResults) {
         len(oldResult.AnalysisResults), 
         len(newResult.AnalysisResults))
 }
-```
+```plaintext
 
 ### 步骤 5：灰度推出
 
@@ -141,7 +141,7 @@ if rand.Float64() < 0.05 {
 
 // 灰度 Stage 2: 25% 流量
 // ...依次增加到 50% 和 100%
-```
+```plaintext
 
 ---
 
@@ -178,7 +178,7 @@ func analyzeFingerprint() {
         }
     }
 }
-```
+```plaintext
 
 ### 示例 2：高吞吐量场景（带缓存）
 
@@ -192,7 +192,7 @@ for i := 0; i < 1000; i++ {
 }
 
 // 总耗时从 50000ms 降至约 170ms
-```
+```plaintext
 
 ### 示例 3：A/B 测试框架
 
@@ -218,7 +218,7 @@ if result.ResultsMatch {
 } else {
     fmt.Printf("⚠️  发现不一致 (方差: %.4f)\n", result.Variance)
 }
-```
+```plaintext
 
 ---
 
@@ -263,7 +263,7 @@ scenario := &extension.ProcessingScenario{
 
 // 自动决策
 useNew := extension.ShouldUseProcessWithPipeline(scenario)
-```
+```plaintext
 
 ---
 
@@ -323,7 +323,7 @@ if !result.Success {
     log.Errorf("处理失败: %s", result.Error)
     // 可以选择回退到 Process
 }
-```
+```plaintext
 
 ### Q5: 灰度期间如何监控？
 **A:** 关键指标：
@@ -341,7 +341,7 @@ if useNew {
 } else {
     result = engine.Process(request)
 }
-```
+```plaintext
 
 ---
 

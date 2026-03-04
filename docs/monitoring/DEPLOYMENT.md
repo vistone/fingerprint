@@ -4,7 +4,7 @@
 
 ## 架构概览
 
-```
+```plaintext
 ┌─────────────────────────────────────────────────────────────┐
 │                    Application                              │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
@@ -34,7 +34,7 @@
     │  Grafana   │  │ Alertman-│  │  PagerDuty   │
     │ (Dashboard)│  │   ager   │  │  (On-call)   │
     └────────────┘  └──────────┘  └──────────────┘
-```
+```plaintext
 
 ## 快速开始
 
@@ -59,14 +59,14 @@ func main() {
     
     // 你的应用代码...
 }
-```
+```plaintext
 
 验证指标端点：
 
 ```bash
 curl http://localhost:8080/metrics
 curl http://localhost:8080/health
-```
+```plaintext
 
 ### 2. 部署 Prometheus
 
@@ -80,7 +80,7 @@ docker run -d \
   -v $(pwd)/docs/monitoring/alerting:/etc/prometheus/rules \
   prom/prometheus:latest \
   --config.file=/etc/prometheus/prometheus.yaml
-```
+```plaintext
 
 prometheus.yaml 配置：
 
@@ -103,7 +103,7 @@ alerting:
   alertmanagers:
     - static_configs:
         - targets: ['alertmanager:9093']
-```
+```plaintext
 
 ### 3. 部署 Alertmanager
 
@@ -116,7 +116,7 @@ docker run -d \
   -e SLACK_WEBHOOK_URL='https://hooks.slack.com/...' \
   prom/alertmanager:latest \
   --config.file=/etc/alertmanager/config.yaml
-```
+```plaintext
 
 ### 4. 部署 Grafana
 
@@ -127,7 +127,7 @@ docker run -d \
   -v $(pwd)/docs/monitoring/grafana-dashboard.json:/var/lib/grafana/dashboards/fingerprint.json \
   -e GF_SECURITY_ADMIN_PASSWORD=admin \
   grafana/grafana:latest
-```
+```plaintext
 
 导入仪表板：
 1. 访问 http://localhost:3000
@@ -183,7 +183,7 @@ spec:
     - port: 8080
       targetPort: 8080
       name: metrics
-```
+```plaintext
 
 ### ServiceMonitor（用于 Prometheus Operator）
 
@@ -202,11 +202,11 @@ spec:
     - port: metrics
       interval: 5s
       path: /metrics
-```
+```plaintext
 
 ## 告警响应流程
 
-```
+```plaintext
 告警触发
     │
     ▼
@@ -227,7 +227,7 @@ Alertmanager 接收
 通知发送
     │
     └─→ On-call 工程师响应
-```
+```plaintext
 
 ## 性能调优
 
@@ -248,7 +248,7 @@ storage:
     retention.size: 50GB
     min-block-duration: 2h
     max-block-duration: 2h
-```
+```plaintext
 
 ### 高基数问题处理
 
@@ -261,7 +261,7 @@ metrics.FingerprintGenerationTotal.WithLabelValues(
     os,       // ✓ 有限的枚举值
     userIP,   // ✗ 高基数，不要这样做
 ).Inc()
-```
+```plaintext
 
 ## 故障排查
 
@@ -276,7 +276,7 @@ open http://localhost:9090/targets
 
 # 检查日志
 docker logs prometheus
-```
+```plaintext
 
 ### 问题 2: 告警未触发
 
@@ -287,7 +287,7 @@ curl -G 'http://localhost:9090/api/v1/query' \
 
 # 检查 Alertmanager
 curl http://localhost:9093/api/v1/alerts
-```
+```plaintext
 
 ### 问题 3: 内存占用过高
 
@@ -297,7 +297,7 @@ curl -s http://localhost:9090/api/v1/label/__name__/values | wc -l
 
 # 查看 TSDB 状态
 open http://localhost:9090/tsdb-status
-```
+```plaintext
 
 ## 安全考虑
 

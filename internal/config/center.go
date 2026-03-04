@@ -151,15 +151,16 @@ func (cc *ConfigCenter) Get() *ManagedConfig {
 // Update 更新配置
 func (cc *ConfigCenter) Update(newConfig *ManagedConfig, reason, changedBy string) error {
 	cc.mu.Lock()
-	defer cc.mu.Unlock()
 
 	if !cc.loaded {
+		cc.mu.Unlock()
 		return fmt.Errorf("config center not loaded")
 	}
 
 	// 验证新配置
 	if cc.validationEnabled {
 		if errs := cc.validateConfig(newConfig); len(errs) > 0 {
+			cc.mu.Unlock()
 			return fmt.Errorf("new config validation failed: %v", errs)
 		}
 	}
@@ -167,25 +168,32 @@ func (cc *ConfigCenter) Update(newConfig *ManagedConfig, reason, changedBy strin
 	// 检测变更
 	changes := cc.detectChanges(cc.current, newConfig)
 
-	// 通知监听器
-	for _, listener := range cc.listeners {
-		if err := listener.OnConfigChange(cc.current, newConfig, changes); err != nil {
-			return fmt.Errorf("listener error: %w", err)
-		}
-	}
-
-	// 保存旧配置
+	// 保存旧配置用于通知
 	oldConfig := cc.current
+
+	// 复制监听器列表（避免在通知时持有锁）
+	listeners := make([]ConfigChangeListener, len(cc.listeners))
+	copy(listeners, cc.listeners)
 
 	// 更新当前配置
 	cc.current = newConfig
 	cc.recordVersion(newConfig, reason, changedBy)
 
-	// 保存到文件
+	// 保存到文件（在释放锁之前完成）
 	if err := cc.saveToFileLocked(); err != nil {
 		// 回滚到旧配置
 		cc.current = oldConfig
+		cc.mu.Unlock()
 		return fmt.Errorf("failed to save config: %w", err)
+	}
+
+	cc.mu.Unlock()
+
+	// 通知监听器（在锁外进行，避免死锁）
+	for _, listener := range listeners {
+		if err := listener.OnConfigChange(oldConfig, newConfig, changes); err != nil {
+			return fmt.Errorf("listener error: %w", err)
+		}
 	}
 
 	return nil
@@ -229,6 +237,7 @@ func (cc *ConfigCenter) saveToFileLocked() error {
 func (cc *ConfigCenter) RegisterListener(listener ConfigChangeListener) {
 	cc.mu.Lock()
 	defer cc.mu.Unlock()
+	
 	cc.listeners = append(cc.listeners, listener)
 }
 
@@ -326,6 +335,10 @@ func (cc *ConfigCenter) Rollback(version string, reason, rolledBackBy string) er
 	cc.mu.Lock()
 	defer cc.mu.Unlock()
 
+	if !cc.loaded {
+		return fmt.Errorf("config center not loaded")
+	}
+
 	// 查找指定版本
 	var targetVersion *VersionedConfig
 	for _, v := range cc.history {
@@ -389,14 +402,13 @@ func (cc *ConfigCenter) recordVersion(config *ManagedConfig, reason, changedBy s
 
 // detectChanges 检测配置变更
 func (cc *ConfigCenter) detectChanges(old, new *ManagedConfig) []ConfigChange {
-	// 简化实现 - 实际应该使用反射进行深层比较
 	changes := make([]ConfigChange, 0)
-	if old == nil {
+	if old == nil || new == nil {
 		return changes
 	}
 
 	// 行为分析配置变更
-	if old.BehaviorAnalysis != new.BehaviorAnalysis {
+	if old.BehaviorAnalysis != nil && new.BehaviorAnalysis != nil {
 		if old.BehaviorAnalysis.MinRequestsForAnalysis != new.BehaviorAnalysis.MinRequestsForAnalysis {
 			changes = append(changes, ConfigChange{
 				Path:      "behavior_analysis.min_requests",

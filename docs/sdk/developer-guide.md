@@ -39,7 +39,7 @@ func RegisterMyExtension() error {
 
 	return extension.RegisterExtension(metadata)
 }
-```
+```plaintext
 
 ### 2. 实现解析器
 
@@ -126,7 +126,7 @@ func RegisterMyParser() error {
 		return NewMyParser(), nil
 	})
 }
-```
+```plaintext
 
 ### 3. 实现分析器
 
@@ -227,7 +227,7 @@ func RegisterMyAnalyzer() error {
 		return NewMyAnalyzer(), nil
 	})
 }
-```
+```plaintext
 
 ### 4. 实现处理器（可选）
 
@@ -288,7 +288,7 @@ func RegisterMyHandler() error {
 	handler := NewMyHandler()
 	return extension.RegisterHandler(MyExtensionType, handler)
 }
-```
+```plaintext
 
 ### 5. 整合所有组件
 
@@ -319,7 +319,7 @@ func Setup() error {
 
 	return nil
 }
-```
+```plaintext
 
 ### 6. 使用处理引擎
 
@@ -369,7 +369,7 @@ func main() {
 		fmt.Printf("Error: %s\n", result.Error)
 	}
 }
-```
+```plaintext
 
 ## 高级用法
 
@@ -392,7 +392,7 @@ func (c *CustomInterceptor) Intercept(phase string,
 // 注册拦截器
 engine.RegisterInterceptor("pre", &CustomInterceptor{})
 engine.RegisterInterceptor("post", &CustomInterceptor{})
-```
+```plaintext
 
 ### 创建第三方插件
 
@@ -446,7 +446,7 @@ func RegisterMyPlugin() error {
 	}
 	return extension.RegisterPlugin("my-plugin", plugin)
 }
-```
+```plaintext
 
 ## API 参考
 
@@ -459,7 +459,7 @@ type Parser interface {
     GetType() ExtensionType
     GetVersion() string
 }
-```
+```plaintext
 
 #### Analyzer 接口
 ```go
@@ -469,7 +469,7 @@ type Analyzer interface {
     GetVersion() string
     SupportsConfig() []string
 }
-```
+```plaintext
 
 #### Handler 接口
 ```go
@@ -479,7 +479,7 @@ type Handler interface {
     GetPriority() int
     GetName() string
 }
-```
+```plaintext
 
 ### 注册表 API
 
@@ -500,7 +500,7 @@ GetHandlers(extType ExtensionType) []Handler
 // 列表和查找
 ListAllExtensions() []*ExtensionMetadata
 FindExtensionByName(name string) (ExtensionType, error)
-```
+```plaintext
 
 ## 最佳实践
 
@@ -542,7 +542,7 @@ metadata, err := extension.GetMetadata(MyExtensionType)
 if err == nil {
     fmt.Println("Extension already registered")
 }
-```
+```plaintext
 
 ### 问题：解析器未找到
 

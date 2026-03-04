@@ -30,7 +30,7 @@ go test -race ./...
 # 生成覆盖率报告
 go test -coverprofile=coverage.out ./...
 go tool cover -html=coverage.out -o coverage.html
-```
+```plaintext
 
 ### Makefile 命令
 
@@ -43,25 +43,25 @@ make lint          # 运行 linter
 make fmt           # 格式化代码
 make generate      # 运行代码生成
 make clean         # 清理构建产物
-```
+```plaintext
 
 ## 代码结构
 
 ### 目录约定
 
-```
+```plaintext
 package/
 ├── package.go          # 公共 API
 ├── package_test.go     # 单元测试
 ├── internal.go         # 内部实现
 ├── internal_test.go    # 内部测试（测试私有函数）
 └── example_test.go     # 示例代码（会出现在文档中）
-```
+```plaintext
 
 ### 命名约定
 
 | 类型 | 命名规范 | 示例 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | 接口 | 后缀 `er` 或描述性名词 | `Reader`, `Generator` |
 | 结构体 | 驼峰命名 | `ClientProfile`, `HTTP2Spec` |
 | 私有函数 | 小写开头 | `parseExtensions` |
@@ -88,7 +88,7 @@ var (
 if errors.Is(err, ErrNotFound) {
     // 处理未找到
 }
-```
+```plaintext
 
 ### 日志记录
 
@@ -110,7 +110,7 @@ logger.Error("failed to generate fingerprint",
     "error", err,
     "request_id", reqID,
 )
-```
+```plaintext
 
 ### 配置使用
 
@@ -125,7 +125,7 @@ if cfg.FeatureExtraction.Enabled {
 
 // 配置克隆（线程安全）
 localCfg := cfg.Clone()
-```
+```plaintext
 
 ## 添加新的 Profile
 
@@ -150,7 +150,7 @@ func MyCustomProfile() ClientProfile {
         // ... 其他配置
     }
 }
-```
+```plaintext
 
 ### 方法二：YAML 方式（推荐）
 
@@ -182,13 +182,13 @@ http2:
     exclusive: true
     stream_dep: 0
     weight: 256
-```
+```plaintext
 
 然后运行代码生成：
 
 ```bash
 go generate ./profiles/...
-```
+```plaintext
 
 ## 测试指南
 
@@ -230,7 +230,7 @@ func TestParseJA3(t *testing.T) {
         })
     }
 }
-```
+```plaintext
 
 ### 基准测试
 
@@ -248,7 +248,7 @@ func BenchmarkParseJA3(b *testing.B) {
         }
     }
 }
-```
+```plaintext
 
 ### 模糊测试
 
@@ -261,7 +261,7 @@ func FuzzParseJA3(f *testing.F) {
         _, _ = Parse(input)
     })
 }
-```
+```plaintext
 
 ### 测试最佳实践
 
@@ -281,7 +281,7 @@ import "github.com/vistone/fingerprint/internal/logger"
 func init() {
     logger.SetLevel(logger.DebugLevel)
 }
-```
+```plaintext
 
 ### 分析 Profile
 
@@ -293,7 +293,7 @@ spew.Dump(profile)
 // 或者使用 JSON
 jsonData, _ := json.MarshalIndent(profile, "", "  ")
 fmt.Println(string(jsonData))
-```
+```plaintext
 
 ### 性能分析
 
@@ -309,7 +309,7 @@ go tool pprof mem.prof
 # 跟踪
 go test -trace=trace.out ./...
 go tool trace trace.out
-```
+```plaintext
 
 ## 性能优化指南
 
@@ -333,7 +333,7 @@ func Good() []byte {
     defer bufferPool.Put(buf)
     return buf[:n]
 }
-```
+```plaintext
 
 ### 2. 避免字符串转换
 
@@ -346,7 +346,7 @@ for i := 0; i < len(data); i++ {
 
 // 好：批量处理
 process(string(data))  // 一次分配
-```
+```plaintext
 
 ### 3. 预分配切片
 
@@ -362,7 +362,7 @@ ciphers := make([]uint16, 0, len(input))
 for _, c := range input {
     ciphers = append(ciphers, c)
 }
-```
+```plaintext
 
 ## 发布流程
 
@@ -384,7 +384,7 @@ for _, c := range input {
 - [ ] 版本号已更新
 - [ ] Tag 已创建
 - [ ] 文档已更新
-```
+```plaintext
 
 ### 创建 Release
 
@@ -400,7 +400,7 @@ git tag -a v1.x.x -m "Release v1.x.x"
 
 # 5. 推送
 git push origin main --tags
-```
+```plaintext
 
 ## 故障排查
 
@@ -412,7 +412,7 @@ git push origin main --tags
 
 ```bash
 go get github.com/bogdanfinn/utls@latest
-```
+```plaintext
 
 #### 2. Profile 选择不正确
 
@@ -422,7 +422,7 @@ go get github.com/bogdanfinn/utls@latest
 ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36..."
 browser, version, os := useragent.Parse(ua)
 fmt.Printf("Browser: %s, Version: %s, OS: %s\n", browser, version, os)
-```
+```plaintext
 
 #### 3. 内存泄漏
 
@@ -436,7 +436,7 @@ func init() {
         log.Println(http.ListenAndServe("localhost:6060", nil))
     }()
 }
-```
+```plaintext
 
 访问 `http://localhost:6060/debug/pprof/heap`
 
@@ -446,13 +446,13 @@ func init() {
 
 ### 提交信息规范
 
-```
+```plaintext
 type(scope): subject
 
 body
 
 footer
-```
+```plaintext
 
 类型：
 - `feat`: 新功能
@@ -464,11 +464,11 @@ footer
 - `chore`: 构建/工具
 
 示例：
-```
+```plaintext
 feat(ja4): add JA4 fingerprint calculation
 
 Implement JA4 fingerprint as per the new spec.
 Supports both TLS 1.2 and TLS 1.3.
 
 Closes #123
-```
+```plaintext

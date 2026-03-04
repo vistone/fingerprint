@@ -11,7 +11,7 @@
 
 ## 2. 完整基准测试结果
 
-```
+```plaintext
 goos: linux
 goarch: amd64
 pkg: github.com/vistone/fingerprint/test
@@ -34,14 +34,14 @@ BenchmarkParallelRandomOS-56                    11009276               322.5 ns/
 
 PASS
 ok      github.com/vistone/fingerprint/test     70.128s
-```
+```plaintext
 
 ## 3. 关键性能指标分析
 
 ### 3.1 核心 API（P1 优化目标）
 
 | 函数 | 当前性能 | Phase 3 目标 | 内存分配 | 分配次数 | 状态 |
-|------|---------|-------------|---------|---------|------|
+| ------ | --------- | ------------- | --------- | --------- | ------ |
 | **GetRandomFingerprint** | 7.19 µs | < 6 µs | 1905 B | 11 | 🎯 需优化 |
 | **GenerateHeaders** | 1.21 µs | < 0.8 µs | 304 B | 4 | 🎯 需优化 |
 | **GetUserAgentByProfileName** | 790.5 ns | 保持 | 134 B | 2 | ✅ 良好 |
@@ -49,14 +49,14 @@ ok      github.com/vistone/fingerprint/test     70.128s
 ### 3.2 零分配函数（保持现状）
 
 | 函数 | 性能 | 内存分配 | 状态 |
-|------|------|---------|------|
+| ------ | ------ | --------- | ------ |
 | **RandomLanguage** | 34.45 ns | 0 B | ✅ 优秀 |
 | **RandomOS** | 30.16 ns | 0 B | ✅ 优秀 |
 
 ### 3.3 并发性能
 
 | 函数 | 并发性能 | 单线程性能 | 比率 |
-|------|---------|-----------|------|
+| ------ | --------- | ----------- | ------ |
 | **GetRandomFingerprint (并发)** | 6.84 µs | 7.19 µs | 95.1% |
 | **RandomLanguage (并发)** | 348.2 ns | 34.45 ns | 10.1x |
 | **RandomOS (并发)** | 322.5 ns | 30.16 ns | 9.3x |
@@ -68,7 +68,7 @@ ok      github.com/vistone/fingerprint/test     70.128s
 ### 3.4 复合操作
 
 | 函数 | 性能 | 内存分配 | 分配次数 | 备注 |
-|------|------|---------|---------|------|
+| ------ | ------ | --------- | --------- | ------ |
 | **FullWorkflow** | 13.39 µs | 3533 B | 33 | 完整指纹生成流程 |
 | **GetRandomFingerprintByBrowser** | 21.42 µs | 2002 B | 26 | 按浏览器筛选 |
 | **GetClientHelloSpec** | 2.90 µs | 1104 B | 30 | TLS 握手规格 |
@@ -132,7 +132,7 @@ ok      github.com/vistone/fingerprint/test     70.128s
 ## 5. Phase 3 优化目标汇总
 
 | 指标 | 基线 | 目标 | 改进幅度 |
-|------|------|------|---------|
+| ------ | ------ | ------ | --------- |
 | GetRandomFingerprint | 7.19 µs | 6.0 µs | -16.5% |
 | GenerateHeaders | 1.21 µs | 0.8 µs | -33.9% |
 | 总内存分配（FullWorkflow） | 3533 B | < 3000 B | -15.0% |
@@ -152,7 +152,7 @@ ok      github.com/vistone/fingerprint/test     70.128s
 ### 重现本次测试
 ```bash
 go test ./test -bench=. -benchmem -benchtime=3s -run=^$
-```
+```plaintext
 
 ### 对比测试（Phase 3 完成后）
 ```bash
@@ -161,7 +161,7 @@ go test ./test -bench=. -benchmem -benchtime=3s -run=^$ > benchmark_phase3.txt
 
 # 使用 benchcmp 对比（需安装 golang.org/x/tools/cmd/benchcmp）
 benchcmp benchmark_baseline.txt benchmark_phase3.txt
-```
+```plaintext
 
 ### 单个函数测试
 ```bash
@@ -170,7 +170,7 @@ go test ./test -bench=BenchmarkGetRandomFingerprint$ -benchmem -benchtime=5s
 
 # 测试 GenerateHeaders
 go test ./test -bench=BenchmarkGenerateHeaders$ -benchmem -benchtime=5s
-```
+```plaintext
 
 ## 8. 测试环境信息
 
@@ -188,7 +188,7 @@ Arch: amd64
 
 # 编译优化
 默认编译器优化（无特殊标志）
-```
+```plaintext
 
 ## 9. 下一步行动
 

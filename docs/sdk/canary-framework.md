@@ -23,7 +23,7 @@ const (
     CanaryStage50Percent  CanaryStage = "50%"
     CanaryStage100Percent CanaryStage = "100%"
 )
-```
+```plaintext
 
 四阶段灰度策略：
 1. **5% 灰度** (Day 1-2) - 基础功能验证，确保没有明显问题
@@ -40,7 +40,7 @@ const (
 hash := hashRequestID(requestID)
 threshold := uint32(float64(^uint32(0)) * targetPercentage)
 useNewMethod := hash < threshold
-```
+```plaintext
 
 优势：
 - 用户体验一致（不会随机切换处理方式）
@@ -68,7 +68,7 @@ collector := extension.NewCanaryMetricsCollector(config)
 
 // 创建灰度健康检查
 healthCheck := extension.NewCanaryHealthCheck(collector)
-```
+```plaintext
 
 ### 2. 启用灰度和路由流量
 
@@ -95,7 +95,7 @@ collector.RecordRequest(requestID, useNewMethod, latency, success)
 if hitCache {
     collector.RecordCacheHit(true)
 }
-```
+```plaintext
 
 ### 3. 监控和评估
 
@@ -117,7 +117,7 @@ if critique != "" && strings.Contains(critique, "❌") {
 
 // 定期保存指标快照 (每 15 分钟)
 collector.SnapshotMetrics()
-```
+```plaintext
 
 ### 4. 生成灰度报告和决策
 
@@ -133,7 +133,7 @@ report.Print()
 // "✅ 可以升级到下一阶段"
 // "⚠️  建议延缓灰度"
 // "❌ 立即回滚"
-```
+```plaintext
 
 ## 📊 灰度指标体系
 
@@ -159,7 +159,7 @@ type CanaryMetrics struct {
     CacheMisses        int64
     CacheHitRate       float64  // = CacheHits / (CacheHits + CacheMisses)
 }
-```
+```plaintext
 
 **告警阈值**:
 - 错误率 > 1% → ⚠️  警告，继续观察
@@ -179,7 +179,7 @@ type CanaryMetrics struct {
     P95Latency     time.Duration
     P99Latency     time.Duration
 }
-```
+```plaintext
 
 **基准值** (ProcessWithPipeline vs Process):
 - P50 延迟允许 +20%
@@ -193,7 +193,7 @@ type CanaryMetrics struct {
 MemoryUsage    int64  // 内存使用
 GCTime         time.Duration  // GC 耗时
 // ... 其他基础设施指标
-```
+```plaintext
 
 ## 🛡️ 健康检查和自动决策
 
@@ -215,11 +215,11 @@ if strings.Contains(critique, "❌") {
     log.Errorf("%s", critique)  // ❌
     collector.DisableCanary()
 }
-```
+```plaintext
 
 ### 自动决策树
 
-```
+```plaintext
 灰度开始
   ↓
 定期监控 (每 1 小时)
@@ -230,7 +230,7 @@ if strings.Contains(critique, "❌") {
       └─ 成功率 > 99.5% ?
           ├─ 是 → [保存快照，继续观察]
           └─ 否 → [保存快照，预警继续观察]
-```
+```plaintext
 
 ## 📈 生命周期管理
 
@@ -259,7 +259,7 @@ report50 := lifecycle.EndStage()
 lifecycle.StartStage(extension.CanaryStage100Percent, 0)  // 无时间限制
 // ... 继续监控
 // 本阶段成为新的默认处理方式
-```
+```plaintext
 
 ## 🧪 测试和验证
 
@@ -278,7 +278,7 @@ go test ./internal/extension -v -run "^TestCanary" -timeout 30s
 #   新方式: 57 (5.7%)
 #   成功率: 99.20%
 #   缓存命中: 56.0%
-```
+```plaintext
 
 ### 性能基准测试
 
@@ -289,7 +289,7 @@ go test ./internal/extension -bench "CanaryRouter" -benchmem
 # 输出
 # BenchmarkCanaryRouter-56: 353.6 ns/op (非常快)
 # BenchmarkCanaryMetricsCollection-56: 424.1 ns/op (可接受)
-```
+```plaintext
 
 ### 灰度流量模拟
 
@@ -317,7 +317,7 @@ func TestGradualRollout(t *testing.T) {
         t.Errorf("流量分配偏离目标 5%%")
     }
 }
-```
+```plaintext
 
 ## 📚 完整示例
 
@@ -403,7 +403,7 @@ func main() {
     report := collector.GenerateCanaryReport(time.Now().Add(-48*time.Hour))
     report.Print()
 }
-```
+```plaintext
 
 ## ⚙️ 配置参考
 
@@ -428,7 +428,7 @@ thresholds := extension.DefaultCanaryThresholds()
 // 自定义阈值
 thresholds.MaxErrorRate = 0.02  // 改为 2%
 thresholds.CriticalErrorRate = 0.05  // 改为 5%
-```
+```plaintext
 
 ## 📖 常见问题
 
@@ -447,7 +447,7 @@ thresholds.CriticalErrorRate = 0.05  // 改为 5%
 hash := hashRequestID(requestID)
 threshold := uint32(float64(^uint32(0)) * targetPercentage)
 useNewMethod := hash < threshold
-```
+```plaintext
 
 同一 requestID 的哈希值固定，因此路由决定是确定性的。
 
@@ -459,7 +459,7 @@ useNewMethod := hash < threshold
 // 从 5% 升级到 25%
 collector.config.TargetPercentage = 0.25
 collector.config.Stage = extension.CanaryStage25Percent
-```
+```plaintext
 
 但建议通过完整的 4 个阶段逐步推出，而不是随意调整。
 
@@ -482,7 +482,7 @@ if errorRate > 3% {
 } else {
     recommendation = "✅ 可以升级到下一阶段"
 }
-```
+```plaintext
 
 ## 🎓 深度学习
 

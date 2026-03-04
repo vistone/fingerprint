@@ -19,11 +19,11 @@ ProcessWithPipeline 的中间件系统深度指导，包括最佳实践、反面
 
 中间件的执行顺序非常重要。正确的顺序应该遵循 "依赖优先" 原则：
 
-```
+```plaintext
 缓存 → 日志 → 指标 → 超时保护 → 异常恢复
 ↓      ↓     ↓      ↓         ↓
 快速返回 记录 统计 保护 安全
-```
+```plaintext
 
 **为什么？**
 - 缓存在最前面，直接返回缓存结果（避免后续处理）
@@ -53,7 +53,7 @@ func (m *GoodMiddleware) Before(ctx context.Context, request *ProcessingRequest)
     // 不产生副作用
     return nil
 }
-```
+```plaintext
 
 ### 原则 3：不阻塞 Pipeline
 
@@ -73,7 +73,7 @@ func (m *LoggingMiddleware) Before(...) error {
     m.logger.Info(message)
     return nil
 }
-```
+```plaintext
 
 ---
 
@@ -81,7 +81,7 @@ func (m *LoggingMiddleware) Before(...) error {
 
 ### 推荐执行顺序
 
-```
+```plaintext
 Stage 1: 缓存中间件 (CachingMiddleware)
   ├─ 检查缓存是否 HIT
   ├─ 如果命中: 直接返回结果 (省略后续所有 Stages)
@@ -103,12 +103,12 @@ Stage 4: 超时保护 (TimeoutMiddleware)
 
 Stage 5: 异常恢复 (RecoveryMiddleware)
   └─ 捕获未处理的 panic
-```
+```plaintext
 
 ### 顺序的理由
 
 | 位置 | 中间件 | 为什么在这里 |
-|------|--------|----------|
+| ------ | -------- | ---------- |
 | 第 1 | 缓存 | 缓存 HIT 时省略所有其他处理 |
 | 第 2 | 日志 | 记录所有请求（包括缓存 HIT） |
 | 第 3 | 指标 | 统计经过日志的所有请求 |
@@ -136,7 +136,7 @@ for i := 0; i < 10000; i++ {
         logger.Info("请求完成", "requestID", request.ID)
     }
 }
-```
+```plaintext
 
 ### 最佳实践 2：监控缓存效率
 
@@ -152,7 +152,7 @@ if metadata, ok := result.Metadata["cache_stats"]; ok {
         logger.Warn("缓存命中率不足", "hit_rate", hitRate)
     }
 }
-```
+```plaintext
 
 ### 最佳实践 3：设置合理的超时
 
@@ -167,7 +167,7 @@ config := &EngineConfig{
 }
 
 engine := NewProcessingEngine(config)
-```
+```plaintext
 
 ### 最佳实践 4：利用结构化日志
 
@@ -185,7 +185,7 @@ logger.Info("request_processed",
 // - logger.info AND success=false (失败的请求)
 // - logger.info AND duration_ms > 100 (慢请求)
 // - logger.info AND cache_hit=true (缓存命中)
-```
+```plaintext
 
 ### 最佳实践 5：定期异常分析
 
@@ -217,7 +217,7 @@ func (d *AnomalyDetector) Detect(metrics *Metrics) []string {
     
     return anomalies
 }
-```
+```plaintext
 
 ---
 
@@ -246,7 +246,7 @@ for i := 0; i < 1000; i++ {
     // 首次缓存 MISS (50ms)
     // 后续 999 次缓存 HIT (18µs each)
 }
-```
+```plaintext
 
 ### 反例 2: 忽视超时设置
 
@@ -263,7 +263,7 @@ config := &EngineConfig{
     TimeoutMs: 100, // 100ms 超时
 }
 // 如果处理超过 100ms 会立即返回失败
-```
+```plaintext
 
 ### 反例 3: 同步的远程日志
 
@@ -292,7 +292,7 @@ func (m *GoodLoggingMiddleware) After(...) error {
         return nil
     }
 }
-```
+```plaintext
 
 ### 反例 4: 中间件副作用
 
@@ -314,7 +314,7 @@ func (m *GoodAnalyticsMiddleware) After(...) error {
     atomic.AddInt64(&m.requestCount, 1)
     return nil
 }
-```
+```plaintext
 
 ---
 
@@ -351,7 +351,7 @@ scenarios := []ProcessingScenario{
 95%     20x (巨大)
 99%     100x+ (极大)
 */
-```
+```plaintext
 
 ### 优化 2: 并发优化
 
@@ -374,7 +374,7 @@ for i := 0; i < 100; i++ {
 }
 wg.Wait()
 // 耗时: 50ms (当 MaxConcurrency ≥ 100)
-```
+```plaintext
 
 ### 优化 3: 采样监控
 
@@ -394,7 +394,7 @@ func shouldMonitor() bool {
 1%       轻       +1ms
 0.1%     极轻     +0.1ms
 */
-```
+```plaintext
 
 ### 优化 4: 内存回收
 
@@ -406,7 +406,7 @@ config := &EngineConfig{
 
 // 当缓存满时，采用 LRU 策略自动删除最少使用的
 // (在 CachingMiddleware 中自动处理)
-```
+```plaintext
 
 ---
 
@@ -437,7 +437,7 @@ type PipelineMetrics struct {
     MemoryUsage     int64
     GoroutineCount  int
 }
-```
+```plaintext
 
 ### 告警规则
 
@@ -459,7 +459,7 @@ type AlertRule struct {
     // Goroutine 泄漏 > 10000
     { Condition: "GoroutineCount > 10000", Severity: "WARNING" }
 }
-```
+```plaintext
 
 ### Prometheus 集成
 
@@ -470,14 +470,14 @@ prometheus.Gauge("pipeline_cache_hit_rate").Set(cacheHitRate)
 prometheus.Gauge("pipeline_error_rate").Set(errorRate)
 prometheus.Counter("pipeline_requests_total").Inc()
 prometheus.Histogram("pipeline_latency_ms").Observe(duration.Milliseconds())
-```
+```plaintext
 
 ---
 
 ## 总结表
 
 | 实践 | 重要性 | 投入 | 回报 |
-|------|--------|------|------|
+| ------ | -------- | ------ | ------ |
 | 正确的中间件顺序 | 🔴 关键 | 低 | 高 |
 | 设置超时 | 🔴 关键 | 低 | 高 |
 | 利用缓存 | 🟠 重要 | 中 | 极高 |

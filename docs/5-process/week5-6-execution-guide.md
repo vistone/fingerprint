@@ -6,7 +6,7 @@
 
 ## 📅 时间表概览
 
-```
+```plaintext
 Week 5 (2026-03-09 ~ 2026-03-15)
 ├─ Day 1-2 (03/09-03/10): 5% 灰度   - 基础验证
 ├─ Day 3-4 (03/11-03/12): 25% 灰度  - A/B 测试
@@ -17,7 +17,7 @@ Week 6 (2026-03-16 ~ 2026-03-22)
 ├─ Day 1-2 (03/16-03/17): 继续监控
 ├─ Day 3-4 (03/18-03/19): 性能优化
 └─ Day 5   (03/20):        项目总结
-```
+```plaintext
 
 ---
 
@@ -33,7 +33,7 @@ Week 6 (2026-03-16 ~ 2026-03-22)
 
 # 可选：覆盖监控参数
 AUTO_ROLLBACK=1 CHECK_INTERVAL_SEC=300 MAX_CHECKS=12 ./scripts/canary/run_day1_canary.sh
-```
+```plaintext
 
 #### ✅ Day 1 早晨 (09:00 UTC+8)
 
@@ -61,7 +61,7 @@ kubectl get pods -l app=processing-engine -w
 
 # 3. 检查日志（无错误）
 kubectl logs -f deployment/processing-engine --tail=50
-```
+```plaintext
 
 **启用 5% 灰度** (需要 5 分钟):
 ```bash
@@ -72,7 +72,7 @@ kubectl patch configmap pipeline-config --type merge \
 # 验证配置生效
 curl http://localhost:8080/config/canary
 # 期望输出: {"enabled": true, "percentage": 0.05, "stage": "5%"}
-```
+```plaintext
 
 **关键检查点 (1 小时后)**:
 ```bash
@@ -95,13 +95,13 @@ curl http://localhost:8080/metrics/cache-hitrate
 # 如果任何指标异常，立即回滚：
 kubectl patch configmap pipeline-config --type merge \
   -p '{"data":{"canary.enabled":"false"}}'
-```
+```plaintext
 
 **继续监控 (6 小时续)** （13:00-19:00):
 ```bash
 # 每 30 分钟检查一次关键指标
 watch -n 1800 'curl -s http://localhost:8080/metrics/canary | jq'
-```
+```plaintext
 
 #### ✅ Day 2 全天 (24 小时监控)
 
@@ -128,17 +128,17 @@ kubectl logs deployment/processing-engine --since=48h \
 curl 'http://prometheus:9090/api/v1/query_range' \
   -d 'query=canary_requests_total&start=<start>&end=<end>&step=60s' \
   > /tmp/canary-metrics.json
-```
+```plaintext
 
 **决策** (18:00):
-```
+```plaintext
 IF 所有指标正常:
   ✅ 决定升级到 Day 3 的 25% 灰度
 ELSE IF 有轻微警告 (缓存低等):
   ⚠️  予以注意，但继续观察
 ELSE IF 有严重问题:
   ❌ 立即回滚，调查根本原因
-```
+```plaintext
 
 ### Day 3-4: 25% 灰度 (A/B 性能测试)
 
@@ -156,7 +156,7 @@ kubectl patch configmap pipeline-config --type merge \
 
 # 验证
 curl http://localhost:8080/config/canary
-```
+```plaintext
 
 **A/B 性能对标** (Day 3 全天):
 
@@ -177,10 +177,10 @@ curl http://localhost:8080/config/canary
 #   "cache_hit_rate": 0.942,
 #   "total_requests": 125000
 # }
-```
+```plaintext
 
 **性能分析** (Day 3 晚间 18:00):
-```
+```plaintext
 对标指标:
 ┌─────────────────────┬──────────┬──────────┬───────────┐
 │ 指标                │ 新方式   │ 旧方式   │ 对等价    │
@@ -196,7 +196,7 @@ curl http://localhost:8080/config/canary
 统计显著性: p < 0.05 ✅ (T 检验)
 
 建议: ✅ 可继续推出
-```
+```plaintext
 
 #### ✅ Day 4 全天 (继续 A/B 测试)
 
@@ -211,7 +211,7 @@ curl http://localhost:8080/config/canary
 # - 总样本量
 # - 置信区间
 # - 建议（可升级/需调查/立即回滚）
-```
+```plaintext
 
 ### Day 5-6: 50% 灰度 (对称性验证)
 
@@ -226,7 +226,7 @@ curl http://localhost:8080/config/canary
 ```bash
 kubectl patch configmap pipeline-config --type merge \
   -p '{"data":{"canary.percentage":"0.50","canary.stage":"50%"}}'
-```
+```plaintext
 
 **对称性验证** (核心验证):
 
@@ -253,7 +253,7 @@ kubectl patch configmap pipeline-config --type merge \
 # 验收标准:
 # - 一致性率 > 99.5% ✅
 # - 差异都是预期的(缓存时间戳、随机数等) ✅
-```
+```plaintext
 
 **48 小时长期稳定性测试** (Day 5-6):
 ```bash
@@ -269,10 +269,10 @@ nohup ./scripts/continuous-monitor.sh \
 # - 内存占用趋势
 # - GC 行为
 # - 缓存命中率稳定性
-```
+```plaintext
 
 **Day 6 决策** (18:00):
-```
+```plaintext
 检查清单:
 - [ ] 一致性率 > 99.5%
 - [ ] 错误率始终 < 1%
@@ -285,7 +285,7 @@ IF 全部通过:
   ✅ 准备 Day 7 全量切换
 ELSE:
   ❌ 修复问题后重新尝试 50% 灰度
-```
+```plaintext
 
 ### Day 7: 100% 灰度 (全量切换)
 
@@ -312,7 +312,7 @@ kubectl patch configmap pipeline-config --type merge \
 # 等待 15 分钟后
 kubectl patch configmap pipeline-config --type merge \
   -p '{"data":{"canary.percentage":"1.00"}}'  # 100%
-```
+```plaintext
 
 **关键检查点** (切换后每 15 分钟):
 - 15 分钟 (08:15):
@@ -339,11 +339,11 @@ kubectl patch configmap pipeline-config --type merge \
   ```
 
 **监控和优化** (Day 7 全天):
-```
+```plaintext
 08:00 - 08:45: 密集监控 (每 5 分钟)
 09:00 - 18:00: 常规监控 (每 30 分钟)
 18:00 - 次日:  宽松监控 (每 2 小时)
-```
+```plaintext
 
 ---
 
@@ -351,7 +351,7 @@ kubectl patch configmap pipeline-config --type merge \
 
 ### 自动回滚触发条件
 
-```
+```plaintext
 监控到以下任何情况，立即回滚:
 
 1. 错误率 > 3% (持续 5 分钟)
@@ -365,7 +365,7 @@ kubectl patch configmap pipeline-config --type merge \
    
 4. 数据异常 (一致性 < 95%)
    → 立即停止新方式流量
-```
+```plaintext
 
 ### 快速回滚脚本
 
@@ -442,7 +442,7 @@ echo "1. 查看日志: cat $LOG_DIR/engine.log"
 echo "2. 分析指标: cat $LOG_DIR/metrics.json | jq"
 echo "3. 调查根本原因"
 echo "4. 修复后再次尝试灰度"
-```
+```plaintext
 
 ---
 
@@ -516,7 +516,7 @@ export_canary_data() {
 export_canary_data "day1-2" /tmp/canary-analysis/5percent
 export_canary_data "day3-4" /tmp/canary-analysis/25percent
 export_canary_data "day5-6" /tmp/canary-analysis/50percent
-```
+```plaintext
 
 ### 分析和报告
 
@@ -533,7 +533,7 @@ python3 analyze_canary.py \
 # - 缓存命中率时序
 # - 一致性统计
 # - 建议和结论
-```
+```plaintext
 
 ---
 
@@ -575,7 +575,7 @@ python3 analyze_canary.py \
 ```bash
 # 继续监控，但放松频率
 watch -n 3600 'curl -s http://localhost:8080/metrics/summary | jq'
-```
+```plaintext
 
 ### Day 3-4: 性能优化
 

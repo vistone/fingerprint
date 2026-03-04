@@ -19,7 +19,7 @@ type ECHExtensionProcessor struct {
     Handle()
     // ...
 }
-```
+```plaintext
 
 ### 开闭原则（Open/Closed Principle）
 
@@ -35,7 +35,7 @@ RegisterAnalyzerBuilder(MyType, func() (Parser, error) {
 
 // ❌ 不好的做法：修改现有代码
 // 在 ECHAnalyzerImpl.Analyze() 中添加新逻辑
-```
+```plaintext
 
 ### 依赖倒置原则（Dependency Inversion Principle）
 
@@ -52,13 +52,13 @@ func Process(parser extension.Parser, data []byte) {
 func Process(parser *ECHParser, data []byte) {
     // ...
 }
-```
+```plaintext
 
 ## 2. 代码组织
 
 ### 目录结构
 
-```
+```plaintext
 your-extension/
 ├── go.mod
 ├── go.sum
@@ -77,7 +77,7 @@ your-extension/
 │   ├── API.md
 │   └── USAGE.md
 └── readme.md
-```
+```plaintext
 
 ### 模块初始化
 
@@ -106,7 +106,7 @@ func Init() error {
     }
     return nil
 }
-```
+```plaintext
 
 ## 3. 错误处理
 
@@ -134,7 +134,7 @@ func Parse(data []byte) error {
     
     return nil
 }
-```
+```plaintext
 
 ### 优雅的错误恢复
 
@@ -162,7 +162,7 @@ func (a *MyAnalyzer) Analyze(data extension.ExtensionData,
     
     return result, nil
 }
-```
+```plaintext
 
 ## 4. 性能最佳实践
 
@@ -201,7 +201,7 @@ func (ca *CachedAnalyzer) Analyze(data extension.ExtensionData,
     
     return result, nil
 }
-```
+```plaintext
 
 ### 4.2 避免内存分配
 
@@ -219,7 +219,7 @@ func (p *MyParser) Parse(data []byte, ctx context.Context) (
     extension.ExtensionData, error) {
     return &MyData{Data: data}, nil // 直接引用，无额外分配
 }
-```
+```plaintext
 
 ### 4.3 批处理
 
@@ -257,7 +257,7 @@ func (ba *BatchAnalyzer) analyzeBatch() (
     ba.batch = ba.batch[:0] // 重用切片
     return results, nil
 }
-```
+```plaintext
 
 ## 5. 测试最佳实践
 
@@ -305,7 +305,7 @@ func TestMyParser_Parse(t *testing.T) {
         })
     }
 }
-```
+```plaintext
 
 ### 5.2 集成测试
 
@@ -339,7 +339,7 @@ func TestIntegration_ParseAndAnalyze(t *testing.T) {
         t.Errorf("Invalid risk score: %f", analysis.GetRiskScore())
     }
 }
-```
+```plaintext
 
 ### 5.3 性能测试
 
@@ -364,7 +364,7 @@ func BenchmarkAnalyze(b *testing.B) {
         a.Analyze(extData, nil)
     }
 }
-```
+```plaintext
 
 ## 6. 文档编写
 
@@ -398,7 +398,7 @@ func (p *MyParser) Parse(data []byte, parentContext context.Context) (
     extension.ExtensionData, error) {
     // ...
 }
-```
+```plaintext
 
 ### 6.2 README 结构
 
@@ -419,7 +419,7 @@ func (p *MyParser) Parse(data []byte, parentContext context.Context) (
 import "myext"
 
 myext.Init()
-```
+```plaintext
 
 ## 使用
 
@@ -440,7 +440,7 @@ myext.Init()
 ## License
 
 MIT
-```
+```plaintext
 
 ## 7. 版本管理
 
@@ -454,7 +454,7 @@ MIT
 
 ```go
 const Version = "1.2.3" // Major.Minor.Patch
-```
+```plaintext
 
 ### 7.2 变更日志
 
@@ -479,7 +479,7 @@ const Version = "1.2.3" // Major.Minor.Patch
 
 ### Security
 - 修复安全漏洞
-```
+```plaintext
 
 ## 8. 安全考虑
 
@@ -506,7 +506,7 @@ func (p *MyParser) Parse(data []byte, ctx context.Context) (
     
     // ...
 }
-```
+```plaintext
 
 ### 8.2 资源限制
 
@@ -537,7 +537,7 @@ func (rl *RateLimiter) Allow() bool {
     rl.requests = append(rl.requests, now)
     return true
 }
-```
+```plaintext
 
 ## 9. 故障排查
 

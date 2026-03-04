@@ -15,13 +15,13 @@
 
 ```bash
 ./scripts/canary/run_day1_canary.sh
-```
+```plaintext
 
 可选参数：
 
 ```bash
 AUTO_ROLLBACK=1 CHECK_INTERVAL_SEC=300 MAX_CHECKS=12 ./scripts/canary/run_day1_canary.sh
-```
+```plaintext
 
 ### 方式 B：手动分步
 
@@ -29,25 +29,25 @@ AUTO_ROLLBACK=1 CHECK_INTERVAL_SEC=300 MAX_CHECKS=12 ./scripts/canary/run_day1_c
 
 ```bash
 ./scripts/canary/precheck_day1.sh
-```
+```plaintext
 
 2. 启用 5% 灰度
 
 ```bash
 ./scripts/canary/set_canary_stage.sh 5
-```
+```plaintext
 
 3. 监控（示例：每5分钟检查一次，共12次）
 
 ```bash
 CHECK_INTERVAL_SEC=300 MAX_CHECKS=12 ./scripts/canary/monitor_canary.sh
-```
+```plaintext
 
 4. 触发严重阈值时回滚
 
 ```bash
 ./scripts/canary/rollback_canary.sh
-```
+```plaintext
 
 ## Makefile 快捷入口
 
@@ -55,7 +55,7 @@ CHECK_INTERVAL_SEC=300 MAX_CHECKS=12 ./scripts/canary/monitor_canary.sh
 make canary-day1
 make canary-stage STAGE=25
 make canary-rollback
-```
+```plaintext
 
 ## Day 2 决策
 
@@ -69,4 +69,4 @@ make canary-rollback
 ./scripts/canary/set_canary_stage.sh 50
 ./scripts/canary/set_canary_stage.sh 100
 ./scripts/canary/set_canary_stage.sh off
-```
+```plaintext

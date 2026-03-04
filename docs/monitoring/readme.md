@@ -32,7 +32,7 @@
 
 ## 目录结构
 
-```
+```plaintext
 internal/
 ├── metrics/          # 指标收集模块
 │   ├── metrics.go    # Counter, Gauge, Histogram 实现
@@ -47,7 +47,7 @@ internal/
 examples/
 └── monitoring/       # 使用示例
     └── main.go       # 完整演示程序
-```
+```plaintext
 
 ## 快速开始
 
@@ -79,7 +79,7 @@ func main() {
     exported := pm.Export()
     fmt.Printf("完整指标: %+v\n", exported)
 }
-```
+```plaintext
 
 ### 2. 分布式追踪
 
@@ -113,7 +113,7 @@ func main() {
         fmt.Printf("Span: %s, Duration: %v\n", s.Name, s.Duration)
     }
 }
-```
+```plaintext
 
 ### 3. 健康检查
 
@@ -165,7 +165,7 @@ func main() {
     overallStatus := mon.GetStatus()
     fmt.Printf("Overall Status: %s\n", overallStatus)
 }
-```
+```plaintext
 
 ## 高级用法
 
@@ -200,7 +200,7 @@ func main() {
     prometheusText := exporter.Export()
     fmt.Println(prometheusText)
 }
-```
+```plaintext
 
 ### 2. 复杂追踪链
 
@@ -248,7 +248,7 @@ func main() {
     }
     fmt.Printf("Total Time: %v\n", totalTime)
 }
-```
+```plaintext
 
 ### 3. 自定义健康检查和自愈
 
@@ -316,7 +316,7 @@ func main() {
         // 实现具体的自愈逻辑
     }
 }
-```
+```plaintext
 
 ## 集成到应用
 
@@ -422,7 +422,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
     // 业务逻辑
     w.Write([]byte("API Response"))
 }
-```
+```plaintext
 
 ## API 参考
 
@@ -433,14 +433,14 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 counter := metrics.NewCounter(name, help)
 counter.Inc(delta int64)           // 增加计数
 value := counter.Get()              // 获取当前值
-```
+```plaintext
 
 #### Gauge
 ```go
 gauge := metrics.NewGauge(name, help)
 gauge.Set(value float64)           // 设置当前值
 value := gauge.Get()               // 获取当前值
-```
+```plaintext
 
 #### Histogram
 ```go
@@ -448,7 +448,7 @@ histogram := metrics.NewHistogram(name, help, buckets)
 histogram.Observe(value float64)   // 记录观测值
 mean := histogram.Mean()           // 获取平均值
 p99 := histogram.GetPercentile(99) // 获取百分位数
-```
+```plaintext
 
 #### PerformanceMetrics
 ```go
@@ -470,7 +470,7 @@ errorRate := pm.GetErrorRate()     // 错误率 (%)
 p50 := pm.GetP50Latency()          // P50 延迟
 p95 := pm.GetP95Latency()          // P95 延迟
 p99 := pm.GetP99Latency()          // P99 延迟
-```
+```plaintext
 
 ### Tracing API
 
@@ -485,7 +485,7 @@ span.End()
 
 // 获取追踪
 spans := tracer.GetTrace(traceID)
-```
+```plaintext
 
 ### Monitor API
 
@@ -500,7 +500,7 @@ results := monitor.Check()
 
 // 获取状态
 status := monitor.GetStatus() // HEALTHY, DEGRADED, UNHEALTHY
-```
+```plaintext
 
 ## 最佳实践
 
@@ -528,7 +528,7 @@ go run examples/monitoring/main.go
 go test ./internal/metrics -v
 go test ./internal/tracing -v
 go test ./internal/monitor -v
-```
+```plaintext
 
 ## 性能影响
 

@@ -13,12 +13,12 @@ cd /media/stone/data/dev
 gofmt -w .
 git add -A
 git commit -m "style: fix code formatting with gofmt"
-```
+```plaintext
 
 **检查**:
 ```bash
 gofmt -l .  # 应输出: 空（无文件）
-```
+```plaintext
 
 **影响**: 消除所有格式警告，提升代码一致性
 
@@ -47,7 +47,7 @@ ext := &tls.SupportedCurvesExtension{
 ext := &tls.SupportedCurvesExtension{
     Curves: []tls.CurveID{tls.CurveID(23), tls.CurveID(24)},
 }
-```
+```plaintext
 
 **需要改正的所有扩展类型**:
 - SupportedCurvesExtension → Curves 字段
@@ -60,7 +60,7 @@ ext := &tls.SupportedCurvesExtension{
 **验证**:
 ```bash
 go vet ./...  # 应输出: 无错误
-```
+```plaintext
 
 ---
 
@@ -83,7 +83,7 @@ git commit -m "fix: resolve go vet warnings and code formatting issues
 
 # 推送
 git push origin main
-```
+```plaintext
 
 ---
 
@@ -138,7 +138,7 @@ jobs:
         files: ./coverage.out
         flags: unittests
         name: codecov-umbrella
-```
+```plaintext
 
 ---
 
@@ -184,7 +184,7 @@ jobs:
           gofmt -d .
           exit 1
         fi
-```
+```plaintext
 
 ---
 
@@ -226,7 +226,7 @@ clean:
 install-tools:
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install github.com/cosmtrek/air@latest
-```
+```plaintext
 
 ---
 
@@ -283,7 +283,7 @@ install-tools:
 [1.0.2]: https://github.com/vistone/fingerprint/releases/tag/v1.0.2
 [1.0.1]: https://github.com/vistone/fingerprint/releases/tag/v1.0.1
 [1.0.0]: https://github.com/vistone/fingerprint/releases/tag/v1.0.0
-```
+```plaintext
 
 ---
 
@@ -333,13 +333,13 @@ install-tools:
 
 ## 提交信息规范
 
-```
+```plaintext
 type(scope): subject
 
 body
 
 footer
-```
+```plaintext
 
 ### Type
 - feat: 新功能
@@ -351,19 +351,19 @@ footer
 - chore: 工具
 
 ### 示例
-```
+```plaintext
 feat(ja3): add JA3 fingerprint computation
 
 Implement JA3 fingerprint calculation with GREASE filtering
 and MD5 hashing. Supports all 71 internal profiles.
 
 Closes #123
-```
+```plaintext
 
 ## 许可证
 
 提交 PR 即表示你同意项目的 BSD 3-Clause 许可证。
-```
+```plaintext
 
 ---
 
@@ -415,7 +415,7 @@ Closes #123
 
 - [OWASP 安全开发实践](https://owasp.org/)
 - [Go 安全最佳实践](https://golang.org/doc/effective_go)
-```
+```plaintext
 
 ---
 
@@ -454,7 +454,7 @@ indent_size = 2
 [*.yaml]
 indent_style = space
 indent_size = 2
-```
+```plaintext
 
 ---
 
@@ -489,7 +489,7 @@ indent_size = 2
 func GetRandomFingerprint() (*FingerprintResult, error) {
     // ...
 }
-```
+```plaintext
 
 ---
 
@@ -513,7 +513,7 @@ os := fingerprint.RandomOS()          // 33.5 ns/op, 0 allocs
 for i := 0; i < 1000; i++ {
     fp, _ := fingerprint.GetRandomFingerprint()  // 每次 1.8 KB
 }
-```
+```plaintext
 
 ### 缓存指纹配置
 ```go
@@ -534,7 +534,7 @@ func makeRequest() {
     headers := fp.Headers.ToMap()
     // ...
 }
-```
+```plaintext
 
 ## 2. 指纹选择
 
@@ -548,7 +548,7 @@ result, _ := fingerprint.GetRandomFingerprintByBrowserWithOS(
     "firefox",
     fingerprint.OSMacOS14,
 )
-```
+```plaintext
 
 ## 3. 安全使用
 
@@ -566,7 +566,7 @@ contradiction := fingerprint.NewContradictionDetector()
 if contradiction.CheckContradictions(headers) {
     log.Warn("Detected contradictory attributes")
 }
-```
+```plaintext
 
 ## 4. 噪声注入
 
@@ -583,7 +583,7 @@ injector := fingerprint.NewNoiseInjector(config)
 // 生成噪声参数
 canvasNoise := injector.GenerateCanvasNoise()
 audioNoise := injector.GenerateAudioNoise()
-```
+```plaintext
 
 ## 5. 指纹识别
 
@@ -595,12 +595,12 @@ result := recognizer.RecognizeFromHeaders(headers)
 if result.Confidence > 0.9 {
     fmt.Printf("浏览器: %s v%s\n", result.Browser, result.BrowserVersion)
 }
-```
+```plaintext
 
 ## 性能基准
 
 | 操作 | 耗时 | 内存 |
-|------|------|------|
+| ------ | ------ | ------ |
 | GetRandomFingerprint | 7.4 µs | 1.8 KB |
 | GetUserAgentByProfileName | 796 ns | 134 B |
 | GenerateHeaders | 1.2 µs | 304 B |
@@ -613,7 +613,7 @@ if result.Confidence > 0.9 {
 2. **忽视异常检测**: 某些指纹组合可能被识别为机器人
 3. **不更新指纹库**: 定期检查新版本浏览器
 4. **过度使用噪声**: 噪声过强会影响真实性
-```
+```plaintext
 
 ---
 
@@ -639,7 +639,7 @@ if result.Confidence > 0.9 {
 ## 预计工作量
 
 | 阶段 | 任务 | 预计时间 |
-|------|------|---------|
+| ------ | ------ | --------- |
 | 第 1 周 | 紧急修复 | 4-5 小时 |
 | 第 2 周 | CI/CD 建立 | 4-5 小时 |
 | 第 3 周 | 文档完善 | 4-5 小时 |

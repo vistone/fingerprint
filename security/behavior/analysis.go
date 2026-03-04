@@ -179,35 +179,28 @@ func (ba *BehaviorAnalyzer) AddRequest(req RequestBehavior) {
 
 // AnalyzeTemporalPattern 分析时序模式
 func (ba *BehaviorAnalyzer) AnalyzeTemporalPattern(origin string) *TemporalPattern {
-	// 筛选该源的请求
-	var originRequests []RequestBehavior
-	for _, req := range ba.requestHistory {
+	// 筛选该源的请求并计算间隔（单次遍历，减少内存分配）
+	intervals := make([]int64, 0, len(ba.requestHistory))
+	var lastReq *RequestBehavior
+
+	for i := range ba.requestHistory {
+		req := &ba.requestHistory[i]
 		// 使用 SNI 或目标地址作为源识别
 		if req.SNI == origin || req.DestinationIP == origin {
-			originRequests = append(originRequests, req)
+			if lastReq != nil {
+				interval := req.Timestamp.Sub(lastReq.Timestamp).Milliseconds()
+				intervals = append(intervals, interval)
+			}
+			lastReq = req
 		}
 	}
 
-	if len(originRequests) < ba.config.MinRequestsForAnalysis {
+	if len(intervals) < ba.config.MinRequestsForAnalysis-1 {
 		return nil
 	}
 
-	// 计算请求间隔
-	pattern := &TemporalPattern{
-		Intervals: []int64{},
-	}
-
-	for i := 1; i < len(originRequests); i++ {
-		interval := originRequests[i].Timestamp.Sub(originRequests[i-1].Timestamp).Milliseconds()
-		pattern.Intervals = append(pattern.Intervals, interval)
-	}
-
-	if len(pattern.Intervals) == 0 {
-		return nil
-	}
-
-	// 计算统计特性
-	ba.calculateTemporalStats(pattern)
+	// 计算统计特性（零分配计算）
+	pattern := ba.calculateTemporalStatsZeroAlloc(intervals)
 
 	// 计算规律性指数
 	ba.calculateRegularityIndex(pattern)
@@ -250,6 +243,44 @@ func (ba *BehaviorAnalyzer) calculateTemporalStats(pattern *TemporalPattern) {
 		variance += diff * diff
 	}
 	pattern.StdDev = math.Sqrt(variance / float64(len(pattern.Intervals)))
+}
+
+// calculateTemporalStatsZeroAlloc 计算时序统计（零分配版本）
+func (ba *BehaviorAnalyzer) calculateTemporalStatsZeroAlloc(intervals []int64) *TemporalPattern {
+	pattern := &TemporalPattern{
+		Intervals: intervals,
+	}
+
+	if len(intervals) == 0 {
+		return pattern
+	}
+
+	// 计算平均值、最小值、最大值（单次遍历）
+	var sum int64
+	pattern.MinInterval = intervals[0]
+	pattern.MaxInterval = intervals[0]
+
+	for _, interval := range intervals {
+		sum += interval
+		if interval < pattern.MinInterval {
+			pattern.MinInterval = interval
+		}
+		if interval > pattern.MaxInterval {
+			pattern.MaxInterval = interval
+		}
+	}
+
+	pattern.MeanInterval = float64(sum) / float64(len(intervals))
+
+	// 计算标准差
+	var variance float64
+	for _, interval := range intervals {
+		diff := float64(interval) - pattern.MeanInterval
+		variance += diff * diff
+	}
+	pattern.StdDev = math.Sqrt(variance / float64(len(intervals)))
+
+	return pattern
 }
 
 // calculateRegularityIndex 计算规律性指数

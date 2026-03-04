@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -47,11 +48,61 @@ type YAMLPriority struct {
 	YAMLPriorityParam
 }
 
-// parseYAMLFile 解析单个 YAML 文件
+// parseYAMLFile 解析单个 YAML 文件，带有安全验证
 func parseYAMLFile(path string) (*YAMLProfile, error) {
+	// 安全检查 1: 防止路径遍历攻击（最先检查）
+	if strings.Contains(path, "..") {
+		return nil, fmt.Errorf("路径包含非法字符 '..': %s", path)
+	}
+	
+	// 安全检查 2: 验证文件路径是否在允许的目录内
+	allowedDirs := []string{"profiles/specs", "cmd/profilegen/extract"}
+	isAllowed := false
+	
+	// 清理路径并转换为绝对路径
+	cleanPath := filepath.Clean(path)
+	absPath, err := filepath.Abs(cleanPath)
+	if err != nil {
+		return nil, fmt.Errorf("获取绝对路径失败 %s: %w", path, err)
+	}
+	
+	for _, allowedDir := range allowedDirs {
+		absAllowedDir, err := filepath.Abs(allowedDir)
+		if err != nil {
+			continue
+		}
+		
+		// 检查路径是否以允许的目录开头
+		if strings.HasPrefix(absPath, absAllowedDir) {
+			isAllowed = true
+			break
+		}
+	}
+	
+	if !isAllowed {
+		return nil, fmt.Errorf("路径不在允许范围内：%s (允许目录：%v)", path, allowedDirs)
+	}
+	
+	// 安全检查 3: 检查文件大小（最大 10MB）
+	const maxFileSize = 10 * 1024 * 1024 // 10MB
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return nil, fmt.Errorf("获取文件信息失败 %s: %w", path, err)
+	}
+	
+	if fileInfo.Size() > maxFileSize {
+		return nil, fmt.Errorf("文件大小超出限制 (%d > %d bytes): %s", fileInfo.Size(), maxFileSize, path)
+	}
+	
+	// 读取文件内容
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("读取文件失败 %s: %w", path, err)
+	}
+	
+	// 安全检查 4: 再次验证读取的数据大小
+	if len(data) > maxFileSize {
+		return nil, fmt.Errorf("文件数据大小超出限制：%s", path)
 	}
 
 	var profile YAMLProfile
@@ -62,8 +113,34 @@ func parseYAMLFile(path string) (*YAMLProfile, error) {
 	return &profile, nil
 }
 
-// parseAllProfiles 解析目录中的所有 YAML 文件
+// parseAllProfiles 解析目录中的所有 YAML 文件，带有安全验证
 func parseAllProfiles(dir string) ([]ProfileSpec, []string, error) {
+	// 安全检查：验证目录路径
+	allowedBaseDirs := []string{"profiles/specs", "cmd/profilegen/extract"}
+	isAllowed := false
+	
+	cleanDir := filepath.Clean(dir)
+	absDir, err := filepath.Abs(cleanDir)
+	if err != nil {
+		return nil, nil, fmt.Errorf("获取目录绝对路径失败: %w", err)
+	}
+	
+	for _, allowedDir := range allowedBaseDirs {
+		absAllowedDir, err := filepath.Abs(allowedDir)
+		if err != nil {
+			continue
+		}
+		
+		if strings.HasPrefix(absDir, absAllowedDir) || absDir == absAllowedDir {
+			isAllowed = true
+			break
+		}
+	}
+	
+	if !isAllowed {
+		return nil, nil, fmt.Errorf("目录不在允许范围内：%s (允许目录：%v)", dir, allowedBaseDirs)
+	}
+	
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, nil, fmt.Errorf("读取目录失败: %w", err)
@@ -73,6 +150,12 @@ func parseAllProfiles(dir string) ([]ProfileSpec, []string, error) {
 	var files []string
 
 	for _, entry := range entries {
+		// 安全检查：跳过符号链接
+		if entry.Type()&fs.ModeSymlink != 0 {
+			fmt.Printf("警告：跳过符号链接 %s\n", entry.Name())
+			continue
+		}
+		
 		if entry.IsDir() {
 			continue
 		}
@@ -81,6 +164,28 @@ func parseAllProfiles(dir string) ([]ProfileSpec, []string, error) {
 		}
 
 		path := filepath.Join(dir, entry.Name())
+		
+		// 双重检查：确保拼接后的路径仍在允许目录内
+		absPath, err := filepath.Abs(path)
+		if err != nil {
+			fmt.Printf("警告：跳过无法获取绝对路径的文件 %s\n", entry.Name())
+			continue
+		}
+		
+		validPath := false
+		for _, allowedDir := range allowedBaseDirs {
+			absAllowedDir, _ := filepath.Abs(allowedDir)
+			if strings.HasPrefix(absPath, absAllowedDir) {
+				validPath = true
+				break
+			}
+		}
+		
+		if !validPath {
+			fmt.Printf("警告：跳过路径不在允许范围内的文件 %s\n", entry.Name())
+			continue
+		}
+		
 		yamlProfile, err := parseYAMLFile(path)
 		if err != nil {
 			return nil, nil, err

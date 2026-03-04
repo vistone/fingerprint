@@ -4,7 +4,7 @@
 
 ## 架构概览
 
-```
+```plaintext
 ┌─────────────────────────────────────────────────────────────────┐
 │                         Application Layer                        │
 ├─────────────────────────────────────────────────────────────────┤
@@ -30,7 +30,7 @@
 │  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘   │  │
 │  └──────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
-```
+```plaintext
 
 ## 模块详解
 
@@ -38,7 +38,7 @@
 
 负责管理 TLS/HTTP 客户端指纹配置。
 
-```
+```plaintext
 profiles/
 ├── client_profile.go          # ClientProfile 定义
 ├── internal_browser_profiles.go   # 内置浏览器配置
@@ -48,7 +48,7 @@ profiles/
     ├── chrome_120.yaml
     ├── firefox_121.yaml
     └── ...
-```
+```plaintext
 
 **关键类型**:
 - `ClientProfile`: 完整的客户端配置
@@ -60,14 +60,14 @@ profiles/
 
 TLS 指纹分析和 JA3/JA4 计算。
 
-```
+```plaintext
 tls/
 ├── ja3/              # JA3 指纹计算
 ├── ja4/              # JA4 指纹计算
 ├── ja4s/             # JA4S 指纹计算
 ├── ech/              # Encrypted Client Hello
 └── internal/utils/   # 内部工具
-```
+```plaintext
 
 **功能**:
 - JA3 字符串解析和生成
@@ -79,7 +79,7 @@ tls/
 
 HTTP/2 和 HTTP 头部分析。
 
-```
+```plaintext
 http/
 ├── http2/            # HTTP/2 帧分析
 ├── ja4h/             # JA4H HTTP 指纹
@@ -87,7 +87,7 @@ http/
 ├── useragent/        # User-Agent 解析
 ├── clienthints/      # Client Hints 处理
 └── policy/           # HTTP 策略
-```
+```plaintext
 
 **功能**:
 - HTTP/2 帧结构分析
@@ -147,7 +147,7 @@ type Processor interface {
 type Pipeline struct {
     processors []Processor
 }
-```
+```plaintext
 
 #### 6.3 Cache 模块 (`internal/cache/`)
 
@@ -159,13 +159,13 @@ type Cache interface {
     Set(key string, value interface{}, ttl time.Duration)
     Delete(key string)
 }
-```
+```plaintext
 
 ## 数据流
 
 ### 指纹生成流程
 
-```
+```plaintext
 ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
 │  Client  │───▶│   TLS    │───▶│   HTTP   │───▶│  Output  │
 │  Request │    │  Layer   │    │  Layer   │    │          │
@@ -176,11 +176,11 @@ type Cache interface {
               │  JA3/4   │    │  JA4H    │
               │Fingerprint│   │Fingerprint│
               └──────────┘    └──────────┘
-```
+```plaintext
 
 ### Profile 选择流程
 
-```
+```plaintext
 ┌──────────────┐
 │ User Request │
 └──────┬───────┘
@@ -203,7 +203,7 @@ type Cache interface {
                     ┌──────────────┐
                     │ Return Spec  │
                     └──────────────┘
-```
+```plaintext
 
 ## 设计原则
 
@@ -223,12 +223,12 @@ type FingerprintProcessor interface {
 
 // 插件系统
 func RegisterPlugin(name string, plugin Plugin) error
-```
+```plaintext
 
 ### 3. 性能优化
 
 | 组件 | 优化策略 | 效果 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | Config Clone | 手写 Clone 替代 JSON | 5-10x 提升 |
 | Profile Cache | LRU 缓存 | 避免重复生成 |
 | Extension Parse | 预分配切片 | 减少内存分配 |
@@ -248,11 +248,11 @@ func (m *Manager) Get(name string) (*Config, bool) {
     c, ok := m.configs[name]
     return c, ok
 }
-```
+```plaintext
 
 ## 依赖关系
 
-```
+```plaintext
 profiles ──┬──▶ tls
            ├──▶ http
            └──▶ internal/extension
@@ -265,12 +265,12 @@ http ──────▶ tls (optional)
 internal/config ──▶ (no external deps in pkg)
 
 internal/tcpip ───▶ (self-contained)
-```
+```plaintext
 
 ## 性能特征
 
 | 操作 | 时间复杂度 | 空间复杂度 | 说明 |
-|------|-----------|-----------|------|
+| ------ | ----------- | ----------- | ------ |
 | Profile 选择 | O(1) | O(1) | 哈希表查找 |
 | JA3 解析 | O(n) | O(n) | n = 字符串长度 |
 | HTTP/2 分析 | O(m) | O(m) | m = 帧数量 |
@@ -287,7 +287,7 @@ type ProfileSource interface {
 }
 
 // 实现：文件、数据库、配置中心等
-```
+```plaintext
 
 ### 2. 自定义分析器
 
@@ -298,7 +298,7 @@ type Analyzer interface {
 }
 
 // 注册：RegisterAnalyzer("custom", &CustomAnalyzer{})
-```
+```plaintext
 
 ### 3. 输出格式化
 
@@ -308,7 +308,7 @@ type Formatter interface {
 }
 
 // JSON, YAML, Protobuf 等实现
-```
+```plaintext
 
 ## 未来架构演进
 

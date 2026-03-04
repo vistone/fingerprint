@@ -13,7 +13,7 @@ var Chrome_133 = ClientProfile{
         // ...
     },
 }
-```
+```plaintext
 
 ## 解决方案
 
@@ -53,13 +53,13 @@ settings:
   SettingHeaderTableSize: 65536
   SettingEnablePush: 0
   # ...
-```
+```plaintext
 
 ### 2. 运行代码生成工具
 
 ```bash
 go run ./cmd/profilegen -input profiles/specs -output profiles/generated.go
-```
+```plaintext
 
 ### 3. 替换原有代码
 
@@ -119,4 +119,4 @@ go run ./cmd/profilegen -input profiles/specs -output /tmp/generated.go
 
 # 验证生成的代码可编译
 go build /tmp/generated.go
-```
+```plaintext

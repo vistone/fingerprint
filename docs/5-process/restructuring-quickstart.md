@@ -18,7 +18,7 @@
 ## ⏱ 执行时间表
 
 | Phase | 时间 | 工作量 | 难度 | 状态 |
-|-------|------|--------|------|------|
+| ------- | ------ | -------- | ------ | ------ |
 | **Phase 1: TLS** | Week 5-6 | 2-3 天 | ⭐ 低 | ⏳ 待启动 |
 | **Phase 2: HTTP** | Week 6-7 | 3-4 天 | ⭐⭐ 中 | ⏳ Phase1 后 |
 | **Phase 3: pkg 化** | Week 7-8 | 3-5 天 | ⭐⭐⭐ 高 | ⏳ 最后 |
@@ -38,7 +38,7 @@ ls -la internal/   # 应该有 tlsutil/
 # 备份当前分支
 git branch
 git tag -a phase1-backup -m "Safe point before Phase 1"
-```
+```plaintext
 
 ### 自动执行（推荐）
 ```bash
@@ -51,7 +51,7 @@ bash scripts/phase1_tls_migration.sh execute
 # Step 3: 验证
 go test ./tls/...
 go build ./...
-```
+```plaintext
 
 ### 验证成功标志
 ```bash
@@ -59,7 +59,7 @@ go build ./...
 ✅ go build 无错误
 ✅ go test ./tls/... 全部通过
 ✅ 目录结构: tls/internal/utils, tls/internal/ech 存在
-```
+```plaintext
 
 ---
 
@@ -74,7 +74,7 @@ go build ./...
 git reset --hard phase1-backup
 # 或者
 git checkout tls/    # 恢复整个 tls 目录
-```
+```plaintext
 
 ### Q3: 哪些文件会被修改？
 **A**: ~12 个文件，主要是 import 语句。参考 [phase1-import-mapping.md](phase1-import-mapping.md)
@@ -105,7 +105,7 @@ git checkout tls/    # 恢复整个 tls 目录
 ```bash
 go test ./tls/... -v
 go test ./test/fingerprint_test.go -v
-```
+```plaintext
 
 ---
 
@@ -125,7 +125,7 @@ go test ./test/fingerprint_test.go -v
 ```bash
 go test ./http/... -v
 go test ./test/http*.go -v
-```
+```plaintext
 
 ---
 
@@ -154,7 +154,7 @@ func main() {
 }
 EOF
 go build /tmp/test_pkg.go
-```
+```plaintext
 
 ---
 
@@ -163,7 +163,7 @@ go build /tmp/test_pkg.go
 ### 脚本 1: 自动迁移（Phase 1）
 ```bash
 bash scripts/phase1_tls_migration.sh [dry-run|execute]
-```
+```plaintext
 
 **输出**:
 - 详细的变更日志
@@ -173,7 +173,7 @@ bash scripts/phase1_tls_migration.sh [dry-run|execute]
 ### 脚本 2: 分析工具（所有阶段）
 ```bash
 bash scripts/analyze_imports.sh
-```
+```plaintext
 
 **功能**:
 - 统计各包的导入源
@@ -183,7 +183,7 @@ bash scripts/analyze_imports.sh
 ### 脚本 3: 验证工具
 ```bash
 bash scripts/verify_restructuring.sh [1|2|3]
-```
+```plaintext
 
 **检查项**:
 - 构建成功
@@ -261,7 +261,7 @@ go mod graph
 
 # 检查循环依赖
 go list -json ./... | jq '.ImportPath, .Imports'
-```
+```plaintext
 
 ### 特定包测试失败
 ```bash
@@ -271,7 +271,7 @@ go test ./path/to/package -v -run TestName
 # 生成覆盖率报告
 go test ./tls/... -cover -coverprofile=coverage.out
 go tool cover -html=coverage.out
-```
+```plaintext
 
 ### Import 仍然有错误
 ```bash
@@ -285,7 +285,7 @@ grep -r "import.*tlsutil" --include="*.go" .
 # VS Code: Ctrl+H, 启用 Regex 模式
 # 旧: "github\.com/vistone/fingerprint/internal/tlsutil"
 # 新: "github.com/vistone/fingerprint/tls/internal/utils"
-```
+```plaintext
 
 ---
 
@@ -313,12 +313,12 @@ grep -r "import.*tlsutil" --include="*.go" .
 
 ```bash
 bash scripts/phase1_tls_migration.sh dry-run
-```
+```plaintext
 
 输出无误后：
 
 ```bash
 bash scripts/phase1_tls_migration.sh execute
-```
+```plaintext
 
 祝好！🎉

@@ -7,33 +7,33 @@
 ### 指纹生成指标
 
 | 指标名 | 类型 | 描述 |
-|--------|------|------|
+| -------- | ------ | ------ |
 | `fingerprint_generation_total` | Counter | 指纹生成总次数，标签: browser, os |
 | `fingerprint_generation_duration_ms` | Histogram | 指纹生成耗时（毫秒），标签: browser |
 
 ### 缓存指标
 
 | 指标名 | 类型 | 描述 |
-|--------|------|------|
+| -------- | ------ | ------ |
 | `fingerprint_profile_cache_hit_total` | Counter | Profile 缓存命中次数 |
 | `fingerprint_profile_cache_miss_total` | Counter | Profile 缓存未命中次数 |
 
 ### 连接指标
 
 | 指标名 | 类型 | 描述 |
-|--------|------|------|
+| -------- | ------ | ------ |
 | `fingerprint_active_connections` | Gauge | 当前活跃连接数 |
 
 ### 行为分析指标
 
 | 指标名 | 类型 | 描述 |
-|--------|------|------|
+| -------- | ------ | ------ |
 | `fingerprint_behavior_signals_total` | Counter | 行为信号检测次数，标签: risk_level |
 
 ### HTTP/2 分析指标
 
 | 指标名 | 类型 | 描述 |
-|--------|------|------|
+| -------- | ------ | ------ |
 | `fingerprint_http2_analysis_duration_ms` | Histogram | HTTP/2 签名分析耗时 |
 
 ## 使用方法
@@ -54,7 +54,7 @@ func SomeFunction() {
     // 记录行为信号
     metrics.RecordBehaviorSignal("high")
 }
-```
+```plaintext
 
 ### 暴露指标端点
 
@@ -70,7 +70,7 @@ func main() {
     http.Handle("/metrics", promhttp.Handler())
     http.ListenAndServe(":8080", nil)
 }
-```
+```plaintext
 
 ### Prometheus 配置
 
@@ -79,7 +79,7 @@ scrape_configs:
   - job_name: 'fingerprint'
     static_configs:
       - targets: ['localhost:8080']
-```
+```plaintext
 
 ## Grafana 仪表板
 

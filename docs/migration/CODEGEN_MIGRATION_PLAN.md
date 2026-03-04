@@ -26,7 +26,7 @@ go run ./cmd/profilegen/generate_specs.go
 
 # 查看生成的文件
 ls -la profiles/specs/
-```
+```plaintext
 
 每个生成的文件包含：
 - 基本元数据（name, client, version）
@@ -56,7 +56,7 @@ extensions:
 
 # 3. 验证 YAML 格式
 yamllint profiles/specs/firefox_120.yaml
-```
+```plaintext
 
 ### Phase 4: 生成 Go 代码
 
@@ -66,7 +66,7 @@ go run ./cmd/profilegen -input profiles/specs -output profiles/generated/profile
 
 # 验证生成的代码
 go build ./profiles/generated/...
-```
+```plaintext
 
 ### Phase 5: 逐步替换
 
@@ -87,7 +87,7 @@ go build ./profiles/generated/...
 ## 工作量估算
 
 | 任务 | 工作量 | 负责人 |
-|------|--------|--------|
+| ------ | -------- | -------- |
 | 生成 YAML 模板 | 1 天 | 自动化脚本 |
 | 完善 Chrome 配置（~20 个） | 3 天 | 开发团队 |
 | 完善 Firefox 配置（~15 个） | 2 天 | 开发团队 |
@@ -116,7 +116,7 @@ go build ./profiles/generated/...
 
 ```bash
 go run ./cmd/profilegen/generate_specs.go
-```
+```plaintext
 
 ### 2. 验证 YAML 配置
 
@@ -126,14 +126,14 @@ go run ./cmd/profilegen/validate.go -config profiles/specs/chrome_133.yaml
 
 # 批量验证
 go run ./cmd/profilegen/validate.go -input profiles/specs/
-```
+```plaintext
 
 ### 3. 对比测试
 
 ```bash
 # 对比生成的代码与原始代码
 go run ./cmd/profilegen/diff.go -profile chrome_133
-```
+```plaintext
 
 ## 成功标准
 

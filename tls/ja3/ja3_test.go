@@ -1,8 +1,11 @@
 package ja3
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
+	tls "github.com/bogdanfinn/utls"
 	"github.com/vistone/fingerprint/profiles"
 )
 
@@ -155,5 +158,292 @@ func TestFindProfileByJA3WithRealHashes(t *testing.T) {
 	emptyResult := FindProfileByJA3("")
 	if len(emptyResult) != 0 {
 		t.Error("Expected no profiles for empty hash")
+	}
+}
+
+// TestValidateClientHelloSpec 测试 ClientHello 规范验证
+func TestValidateClientHelloSpec(t *testing.T) {
+	tests := []struct {
+		name    string
+		spec    tls.ClientHelloSpec
+		wantErr bool
+		errMsg  string
+	}{
+		{
+			name: "valid spec",
+			spec: tls.ClientHelloSpec{
+				CipherSuites: []uint16{0x1301, 0x1302},
+				Extensions:   []tls.TLSExtension{&tls.SNIExtension{}},
+			},
+			wantErr: false,
+		},
+		{
+			name: "empty cipher suites",
+			spec: tls.ClientHelloSpec{
+				CipherSuites: []uint16{},
+				Extensions:   []tls.TLSExtension{&tls.SNIExtension{}},
+			},
+			wantErr: true,
+			errMsg:  "cipher suites list is empty",
+		},
+		{
+			name: "too many cipher suites",
+			spec: tls.ClientHelloSpec{
+				CipherSuites: make([]uint16, 300),
+				Extensions:   []tls.TLSExtension{&tls.SNIExtension{}},
+			},
+			wantErr: true,
+			errMsg:  "cipher suites list too long",
+		},
+		{
+			name: "empty extensions",
+			spec: tls.ClientHelloSpec{
+				CipherSuites: []uint16{0x1301},
+				Extensions:   []tls.TLSExtension{},
+			},
+			wantErr: true,
+			errMsg:  "extensions list is empty",
+		},
+		{
+			name: "too many extensions",
+			spec: tls.ClientHelloSpec{
+				CipherSuites: []uint16{0x1301},
+				Extensions:   make([]tls.TLSExtension, 300),
+			},
+			wantErr: true,
+			errMsg:  "extensions list too long",
+		},
+		{
+			name: "zero cipher suite value",
+			spec: tls.ClientHelloSpec{
+				CipherSuites: []uint16{0x1301, 0x0000, 0x1302},
+				Extensions:   []tls.TLSExtension{&tls.SNIExtension{}},
+			},
+			wantErr: true,
+			errMsg:  "cipher suite at index 1 is zero",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateClientHelloSpec(tt.spec)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("validateClientHelloSpec() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if err != nil && tt.errMsg != "" && !strings.Contains(err.Error(), tt.errMsg) {
+				t.Errorf("validateClientHelloSpec() error = %v, want to contain %q", err, tt.errMsg)
+			}
+		})
+	}
+}
+
+// TestComputeJA3FromSpecWithInvalidInput 测试无效输入处理
+func TestComputeJA3FromSpecWithInvalidInput(t *testing.T) {
+	tests := []struct {
+		name    string
+		spec    tls.ClientHelloSpec
+		wantErr bool
+	}{
+		{
+			name: "nil extensions",
+			spec: tls.ClientHelloSpec{
+				CipherSuites: []uint16{0x1301},
+				Extensions:   nil,
+			},
+			wantErr: true,
+		},
+		{
+			name: "empty cipher suites",
+			spec: tls.ClientHelloSpec{
+				CipherSuites: []uint16{},
+				Extensions:   []tls.TLSExtension{&tls.SNIExtension{}},
+			},
+			wantErr: true,
+		},
+		{
+			name: "extension with nil data",
+			spec: tls.ClientHelloSpec{
+				CipherSuites: []uint16{0x1301},
+				Extensions:   []tls.TLSExtension{nil},
+			},
+			wantErr: false, // 应该跳过 nil 扩展
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := ComputeJA3FromSpec(tt.spec)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ComputeJA3FromSpec() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if !tt.wantErr && result == nil {
+				t.Error("Expected non-nil result for valid input")
+			}
+		})
+	}
+}
+
+// TestComputeJA3FromSpecEdgeCases 测试边界情况
+func TestComputeJA3FromSpecEdgeCases(t *testing.T) {
+	tests := []struct {
+		name     string
+		spec     tls.ClientHelloSpec
+		validate func(*testing.T, *JA3Result, error)
+	}{
+		{
+			name: "single cipher suite",
+			spec: tls.ClientHelloSpec{
+				CipherSuites: []uint16{0x1301},
+				Extensions:   []tls.TLSExtension{&tls.SNIExtension{}},
+			},
+			validate: func(t *testing.T, result *JA3Result, err error) {
+				if err != nil {
+					t.Fatalf("Unexpected error: %v", err)
+				}
+				if len(result.CipherSuites) != 1 {
+					t.Errorf("Expected 1 cipher suite, got %d", len(result.CipherSuites))
+				}
+			},
+		},
+		{
+			name: "all grease values",
+			spec: tls.ClientHelloSpec{
+				CipherSuites: []uint16{0x0A0A, 0x1A1A}, // GREASE values
+				Extensions:   []tls.TLSExtension{&tls.UtlsGREASEExtension{}},
+			},
+			validate: func(t *testing.T, result *JA3Result, err error) {
+				if err == nil {
+					t.Error("Expected error when all cipher suites are GREASE")
+				}
+			},
+		},
+		{
+			name: "multiple extensions of same type",
+			spec: tls.ClientHelloSpec{
+				CipherSuites: []uint16{0x1301, 0x1302},
+				Extensions: []tls.TLSExtension{
+					&tls.SNIExtension{},
+					&tls.SNIExtension{},
+					&tls.SNIExtension{},
+				},
+			},
+			validate: func(t *testing.T, result *JA3Result, err error) {
+				if err != nil {
+					t.Fatalf("Unexpected error: %v", err)
+				}
+				// 应该正确处理重复扩展
+				if len(result.Extensions) < 1 {
+					t.Error("Expected at least one extension")
+				}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := ComputeJA3FromSpec(tt.spec)
+			tt.validate(t, result, err)
+		})
+	}
+}
+
+// TestIsGREASEValue 测试 GREASE 值检测
+func TestIsGREASEValue(t *testing.T) {
+	tests := []struct {
+		value uint16
+		want  bool
+	}{
+		{0x0A0A, true},
+		{0x1A1A, true},
+		{0x2A2A, true},
+		{0x3A3A, true},
+		{0x4A4A, true},
+		{0x5A5A, true},
+		{0x6A6A, true},
+		{0x7A7A, true},
+		{0x8A8A, true},
+		{0x9A9A, true},
+		{0xAAAA, true},
+		{0xBABA, true},
+		{0xCACA, true},
+		{0xDADA, true},
+		{0xEAEA, true},
+		{0xFAFA, true},
+		{0x1301, false}, // 正常密码套件
+		{0x0000, false},
+		{0xFFFF, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("0x%04X", tt.value), func(t *testing.T) {
+			if got := isGREASEValue(tt.value); got != tt.want {
+				t.Errorf("isGREASEValue(0x%04X) = %v, want %v", tt.value, got, tt.want)
+			}
+		})
+	}
+}
+
+// TestFilterGREASEFunctions 测试 GREASE 过滤函数
+func TestFilterGREASEFunctions(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    []uint16
+		expected []uint16
+	}{
+		{
+			name:     "no grease",
+			input:    []uint16{0x1301, 0x1302, 0x1303},
+			expected: []uint16{0x1301, 0x1302, 0x1303},
+		},
+		{
+			name:     "all grease",
+			input:    []uint16{0x0A0A, 0x1A1A, 0x2A2A},
+			expected: []uint16{},
+		},
+		{
+			name:     "mixed values",
+			input:    []uint16{0x1301, 0x0A0A, 0x1302, 0x2A2A},
+			expected: []uint16{0x1301, 0x1302},
+		},
+		{
+			name:     "empty input",
+			input:    []uint16{},
+			expected: []uint16{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := filterGREASEUint16(tt.input)
+			if len(result) != len(tt.expected) {
+				t.Errorf("filterGREASEUint16() length = %d, want %d", len(result), len(tt.expected))
+			}
+			for i, v := range result {
+				if i < len(tt.expected) && v != tt.expected[i] {
+					t.Errorf("filterGREASEUint16()[%d] = 0x%04X, want 0x%04X", i, v, tt.expected[i])
+				}
+			}
+		})
+	}
+}
+
+// BenchmarkComputeJA3FromSpec 基准测试：JA3 计算性能
+func BenchmarkComputeJA3FromSpec(b *testing.B) {
+	spec := tls.ClientHelloSpec{
+		CipherSuites: []uint16{0x1301, 0x1302, 0x1303, 0xC02C, 0xC02B},
+		Extensions: []tls.TLSExtension{
+			&tls.SNIExtension{},
+			&tls.SupportedVersionsExtension{Versions: []uint16{0x0304, 0x0303}},
+			&tls.SupportedCurvesExtension{Curves: []tls.CurveID{tls.X25519, tls.CurveP256}},
+		},
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, err := ComputeJA3FromSpec(spec)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }

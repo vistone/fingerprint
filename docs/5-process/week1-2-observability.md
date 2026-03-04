@@ -23,40 +23,40 @@
 
 # 更新依赖
 go mod tidy
-```
+```plaintext
 
 ### Step 2: 已创建的可观测组件 ✅
 
 #### A. 核心可观测性库：`internal/observability/observability.go`
-```
+```plaintext
 ✅ FingerprintMetrics (指纹生成指标)
 ✅ BehaviorAnalysisMetrics (行为分析指标)
 ✅ PipelineMetrics (管道指标)
 ✅ TracingContext (OpenTelemetry 追踪)
 ✅ Logger (结构化日志)
 ✅ ObservabilityMiddleware (自动指标收集)
-```
+```plaintext
 
 #### B. Pipeline 框架：`internal/pipeline/pipeline.go`
-```
+```plaintext
 ✅ Pipeline 主类
 ✅ 5 个内置中间件
 ✅ 完整的依赖管理
-```
+```plaintext
 
 #### C. BehaviorAnalyzer 可观测包装：`security/behavior/instrumented.go`
-```
+```plaintext
 ✅ InstrumentedBehaviorAnalyzer
 ✅ 自动追踪和指标收集
 ✅ 结构化日志支持
-```
+```plaintext
 
 #### D. ProcessingEngine 可观测包装：`internal/extension/instrumented.go`
-```
+```plaintext
 ✅ InstrumentedProcessingEngine
 ✅ 处理步骤级别的追踪
 ✅ 请求处理指标
-```
+```plaintext
 
 ---
 
@@ -128,7 +128,7 @@ func main() {
 		)
 	}
 }
-```
+```plaintext
 
 ### 示例 2：为 ProcessingEngine 启用可观测性
 
@@ -191,7 +191,7 @@ func main() {
 	metrics := observedEngine.GetMetricsSnapshot()
 	sugar.Infow("engine metrics", "metrics", metrics)
 }
-```
+```plaintext
 
 ### 示例 3：使用 Pipeline 框架和可观测性
 
@@ -250,7 +250,7 @@ func main() {
 		"output", result.Output,
 	)
 }
-```
+```plaintext
 
 ---
 
@@ -269,7 +269,7 @@ go test ./... -v
 
 # 3. 检查是否有编译错误
 go build ./...
-```
+```plaintext
 
 ### 功能验证
 ```bash
@@ -281,7 +281,7 @@ go test -v ./internal/extension/ -run Instrumented
 
 # 3. 验证 Pipeline 框架
 go test -v ./internal/pipeline/examples_test.go
-```
+```plaintext
 
 ---
 
@@ -294,7 +294,7 @@ go test -v ./internal/pipeline/examples_test.go
 ```bash
 # 搜索使用 BehaviorAnalyzer 的代码
 grep -r "BehaviorAnalyzer" --include="*.go" | grep -v "instrumented.go"
-```
+```plaintext
 
 ### 任务 2：为现有 ProcessingEngine 用户添加可观测性
 
@@ -303,7 +303,7 @@ grep -r "BehaviorAnalyzer" --include="*.go" | grep -v "instrumented.go"
 ```bash
 # 搜索使用 ProcessingEngine 的代码
 grep -r "ProcessingEngine" --include="*.go" | grep -v "instrumented.go"
-```
+```plaintext
 
 ### 任务 3：创建可观测性初始化助手
 
@@ -347,7 +347,7 @@ func SetupObservability(serviceName string) (*zap.SugaredLogger, error) {
 	sugar.Infow("observability setup complete", "service", serviceName)
 	return sugar, nil
 }
-```
+```plaintext
 
 ---
 
@@ -362,7 +362,7 @@ time go build ./...
 # 运行时性能开销
 go test -bench=. -benchmem ./internal/pipeline/
 go test -bench=. -benchmem ./security/behavior/
-```
+```plaintext
 
 **预期结果**：
 - 可观测性开销 < 2%
@@ -388,7 +388,7 @@ go test -bench=. -benchmem ./security/behavior/
 ```go
 observedAnalyzer := behavior.NewInstrumentedBehaviorAnalyzer(
     originalAnalyzer, tracer, logger)
-```
+```plaintext
 
 ### Q2: 追踪数据去哪里了？
 
@@ -402,7 +402,7 @@ pipeline := pipeline.NewPipeline(tracer).
     AddStage(stage1).
     // 只添加需要的中间件
     AddMiddleware(pipeline.NewLoggingMiddleware(logger))
-```
+```plaintext
 
 ---
 

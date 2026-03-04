@@ -27,7 +27,7 @@ extractor := features.NewBaseFeatureExtractor(customConfig)
 
 // 方式 4: 兼容层（零迁移成本）
 adapter := features.NewLegacyFeatureAdapter(nil)
-```
+```plaintext
 
 ---
 
@@ -42,7 +42,7 @@ score, isAnomaly := extractor.ExtractFeature(
   nil,                              // 配置（nil 使用已初始化的）
 )
 // score: 0.0-1.0，isAnomaly: true/false
-```
+```plaintext
 
 ### 完整向量
 
@@ -54,14 +54,14 @@ vector := extractor.ExtractFeatureVector(data, nil)
 //   RiskScore: float64,                 // 综合风险评分
 //   Hash: string,                       // 去重哈希
 // }
-```
+```plaintext
 
 ---
 
 ## 特征类型速查表
 
 | 特征类型 | 快速引用 | 输入类型 | 应用 |
-|---------|--------|--------|------|
+| --------- | -------- | -------- | ------ |
 | 异常熵 | `FeatureEntropy` | `[]byte` \| `string` | 数据异常检测 |
 | 工具标记 | `FeatureToolMarker` | `[]byte` \| `string` | 自动化工具识别 |
 | 无头浏览器 | `FeatureHeadlessBrowser` | `string` \| `map[string]string` | 机器人检测 |
@@ -85,7 +85,7 @@ isBot := func(ua string) bool {
 if isBot(userAgent) {
   blockRequest()
 }
-```
+```plaintext
 
 ### 2. 全面异常检查
 
@@ -103,7 +103,7 @@ vector := extractor.ExtractFeatureVector(data, nil)
 if vector.RiskScore > 0.7 {
   triggerSecurityAlert(vector)
 }
-```
+```plaintext
 
 ### 3. 多维度矛盾检测
 
@@ -134,14 +134,14 @@ for _, fType := range contradictions {
 if anomalyCount >= 2 {
   raiseSecurityEvent()
 }
-```
+```plaintext
 
 ### 4. 获取特征人类可读名称
 
 ```go
 name := extractor.GetFeatureName(features.FeatureHeadlessBrowser)
 // 返回: "Headless Browser Detection"
-```
+```plaintext
 
 ---
 
@@ -166,19 +166,19 @@ HeadlessMarkers: []string{
 // 屏幕分辨率
 MobileScreenWidthMax: 1920      // 移动设备最大宽度
 DesktopScreenWidthMin: 800      // 桌面设备最小宽度
-```
+```plaintext
 
 ---
 
 ## 风险评分解读
 
-```
+```plaintext
 分数范围     风险等级     建议行动
 [0.0, 0.3)  ✅ 低       正常放行
 [0.3, 0.6)  ⚠️ 中       记录日志
 [0.6, 0.8)  🔴 高       需要验证
 [0.8, 1.0]  🚫 极危险   拦截请求
-```
+```plaintext
 
 ---
 
@@ -192,7 +192,7 @@ adapter.DetectHeadlessBrowser(ua)
 adapter.DetectAnomalies([]byte{...})
 adapter.CheckContradictions(map[string]string{...})
 adapter.RecognizeFromHeaders(map[string]string{...})
-```
+```plaintext
 
 ---
 
@@ -210,7 +210,7 @@ fmt.Printf("Hash: %s (for dedup)\n", vector.Hash)
 for fType, score := range vector.Scores {
   fmt.Printf("%s: %.2f\n", fType, score)
 }
-```
+```plaintext
 
 ### 特征类型名称
 
@@ -220,14 +220,14 @@ for _, fType := range vector.Anomalies {
   name := extractor.GetFeatureName(fType)
   fmt.Printf("Anomaly: %s\n", name)
 }
-```
+```plaintext
 
 ---
 
 ## 性能参考
 
 | 操作 | 耗时 |
-|------|------|
+| ------ | ------ |
 | 单特征提取 | ~1-10µs |
 | 完整向量 (7 特征) | ~50-100µs |
 | 配置加载 | ~1ms |

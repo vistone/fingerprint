@@ -10,7 +10,7 @@
 
 ### 目标结构
 
-```
+```plaintext
 current:                       target:
 ├── tls/                       ├── tls/
 │   ├── ja3/                   │   ├── ja3/
@@ -49,7 +49,7 @@ current:                       target:
 │                              │   ├── profiling/
 │                              │   └── telemetry/
 └── profiles/                  └── profiles/
-```
+```plaintext
 
 ---
 
@@ -69,7 +69,7 @@ current:                       target:
 ```bash
 mkdir -p tls/internal/utils
 mkdir -p tls/internal/ech
-```
+```plaintext
 
 **Step 2: 文件迁移**
 ```bash
@@ -82,12 +82,12 @@ cp tls/ech/* tls/internal/ech/                  # ECH 相关
 rm -rf tls/utils
 rm -rf tls/ech
 # ech 内容移入 tls/internal/ech
-```
+```plaintext
 
 **Step 3: Import 更新清单**
 
 | 文件 | 旧路径 | 新路径 |
-|------|--------|--------|
+| ------ | -------- | -------- |
 | tls/ja3/*.go | `internal/tlsutil` → | `../internal/utils` |
 | tls/ja4/*.go | `internal/tlsutil` → | `../internal/utils` |
 | tls/ja4s/*.go | `internal/tlsutil` → | `../internal/utils` |
@@ -104,14 +104,14 @@ grep -r "internal/tlsutil" --include="*.go" .
 #   import "github.com/vistone/fingerprint/internal/tlsutil"
 # 改为：
 #   import "github.com/vistone/fingerprint/tls/internal/utils"
-```
+```plaintext
 
 **Step 5: 验证**
 ```bash
 go mod tidy
 go build ./...
 go test ./tls/...
-```
+```plaintext
 
 #### 1.3 关键影响文件
 - tls/ja3/ja3.go, errors.go
@@ -149,7 +149,7 @@ mkdir -p http/internal/headers
 mkdir -p http/internal/useragent
 mkdir -p http/internal/caching
 mkdir -p http/internal/policy
-```
+```plaintext
 
 **Step 2: 文件迁移**
 ```bash
@@ -160,7 +160,7 @@ mv http/useragent/*.go http/internal/useragent/
 # 保留公共暴露的接口在 http/ 直接
 
 # 注意：需要保留 public types 在 http/types.go
-```
+```plaintext
 
 **Step 3: 创建内部公共接口**
 
@@ -181,12 +181,12 @@ package http
 import "github.com/vistone/fingerprint/http/internal/useragent"
 
 type UAGenerator = useragent.UAGenerator
-```
+```plaintext
 
 **Step 4: 更新 imports 清单**
 
 | 包 | 旧导入 | 新导入 |
-|-----|--------|---------|
+| ----- | -------- | --------- |
 | http/headers/ | 无跨包依赖 | `../internal/headers` |
 | http/useragent/ | 无跨包依赖 | `../internal/useragent` |
 | http/clienthints/ | `"github.com/vistone/fingerprint/http/..."`  | 保持 + `../internal/useragent` |
@@ -197,7 +197,7 @@ type UAGenerator = useragent.UAGenerator
 go mod tidy
 go build ./...
 go test ./http/...
-```
+```plaintext
 
 #### 2.3 关键影响文件
 - http/headers/builder.go, headers.go, interfaces.go
@@ -240,7 +240,7 @@ go test ./http/...
 # 操作
 rm internal/utils/useragent.go     # 已迁移到 http/internal/useragent
 # strings.go, rand.go 保留
-```
+```plaintext
 
 **Step 2: internal/cache 新建**
 
@@ -252,7 +252,7 @@ mkdir -p internal/cache
 # cache/interface.go (统一接口)
 # cache/memory.go (内存实现)
 # cache/ttl.go (TTL 支持)
-```
+```plaintext
 
 ```go
 // internal/cache/cache.go
@@ -275,7 +275,7 @@ var (
     profileCache TTLCache
     headerCache TTLCache
 )
-```
+```plaintext
 
 **Step 3: internal/httputil 新建**
 
@@ -287,7 +287,7 @@ mkdir -p internal/httputil
 # httputil/normalization.go (header 规范化等)
 # httputil/validation.go (HTTP 参数验证)
 # httputil/constants.go (HTTP 常量)
-```
+```plaintext
 
 **Step 4: pkg 公共 API 暴露**
 
@@ -301,7 +301,7 @@ mkdir -p pkg/telemetry
 # pkg/fingerprint/fingerprint.go (主 API)
 # pkg/profiling/generator.go
 # pkg/telemetry/metrics.go
-```
+```plaintext
 
 关键原则：
 - pkg/ 中的接口不依赖 internal/
@@ -327,12 +327,12 @@ func NewFingerprinter() Fingerprinter {
     // 返回内部实现（对用户透明）
     return newDefaultFingerprinter()
 }
-```
+```plaintext
 
 #### 3.3 import 变更映射
 
 | 模块 | 旧导入 | 新导入 |
-|------|--------|--------|
+| ------ | -------- | -------- |
 | internal/extension | `"github.com/vistone/.../internal/utils"` | 按需保留或改用 cache/httputil |
 | http/ | (无) | `"github.com/vistone/.../internal/cache"` (可选) |
 | tls/ | (无) | (无) |
@@ -379,7 +379,7 @@ done
 echo ""
 echo "=== Checking circular dependencies ==="
 go mod graph | grep -E "internal|http|tls" | sort | uniq
-```
+```plaintext
 
 ### 脚本 2: 批量替换工具
 
@@ -419,7 +419,7 @@ go mod tidy
 
 echo "Verifying builds..."
 go build ./...
-```
+```plaintext
 
 ### 脚本 3: 验证脚本
 
@@ -490,7 +490,7 @@ for file in $(find . -name "*.go" -type f); do
     fi
 done
 echo "✅ Import check complete"
-```
+```plaintext
 
 ---
 
@@ -518,14 +518,14 @@ git reset --hard phase-1-backup
 
 # 恢复特定文件
 git checkout phase-1-backup -- tls/
-```
+```plaintext
 
 ---
 
 ## 📅 时间线
 
 | 周次 | Phase | 关键里程碑 | 验证 |
-|------|-------|----------|------|
+| ------ | ------- | ---------- | ------ |
 | Week 5-6 | Phase 1 TLS | tls/internal/ 完毕 | go test ./tls/... ✅ |
 | Week 6-7 | Phase 2 HTTP | http/internal/ 完毕 | go test ./http/... ✅ |
 | Week 7-8 | Phase 3 pkg | pkg/ API 暴露 | 外部导入示例 ✅ |

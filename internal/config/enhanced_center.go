@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"sync"
 	"time"
 )
@@ -49,7 +48,7 @@ type ConfigHealthStatus struct {
 
 // ConfigHealthChecker 配置健康检查器
 type ConfigHealthChecker struct {
-	center     *EnhancedConfigCenter
+	center     *ConfigCenter
 	checkFuncs []HealthCheckFunc
 	interval   time.Duration
 	stopCh     chan struct{}
@@ -61,6 +60,7 @@ type ConfigHealthChecker struct {
 type HealthCheckFunc func(*ManagedConfig) []string
 
 // WrapConfigCenter 包装现有的配置中心
+// Deprecated: 使用 NewUnifiedConfigManager 替代
 func WrapConfigCenter(baseCenter *ConfigCenter) *EnhancedConfigCenter {
 	enhanced := &EnhancedConfigCenter{
 		center:      baseCenter,
@@ -70,7 +70,7 @@ func WrapConfigCenter(baseCenter *ConfigCenter) *EnhancedConfigCenter {
 
 	// 初始化健康检查器
 	enhanced.healthChecker = &ConfigHealthChecker{
-		center:     enhanced,
+		center:     baseCenter,
 		checkFuncs: []HealthCheckFunc{defaultHealthCheck},
 		interval:   30 * time.Second,
 		stopCh:     make(chan struct{}),
@@ -84,7 +84,7 @@ func WrapConfigCenter(baseCenter *ConfigCenter) *EnhancedConfigCenter {
 	go enhanced.broadcastProcessor()
 
 	// 启动健康检查
-	go enhanced.healthChecker.start()
+	go enhanced.healthChecker.start(enhanced.broadcastCh)
 
 	return enhanced
 }
@@ -131,22 +131,21 @@ func (ecc *EnhancedConfigCenter) Unsubscribe(subscriberID string) error {
 // broadcastProcessor 广播事件处理器
 func (ecc *EnhancedConfigCenter) broadcastProcessor() {
 	for event := range ecc.broadcastCh {
-		ecc.notificationMu.RLock()
-		subscribers := make(map[string]chan ConfigChangeEvent)
+		// 复制订阅者列表（避免在发送时持有锁）
+		ecc.subscriberMu.RLock()
+		subscribers := make(map[string]chan ConfigChangeEvent, len(ecc.subscribers))
 		for k, v := range ecc.subscribers {
 			subscribers[k] = v
 		}
-		ecc.notificationMu.RUnlock()
+		ecc.subscriberMu.RUnlock()
 
 		// 异步发送给所有订阅者
-		for subscriberID, ch := range subscribers {
+		for _, ch := range subscribers {
 			select {
 			case ch <- event:
 				// 成功发送
 			default:
-				// 通道满，记录日志
-				log.Printf("[WARN] Config event channel full for subscriber: %s, event_type: %v",
-					subscriberID, event.Type)
+				// 通道满，跳过
 			}
 		}
 	}
@@ -210,7 +209,7 @@ func (ecc *EnhancedConfigCenter) Close() error {
 }
 
 // start 启动健康检查
-func (hc *ConfigHealthChecker) start() {
+func (hc *ConfigHealthChecker) start(broadcastCh chan ConfigChangeEvent) {
 	ticker := time.NewTicker(hc.interval)
 	defer ticker.Stop()
 
@@ -219,22 +218,36 @@ func (hc *ConfigHealthChecker) start() {
 		case <-hc.stopCh:
 			return
 		case <-ticker.C:
-			hc.performCheck()
+			hc.performCheck(broadcastCh)
 		}
 	}
 }
 
 // stop 停止健康检查
 func (hc *ConfigHealthChecker) stop() {
-	close(hc.stopCh)
+	select {
+	case <-hc.stopCh:
+		// 已经关闭
+	default:
+		close(hc.stopCh)
+	}
 }
 
 // performCheck 执行健康检查
-func (hc *ConfigHealthChecker) performCheck() {
+func (hc *ConfigHealthChecker) performCheck(broadcastCh chan ConfigChangeEvent) {
 	hc.mu.Lock()
 	defer hc.mu.Unlock()
 
-	config := hc.center.center.Get() // 修正方法调用
+	config := hc.center.Get()
+	if config == nil || config.Metadata == nil {
+		hc.lastStatus = ConfigHealthStatus{
+			Healthy:       false,
+			LastCheckTime: time.Now(),
+			Issues:        []string{"config or metadata is nil"},
+		}
+		return
+	}
+
 	var allIssues []string
 
 	for _, checkFunc := range hc.checkFuncs {
@@ -251,12 +264,16 @@ func (hc *ConfigHealthChecker) performCheck() {
 	}
 
 	// 如果有问题，广播健康事件
-	if len(allIssues) > 0 {
-		hc.center.broadcastCh <- ConfigChangeEvent{
+	if len(allIssues) > 0 && broadcastCh != nil {
+		select {
+		case broadcastCh <- ConfigChangeEvent{
 			Type:        ConfigChangeTypeHealth,
 			Timestamp:   time.Now(),
 			Config:      config,
 			Description: fmt.Sprintf("Health check found %d issues", len(allIssues)),
+		}:
+		default:
+			// 通道满，不阻塞
 		}
 	}
 }

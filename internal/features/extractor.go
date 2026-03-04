@@ -231,8 +231,8 @@ func (b *BaseFeatureExtractor) extractToolMarkerFromBytes(data []byte, patterns 
 
 // extractOSPlatformContradictionFeature 操作系统和平台矛盾
 func (b *BaseFeatureExtractor) extractOSPlatformContradictionFeature(data interface{}) (float64, bool) {
-	attrs, ok := data.(map[string]string)
-	if !ok {
+	attrs := toStringMap(data)
+	if attrs == nil {
 		return 0.0, false
 	}
 
@@ -261,8 +261,8 @@ func (b *BaseFeatureExtractor) extractOSPlatformContradictionFeature(data interf
 
 // extractUAOSContradictionFeature User-Agent 和操作系统矛盾
 func (b *BaseFeatureExtractor) extractUAOSContradictionFeature(data interface{}) (float64, bool) {
-	attrs, ok := data.(map[string]string)
-	if !ok {
+	attrs := toStringMap(data)
+	if attrs == nil {
 		return 0.0, false
 	}
 
@@ -294,8 +294,8 @@ func (b *BaseFeatureExtractor) extractUAOSContradictionFeature(data interface{})
 
 // extractMobileScreenContradictionFeature 移动设备屏幕分辨率矛盾
 func (b *BaseFeatureExtractor) extractMobileScreenContradictionFeature(data interface{}, cfg *FeatureConfig) (float64, bool) {
-	attrs, ok := data.(map[string]string)
-	if !ok {
+	attrs := toStringMap(data)
+	if attrs == nil {
 		return 0.0, false
 	}
 
@@ -327,8 +327,8 @@ func (b *BaseFeatureExtractor) extractMobileScreenContradictionFeature(data inte
 
 // extractUAFeatureContradictionFeature User-Agent 特性矛盾
 func (b *BaseFeatureExtractor) extractUAFeatureContradictionFeature(data interface{}) (float64, bool) {
-	attrs, ok := data.(map[string]string)
-	if !ok {
+	attrs := toStringMap(data)
+	if attrs == nil {
 		return 0.0, false
 	}
 
@@ -392,6 +392,25 @@ func memEquals(a, b []byte) bool {
 		}
 	}
 	return true
+}
+
+// toStringMap 将 interface{} 转换为 map[string]string
+// 支持 map[string]string 和 map[string]interface{} 类型
+func toStringMap(data interface{}) map[string]string {
+	switch v := data.(type) {
+	case map[string]string:
+		return v
+	case map[string]interface{}:
+		result := make(map[string]string, len(v))
+		for key, val := range v {
+			if s, ok := val.(string); ok {
+				result[key] = s
+			}
+		}
+		return result
+	default:
+		return nil
+	}
 }
 
 // FeatureVector 特征向量

@@ -25,7 +25,7 @@ result := analyzer.AnalyzeBehavior()
 // 获取结果
 fmt.Printf("网络类型: %s\n", result.RTTAnalysis.NetworkType)
 fmt.Printf("序列号模式: %s\n", result.SequenceNumberPattern)
-```
+```plaintext
 
 ### 2. DeviceFingerprintingEngine（设备指纹识别引擎）
 
@@ -52,7 +52,7 @@ result := engine.AnalyzeDevice(packets, behaviorResult)
 for _, match := range result.DeviceMatches {
     fmt.Printf("%s -> 匹配度: %.2f%%\n", match.DeviceName, match.MatchScore*100)
 }
-```
+```plaintext
 
 ### 3. PacketParser（数据包解析器）
 
@@ -70,7 +70,7 @@ initialTTL := tcpip.InferInitialTTL(currentTTL, hopCount)
 
 // 检查 IP 地址
 isPrivate := tcpip.IsPrivateIP("192.168.1.100")
-```
+```plaintext
 
 ## 检测能力
 
@@ -117,7 +117,7 @@ for range packets {
         logSecurityAlert(result.Anomalies)
     }
 }
-```
+```plaintext
 
 ### 2. 设备身份识别
 ```go
@@ -126,14 +126,14 @@ for _, packet := range devicePackets {
     result := engine.AnalyzeDevice([]*tcpip.TCPPacket{packet}, nil)
     registerNetworkDevice(result.DeviceMatches[0])
 }
-```
+```plaintext
 
 ### 3. 行为分析
 ```go
 // 分析用户的网络行为模式
 result := analyzer.AnalyzeBehavior()
 userProfile := buildUserProfile(result.BehaviorCharacteristics)
-```
+```plaintext
 
 ## 配置说明
 
@@ -148,7 +148,7 @@ indicators := tcpip.RiskIndicators{
 }
 
 riskScore := tcpip.CalculateRiskScore(indicators)
-```
+```plaintext
 
 ### 扩展 OS 数据库
 ```go
@@ -162,7 +162,7 @@ newProfile := &tcpip.OSProfile{
     TCPOptions:        "MSS,TS,WS",
 }
 osDatabase["Custom_OS"] = newProfile
-```
+```plaintext
 
 ## 性能指标
 
@@ -177,12 +177,12 @@ osDatabase["Custom_OS"] = newProfile
 ```go
 config := internal.config.GetConfigCenter()
 tcpipConfig := config.Get("tcpip_analysis")
-```
+```plaintext
 
 ### 2. 使用插件系统扩展
 ```go
 plugin := internal.plugins.GetRegistry().Get("custom_fingerprint")
-```
+```plaintext
 
 ### 3. 与风险评分集成
 ```go
@@ -191,19 +191,19 @@ risk := calculateOverallRisk(
     networkBehavior,
     tlsSignature,
 )
-```
+```plaintext
 
 ## 示例代码
 
 ### 运行基础示例
 ```bash
 go run examples/tcpip/main.go
-```
+```plaintext
 
 ### 运行高级示例
 ```bash
 go run examples/tcpip_advanced/main.go
-```
+```plaintext
 
 ## 常见问题
 

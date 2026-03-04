@@ -36,7 +36,7 @@
 ## 第1部分：建议评估矩阵
 
 | 建议 | 优先级 | 复杂度 | 收益 | 当前支持度 | 风险等级 |
-|------|-------|-------|------|-----------|---------|
+| ------ | ------- | ------- | ------ | ----------- | --------- |
 | **1. 插件化架构** | 中 | 高 | 高 | 25% | 中 |
 | **2. 流水线模式** | 高 | 中 | 高 | 30% | 低 |
 | **3. 事件溯源** | 高 | 高 | 极高 | 10% | 中 |
@@ -105,7 +105,7 @@ type AnalyzerPlugin interface {
     Plugin
     Analyze(ctx context.Context, parsed ParseResult) (AnalysisResult, error)
 }
-```
+```plaintext
 
 **阶段2：插件管理器（3-4周）**
 
@@ -180,7 +180,7 @@ func (m *Manager) ReloadPlugin(ctx context.Context, name string, path string, cf
     // 实现详见下面的 "热加载演进" 部分
     return nil
 }
-```
+```plaintext
 
 **阶段3：从组件到插件的迁移（4-6周）**
 
@@ -234,7 +234,7 @@ func (p *JA3ParserPlugin) Shutdown(ctx context.Context) error {
     // 清理资源
     return nil
 }
-```
+```plaintext
 
 #### 🔄 热加载演进
 
@@ -283,7 +283,7 @@ func (vp *VersionedPlugin) Promote(ctx context.Context) error {
     
     return nil
 }
-```
+```plaintext
 
 #### 📊 收益评估
 - ✅ **可观测架构**：无需重新编译可加载新指纹解析器
@@ -463,7 +463,7 @@ func (p *Pipeline) checkDependencies(stageName string, data *StageData) error {
     
     return nil
 }
-```
+```plaintext
 
 **迁移现有 ProcessingEngine 步骤**
 
@@ -543,7 +543,7 @@ func (ts *TransformStage) Execute(ctx context.Context, data *StageData) error {
     data.Output = transformed
     return nil
 }
-```
+```plaintext
 
 **使用示例（新代码）**
 
@@ -562,12 +562,12 @@ result, err := pipeline.Execute(ctx, rawTLSData)
 if err != nil {
     log.Printf("Pipeline failed: %v", err)
 }
-```
+```plaintext
 
 #### 📊 对比分析
 
 | 维度 | switch-case | Pipeline |
-|------|-----------|----------|
+| ------ | ----------- | ---------- |
 | **代码行数** | 20-30 | 100-150（首次） |
 | **新增步骤** | 修改 switch | 新建 Stage 类 |
 | **依赖管理** | 隐含 | 显式 |
@@ -660,7 +660,7 @@ type AnomalyDetectedEvent struct {
     Details       string
     RecommendedAction string
 }
-```
+```plaintext
 
 **事件存储接口**
 
@@ -774,7 +774,7 @@ func (w *WALStore) Flush(ctx context.Context) error {
     
     return tx.Commit().Error
 }
-```
+```plaintext
 
 **事件投影（从事件重建状态）**
 
@@ -850,7 +850,7 @@ func (bp *BehaviorProjection) ReplayFrom(ctx context.Context, startTime time.Tim
     events, _ := store.GetEvents(ctx, bp.AggregateID, startTime, time.Now())
     return bp.Project(ctx, events)
 }
-```
+```plaintext
 
 **迁移 BehaviorAnalyzer**
 
@@ -917,7 +917,7 @@ func (ba *BehaviorAnalyzerV2) GetBehaviorAnalysis(ctx context.Context, clientIP 
     
     return projection.State, nil
 }
-```
+```plaintext
 
 **算法验证：重放历史数据测试新算法**
 
@@ -945,7 +945,7 @@ func TestNewAnomalyDetectionAlgorithm(t *testing.T) {
         }
     }
 }
-```
+```plaintext
 
 #### 📊 收益分析
 - ✅ **历史重放**：可用 2 年前的数据测试新算法
@@ -1028,7 +1028,7 @@ func (re *RuleEngine) EvaluateRule(input interface{}) (bool, error) {
     
     return result.(bool), nil
 }
-```
+```plaintext
 
 **阶段2：规则定义 DSL（1-2周）**
 
@@ -1057,7 +1057,7 @@ pub extern "C" fn evaluate(input_ptr: *const u8, input_len: usize) -> i32 {
     
     0 // 正常
 }
-```
+```plaintext
 
 **阶段3：规则管理和热加载（2-3周）**
 
@@ -1134,12 +1134,12 @@ func (rm *RuleManager) EvaluateRules(ctx context.Context, input interface{}) (ma
     
     return results, nil
 }
-```
+```plaintext
 
 #### 📊 对比分析
 
 | 方面 | Go 代码 | WASM 规则 |
-|------|--------|---------|
+| ------ | -------- | --------- |
 | **部署周期** | 小时级 | 分钟级 |
 | **隔离性** | 与主进程耦合 | 完全隔离 |
 | **性能** | 最快 | 5-10% 开销 |
@@ -1158,7 +1158,7 @@ func (rm *RuleManager) EvaluateRules(ctx context.Context, input interface{}) (ma
 
 **完整的可观测系统三角柱**
 
-```
+```plaintext
 ┌─────────────────────────────────────┐
 │        Application Metrics           │  <- Prometheus
 │  (latency, throughput, error rate)   │
@@ -1169,7 +1169,7 @@ func (rm *RuleManager) EvaluateRules(ctx context.Context, input interface{}) (ma
 │      Structured Logging              │  <- Zap/logrus
 │  (debug, context, request ID)        │
 └─────────────────────────────────────┘
-```
+```plaintext
 
 **第1步：集成 OpenTelemetry**
 
@@ -1227,7 +1227,7 @@ func (e *ProcessingEngine) Process(ctx context.Context, request *ProcessingReque
     
     return result
 }
-```
+```plaintext
 
 **第2步：Prometheus 指标**
 
@@ -1303,7 +1303,7 @@ func init() {
 func RecordFingerprintGeneration(ctx context.Context, fpType string, duration time.Duration) {
     fingerprintLatency.WithLabelValues(fpType).Observe(duration.Seconds())
 }
-```
+```plaintext
 
 **第3步：结构化日志**
 
@@ -1353,7 +1353,7 @@ func ProcessRequest(ctx context.Context, data []byte) {
         )
     }
 }
-```
+```plaintext
 
 **完整示例：整合到 BehaviorAnalyzer**
 
@@ -1410,7 +1410,7 @@ func (iba *InstrumentedBehaviorAnalyzer) Analyze(ctx context.Context, clientIP s
     
     return result, nil
 }
-```
+```plaintext
 
 ---
 
@@ -1450,7 +1450,7 @@ func (iba *InstrumentedBehaviorAnalyzer) Analyze(ctx context.Context, clientIP s
 ## 第4部分：风险和缓解策略
 
 | 风险 | 概率 | 影响 | 缓解策略 |
-|------|------|------|---------|
+| ------ | ------ | ------ | --------- |
 | **状态迁移复杂性** | 中 | 高 | 写充分的迁移测试，保留旧系统一个版本 |
 | **性能下降** | 中 | 中 | 详细的基准测试，可选择关闭追踪 |
 | **学习曲线** | 高 | 中 | 提供文档和内部培训，循序渐进的改造 |

@@ -45,7 +45,7 @@
 git checkout -b feature/your-feature-name
 # 或 bug 修复
 git checkout -b fix/your-bug-fix
-```
+```plaintext
 
 分支命名约定：
 - `feature/` 新功能
@@ -78,13 +78,13 @@ git checkout -b fix/your-bug-fix
 
 遵循以下格式编写清晰的提交消息：
 
-```
+```plaintext
 <type>(<scope>): <subject>
 
 <body>
 
 <footer>
-```
+```plaintext
 
 **类型**（必需）：
 - `feat`: 新功能
@@ -110,18 +110,18 @@ git checkout -b fix/your-bug-fix
 - 限制在 50 个字符以内
 
 **示例**：
-```
+```plaintext
 feat(profiles): 添加 Safari 18 浏览器配置
 fix(ja3): 正确处理 GREASE 值
 docs: 更新 API 文档
 test(defense): 添加异常检测测试
-```
+```plaintext
 
 ### 4. 推送和创建拉取请求
 
 ```bash
 git push origin feature/your-feature-name
-```
+```plaintext
 
 然后在 GitHub 上创建拉取请求，包含：
 
@@ -193,7 +193,7 @@ go test ./... -cover
 
 # 运行基准测试
 go test ./test -bench=. -benchmem
-```
+```plaintext
 
 ### 编写测试
 
@@ -225,7 +225,7 @@ func TestGetRandomFingerprint(t *testing.T) {
 		})
 	}
 }
-```
+```plaintext
 
 ## 文档
 

@@ -17,7 +17,7 @@
 - ✅ **可验证性** - 文档中的所有示例代码必须可测试
 
 ### 2. 严格的目录结构
-```
+```plaintext
 docs/
 ├── 1-analysis/          (项目分析文档 - 由分析工具生成或维护)
 ├── 2-guides/            (用户指南 - 针对特定用途的教程)
@@ -26,10 +26,10 @@ docs/
 ├── 5-process/           (流程文档 - 开发流程、发布流程)
 ├── readme.md            (文档导航首页)
 └── rules.md             (本文件 - 文档规则)
-```
+```plaintext
 
 ### 3. 文件命名规则
-```
+```plaintext
 ✅ 允许的格式:
 - 英文名称，单词用连字符分隔: my-document.md
 - 数字前缀用于排序: 01-getting-started.md
@@ -40,14 +40,14 @@ docs/
 - 下划线: my_document.md
 - 大写字母: MyDocument.md
 - 特殊字符: my@document.md
-```
+```plaintext
 
 ### 4. 文档生命周期
-```
+```plaintext
 创建 → 审查 → 验证 → 发布 → 维护 → 归档
   ↑                                    ↓
   └────────────────── 更新循环 ────────┘
-```
+```plaintext
 
 ---
 
@@ -62,7 +62,7 @@ docs/
 - 自动生成的文件需要标注生成日期和工具名
 
 **包含的文件**:
-```
+```plaintext
 1-analysis/
 ├── project-health.md          # 项目健康报告
 ├── code-quality.md            # 代码质量评估
@@ -70,7 +70,7 @@ docs/
 ├── dependency-analysis.md     # 依赖关系分析
 ├── security-audit.md          # 安全审计报告
 └── improvement-recommendations.md  # 改进建议
-```
+```plaintext
 
 **示例文件头**:
 ```markdown
@@ -82,7 +82,7 @@ docs/
 **下次更新**: 2026-03-31  
 
 [内容...]
-```
+```plaintext
 
 ---
 
@@ -95,7 +95,7 @@ docs/
 - 必须包含"前置条件"和"预期结果"
 
 **包含的文件**:
-```
+```plaintext
 2-guides/
 ├── 01-quick-start.md              # 快速开始指南
 ├── 02-installation.md              # 安装指南
@@ -117,7 +117,7 @@ contributor/
 ├── 02-pull-request-process.md      # PR 流程
 ├── 03-code-review.md               # 代码审查
 └── 04-commit-message.md            # 提交信息规范
-```
+```plaintext
 
 **示例文件头**:
 ```markdown
@@ -140,7 +140,7 @@ contributor/
 
 ## 常见问题
 [FAQ...]
-```
+```plaintext
 
 ---
 
@@ -153,7 +153,7 @@ contributor/
 - 包含完整的参数说明和返回值
 
 **包含的文件**:
-```
+```plaintext
 3-references/
 ├── api/
 │   ├── public-api.md           # 公开 API 列表
@@ -170,7 +170,7 @@ contributor/
     ├── fingerprint-types.md    # 指纹类型
     ├── http-headers.md         # HTTP Headers
     └── browser-profiles.md     # 浏览器配置
-```
+```plaintext
 
 **示例文件头**:
 ```markdown
@@ -195,7 +195,7 @@ func GetRandomFingerprint() (*FingerprintResult, error)
 - `error`: 错误信息
 
 [完整文档...]
-```
+```plaintext
 
 ---
 
@@ -208,7 +208,7 @@ func GetRandomFingerprint() (*FingerprintResult, error)
 - 包含填写说明
 
 **包含的文件**:
-```
+```plaintext
 4-templates/
 ├── github/
 │   ├── issue-template.md
@@ -226,7 +226,7 @@ func GetRandomFingerprint() (*FingerprintResult, error)
 └── project/
     ├── changelog-template.md
     └── release-notes-template.md
-```
+```plaintext
 
 ---
 
@@ -239,7 +239,7 @@ func GetRandomFingerprint() (*FingerprintResult, error)
 - 定期审查和更新
 
 **包含的文件**:
-```
+```plaintext
 5-process/
 ├── development/
 │   ├── development-workflow.md   # 开发工作流
@@ -260,7 +260,7 @@ func GetRandomFingerprint() (*FingerprintResult, error)
     ├── decision-making.md        # 决策流程
     ├── community-management.md   # 社区管理
     └── roadmap.md                # 项目路线图
-```
+```plaintext
 
 ---
 
@@ -278,7 +278,7 @@ func GetRandomFingerprint() (*FingerprintResult, error)
 **维护者**: [name]  
 **对应代码版本**: v2.0.0  [仅参考文档需要]  
 **下次审查**: 2026-03-31  
-```
+```plaintext
 
 #### Content (内容)
 ```markdown
@@ -302,7 +302,7 @@ A: 答案
 
 ## 变更历史
 - v1.0 (2026-02-28): 初始版本
-```
+```plaintext
 
 ### 文件链接规则
 ```markdown
@@ -312,14 +312,14 @@ A: 答案
 
 ❌ 避免 (绝对路径):
 文档: /media/stone/data/dev/docs/guides/02-installation.md
-```
+```plaintext
 
 ---
 
 ## 🔄 文档与代码对齐流程
 
 ### 1. 代码变更时
-```
+```plaintext
 代码变更 (Commit)
     ↓
 检查是否涉及公开 API
@@ -333,10 +333,10 @@ A: 答案
 在同一 PR 中提交代码和文档更新
     ↓
 代码审查时同时审查文档
-```
+```plaintext
 
 ### 2. 文档变更时
-```
+```plaintext
 文档变更 (Commit)
     ↓
 检查是否与当前代码一致
@@ -346,10 +346,10 @@ A: 答案
 验证所有示例代码可执行
     ↓
 更新"最后更新日期"
-```
+```plaintext
 
 ### 3. 新版本发布时
-```
+```plaintext
 版本标签创建 (v2.0.1)
     ↓
 审查所有文档
@@ -359,7 +359,7 @@ A: 答案
 归档上个版本的文档 (可选)
     ↓
 发布版本
-```
+```plaintext
 
 ---
 
@@ -445,7 +445,7 @@ A: 答案
 func GetRandomFingerprint() (*FingerprintResult, error) {
     // ...
 }
-```
+```plaintext
 
 ---
 
@@ -480,7 +480,7 @@ result, err := fingerprint.GetRandomFingerprint()
 ## 相关文档
 - 改进计划: ../2-guides/02-improvement-plan.md
 - 快速参考: ../3-references/00-quick-reference.md
-```
+```plaintext
 
 ### 指南文档示例
 ```markdown
@@ -513,7 +513,7 @@ func main() {
 
 ## 下一步
 改进计划: ./02-improvement-plan.md
-```
+```plaintext
 
 ---
 

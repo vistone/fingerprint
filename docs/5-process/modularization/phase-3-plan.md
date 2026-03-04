@@ -34,7 +34,7 @@ Phase 3 的目标是对已迁移的模块进行**深度优化**：
 以下 9 个模块已完成物理迁移，但需要深度优化：
 
 | 模块路径 | 当前状态 | 优化优先级 |
-|---------|---------|----------|
+| --------- | --------- | ---------- |
 | `generator/random/` | 已迁移，功能完整 | P1 - 高 |
 | `generator/noise/` | 已迁移，功能完整 | P2 - 中 |
 | `http/headers/` | 已迁移，功能完整 | P1 - 高 |
@@ -45,7 +45,7 @@ Phase 3 的目标是对已迁移的模块进行**深度优化**：
 
 ### 2.2 模块依赖关系
 
-```
+```plaintext
 generator/random/
   ├─> http/headers/
   ├─> http/useragent/
@@ -59,7 +59,7 @@ http/headers/
 security/defense/
   ├─> types/
   └─> profiles/
-```
+```plaintext
 
 ## 3. 优化任务清单
 
@@ -93,7 +93,7 @@ type FingerprintGenerator struct {
 func (g *FingerprintGenerator) Generate() (*types.FingerprintResult, error) {
     // 使用注入的依赖
 }
-```
+```plaintext
 
 **验收标准**:
 - [ ] 代码解耦完成
@@ -190,7 +190,7 @@ return nil, fmt.Errorf("profile not found")
 
 // 为
 return nil, errors.Wrap(errors.ErrProfileNotFound, "profile lookup failed")
-```
+```plaintext
 
 ---
 
@@ -221,7 +221,7 @@ return nil, errors.Wrap(errors.ErrProfileNotFound, "profile lookup failed")
 ### 4.1 时间表
 
 | 阶段 | 任务 | 预计时间 | 开始日期 | 完成日期 |
-|------|------|---------|---------|---------|
+| ------ | ------ | --------- | --------- | --------- |
 | 准备阶段 | 创建文档和分支 | 0.5天 | TBD | TBD |
 | Week 1 | P1 任务 (3个) | 3天 | TBD | TBD |
 | Week 2 | P2 任务 (4个) | 2天 | TBD | TBD |
@@ -250,7 +250,7 @@ return nil, errors.Wrap(errors.ErrProfileNotFound, "profile lookup failed")
 ### 5.2 性能指标
 
 | 模块 | 当前性能 | 目标性能 |
-|------|---------|---------|
+| ------ | --------- | --------- |
 | GetRandomFingerprint | 7.1 µs/op | < 6 µs/op |
 | GenerateHeaders | 1.2 µs/op | < 0.8 µs/op |
 | RandomLanguage | 35 ns/op | 保持 |
@@ -276,7 +276,7 @@ return nil, errors.Wrap(errors.ErrProfileNotFound, "profile lookup failed")
 ### 6.1 潜在风险
 
 | 风险 | 影响 | 可能性 | 缓解措施 |
-|------|------|-------|---------|
+| ------ | ------ | ------- | --------- |
 | 重构引入 Bug | 高 | 中 | 增加测试覆盖，分步验证 |
 | 性能退化 | 中 | 低 | 每次修改后运行基准测试 |
 | API 不兼容 | 高 | 低 | 保持向后兼容，使用废弃警告 |

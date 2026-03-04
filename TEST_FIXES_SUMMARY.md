@@ -16,14 +16,14 @@ spec := tls.ClientHelloSpec{
         tls.TLS_AES_128_GCM_SHA256,
     },
 }
-```
+```plaintext
 
 **修复后**：使用真实指纹数据
 ```go
 chromeProfile := profiles.MappedTLSClients["chrome_133"]
 spec, _ := chromeProfile.GetClientHelloSpec()
 result, _ := ComputeJA3FromSpec(spec)
-```
+```plaintext
 
 **新增测试**：
 - `TestComputeJA3FromRealProfiles` - 使用 Chrome 133 真实指纹
@@ -40,14 +40,14 @@ result, _ := ComputeJA3FromSpec(spec)
 func TestJA4Fingerprint(t *testing.T) {
     t.Log("JA4 package loaded successfully")
 }
-```
+```plaintext
 
 **修复后**：使用真实指纹数据
 ```go
 chromeProfile := profiles.MappedTLSClients["chrome_133"]
 spec, _ := chromeProfile.GetClientHelloSpec()
 result, _ := ComputeJA4FromSpec(spec)
-```
+```plaintext
 
 **新增测试**：
 - `TestComputeJA4FromRealProfiles` - 使用 Chrome 133 真实指纹
@@ -64,7 +64,7 @@ result, _ := ComputeJA4FromSpec(spec)
 func TestJA4SFingerprint(t *testing.T) {
     t.Log("JA4S package loaded successfully")
 }
-```
+```plaintext
 
 **修复后**：使用真实指纹数据
 ```go
@@ -75,7 +75,7 @@ serverHello := ServerHelloData{
     CipherSuite: 0x1301, // Chrome 首选密码套件
 }
 result, _ := ComputeJA4S(serverHello)
-```
+```plaintext
 
 **新增测试**：
 - `TestComputeJA4SFromRealProfiles` - 使用真实指纹
@@ -95,7 +95,7 @@ headlessUA := "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 HeadlessChrome
 // 修复后：获取真实 UA
 result, _ := random.GetRandomFingerprintByBrowser("chrome")
 normalUA := result.UserAgent
-```
+```plaintext
 
 **修复 2 - TestContradictionDetector**：
 ```go
@@ -112,7 +112,7 @@ consistentAttrs := map[string]string{
     "platform":   "Win32",
     "user_agent": result.UserAgent,
 }
-```
+```plaintext
 
 **修复 3 - TestPassiveRecognizer**：
 ```go
@@ -125,7 +125,7 @@ headers := map[string]string{
 result, _ := random.GetRandomFingerprintByBrowser("chrome")
 headers := result.Headers.ToMap()
 recognitionResult := recognizer.RecognizeFromHeaders(headers)
-```
+```plaintext
 
 ---
 
@@ -134,7 +134,7 @@ recognitionResult := recognizer.RecognizeFromHeaders(headers)
 所有测试现在使用以下真实数据来源：
 
 | 数据类型 | 来源 | 示例 |
-|---------|------|------|
+| --------- | ------ | ------ |
 | 浏览器指纹 | `profiles.MappedTLSClients` | `profiles.MappedTLSClients["chrome_133"]` |
 | User-Agent | `random.GetRandomFingerprintByBrowser` | `random.GetRandomFingerprintByBrowser("chrome")` |
 | HTTP Headers | `random.GetRandomFingerprint` | `result.Headers.ToMap()` |
@@ -167,7 +167,7 @@ go test ./test/... -v
 go test ./tls/ja3/... -v
 go test ./tls/ja4/... -v
 go test ./tls/ja4s/... -v
-```
+```plaintext
 
 ---
 

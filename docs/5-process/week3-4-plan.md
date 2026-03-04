@@ -67,7 +67,7 @@ internal/pipeline/
 ├── stages.go            # Stage 实现
 ├── errors.go            # 错误类型
 └── pipeline_test.go     # 单元测试
-```
+```plaintext
 
 ### Step 1.2: 实现 Pipeline 接口
 
@@ -114,7 +114,7 @@ func (p *Pipeline) Execute(ctx context.Context, input interface{}) (*PipelineDat
     // 实现细节见下面的代码
     return nil, nil
 }
-```
+```plaintext
 
 ### Step 1.3: 单元测试框架
 
@@ -135,7 +135,7 @@ func TestDependencyManagement(t *testing.T) {
 func TestMiddlewareChaining(t *testing.T) {
     // 测试中间件链
 }
-```
+```plaintext
 
 ---
 
@@ -183,7 +183,7 @@ func (ts *TransformStage) Execute(ctx context.Context, data *PipelineData) error
     // 将分析结果转换为最终格式（JSON/Protobuf）
     return nil
 }
-```
+```plaintext
 
 ### Step 2.2: 从 ProcessingEngine 迁移
 
@@ -198,7 +198,7 @@ for _, step := range steps {
     case "transform": // ... 20 行
     }
 }
-```
+```plaintext
 
 **新方式** (Pipeline):
 ```go
@@ -206,7 +206,7 @@ pipeline.AddStage(&ParseStage{...}).
     AddStage(&AnalyzeStage{...}).
     AddStage(&TransformStage{...}).
     Execute(ctx, rawData)
-```
+```plaintext
 
 ---
 
@@ -239,7 +239,7 @@ func (lm *LoggingMiddleware) Process(ctx context.Context, stageName string,
     data.Duration = duration
     return err
 }
-```
+```plaintext
 
 ### Step 3.2: 指标中间件
 
@@ -257,7 +257,7 @@ func (mm *MetricsMiddleware) Process(ctx context.Context, stageName string,
     
     return err
 }
-```
+```plaintext
 
 ### Step 3.3: 超时中间件
 
@@ -274,7 +274,7 @@ func (tm *TimeoutMiddleware) Process(ctx context.Context, stageName string,
     
     return next(ctx, data)
 }
-```
+```plaintext
 
 ---
 
@@ -309,7 +309,7 @@ func main() {
     
     fmt.Printf("Pipeline result: %v\n", result.Output)
 }
-```
+```plaintext
 
 ### Step 4.2: 性能对比测试
 
@@ -333,7 +333,7 @@ func BenchmarkNewPipeline(b *testing.B) {
 // 预期结果:
 // BenchmarkOldProcessingEngine: 100 ns/op
 // BenchmarkNewPipeline:         120 ns/op (20% 开销，可接受)
-```
+```plaintext
 
 ### Step 4.3: 功能验证
 
@@ -356,7 +356,7 @@ func BenchmarkNewPipeline(b *testing.B) {
 
 ### 交付物:
 
-```
+```plaintext
 新增文件:
 ├── internal/pipeline/
 │   ├── pipeline.go (200 行)
@@ -368,14 +368,14 @@ func BenchmarkNewPipeline(b *testing.B) {
 └── docs/5-process/PIPELINE-GUIDE.md (200 行)
 
 总计: 1250 行代码, 100% 测试覆盖
-```
+```plaintext
 
 ---
 
 ## 成功标准
 
 | 指标 | 目标 | 通过标准 |
-|------|------|--------|
+| ------ | ------ | -------- |
 | **代码行数** | 1000-1500 | ✓ |
 | **测试覆盖** | > 90% | ✓ |
 | **编译** | 0 错误 | ✓ |
@@ -388,7 +388,7 @@ func BenchmarkNewPipeline(b *testing.B) {
 ## 风险和缓解
 
 | 风险 | 概率 | 缓解方案 |
-|------|------|--------|
+| ------ | ------ | -------- |
 | **依赖管理复杂** | 低 | 预先设计，充分测试 |
 | **性能退化** | 低 | 基准测试监控 |
 | **中间件链过复杂** | 中 | 限制中间件数量 |

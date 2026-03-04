@@ -3,6 +3,8 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/vistone/fingerprint.svg)](https://pkg.go.dev/github.com/vistone/fingerprint)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/vistone/fingerprint/releases/tag/v2.0.0)
+[![Test Coverage](https://img.shields.io/badge/coverage-78.6%25-brightgreen.svg)](./TESTING_STANDARDS.md)
+[![Go Version](https://img.shields.io/badge/go-1.25.7+-blue.svg)](https://golang.org)
 
 高性能浏览器 TLS 指纹库，提供全面的浏览器指纹识别和模拟能力。
 
@@ -32,6 +34,7 @@
 - ✅ **综合风险评分** - 8 维度风险评估、5 级威胁判定、上下文感知计算
 - ✅ **UA-CH 协商策略深化** - 完整的 Client Hints 生命周期管理
 - ✅ **行为信号分析** - 时序模式、协议分布、连接行为多维分析
+- ✅ **WebSocket 指纹检测** - 握手特征分析、异常检测、风险评分
 
 ### 规划中 🔄
 
@@ -67,7 +70,7 @@ fmt.Printf("JA4S Hash: %s\n", result.Hash)
 fmt.Printf("Risk Score: %.2f\n", result.RiskScore)
 // 输出: JA4S Hash: 24f6341540cd29ce904e7896...
 //      Risk Score: 0.00
-```
+```plaintext
 
 **异常检测能力**：
 
@@ -103,7 +106,7 @@ fmt.Printf("Frame Sequence: %s\n", result.FrameSequence)
 fmt.Printf("HTTP/2 Hash: %s\n", result.Hash)
 // 输出: Frame Sequence: set-hea
 //      HTTP/2 Hash: b7494379847d44d3382cdb3b...
-```
+```plaintext
 
 **分析维度**：
 
@@ -140,7 +143,7 @@ fmt.Printf("JA4H Hash: %s\n", result.Hash)
 fmt.Printf("Risk Score: %.2f\n", result.RiskScore)
 // 输出: JA4H Hash: 51790179c203f52835e0dcca...
 //      Risk Score: 0.00
-```
+```plaintext
 
 **异常检测能力**：
 
@@ -149,6 +152,52 @@ fmt.Printf("Risk Score: %.2f\n", result.RiskScore)
 - User-Agent 不一致
 - SQL 注入迹象
 - 方法与路径矛盾
+
+---
+
+### WebSocket 指纹检测 🆕
+
+分析 WebSocket 握手特征，检测可疑连接和自动化工具：
+
+```go
+import "github.com/vistone/fingerprint/http/websocket"
+
+// 创建分析器
+analyzer := websocket.NewAnalyzer(&websocket.AnalyzerConfig{
+    NormalizeHeaders: true,
+})
+
+// 分析 WebSocket 升级请求
+result := analyzer.AnalyzeRequest(
+    []string{"Upgrade", "Connection", "Sec-WebSocket-Key", "Sec-WebSocket-Version"},
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36...",
+)
+
+// 获取指纹信息
+fmt.Printf("Header Count: %d\n", result.HeaderCount)
+fmt.Printf("Normalized: %v\n", result.IsNormalized)
+
+// 异常检测
+detector := websocket.NewDetector(&websocket.DetectionConfig{
+    RiskThreshold: 60,
+})
+report := detector.Detect(result)
+
+if report.IsAnomaly {
+    fmt.Printf("⚠️  异常类型: %v\n", report.AnomalyTypes)
+    fmt.Printf("风险分数: %.2f\n", report.RiskScore)
+}
+```
+
+**检测能力**：
+
+- 无效握手请求检测
+- 可疑请求头分析
+- 已知机器人 User-Agent 识别
+- 熵值异常检测
+- 请求头顺序异常
+
+**测试覆盖**：87.8%
 
 ---
 
@@ -183,7 +232,7 @@ fmt.Printf("检测信号数: %d\n", len(signals))
 
 // 获取完整分析报告
 report := analyzer.GetAnalysisSummary()
-```
+```plaintext
 
 **分析维度**：
 
@@ -214,15 +263,17 @@ if pattern.RegularityIndex > 0.8 &&
    riskScore > 0.7 {
     fmt.Println("⚠️  检测到可疑的机器人行为")
 }
-```
+```plaintext
 
 **性能指标**：
 
-- 添加请求：< 1μs
-- 时序分析：< 10μs  
+- 添加请求：1.5μs (0 allocs)
+- 时序分析：4.6μs (98% 内存优化)  
 - 协议分析：< 50μs
 - 信号生成：< 100μs
 - 吞吐量：> 1M req/sec
+
+**测试覆盖**：94.9% (78.6% 包平均)
 
 ---
 
@@ -259,7 +310,7 @@ fmt.Printf("Risk Score: %.2f\n", result.RiskScore)
 // 输出: QUIC Hash: 1300acc37a7e074f1de5286b...
 //      Version: v1 (HTTP/3: true)
 //      Risk Score: 0.00
-```
+```plaintext
 
 **异常检测能力**：
 
@@ -302,7 +353,7 @@ fmt.Printf("可见字段签名: %s\n", result.VisibleFieldsSignature)
 //      影响等级: high
 //      SNI 可见: false
 //      可见字段签名: faa38b794acbd77a
-```
+```plaintext
 
 **分析维度**：
 
@@ -327,7 +378,7 @@ if result.ECHPresent && result.Impact.ImpactLevel == "high" {
 //   - 应用层行为分析（请求模式、时序）
 //   - IP 信誉和地理位置分析
 //   - 实施多层防御策略，不依赖单一指纹方法
-```
+```plaintext
 
 ---
 
@@ -362,7 +413,7 @@ appConfig := extension.NewUnifiedConfigFromEnv()
 rulesConfig := appConfig.Rules
 // ... 转换为 FeatureConfig ...
 vector := extractor.ExtractFeatureVector(data, featureConfig)
-```
+```plaintext
 
 **下一步** → [缺口分析](docs/1-analysis/02-fingerprint-gap-analysis-2026-02-28.md)
 
@@ -372,7 +423,7 @@ vector := extractor.ExtractFeatureVector(data, featureConfig)
 
 ```bash
 go get github.com/vistone/fingerprint
-```
+```plaintext
 
 ## 快速开始
 
@@ -403,7 +454,7 @@ func main() {
     // 使用 Headers
     headers := result.Headers.ToMap()
 }
-```
+```plaintext
 
 ### 指定浏览器类型
 
@@ -419,7 +470,7 @@ result, _ := fingerprint.GetRandomFingerprintByBrowserWithOS(
     "firefox",
     fingerprint.OSWindows10,
 )
-```
+```plaintext
 
 ### JA3 指纹
 
@@ -434,7 +485,7 @@ ja3, err = fingerprint.ComputeJA3FromProfile(result.Profile)
 
 // 查找与 JA3 匹配的指纹
 matches := fingerprint.FindProfileByJA3("9a79e2a445c2b2c22c4dac65501fa1cd")
-```
+```plaintext
 
 ### JA4 指纹
 
@@ -447,7 +498,7 @@ fmt.Println(ja4.RawString) // JA4_r 原始字符串
 
 // 从 ClientProfile 计算 JA4
 ja4, err = fingerprint.ComputeJA4FromProfile(result.Profile)
-```
+```plaintext
 
 ### 被动识别
 
@@ -466,7 +517,7 @@ fmt.Println(result.Confidence)    // 置信度 0.0-1.0
 
 // 仅从 User-Agent 识别
 result = fingerprint.RecognizeFromUserAgent("Mozilla/5.0 ...")
-```
+```plaintext
 
 ### 异常检测
 
@@ -478,7 +529,7 @@ isHeadless := detector.DetectHeadlessBrowser("Mozilla/5.0 HeadlessChrome/120")
 
 // 检测数据异常
 isAnomalous := detector.DetectAnomalies([]byte("fingerprint data"))
-```
+```plaintext
 
 ### 矛盾检测
 
@@ -492,7 +543,7 @@ hasContradiction := detector.CheckContradictions(map[string]string{
     "is_mobile":     "true",
     "screen_width":  "2560",         // 矛盾！移动设备使用超大屏幕
 })
-```
+```plaintext
 
 ### 噪声注入（主动防护）
 
@@ -520,7 +571,7 @@ audioNoise := injector.GenerateAudioNoise()
 
 webglNoise := injector.GenerateWebGLNoise()
 // webglNoise.MaxTextureSizeOffset - 纹理尺寸偏移
-```
+```plaintext
 
 ### 自定义 Headers
 
@@ -539,7 +590,7 @@ result.Headers.SetHeaders(map[string]string{
 
 // 自动合并，直接使用
 headers := result.Headers.ToMap()
-```
+```plaintext
 
 ## 支持的指纹
 
@@ -625,7 +676,7 @@ NewContradictionDetector() *ContradictionDetector
 // 噪声注入 🆕
 NewNoiseInjector(config NoiseConfig) *NoiseInjector
 GenerateBrowserNoiseProfile() *BrowserNoiseProfile
-```
+```plaintext
 
 ### 数据结构
 
@@ -680,7 +731,7 @@ type BrowserNoiseProfile struct {
     Font    *FontNoise
     Screen  *ScreenNoise
 }
-```
+```plaintext
 
 ### 操作系统
 
@@ -688,13 +739,13 @@ type BrowserNoiseProfile struct {
 OSWindows10, OSWindows11           // Windows
 OSMacOS13, OSMacOS14, OSMacOS15    // macOS
 OSLinux, OSLinuxUbuntu, OSLinuxDebian // Linux
-```
+```plaintext
 
 ### 浏览器类型
 
 ```go
 BrowserChrome, BrowserFirefox, BrowserSafari, BrowserOpera, BrowserEdge
-```
+```plaintext
 
 ## 性能
 
@@ -709,11 +760,11 @@ RandomOS:                   15 ns/op       0 B/op    0 allocs ⭐
 
 并发性能: 5-6 倍提升
 线程安全: 100% 验证通过
-```
+```plaintext
 
 ## 项目结构
 
-```
+```plaintext
 /
 ├── examples/         # 示例代码
 ├── internal/utils/   # 内部工具
@@ -729,7 +780,7 @@ RandomOS:                   15 ns/op       0 B/op    0 allocs ⭐
 ├── defense.go        # 异常检测/矛盾检测/被动识别 🆕
 ├── noise.go          # 噪声注入（主动防护） 🆕
 └── README.md
-```
+```plaintext
 
 ## 开发路线图
 
@@ -800,7 +851,7 @@ go test ./test -bench=. -benchmem
 
 # 运行示例
 go run examples/random/main.go
-```
+```plaintext
 
 ## 依赖
 

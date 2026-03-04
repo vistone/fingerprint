@@ -26,7 +26,7 @@
 
 ## 目标架构
 
-```
+```plaintext
 ┌─────────────────────────────────────────────────────────────────┐
 │                        API Layer                                 │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
@@ -56,7 +56,7 @@
 │  │ Store        │  │ Store        │  │ Store                │  │
 │  └──────────────┘  └──────────────┘  └──────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
-```
+```plaintext
 
 ## 核心改进
 
@@ -91,7 +91,7 @@ type ParserRegistry struct {
 func (r *ParserRegistry) Register(p Parser) error
 func (r *ParserRegistry) Get(name string) (Parser, bool)
 func (r *ParserRegistry) List() []Parser
-```
+```plaintext
 
 #### Analyzer 接口
 
@@ -111,7 +111,7 @@ type Analyzer interface {
     // 置信度评分 (0-1)
     Confidence() float64
 }
-```
+```plaintext
 
 #### Generator 接口
 
@@ -128,7 +128,7 @@ type Generator interface {
     // 支持的协议版本
     SupportedVersions() []string
 }
-```
+```plaintext
 
 ### 2. Profile 存储系统
 
@@ -157,7 +157,7 @@ type ProfileStore interface {
 // - EtcdStore: 分布式键值存储
 // - DatabaseStore: SQL/NoSQL 数据库
 // - CacheStore: 带缓存的包装器
-```
+```plaintext
 
 #### Profile 结构
 
@@ -189,7 +189,7 @@ type ProfileMetadata struct {
     CreatedAt   time.Time         `json:"created_at" yaml:"created_at"`
     UpdatedAt   time.Time         `json:"updated_at" yaml:"updated_at"`
 }
-```
+```plaintext
 
 ### 3. 配置管理系统
 
@@ -225,7 +225,7 @@ type ConfigSource interface {
     Load() (map[string]any, error)
     Watch(changes chan<- ConfigChange) error
 }
-```
+```plaintext
 
 #### 配置实现
 
@@ -259,7 +259,7 @@ func (m *Manager) Load(ctx context.Context) error {
     m.values.Store(merged)
     return nil
 }
-```
+```plaintext
 
 ### 4. 流水线引擎
 
@@ -307,7 +307,7 @@ func (e *Engine) Execute(ctx context.Context, input any) (any, error) {
     
     return current, nil
 }
-```
+```plaintext
 
 ## 模块重构计划
 
@@ -428,7 +428,7 @@ func GetClientHelloSpec() (tls.ClientHelloSpec, error) {
     profile, _ := store.Get(context.Background(), "chrome_120")
     return generator.GenerateTLS(profile)
 }
-```
+```plaintext
 
 ### 数据迁移
 
@@ -449,7 +449,7 @@ type LRUCache struct {
 
 func (c *LRUCache) Get(key string) (any, bool)
 func (c *LRUCache) Set(key string, value any, ttl time.Duration)
-```
+```plaintext
 
 ### 并行处理
 
@@ -482,7 +482,7 @@ func (e *Engine) AnalyzeParallel(ctx context.Context, data ParsedData) ([]Finger
     
     return fingerprints, nil
 }
-```
+```plaintext
 
 ## 测试策略
 
@@ -499,7 +499,7 @@ func TestParserRegistry(t *testing.T) {
     require.True(t, ok)
     assert.Equal(t, parser, got)
 }
-```
+```plaintext
 
 ### 集成测试
 
@@ -515,12 +515,12 @@ func TestFingerprintService(t *testing.T) {
     assert.NotEmpty(t, resp.JA3)
     assert.NotEmpty(t, resp.JA4)
 }
-```
+```plaintext
 
 ## 实施时间表
 
 | 阶段 | 时长 | 主要工作 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | Phase 0 | 1 周 | 设计评审、接口冻结 |
 | Phase 1 | 2 周 | 基础设施、类型定义 |
 | Phase 2 | 3 周 | 核心重构、注册表 |
@@ -532,7 +532,7 @@ func TestFingerprintService(t *testing.T) {
 ## 风险评估
 
 | 风险 | 可能性 | 影响 | 缓解措施 |
-|------|--------|------|----------|
+| ------ | -------- | ------ | ---------- |
 | 向后兼容破坏 | 中 | 高 | 提供适配层，渐进式迁移 |
 | 性能下降 | 中 | 高 | 基准测试，必要时优化 |
 | 项目延期 | 高 | 中 | 分阶段实施，MVP 优先 |

@@ -4,6 +4,7 @@ package random
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/vistone/fingerprint/http/headers"
@@ -13,6 +14,36 @@ import (
 	"github.com/vistone/fingerprint/profiles"
 	"github.com/vistone/fingerprint/types"
 )
+
+// browserProfileIndex 浏览器类型索引（预计算，避免每次遍历）
+var (
+	browserIndex     map[string][]string
+	browserIndexOnce sync.Once
+)
+
+// initBrowserIndex 初始化浏览器索引（延迟加载，线程安全）
+func initBrowserIndex() {
+	browserIndexOnce.Do(func() {
+		browserIndex = make(map[string][]string)
+		for name := range profiles.MappedTLSClients {
+			nameLower := strings.ToLower(name)
+			switch {
+			case strings.HasPrefix(nameLower, "chrome_"):
+				browserIndex["chrome"] = append(browserIndex["chrome"], name)
+			case strings.HasPrefix(nameLower, "firefox_"):
+				browserIndex["firefox"] = append(browserIndex["firefox"], name)
+			case strings.HasPrefix(nameLower, "safari_"):
+				browserIndex["safari"] = append(browserIndex["safari"], name)
+			case strings.HasPrefix(nameLower, "opera_"):
+				browserIndex["opera"] = append(browserIndex["opera"], name)
+			case strings.HasPrefix(nameLower, "edge_"):
+				browserIndex["edge"] = append(browserIndex["edge"], name)
+			default:
+				browserIndex["other"] = append(browserIndex["other"], name)
+			}
+		}
+	})
+}
 
 // GetRandomFingerprint 从所有可用指纹中随机选择一个完整的浏览器指纹
 //
@@ -130,16 +161,12 @@ func GetRandomFingerprintByBrowserWithOS(browserType string, os types.OperatingS
 
 	browserType = strings.ToLower(browserType)
 
-	// 筛选出指定浏览器类型的指纹
-	candidates := make([]string, 0)
-	for name := range profiles.MappedTLSClients {
-		nameLower := strings.ToLower(name)
-		if strings.HasPrefix(nameLower, browserType+"_") {
-			candidates = append(candidates, name)
-		}
-	}
+	// 使用预计算的索引（线程安全，延迟初始化）
+	initBrowserIndex()
 
-	if len(candidates) == 0 {
+	// 从索引中获取候选列表（零分配）
+	candidates, exists := browserIndex[browserType]
+	if !exists || len(candidates) == 0 {
 		return nil, &ErrBrowserNotFound{Browser: browserType}
 	}
 

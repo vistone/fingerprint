@@ -20,7 +20,7 @@ func main() {
     
     // 你的应用代码...
 }
-```
+```plaintext
 
 ### 可用指标
 
@@ -34,7 +34,7 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:8080']
     scrape_interval: 15s
-```
+```plaintext
 
 ## Grafana 仪表板
 
@@ -64,7 +64,7 @@ slog.Info("fingerprint generated",
     "browser", result.Profile.GetClientHelloStr(),
     "duration_ms", duration,
 )
-```
+```plaintext
 
 ## 健康检查
 
@@ -73,7 +73,7 @@ slog.Info("fingerprint generated",
 ```bash
 curl http://localhost:8080/health
 # {"status":"ok"}
-```
+```plaintext
 
 ## 性能分析
 
@@ -85,7 +85,7 @@ go test -bench=. ./...
 
 # 运行特定包的基准测试
 go test -bench=BenchmarkGetRandomFingerprint ./generator/random/...
-```
+```plaintext
 
 ### 性能优化建议
 

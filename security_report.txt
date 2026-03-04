@@ -1,0 +1,650 @@
+Results:
+
+
+[/media/stone/data/fingerprint/internal/extension/canary_framework.go:479] - G115 (CWE-190): integer overflow conversion rune -> uint32 (Confidence: MEDIUM, Severity: HIGH)
+    478: 	for _, ch := range requestID {
+  > 479: 		hash = hash*31 + uint32(ch)
+    480: 	}
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/tcpip/device_fingerprinting.go:314] - G115 (CWE-190): integer overflow conversion int -> uint8 (Confidence: MEDIUM, Severity: HIGH)
+    313: 	// 检查 TTL
+  > 314: 	if packet.IPHeader.TimeToLive == uint8(osProfile.DefaultTTL) {
+    315: 		matches++
+
+Autofix: 
+
+[/media/stone/data/fingerprint/http/websocket/fingerprint.go:689] - G115 (CWE-190): integer overflow conversion int -> uint64 (Confidence: MEDIUM, Severity: HIGH)
+    688: 	// Payload
+  > 689: 	if uint64(len(data)-offset) < length {
+    690: 		return nil, fmt.Errorf("frame truncated at payload")
+
+Autofix: 
+
+[/media/stone/data/fingerprint/tls/ech/profile.go:206] - G115 (CWE-190): integer overflow conversion int -> uint16 (Confidence: MEDIUM, Severity: HIGH)
+    205: 	ech.EncodedCH = []byte("encrypted_inner_hello_placeholder")
+  > 206: 	ech.EncodedCHLength = uint16(len(ech.EncodedCH))
+    207: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/tls/ech/extension.go:245] - G115 (CWE-190): integer overflow conversion int -> uint16 (Confidence: MEDIUM, Severity: HIGH)
+    244: 	lengthBytes := make([]byte, 2)
+  > 245: 	binary.BigEndian.PutUint16(lengthBytes, uint16(len(e.EncodedCH)))
+    246: 	data = append(data, lengthBytes...)
+
+Autofix: 
+
+[/media/stone/data/fingerprint/tls/ech/config.go:249] - G115 (CWE-190): integer overflow conversion int -> uint16 (Confidence: MEDIUM, Severity: HIGH)
+    248: 	result := make([]byte, 2)
+  > 249: 	binary.BigEndian.PutUint16(result, uint16(len(data)))
+    250: 	result = append(result, data...)
+
+Autofix: 
+
+[/media/stone/data/fingerprint/tls/ech/config.go:173] - G115 (CWE-190): integer overflow conversion int -> uint16 (Confidence: MEDIUM, Severity: HIGH)
+    172: 	cipherSuitesLen := make([]byte, 2)
+  > 173: 	binary.BigEndian.PutUint16(cipherSuitesLen, uint16(len(cipherSuites)))
+    174: 	contents = append(contents, cipherSuitesLen...)
+
+Autofix: 
+
+[/media/stone/data/fingerprint/tls/ech/config.go:166] - G115 (CWE-190): integer overflow conversion int -> uint16 (Confidence: MEDIUM, Severity: HIGH)
+    165: 	pubKeyLen := make([]byte, 2)
+  > 166: 	binary.BigEndian.PutUint16(pubKeyLen, uint16(len(config.PublicKey)))
+    167: 	contents = append(contents, pubKeyLen...)
+
+Autofix: 
+
+[/media/stone/data/fingerprint/tls/ech/config.go:121] - G115 (CWE-190): integer overflow conversion int -> uint16 (Confidence: MEDIUM, Severity: HIGH)
+    120: 	config.Contents = contents
+  > 121: 	config.Length = uint16(len(contents))
+    122: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/tcpip/device_fingerprinting.go:319] - G115 (CWE-190): integer overflow conversion int -> uint16 (Confidence: MEDIUM, Severity: HIGH)
+    318: 	// 检查窗口大小
+  > 319: 	if packet.WindowSize == uint16(osProfile.DefaultWindowSize) {
+    320: 		matches++
+
+Autofix: 
+
+[/media/stone/data/fingerprint/tls/ech/config.go:182] - G115 (CWE-190): integer overflow conversion int -> byte (Confidence: MEDIUM, Severity: HIGH)
+    181: 	publicNameBytes := []byte(config.PublicName)
+  > 182: 	contents = append(contents, byte(len(publicNameBytes)))
+    183: 	contents = append(contents, publicNameBytes...)
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/utils/rand.go:38] - G404 (CWE-338): Use of weak random number generator (math/rand or math/rand/v2 instead of crypto/rand) (Confidence: MEDIUM, Severity: HIGH)
+    37: 	return &RandGenerator{
+  > 38: 		rng: rand.New(rand.NewSource(seed)),
+    39: 	}
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/utils/rand.go:35] - G404 (CWE-338): Use of weak random number generator (math/rand or math/rand/v2 instead of crypto/rand) (Confidence: MEDIUM, Severity: HIGH)
+    34: 	// 添加额外的随机性：使用默认随机源生成偏移
+  > 35: 	seed += int64(rand.Intn(10000))
+    36: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/tracing/tracer.go:88] - G404 (CWE-338): Use of weak random number generator (math/rand or math/rand/v2 instead of crypto/rand) (Confidence: MEDIUM, Severity: HIGH)
+    87: 	// 生成16位十六进制字符串
+  > 88: 	return TraceID(fmt.Sprintf("%016x", rand.Int63()))
+    89: }
+
+Autofix: 
+
+[/media/stone/data/fingerprint/examples/random/main.go:25] - G404 (CWE-338): Use of weak random number generator (math/rand or math/rand/v2 instead of crypto/rand) (Confidence: MEDIUM, Severity: HIGH)
+    24: 
+  > 25: 	selected := chromeProfiles[rand.Intn(len(chromeProfiles))]
+    26: 	spec, err := selected.GetClientHelloSpec()
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/rules_loader.go:149] - G703 (CWE): Path traversal via taint analysis (Confidence: HIGH, Severity: HIGH)
+    148: 	for _, candidate := range candidates {
+  > 149: 		if _, err := os.Stat(candidate); err == nil {
+    150: 			return LoadRulesConfig(candidate)
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/rules_loader.go:126] - G703 (CWE): Path traversal via taint analysis (Confidence: HIGH, Severity: HIGH)
+    125: func LoadRulesConfig(path string) (*RulesConfig, error) {
+  > 126: 	data, err := os.ReadFile(path)
+    127: 	if err != nil {
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/config/center.go:129] - G703 (CWE): Path traversal via taint analysis (Confidence: HIGH, Severity: HIGH)
+    128: 	// 获取文件修改时间
+  > 129: 	fileInfo, _ := os.Stat(cc.configPath)
+    130: 	if fileInfo != nil {
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/config/center.go:105] - G703 (CWE): Path traversal via taint analysis (Confidence: HIGH, Severity: HIGH)
+    104: 
+  > 105: 	data, err := os.ReadFile(cc.configPath)
+    106: 	if err != nil {
+
+Autofix: 
+
+[/media/stone/data/fingerprint/tls/ja3/ja3.go:313] - G401 (CWE-328): Use of weak cryptographic primitive (Confidence: HIGH, Severity: MEDIUM)
+    312: 	// 计算 MD5 哈希
+  > 313: 	hash := md5.Sum([]byte(result.RawString))
+    314: 	result.Hash = fmt.Sprintf("%x", hash)
+
+Autofix: 
+
+[/media/stone/data/fingerprint/network/tcp/fingerprint.go:160] - G401 (CWE-328): Use of weak cryptographic primitive (Confidence: HIGH, Severity: MEDIUM)
+    159: 
+  > 160: 	hash := md5.Sum([]byte(sigStr))
+    161: 	sig := TCPIPSignature{
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/tcpip/analyzer.go:149] - G401 (CWE-328): Use of weak cryptographic primitive (Confidence: HIGH, Severity: MEDIUM)
+    148: 	data := fmt.Sprintf("%d,%d,%d", ttl, flags, id)
+  > 149: 	hash := md5.Sum([]byte(data))
+    150: 	return fmt.Sprintf("%x", hash)
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/tcpip/analyzer.go:142] - G401 (CWE-328): Use of weak cryptographic primitive (Confidence: HIGH, Severity: MEDIUM)
+    141: 	data := fmt.Sprintf("%d,%d,%s,%s", mss, windowSize, options, flags)
+  > 142: 	hash := md5.Sum([]byte(data))
+    143: 	return fmt.Sprintf("%x", hash)
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/features/extractor.go:470] - G401 (CWE-328): Use of weak cryptographic primitive (Confidence: HIGH, Severity: MEDIUM)
+    469: 	}
+  > 470: 	h := md5.Sum([]byte(hashInput))
+    471: 	vector.Hash = hex.EncodeToString(h[:])
+
+Autofix: 
+
+[/media/stone/data/fingerprint/http/websocket/fingerprint.go:585] - G401 (CWE-328): Use of weak cryptographic primitive (Confidence: HIGH, Severity: MEDIUM)
+    584: 
+  > 585: 	h := sha1.New()
+    586: 	h.Write([]byte(key))
+
+Autofix: 
+
+[/media/stone/data/fingerprint/http/websocket/fingerprint.go:338] - G401 (CWE-328): Use of weak cryptographic primitive (Confidence: HIGH, Severity: MEDIUM)
+    337: func (a *Analyzer) generateFingerprintHash(raw string) string {
+  > 338: 	h := sha1.New()
+    339: 	h.Write([]byte(raw))
+
+Autofix: 
+
+[/media/stone/data/fingerprint/scripts/compare_benchmarks.go:69] - G304 (CWE-22): Potential file inclusion via variable (Confidence: HIGH, Severity: MEDIUM)
+    68: 
+  > 69: 	file, err := os.Open(filename)
+    70: 	if err != nil {
+
+Autofix: Consider using os.Root to scope file access under a fixed root (Go >=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal.
+
+[/media/stone/data/fingerprint/internal/tcpip/ip_geo.go:85] - G304 (CWE-22): Potential file inclusion via variable (Confidence: HIGH, Severity: MEDIUM)
+    84: func (db *SimpleIPGeoDB) LoadFromCSV(filepath string) error {
+  > 85: 	file, err := os.Open(filepath)
+    86: 	if err != nil {
+
+Autofix: Consider using os.Root to scope file access under a fixed root (Go >=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal.
+
+[/media/stone/data/fingerprint/internal/extension/rules_loader.go:126] - G304 (CWE-22): Potential file inclusion via variable (Confidence: HIGH, Severity: MEDIUM)
+    125: func LoadRulesConfig(path string) (*RulesConfig, error) {
+  > 126: 	data, err := os.ReadFile(path)
+    127: 	if err != nil {
+
+Autofix: Consider using os.Root to scope file access under a fixed root (Go >=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal.
+
+[/media/stone/data/fingerprint/internal/extension/extension.go:290] - G304 (CWE-22): Potential file inclusion via variable (Confidence: HIGH, Severity: MEDIUM)
+    289: 
+  > 290: 	data, err := os.ReadFile(configPath)
+    291: 	if err != nil {
+
+Autofix: Consider using os.Root to scope file access under a fixed root (Go >=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal.
+
+[/media/stone/data/fingerprint/cmd/profilegen/extract/extract.go:101] - G304 (CWE-22): Potential file inclusion via variable (Confidence: HIGH, Severity: MEDIUM)
+    100: func extractProfilesFromFile(path string) ([]ProfileData, error) {
+  > 101: 	content, err := os.ReadFile(path)
+    102: 	if err != nil {
+
+Autofix: Consider using os.Root to scope file access under a fixed root (Go >=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal.
+
+[/media/stone/data/fingerprint/test/testhelpers/golden.go:99] - G301 (CWE-276): Expect directory permissions to be 0750 or less (Confidence: HIGH, Severity: MEDIUM)
+    98: 
+  > 99: 	if err := os.MkdirAll(gf.dir, 0755); err != nil {
+    100: 		return fmt.Errorf("failed to create golden file directory: %w", err)
+
+Autofix: 
+
+[/media/stone/data/fingerprint/test/testhelpers/golden.go:66] - G301 (CWE-276): Expect directory permissions to be 0750 or less (Confidence: HIGH, Severity: MEDIUM)
+    65: 	// 确保目录存在
+  > 66: 	if err := os.MkdirAll(gf.dir, 0755); err != nil {
+    67: 		return fmt.Errorf("failed to create golden file directory: %w", err)
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/contrib/builder.go:141] - G301 (CWE-276): Expect directory permissions to be 0750 or less (Confidence: HIGH, Severity: MEDIUM)
+    140: 	dir := filepath.Dir(filePath)
+  > 141: 	if err := os.MkdirAll(dir, 0755); err != nil {
+    142: 		return err
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/config/center.go:216] - G301 (CWE-276): Expect directory permissions to be 0750 or less (Confidence: HIGH, Severity: MEDIUM)
+    215: 	dir := filepath.Dir(cc.configPath)
+  > 216: 	if err := os.MkdirAll(dir, 0755); err != nil {
+    217: 		return fmt.Errorf("failed to create directory: %w", err)
+
+Autofix: 
+
+[/media/stone/data/fingerprint/cmd/profilegen/migrate/generate_specs.go:41] - G301 (CWE-276): Expect directory permissions to be 0750 or less (Confidence: HIGH, Severity: MEDIUM)
+    40: 	specsDir := "profiles/specs"
+  > 41: 	if err := os.MkdirAll(specsDir, 0755); err != nil {
+    42: 		fmt.Fprintf(os.Stderr, "创建目录失败: %v\n", err)
+
+Autofix: 
+
+[/media/stone/data/fingerprint/cmd/profilegen/extract/extract.go:40] - G301 (CWE-276): Expect directory permissions to be 0750 or less (Confidence: HIGH, Severity: MEDIUM)
+    39: 	// 创建输出目录
+  > 40: 	if err := os.MkdirAll(*outputDir, 0755); err != nil {
+    41: 		fmt.Fprintf(os.Stderr, "创建目录失败: %v\n", err)
+
+Autofix: 
+
+[/media/stone/data/fingerprint/test/testhelpers/golden.go:103] - G306 (CWE-276): Expect WriteFile permissions to be 0600 or less (Confidence: HIGH, Severity: MEDIUM)
+    102: 
+  > 103: 	return os.WriteFile(gf.path, data, 0644)
+    104: }
+
+Autofix: 
+
+[/media/stone/data/fingerprint/test/testhelpers/golden.go:75] - G306 (CWE-276): Expect WriteFile permissions to be 0600 or less (Confidence: HIGH, Severity: MEDIUM)
+    74: 
+  > 75: 	if err := os.WriteFile(gf.path, data, 0644); err != nil {
+    76: 		return fmt.Errorf("failed to write golden file: %w", err)
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/contrib/builder.go:145] - G306 (CWE-276): Expect WriteFile permissions to be 0600 or less (Confidence: HIGH, Severity: MEDIUM)
+    144: 
+  > 145: 	return ioutil.WriteFile(filePath, jsonData, 0644)
+    146: }
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/config/center.go:221] - G306 (CWE-276): Expect WriteFile permissions to be 0600 or less (Confidence: HIGH, Severity: MEDIUM)
+    220: 	// 写入文件
+  > 221: 	if err := os.WriteFile(cc.configPath, data, 0644); err != nil {
+    222: 		return fmt.Errorf("failed to write config file: %w", err)
+
+Autofix: 
+
+[/media/stone/data/fingerprint/cmd/profilegen/migrate/generate_specs.go:103] - G306 (CWE-276): Expect WriteFile permissions to be 0600 or less (Confidence: HIGH, Severity: MEDIUM)
+    102: 
+  > 103: 	return os.WriteFile(outputPath, []byte(content), 0644)
+    104: }
+
+Autofix: 
+
+[/media/stone/data/fingerprint/cmd/profilegen/extract/extract.go:271] - G306 (CWE-276): Expect WriteFile permissions to be 0600 or less (Confidence: HIGH, Severity: MEDIUM)
+    270: 
+  > 271: 	return os.WriteFile(path, []byte(content), 0644)
+    272: }
+
+Autofix: 
+
+[/media/stone/data/fingerprint/http/websocket/fingerprint.go:4] - G505 (CWE-327): Blocklisted import crypto/sha1: weak cryptographic primitive (Confidence: HIGH, Severity: MEDIUM)
+    3: import (
+  > 4: 	"crypto/sha1"
+    5: 	"encoding/base64"
+
+Autofix: 
+
+[/media/stone/data/fingerprint/tls/ja3/ja3.go:4] - G501 (CWE-327): Blocklisted import crypto/md5: weak cryptographic primitive (Confidence: HIGH, Severity: MEDIUM)
+    3: import (
+  > 4: 	"crypto/md5"
+    5: 	"fmt"
+
+Autofix: 
+
+[/media/stone/data/fingerprint/network/tcp/fingerprint.go:4] - G501 (CWE-327): Blocklisted import crypto/md5: weak cryptographic primitive (Confidence: HIGH, Severity: MEDIUM)
+    3: import (
+  > 4: 	"crypto/md5"
+    5: 	"fmt"
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/tcpip/analyzer.go:5] - G501 (CWE-327): Blocklisted import crypto/md5: weak cryptographic primitive (Confidence: HIGH, Severity: MEDIUM)
+    4: import (
+  > 5: 	"crypto/md5"
+    6: 	"fmt"
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/features/extractor.go:5] - G501 (CWE-327): Blocklisted import crypto/md5: weak cryptographic primitive (Confidence: HIGH, Severity: MEDIUM)
+    4: 	"bytes"
+  > 5: 	"crypto/md5"
+    6: 	"encoding/hex"
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/tcpip/integrated_analyzer.go:181] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    180: 	// 添加数据包到分析器
+  > 181: 	ia.tcpipAnalyzer.AddPacket(ctx.TCPPacket)
+    182: 	
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/plugins/global.go:25] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    24: 	if globalRegistry == nil {
+  > 25: 		Init()
+    26: 	}
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/metrics/server.go:83] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    82: 	DefaultServer = NewServer(addr)
+  > 83: 	DefaultServer.Start()
+    84: }
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/metrics/server.go:65] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    64: 	w.WriteHeader(http.StatusOK)
+  > 65: 	w.Write([]byte(`{"status":"ok"}`))
+    66: }
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/container.go:199-205] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    198: 
+  > 199: 	c.Register("rate_limiter", func() (interface{}, error) {
+  > 200: 		limiter := NewRateLimiter(
+  > 201: 			c.config.Defense.RateLimit,
+  > 202: 			time.Minute,
+  > 203: 		)
+  > 204: 		return limiter, nil
+  > 205: 	})
+    206: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/container.go:180-182] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    179: 
+  > 180: 	c.Register("request_guard", func() (interface{}, error) {
+  > 181: 		return NewRequestGuard(c.config.Defense), nil
+  > 182: 	})
+    183: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/container.go:161-163] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    160: 
+  > 161: 	c.Register("auditor", func() (interface{}, error) {
+  > 162: 		return NewSecurityAuditor(c.config.Audit.MaxEvents), nil
+  > 163: 	})
+    164: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/container.go:139-144] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    138: 
+  > 139: 	c.Register("validator", func() (interface{}, error) {
+  > 140: 		validator := NewDefaultValidator()
+  > 141: 		validator.MaxDataSize = c.config.Validator.MaxDataSize
+  > 142: 		validator.StrictMode = c.config.Validator.StrictMode
+  > 143: 		return validator, nil
+  > 144: 	})
+    145: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/container.go:118-122] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    117: 	// 注册并创建新的日志记录器
+  > 118: 	c.Register(key, func() (interface{}, error) {
+  > 119: 		logger := NewSimpleLogger(name)
+  > 120: 		logger.SetLevel(c.config.Logger.Level)
+  > 121: 		return logger, nil
+  > 122: 	})
+    123: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/constants.go:243-252] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    242: 	// GREASE
+  > 243: 	RegisterExtension(&ExtensionMetadata{
+  > 244: 		Type:                  ExtensionGREASE,
+  > 245: 		Name:                  "GREASE",
+  > 246: 		Description:           "Generic unsupported extension for compatibility",
+  > 247: 		RFC:                   "RFC 8701",
+  > 248: 		IANANumber:            0x0a0a,
+  > 249: 		Category:              CategoryCompatibility,
+  > 250: 		IsExperimental:        true,
+  > 251: 		CompatibleTLSVersions: []uint16{0x0303, 0x0304},
+  > 252: 	})
+    253: }
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/constants.go:231-240] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    230: 	// ECH Outer Extensions
+  > 231: 	RegisterExtension(&ExtensionMetadata{
+  > 232: 		Type:                  ExtensionECHOuterExtensions,
+  > 233: 		Name:                  "ech_outer_extensions",
+  > 234: 		Description:           "Lists extensions in the outer ClientHello",
+  > 235: 		RFC:                   "RFC 9180",
+  > 236: 		IANANumber:            0xfd00,
+  > 237: 		Category:              CategoryEncryption,
+  > 238: 		IsExperimental:        false,
+  > 239: 		CompatibleTLSVersions: []uint16{0x0304},
+  > 240: 	})
+    241: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/constants.go:219-228] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    218: 	// Padding
+  > 219: 	RegisterExtension(&ExtensionMetadata{
+  > 220: 		Type:                  ExtensionPadding,
+  > 221: 		Name:                  "padding",
+  > 222: 		Description:           "Adds padding to ClientHello",
+  > 223: 		RFC:                   "RFC 7685",
+  > 224: 		IANANumber:            0x0015,
+  > 225: 		Category:              CategoryPerformance,
+  > 226: 		IsExperimental:        false,
+  > 227: 		CompatibleTLSVersions: []uint16{0x0303, 0x0304},
+  > 228: 	})
+    229: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/constants.go:207-216] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    206: 	// Application Layer Protocol Negotiation
+  > 207: 	RegisterExtension(&ExtensionMetadata{
+  > 208: 		Type:                  ExtensionApplicationLayerProtocol,
+  > 209: 		Name:                  "application_layer_protocol_negotiation",
+  > 210: 		Description:           "Indicates application layer protocols",
+  > 211: 		RFC:                   "RFC 7301",
+  > 212: 		IANANumber:            0x0010,
+  > 213: 		Category:              CategoryNegotiation,
+  > 214: 		IsExperimental:        false,
+  > 215: 		CompatibleTLSVersions: []uint16{0x0303, 0x0304},
+  > 216: 	})
+    217: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/constants.go:195-204] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    194: 	// Status Request
+  > 195: 	RegisterExtension(&ExtensionMetadata{
+  > 196: 		Type:                  ExtensionStatus,
+  > 197: 		Name:                  "status_request",
+  > 198: 		Description:           "OCSP stapling",
+  > 199: 		RFC:                   "RFC 6066",
+  > 200: 		IANANumber:            0x0005,
+  > 201: 		Category:              CategorySecurity,
+  > 202: 		IsExperimental:        false,
+  > 203: 		CompatibleTLSVersions: []uint16{0x0303, 0x0304},
+  > 204: 	})
+    205: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/constants.go:183-192] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    182: 	// Pre-shared Key
+  > 183: 	RegisterExtension(&ExtensionMetadata{
+  > 184: 		Type:                  ExtensionPreSharedKey,
+  > 185: 		Name:                  "pre_shared_key",
+  > 186: 		Description:           "Provides pre-shared key information",
+  > 187: 		RFC:                   "RFC 8446",
+  > 188: 		IANANumber:            0x0029,
+  > 189: 		Category:              CategoryNegotiation,
+  > 190: 		IsExperimental:        false,
+  > 191: 		CompatibleTLSVersions: []uint16{0x0304},
+  > 192: 	})
+    193: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/constants.go:171-180] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    170: 	// Key Share
+  > 171: 	RegisterExtension(&ExtensionMetadata{
+  > 172: 		Type:                  ExtensionKeyShare,
+  > 173: 		Name:                  "key_share",
+  > 174: 		Description:           "Provides key share information",
+  > 175: 		RFC:                   "RFC 8446",
+  > 176: 		IANANumber:            0x0033,
+  > 177: 		Category:              CategoryNegotiation,
+  > 178: 		IsExperimental:        false,
+  > 179: 		CompatibleTLSVersions: []uint16{0x0304},
+  > 180: 	})
+    181: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/constants.go:159-168] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    158: 	// Supported Versions
+  > 159: 	RegisterExtension(&ExtensionMetadata{
+  > 160: 		Type:                  ExtensionSupportedVersions,
+  > 161: 		Name:                  "supported_versions",
+  > 162: 		Description:           "Indicates supported TLS versions",
+  > 163: 		RFC:                   "RFC 8446",
+  > 164: 		IANANumber:            0x002b,
+  > 165: 		Category:              CategoryNegotiation,
+  > 166: 		IsExperimental:        false,
+  > 167: 		CompatibleTLSVersions: []uint16{0x0303, 0x0304},
+  > 168: 	})
+    169: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/constants.go:147-156] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    146: 	// Signature Algorithms
+  > 147: 	RegisterExtension(&ExtensionMetadata{
+  > 148: 		Type:                  ExtensionSignatureAlgorithms,
+  > 149: 		Name:                  "signature_algorithms",
+  > 150: 		Description:           "Indicates supported signature algorithms",
+  > 151: 		RFC:                   "RFC 8446",
+  > 152: 		IANANumber:            0x000d,
+  > 153: 		Category:              CategoryNegotiation,
+  > 154: 		IsExperimental:        false,
+  > 155: 		CompatibleTLSVersions: []uint16{0x0303, 0x0304},
+  > 156: 	})
+    157: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/constants.go:135-144] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    134: 	// EC Point Formats
+  > 135: 	RegisterExtension(&ExtensionMetadata{
+  > 136: 		Type:                  ExtensionECPointFormats,
+  > 137: 		Name:                  "ec_point_formats",
+  > 138: 		Description:           "Indicates supported EC point formats",
+  > 139: 		RFC:                   "RFC 8446",
+  > 140: 		IANANumber:            0x000b,
+  > 141: 		Category:              CategoryNegotiation,
+  > 142: 		IsExperimental:        false,
+  > 143: 		CompatibleTLSVersions: []uint16{0x0303},
+  > 144: 	})
+    145: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/constants.go:123-132] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    122: 	// Supported Groups
+  > 123: 	RegisterExtension(&ExtensionMetadata{
+  > 124: 		Type:                  ExtensionSupportedGroups,
+  > 125: 		Name:                  "supported_groups",
+  > 126: 		Description:           "Indicates supported ECDH groups/curves",
+  > 127: 		RFC:                   "RFC 8446",
+  > 128: 		IANANumber:            0x000a,
+  > 129: 		Category:              CategoryNegotiation,
+  > 130: 		IsExperimental:        false,
+  > 131: 		CompatibleTLSVersions: []uint16{0x0303, 0x0304},
+  > 132: 	})
+    133: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/constants.go:111-120] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    110: 	// Server Name Indication
+  > 111: 	RegisterExtension(&ExtensionMetadata{
+  > 112: 		Type:                  ExtensionServerName,
+  > 113: 		Name:                  "server_name",
+  > 114: 		Description:           "Indicates server name in SNI",
+  > 115: 		RFC:                   "RFC 6066",
+  > 116: 		IANANumber:            0x0000,
+  > 117: 		Category:              CategoryNegotiation,
+  > 118: 		IsExperimental:        false,
+  > 119: 		CompatibleTLSVersions: []uint16{0x0303, 0x0304}, // TLS 1.2, 1.3
+  > 120: 	})
+    121: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/extension/constants.go:99-108] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    98: 	// ECH (Encrypted Client Hello)
+  > 99: 	RegisterExtension(&ExtensionMetadata{
+  > 100: 		Type:                  ExtensionEncryptedClientHello,
+  > 101: 		Name:                  "Encrypted Client Hello",
+  > 102: 		Description:           "Encodes ClientHello to reduce cleartext information",
+  > 103: 		RFC:                   "RFC 9180",
+  > 104: 		IANANumber:            0xfe0d,
+  > 105: 		Category:              CategoryEncryption,
+  > 106: 		IsExperimental:        false,
+  > 107: 		CompatibleTLSVersions: []uint16{0x0304}, // TLS 1.3
+  > 108: 	})
+    109: 
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/config/init.go:69] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    68: 			// 如果初始化失败，使用默认配置
+  > 69: 			InitializeConfigCenterWithDefaults()
+    70: 		}
+
+Autofix: 
+
+[/media/stone/data/fingerprint/internal/config/center.go:301] - G104 (CWE-703): Errors unhandled (Confidence: HIGH, Severity: LOW)
+    300: 						for _, listener := range listeners {
+  > 301: 							listener.OnConfigChange(nil, current, nil)
+    302: 						}
+
+Autofix: 
+
+Summary:
+  Gosec  : dev
+  Files  : 128
+  Lines  : 34287
+  Nosec  : 0
+  Issues : 72
+

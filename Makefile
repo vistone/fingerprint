@@ -1,6 +1,6 @@
 .PHONY: help test benchmark lint format clean install-tools build
 
-GO ?= GOTOOLCHAIN=go1.25.4 go
+GO ?= go
 
 # 默认目标
 help:

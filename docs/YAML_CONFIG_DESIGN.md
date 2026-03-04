@@ -12,7 +12,7 @@
 
 ## 配置文件结构
 
-```
+```plaintext
 config/
 ├── config.yaml              # 主配置文件
 ├── profiles/                # Profile 配置
@@ -28,7 +28,7 @@ config/
     ├── ja3.yaml
     ├── ja4.yaml
     └── http2.yaml
-```
+```plaintext
 
 ## Profile YAML 规范
 
@@ -304,7 +304,7 @@ matching:
   # TLS 特征匹配
   tls_fingerprints:
     ja3_hash: "cd08e31494f9531f560d64c695473da9"
-```
+```plaintext
 
 ## 配置验证
 
@@ -319,7 +319,7 @@ go run ./cmd/profilegen validate profiles/specs/*.yaml
 
 # 严格模式
 go run ./cmd/profilegen validate --strict profiles/specs/chrome_120.yaml
-```
+```plaintext
 
 ## 配置继承
 
@@ -345,7 +345,7 @@ http2:
 behavior:
   connection:
     max_connections: 6
-```
+```plaintext
 
 ### 继承模板
 
@@ -368,7 +368,7 @@ tls:
       data:
         shares:
           - group: X25519
-```
+```plaintext
 
 ## 环境特定配置
 
@@ -383,7 +383,7 @@ overrides:
     value: "warn"
   - path: "cache.size"
     value: 10000
-```
+```plaintext
 
 ### 环境变量替换
 
@@ -397,7 +397,7 @@ cache:
   
 logging:
   level: ${LOG_LEVEL:info}
-```
+```plaintext
 
 ## 热重载
 
@@ -416,7 +416,7 @@ func (w *Watcher) Watch(paths []string) error {
 config.OnReload(func(oldCfg, newCfg *Config) {
     log.Info("Configuration reloaded")
 })
-```
+```plaintext
 
 ## 配置版本管理
 
@@ -428,7 +428,7 @@ kind: Profile
 metadata:
   name: chrome_120
   version: "1.0.0"
-```
+```plaintext
 
 ### 迁移工具
 
@@ -441,7 +441,7 @@ go run ./cmd/profilegen migrate run profiles/ --to v2
 
 # 生成报告
 go run ./cmd/profilegen migrate report profiles/
-```
+```plaintext
 
 ## 配置最佳实践
 

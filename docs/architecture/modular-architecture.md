@@ -18,7 +18,7 @@
 
 **解决方案**：集中式注册表管理所有扩展元信息
 
-```
+```plaintext
 ┌─────────────────────────────┐
 │  Extension Registry(全局)   │
 ├─────────────────────────────┤
@@ -28,7 +28,7 @@
 │  handlers: 处理器映射        │
 │  plugins: 第三方插件         │
 └─────────────────────────────┘
-```
+```plaintext
 
 **优点**：
 - 新扩展注册时不需要修改核心代码
@@ -41,10 +41,10 @@
 
 **解决方案**：工厂模式创建解析器实例
 
-```
+```plaintext
 解析流程：
 RawData → [Parser] → ExtensionData (结构化)
-```
+```plaintext
 
 **实现**：
 ```go
@@ -53,7 +53,7 @@ type Parser interface {
     GetType() ExtensionType
     GetVersion() string
 }
-```
+```plaintext
 
 **好处**：
 - 每个扩展有独立的解析逻辑
@@ -66,10 +66,10 @@ type Parser interface {
 
 **解决方案**：独立的分析引擎
 
-```
+```plaintext
 分析流程：
 ExtensionData + Config → [Analyzer] → AnalysisResult
-```
+```plaintext
 
 **实现**：
 ```go
@@ -79,7 +79,7 @@ type Analyzer interface {
     GetVersion() string
     SupportsConfig() []string
 }
-```
+```plaintext
 
 **优点**：
 - 风险评分算法可独立优化
@@ -92,11 +92,11 @@ type Analyzer interface {
 
 **解决方案**：事件处理器模式
 
-```
+```plaintext
 处理流程：
 Event → [Handler1] → [Handler2] → ... → Result
          (priority 100)  (priority 50)
-```
+```plaintext
 
 **实现**：
 ```go
@@ -106,7 +106,7 @@ type Handler interface {
     GetPriority() int
     GetName() string
 }
-```
+```plaintext
 
 **使用场景**：
 - 日志记录
@@ -122,11 +122,11 @@ type Handler interface {
 - 拦截器支持
 - 异常处理和恢复
 
-```
+```plaintext
 Processing Flow:
 Request → [Pre-Interceptor] → Parse → Analyze → Handle → Transform → 
           [Post-Interceptor] → Result
-```
+```plaintext
 
 ## 迁移指南
 
@@ -142,7 +142,7 @@ const (
 if extensions[i].Type == 0xfe0d || extensions[i].Type == 0xfd00 {
     // 处理逻辑
 }
-```
+```plaintext
 
 **之后**：
 ```go
@@ -157,7 +157,7 @@ RegisterExtension(&ExtensionMetadata{
 if echExt := findExtensionByType(0xfe0d); echExt != nil {
     // 处理逻辑
 }
-```
+```plaintext
 
 ### 从单体解析器到模块化解析器
 
@@ -171,7 +171,7 @@ func (a *ECHAnalyzer) findECHExtension(extensions []ExtensionData) *ExtensionDat
     }
     return nil
 }
-```
+```plaintext
 
 **之后**：
 ```go
@@ -188,7 +188,7 @@ RegisterParserBuilder(0xfe0d, func() (Parser, error) {
 // 使用
 parser, _ := GetParser(extensionType)
 parsedData, _ := parser.Parse(rawData, ctx)
-```
+```plaintext
 
 ## 扩展性设计
 
@@ -199,7 +199,7 @@ parsedData, _ := parser.Parse(rawData, ctx)
 1. 定义扩展常量
 ```go
 const MyExtensionType ExtensionType = 0x1234
-```
+```plaintext
 
 2. 注册元数据
 ```go
@@ -208,7 +208,7 @@ RegisterExtension(&ExtensionMetadata{
     Name: "My Extension",
     // ...
 })
-```
+```plaintext
 
 3. 实现解析器
 ```go
@@ -216,7 +216,7 @@ type MyParser struct{}
 func (p *MyParser) Parse(data []byte, ctx context.Context) (ExtensionData, error) {
     // 实现解析逻辑
 }
-```
+```plaintext
 
 4. 实现分析器
 ```go
@@ -224,7 +224,7 @@ type MyAnalyzer struct{}
 func (a *MyAnalyzer) Analyze(data ExtensionData, config map[string]interface{}) (AnalysisResult, error) {
     // 实现分析逻辑
 }
-```
+```plaintext
 
 5. 注册组件
 ```go
@@ -234,7 +234,7 @@ RegisterParserBuilder(MyExtensionType, func() (Parser, error) {
 RegisterAnalyzerBuilder(MyExtensionType, func() (Analyzer, error) {
     return NewMyAnalyzer(), nil
 })
-```
+```plaintext
 
 ### 场景 2：创建自定义处理器
 
@@ -250,7 +250,7 @@ func (h *LoggingHandler) Handle(event *ExtensionEvent) (*EventResult, error) {
         ContinueProcessing: true,
     }, nil
 }
-```
+```plaintext
 
 ### 场景 3：开发第三方插件
 
@@ -268,7 +268,7 @@ func (p *MyPlugin) Register() error {
 
 // 在应用启动时加载
 RegisterPlugin("my-plugin", &MyPlugin{})
-```
+```plaintext
 
 ## 性能考虑
 
@@ -280,7 +280,7 @@ config := &EngineConfig{
     CacheSize:    1000,
 }
 engine := NewProcessingEngine(config)
-```
+```plaintext
 
 ### 2. 并发处理
 
@@ -289,7 +289,7 @@ config := &EngineConfig{
     ConcurrentProcessing: true,
     MaxConcurrency:       16,
 }
-```
+```plaintext
 
 ### 3. 超时管理
 
@@ -297,7 +297,7 @@ config := &EngineConfig{
 config := &EngineConfig{
     TimeoutMs: 5000, // 5秒超时
 }
-```
+```plaintext
 
 ## 与现有代码的兼容性
 
@@ -321,7 +321,7 @@ func (a *LegacyECHAnalyzerAdapter) Analyze(data ExtensionData,
     // 调用旧分析器
     // 转换结果回新格式
 }
-```
+```plaintext
 
 ## 质量保证
 
@@ -342,7 +342,7 @@ func TestProcessingEngine_Integration(t *testing.T) {
     result := engine.Process(&ProcessingRequest{...})
     assert.True(t, result.Success)
 }
-```
+```plaintext
 
 ### 性能基准
 
@@ -354,7 +354,7 @@ func BenchmarkParse(b *testing.B) {
         parser.Parse(data, ctx)
     }
 }
-```
+```plaintext
 
 ## 文档和示例
 

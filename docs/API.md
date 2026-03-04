@@ -8,7 +8,7 @@
 
 ```bash
 go get github.com/vistone/fingerprint
-```
+```plaintext
 
 ### 基本使用
 
@@ -30,7 +30,7 @@ func main() {
     // 使用 utls 建立连接
     // ...
 }
-```
+```plaintext
 
 ## Profile API
 
@@ -46,7 +46,7 @@ type ClientProfile struct {
     ConnectionFlow      uint32
     PriorityFrames      []http2.Priority
 }
-```
+```plaintext
 
 #### 方法
 
@@ -54,7 +54,7 @@ type ClientProfile struct {
 
 ```go
 func (p ClientProfile) GetClientHelloSpec() (tls.ClientHelloSpec, error)
-```
+```plaintext
 
 返回 TLS ClientHello 配置。
 
@@ -69,13 +69,13 @@ if err != nil {
 cfg := &tls.Config{ServerName: "example.com"}
 conn := tls.UClient(conn, cfg, tls.HelloCustom)
 conn.ApplyPreset(spec)
-```
+```plaintext
 
 **GetSettings**
 
 ```go
 func (p ClientProfile) GetSettings() map[http2.SettingID]uint32
-```
+```plaintext
 
 返回 HTTP/2 SETTINGS 帧参数。
 
@@ -84,20 +84,20 @@ settings := profile.GetSettings()
 for id, value := range settings {
     fmt.Printf("Setting %d = %d\n", id, value)
 }
-```
+```plaintext
 
 **GetPseudoHeaderOrder**
 
 ```go
 func (p ClientProfile) GetPseudoHeaderOrder() []string
-```
+```plaintext
 
 返回 HTTP/2 伪头部顺序。
 
 ```go
 order := profile.GetPseudoHeaderOrder()
 // 返回: []string{":method", ":authority", ":scheme", ":path"}
-```
+```plaintext
 
 ### Profile 选择
 
@@ -115,7 +115,7 @@ if !ok {
 
 // 通过 User-Agent 自动匹配
 profile := profiles.FromUserAgent(ua)
-```
+```plaintext
 
 ## TLS API
 
@@ -125,7 +125,7 @@ profile := profiles.FromUserAgent(ua)
 
 ```go
 func Parse(ja3 string) (*JA3, error)
-```
+```plaintext
 
 解析 JA3 字符串。
 
@@ -138,13 +138,13 @@ if err != nil {
 
 fmt.Printf("Version: %d\n", parsed.Version)
 fmt.Printf("Ciphers: %v\n", parsed.CipherSuites)
-```
+```plaintext
 
 #### Calculate
 
 ```go
 func Calculate(data []byte) string
-```
+```plaintext
 
 从 ClientHello 数据计算 JA3 指纹。
 
@@ -152,13 +152,13 @@ func Calculate(data []byte) string
 clientHello := []byte{...} // TLS ClientHello 消息
 fingerprint := ja3.Calculate(clientHello)
 fmt.Printf("JA3: %s\n", fingerprint)
-```
+```plaintext
 
 #### String
 
 ```go
 func (j *JA3) String() string
-```
+```plaintext
 
 将 JA3 结构序列化为字符串。
 
@@ -171,13 +171,13 @@ ja3Obj := &ja3.JA3{
     EllipticCurvePointFormats: []uint8{0},
 }
 fmt.Println(ja3Obj.String())
-```
+```plaintext
 
 ### JA4
 
 ```go
 func CalculateJA4(clientHello []byte) (string, error)
-```
+```plaintext
 
 计算 JA4 指纹。
 
@@ -188,7 +188,7 @@ if err != nil {
 }
 fmt.Printf("JA4: %s\n", fp)
 // 输出: t13d1516h2_8daaf6152771_b1ff8e5f1d09
-```
+```plaintext
 
 ### JA4S
 
@@ -196,7 +196,7 @@ fmt.Printf("JA4: %s\n", fp)
 func ComputeJA4S(data ServerHelloData) (*JA4SResult, error)
 func ComputeJA4SFromBytes(serverHelloBytes []byte) (*JA4SResult, error)
 func MatchJA4S(hash1, hash2 string) bool
-```
+```plaintext
 
 计算 JA4S（Server Hello）指纹。
 
@@ -218,7 +218,7 @@ result, err = ja4s.ComputeJA4SFromBytes(serverHelloBytes)
 
 // 比较两个 JA4S 哈希
 match := ja4s.MatchJA4S(hash1, hash2)
-```
+```plaintext
 
 ## HTTP API
 
@@ -228,7 +228,7 @@ match := ja4s.MatchJA4S(hash1, hash2)
 
 ```go
 func AnalyzeFrame(data []byte) (*FrameInfo, error)
-```
+```plaintext
 
 分析 HTTP/2 帧。
 
@@ -242,13 +242,13 @@ if err != nil {
 fmt.Printf("Type: %s\n", info.Type)
 fmt.Printf("Flags: %d\n", info.Flags)
 fmt.Printf("StreamID: %d\n", info.StreamID)
-```
+```plaintext
 
 #### ParseSettings
 
 ```go
 func ParseSettings(data []byte) (map[SettingID]uint32, error)
-```
+```plaintext
 
 解析 SETTINGS 帧负载。
 
@@ -261,13 +261,13 @@ if err != nil {
 for id, value := range settings {
     fmt.Printf("%s = %d\n", id.String(), value)
 }
-```
+```plaintext
 
 ### JA4H
 
 ```go
 func CalculateJA4H(req *http.Request) (string, error)
-```
+```plaintext
 
 计算 HTTP 请求指纹。
 
@@ -281,13 +281,13 @@ if err != nil {
     log.Fatal(err)
 }
 fmt.Printf("JA4H: %s\n", fp)
-```
+```plaintext
 
 ### Client Hints
 
 ```go
 func ParseClientHints(headers http.Header) (*ClientHints, error)
-```
+```plaintext
 
 解析 Client Hints 头。
 
@@ -299,7 +299,7 @@ if err != nil {
 
 fmt.Printf("Platform: %s\n", hints.Platform)
 fmt.Printf("Mobile: %v\n", hints.Mobile)
-```
+```plaintext
 
 ## Config API
 
@@ -313,7 +313,7 @@ cfg := config.Get()
 
 // 获取克隆（线程安全）
 localCfg := cfg.Clone()
-```
+```plaintext
 
 ### 动态配置
 
@@ -332,7 +332,7 @@ go func() {
 if err := config.Reload(); err != nil {
     log.Fatal(err)
 }
-```
+```plaintext
 
 ### Feature Extraction 配置
 
@@ -346,7 +346,7 @@ if featCfg.TLS.JA3.Enabled {
 if featCfg.HTTP.Headers.Enabled {
     // 启用 HTTP 头部提取
 }
-```
+```plaintext
 
 ## TCP/IP API
 
@@ -364,7 +364,7 @@ if err != nil {
 fmt.Printf("OS: %s\n", behavior.OS)
 fmt.Printf("TTL: %d\n", behavior.TTL)
 fmt.Printf("Window Size: %d\n", behavior.WindowSize)
-```
+```plaintext
 
 ### TCP 签名匹配
 
@@ -377,7 +377,7 @@ signature := tcpip.TCPSignature{
 
 os, confidence := tcpip.MatchOSSignature(signature)
 fmt.Printf("Detected OS: %s (confidence: %.2f)\n", os, confidence)
-```
+```plaintext
 
 ## Metrics API
 
@@ -389,7 +389,7 @@ import "github.com/vistone/fingerprint/internal/metrics"
 // 启动指标服务器
 metrics.InitDefaultServer(":9090")
 defer metrics.StopDefaultServer()
-```
+```plaintext
 
 ### 自定义指标
 
@@ -402,7 +402,7 @@ counter.Inc()
 histogram := metrics.NewHistogram("my_duration_ms", "Description", 
     []float64{10, 50, 100, 500, 1000})
 histogram.Observe(duration)
-```
+```plaintext
 
 ### 记录指标
 
@@ -416,7 +416,7 @@ metrics.RecordGenerationError("Chrome")
 // 记录缓存命中/未命中
 metrics.RecordCacheHit()
 metrics.RecordCacheMiss()
-```
+```plaintext
 
 ## 错误处理
 
@@ -428,7 +428,7 @@ var (
     ErrNotFound       = errors.New("profile not found")
     ErrParseError     = errors.New("parse error")
 )
-```
+```plaintext
 
 ### 错误检查
 
@@ -442,7 +442,7 @@ if err != nil {
         log.Fatal(err)
     }
 }
-```
+```plaintext
 
 ## 完整示例
 
@@ -489,7 +489,7 @@ func main() {
     log.Println("Server listening on :8080")
     log.Fatal(http.ListenAndServe(":8080", nil))
 }
-```
+```plaintext
 
 ### 自定义 Profile 加载器
 
@@ -529,7 +529,7 @@ func (s *FileProfileSource) Load() ([]profiles.ClientProfile, error) {
 // 使用
 source := &FileProfileSource{Dir: "./custom-profiles"}
 profiles, err := source.Load()
-```
+```plaintext
 
 ## 最佳实践
 
@@ -549,7 +549,7 @@ func GetCachedProfile(name string) (profiles.ClientProfile, bool) {
     }
     return profile, ok
 }
-```
+```plaintext
 
 ### 2. 连接池
 
@@ -574,7 +574,7 @@ func GetConnection(ctx context.Context, addr string, spec tls.ClientHelloSpec) (
     
     return uconn, nil
 }
-```
+```plaintext
 
 ### 3. 超时控制
 
@@ -589,4 +589,4 @@ if err != nil {
     }
     return err
 }
-```
+```plaintext

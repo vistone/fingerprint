@@ -37,7 +37,7 @@ pattern := analyzer.AnalyzeTemporalPattern("example.com")
 fmt.Printf("规律性指数: %.2f\n", pattern.RegularityIndex)
 fmt.Printf("平均间隔: %.0f ms\n", pattern.MeanInterval)
 fmt.Printf("标准差: %.2f\n", pattern.StdDev)
-```
+```plaintext
 
 **规律性指数的含义：**
 - 0.0 - 0.3：高度随机，典型的真实用户行为
@@ -68,7 +68,7 @@ fmt.Printf("TLS版本数: %d\n", len(proportion.TLSVersions))
 fmt.Printf("CipherSuite数: %d\n", len(proportion.TopCipherSuites))
 fmt.Printf("熵值: %.2f\n", proportion.EntropyScore)
 fmt.Printf("异常分布: %v\n", proportion.IsAnomalous)
-```
+```plaintext
 
 **异常检测规则：**
 - 所有请求使用相同的 TLS 版本或 Cipher Suite
@@ -92,7 +92,7 @@ for _, sig := range signals {
             sig.Description, sig.RiskLevel, sig.Score)
     }
 }
-```
+```plaintext
 
 ## API 参考
 
@@ -120,7 +120,7 @@ allSignals := analyzer.GetAllSignals()
 
 // 生成报告
 summary := analyzer.GetAnalysisSummary()
-```
+```plaintext
 
 ### RequestBehavior
 
@@ -140,7 +140,7 @@ req := fp.RequestBehavior{
     DestinationPort: 443,
     SNI:             "example.com",
 }
-```
+```plaintext
 
 ### BehaviorSignal
 
@@ -152,7 +152,7 @@ type BehaviorSignal struct {
     Timestamp    time.Time
     RiskLevel    string  // "safe", "low", "medium", "high", "critical"
 }
-```
+```plaintext
 
 ## 配置选项
 
@@ -166,7 +166,7 @@ config := &fp.BehaviorAnalysisConfig{
 }
 
 analyzer := fp.NewBehaviorAnalyzer(config)
-```
+```plaintext
 
 ## 使用案例
 
@@ -188,7 +188,7 @@ riskScore := analyzer.GetRiskScore()
 if riskScore > 0.7 {
     fmt.Println("检测到高度可疑的行为 - 可能是机器人")
 }
-```
+```plaintext
 
 ### 区分浏览器类型
 
@@ -204,7 +204,7 @@ if riskScore > 0.7 {
 // - 不同的连接行为
 
 // 通过行为信号分析可以补充现有的指纹识别方法
-```
+```plaintext
 
 ## 性能优化
 
@@ -237,7 +237,7 @@ riskInput := fp.RiskInput{
     },
 }
 riskResult, _ := fp.CalculateRisk(riskInput)
-```
+```plaintext
 
 ## 限制和注意事项
 

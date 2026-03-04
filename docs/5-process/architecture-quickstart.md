@@ -4,7 +4,7 @@
 
 ## 📋 执行优先级（基于复杂度和收益）
 
-```
+```plaintext
 🔴 High Priority (立即开始，1-2个月)
 ├── 可观测性集成 (P1)
 ├── 流水线模式 PoC (P2)
@@ -17,7 +17,7 @@
 
 🟢 Low Priority (可选，3-6个月)
 └── WASM 规则引擎
-```
+```plaintext
 
 ---
 
@@ -36,7 +36,7 @@ go get go.opentelemetry.io/otel@latest
 go get go.opentelemetry.io/otel/sdk/trace@latest
 go get go.opentelemetry.io/otel/exporters/jaeger@latest
 go get go.uber.org/zap@latest
-```
+```plaintext
 
 ### 步骤1：在 main.go 中初始化
 
@@ -65,7 +65,7 @@ func main() {
     // 你的业务代码
     // ...
 }
-```
+```plaintext
 
 ### 步骤2：为现有代码添加指标
 
@@ -84,7 +84,7 @@ func (ba *BehaviorAnalyzer) Analyze(ctx context.Context, clientIP string) error 
     // 你的分析逻辑
     // ...
 }
-```
+```plaintext
 
 ### 步骤3：验证
 
@@ -97,15 +97,15 @@ go build ./...
 
 # 查看指标（另一个终端）
 curl http://localhost:8080/metrics | grep fingerprint_
-```
+```plaintext
 
 ### 预期输出
-```
+```plaintext
 # HELP fingerprint_analysis_duration_seconds Time spent analyzing behavior
 # TYPE fingerprint_analysis_duration_seconds histogram
 fingerprint_analysis_duration_seconds_bucket{le="0.01",...} 5
 fingerprint_analysis_duration_seconds_bucket{le="0.05",...} 12
-```
+```plaintext
 
 ---
 
@@ -145,12 +145,12 @@ func main() {
         fmt.Printf("Pipeline failed: %v\n", err)
     }
 }
-```
+```plaintext
 
 ### 步骤2：对比 vs 当前 ProcessingEngine
 
 | 维度 | 当前 switch-case | Pipeline |
-|------|-----------------|----------|
+| ------ | ----------------- | ---------- |
 | 新增步骤 | 修改 switch | 新建 Stage 类 |
 | 中间件 | 需要手写 | 内置支持 |
 | 可测试性 | 较差 | 良好 |
@@ -160,7 +160,7 @@ func main() {
 
 ```bash
 go test -bench=BenchmarkPipeline -benchmem ./internal/pipeline/...
-```
+```plaintext
 
 **预期结果**：
 - 单阶段执行：< 1% 开销
@@ -200,7 +200,7 @@ CREATE TABLE snapshots (
     state JSON NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
-```
+```plaintext
 
 ### 步骤2：定义核心事件类型
 
@@ -228,7 +228,7 @@ type AnomalyDetectedEvent struct {
     RiskScore     float64
     Timestamp     time.Time
 }
-```
+```plaintext
 
 ### 步骤3：实现基础 EventStore
 
@@ -251,7 +251,7 @@ func NewSQLiteEventStore(dbPath string) (*SQLiteEventStore, error) {
     db, err := sql.Open("sqlite3", dbPath)
     return &SQLiteEventStore{db: db}, err
 }
-```
+```plaintext
 
 ### 步骤4：性能测试
 
@@ -284,7 +284,7 @@ func BenchmarkEventReplay(b *testing.B) {
         store.GetEvents(context.Background(), "192.168.1.1", startTime, endTime)
     }
 }
-```
+```plaintext
 
 **期望性能**：
 - Append: > 1000 ops/sec
@@ -339,7 +339,7 @@ func (ba *BehaviorAnalyzerV2) GetAnalysis(ctx context.Context, clientIP string, 
     
     return state, nil
 }
-```
+```plaintext
 
 ---
 
@@ -376,7 +376,7 @@ func (m *Manager) LoadPlugin(path string) error {
     
     return nil
 }
-```
+```plaintext
 
 ---
 
@@ -392,7 +392,7 @@ go get github.com/wasmerio/wasmer-go
 # 需要 Rust 工具链（可选）
 rustup install stable
 cargo install wasm-pack
-```
+```plaintext
 
 ---
 
@@ -463,12 +463,12 @@ cargo install wasm-pack
 - [Apache Kafka](https://kafka.apache.org/) - 事件流处理
 
 ### 相关库
-```
+```plaintext
 go get github.com/prometheus/client_golang
 go get go.opentelemetry.io/otel
 go get go.uber.org/zap
 go get github.com/google/uuid
-```
+```plaintext
 
 ---
 

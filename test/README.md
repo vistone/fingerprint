@@ -4,12 +4,12 @@
 
 ## 目录结构
 
-```
+```plaintext
 test/
 ├── README.md              # 本文档
 ├── benchmark_baseline.txt # 性能基线数据
 └── profile_validation_test.go # Profile 验证测试
-```
+```plaintext
 
 ## 性能基准
 
@@ -23,12 +23,12 @@ go test -bench=. -benchmem ./...
 go test -bench=. -benchmem ./internal/tcpip/...
 go test -bench=. -benchmem ./internal/config/...
 go test -bench=. -benchmem ./profiles/...
-```
+```plaintext
 
 ### 当前性能基线
 
 | 包 | 基准测试 | 每次操作时间 | 内存分配 | 分配次数 |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | internal/tcpip | BenchmarkComputeTCPSignature | ~2.1μs | 144 B | 8 |
 | internal/tcpip | BenchmarkMatchOSSignature | ~300ns | 0 B | 0 |
 | internal/tcpip | BenchmarkAnalyzeNetworkBehavior | ~720ns | 336 B | 2 |
@@ -48,7 +48,7 @@ go test -bench=. -benchmem ./... > benchmark_current.txt
 go run ./scripts/compare_benchmarks.go \
   -base test/benchmark_baseline.txt \
   -current benchmark_current.txt
-```
+```plaintext
 
 ## CI/CD 配置
 
@@ -70,4 +70,4 @@ go run ./scripts/compare_benchmarks.go \
 # 生成覆盖率报告
 go test -coverprofile=coverage.out ./...
 go tool cover -html=coverage.out -o coverage.html
-```
+```plaintext
