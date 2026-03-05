@@ -269,8 +269,8 @@ func (g *Gateway) calculateHTTPFingerprint(req *AnalyzeRequest) *JA4HInfo {
 	}
 
 	// 简化的 JA4H 计算
-	headers := []string{}
 	headerMap := req.Headers.ToMap()
+	headers := make([]string, 0, len(headerMap))
 	for name := range headerMap {
 		headers = append(headers, name)
 	}

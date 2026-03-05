@@ -212,7 +212,7 @@ func ExtractTCPOptions(packet []byte) string {
 	}
 
 	optionsData := packet[20:dataOffset]
-	var options []string
+	options := make([]string, 0, len(optionsData)/2)
 
 	i := 0
 	for i < len(optionsData) {
@@ -375,7 +375,7 @@ func AnalyzeNetworkBehavior(rttValues []int64) map[string]interface{} {
 
 // DetectAnomalies 检测网络异常
 func DetectAnomalies(ttl int, mss int, windowSize int) []string {
-	var anomalies []string
+	anomalies := make([]string, 0, 3)
 
 	// TTL 未设置为标准值
 	if ttl != 64 && ttl != 128 && ttl != 32 {

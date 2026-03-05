@@ -463,11 +463,12 @@ func (b *BaseFeatureExtractor) ExtractFeatureVector(data map[string]interface{},
 	vector.RiskScore = calculateRiskScore(vector.Scores)
 
 	// 计算特征向量的 MD5 哈希（用于去重）
-	hashInput := ""
+	var hashInput strings.Builder
+	hashInput.Grow(len(featuresToExtract) * 20)
 	for _, fType := range featuresToExtract {
-		hashInput += fmt.Sprintf("%s:%.2f;", fType, vector.Scores[fType])
+		fmt.Fprintf(&hashInput, "%s:%.2f;", fType, vector.Scores[fType])
 	}
-	h := md5.Sum([]byte(hashInput))
+	h := md5.Sum([]byte(hashInput.String()))
 	vector.Hash = hex.EncodeToString(h[:])
 
 	return vector

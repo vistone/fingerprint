@@ -257,33 +257,34 @@ func (t *TCPIPAnalyzer) AnalyzeStream() (TCPIPResult, error) {
 // ComputeSignature 计算 TCP/IP 签名
 func (t *TCPIPAnalyzer) ComputeSignature(packet TCPPacket) (string, error) {
 	// 签名格式: TTL:WindowSize:DF:Options:MSS:WindowScale
-	var parts []string
+	var b strings.Builder
+	b.Grow(64)
 
 	// TTL (推测初始 TTL)
-	parts = append(parts, fmt.Sprintf("%d", nearestDefaultTTL(packet.IPHeader.TTL)))
+	fmt.Fprintf(&b, "%d:", nearestDefaultTTL(packet.IPHeader.TTL))
 
 	// 窗口大小
-	parts = append(parts, fmt.Sprintf("%d", packet.WindowSize))
+	fmt.Fprintf(&b, "%d:", packet.WindowSize)
 
 	// DF 标志
-	df := "0"
-	if packet.IPHeader.Flags&0x02 != 0 { // DF bit
-		df = "1"
+	if packet.IPHeader.Flags&0x02 != 0 {
+		b.WriteByte('1')
+	} else {
+		b.WriteByte('0')
 	}
-	parts = append(parts, df)
+	b.WriteByte(':')
 
 	// TCP 选项指纹
-	parts = append(parts, formatTCPOptions(packet.Options))
+	b.WriteString(formatTCPOptions(packet.Options))
+	b.WriteByte(':')
 
 	// MSS
-	mss := getMSSValue(packet.Options)
-	parts = append(parts, fmt.Sprintf("%d", mss))
+	fmt.Fprintf(&b, "%d:", getMSSValue(packet.Options))
 
 	// 窗口缩放
-	ws := getWindowScale(packet.Options)
-	parts = append(parts, fmt.Sprintf("%d", ws))
+	fmt.Fprintf(&b, "%d", getWindowScale(packet.Options))
 
-	return strings.Join(parts, ":"), nil
+	return b.String(), nil
 }
 
 // GetOSFingerprints 获取操作系统指纹库
