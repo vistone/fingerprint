@@ -10,19 +10,23 @@ RUN apk add --no-cache git ca-certificates tzdata
 # Set working directory
 WORKDIR /build
 
-# Copy go mod files
-COPY go.mod go.sum ./
+# Copy workspace and module definition files
 COPY go.work go.work.sum ./
+COPY go.mod go.sum ./
 
-# Download dependencies
+# Copy all submodule go.mod/go.sum files (needed for workspace)
+COPY examples examples/
+COPY modules modules/
+
+# Download dependencies (now all go.mod files are present)
 RUN go mod download
 
-# Copy source code
+# Copy remaining source code
 COPY . .
 
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-    -ldflags="-w -s -X main.Version=$(git describe --tags --always)" \
+    -ldflags="-w -s" \
     -o fingerprint-gateway \
     ./cmd/gateway
 
@@ -41,7 +45,7 @@ EXPOSE 8080 9090
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD ["/fingerprint-gateway", "health"]
+    CMD ["/fingerprint-gateway", "-health"]
 
 # Run as non-root
 USER 65534:65534

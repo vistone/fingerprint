@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/bogdanfinn/utls v1.7.7-barnius // indirect
 	github.com/vistone/fingerprint/modules/defense v1.0.3 // indirect
 	github.com/vistone/fingerprint/modules/frontend v1.0.3 // indirect
 	github.com/vistone/fingerprint/modules/gateway v1.0.3 // indirect

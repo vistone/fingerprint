@@ -3,7 +3,7 @@ module github.com/vistone/fingerprint/modules/internal
 go 1.25.7
 
 require (
-	github.com/bogdanfinn/utls v1.7.4-barnius
+	github.com/bogdanfinn/utls v1.7.7-barnius
 	github.com/prometheus/client_golang v1.23.2
 	github.com/vistone/fingerprint/modules/core v1.0.3
 	github.com/vistone/fingerprint/modules/defense v1.0.3
@@ -20,9 +20,8 @@ require (
 require (
 	github.com/andybalholm/brotli v1.1.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/bogdanfinn/fhttp v0.6.3 // indirect
+	github.com/bogdanfinn/fhttp v0.6.8 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/cloudflare/circl v1.5.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
