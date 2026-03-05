@@ -5,9 +5,9 @@ go 1.25.7
 require (
 	github.com/bogdanfinn/utls v1.7.4-barnius
 	github.com/prometheus/client_golang v1.23.2
-	github.com/vistone/fingerprint/modules/core v0.0.0
-	github.com/vistone/fingerprint/modules/ml v0.0.0
-	github.com/vistone/fingerprint/modules/profiles v0.0.0
+	github.com/vistone/fingerprint/modules/core v1.0.3
+	github.com/vistone/fingerprint/modules/ml v1.0.3
+	github.com/vistone/fingerprint/modules/profiles v1.0.3
 	go.opentelemetry.io/otel v1.39.0
 	go.opentelemetry.io/otel/sdk v1.39.0
 	go.opentelemetry.io/otel/trace v1.39.0

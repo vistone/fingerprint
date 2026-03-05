@@ -2,6 +2,6 @@ module github.com/vistone/fingerprint/modules/generator
 
 go 1.25.7
 
-require github.com/vistone/fingerprint/modules/core v0.0.0
+require github.com/vistone/fingerprint/modules/core v1.0.3
 
 replace github.com/vistone/fingerprint/modules/core => ../core

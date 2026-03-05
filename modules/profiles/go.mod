@@ -5,7 +5,7 @@ go 1.25.7
 require (
 	github.com/bogdanfinn/fhttp v0.6.3
 	github.com/bogdanfinn/utls v1.7.4-barnius
-	github.com/vistone/fingerprint/modules/core v0.0.0
+	github.com/vistone/fingerprint/modules/core v1.0.3
 )
 
 require (

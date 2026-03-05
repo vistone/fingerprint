@@ -3,11 +3,11 @@ module github.com/vistone/fingerprint/modules/gateway
 go 1.25.7
 
 require (
-	github.com/vistone/fingerprint/modules/core v0.0.0
-	github.com/vistone/fingerprint/modules/defense v0.0.0
-	github.com/vistone/fingerprint/modules/frontend v0.0.0
-	github.com/vistone/fingerprint/modules/ml v0.0.0
-	github.com/vistone/fingerprint/modules/profiles v0.0.0
+	github.com/vistone/fingerprint/modules/core v1.0.3
+	github.com/vistone/fingerprint/modules/defense v1.0.3
+	github.com/vistone/fingerprint/modules/frontend v1.0.3
+	github.com/vistone/fingerprint/modules/ml v1.0.3
+	github.com/vistone/fingerprint/modules/profiles v1.0.3
 	google.golang.org/grpc v1.79.1
 )
 
