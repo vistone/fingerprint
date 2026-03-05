@@ -166,7 +166,7 @@ func (v *CustomValidator) Validate(ctx context.Context, data interface{}) (*plug
 }
 
 func main() {
-	fmt.Println("=== Plugin Example ===\n")
+	fmt.Println("=== Plugin Example ===")
 
 	// Create plugin manager
 	manager := plugin.NewManager()

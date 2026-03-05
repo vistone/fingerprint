@@ -116,7 +116,7 @@
                         <div class="card chart-card">
                             <div class="card-header">
                                 <h3>Request Volume</h3>
-                                <select class="time-range">
+                                <select class="time-range" title="Request volume time range" aria-label="Request volume time range">
                                     <option>Last 1 hour</option>
                                     <option>Last 6 hours</option>
                                     <option>Last 24 hours</option>
@@ -196,7 +196,7 @@
                             <h3>Browser Profiles</h3>
                             <div class="header-actions">
                                 <input type="text" placeholder="Search profiles..." id="profileSearch" class="search-input">
-                                <select id="browserFilter">
+                                <select id="browserFilter" title="Browser filter" aria-label="Browser filter">
                                     <option value="">All Browsers</option>
                                     <option value="chrome">Chrome</option>
                                     <option value="firefox">Firefox</option>
@@ -204,7 +204,7 @@
                                     <option value="edge">Edge</option>
                                     <option value="opera">Opera</option>
                                 </select>
-                                <select id="osFilter">
+                                <select id="osFilter" title="Operating system filter" aria-label="Operating system filter">
                                     <option value="">All OS</option>
                                     <option value="windows">Windows</option>
                                     <option value="macos">macOS</option>
@@ -249,7 +249,7 @@
                         <div class="card chart-card wide">
                             <div class="card-header">
                                 <h3>Traffic Overview</h3>
-                                <select class="time-range">
+                                <select class="time-range" title="Traffic overview time range" aria-label="Traffic overview time range">
                                     <option>Last 24 hours</option>
                                     <option>Last 7 days</option>
                                     <option>Last 30 days</option>
@@ -350,19 +350,19 @@
                             <div class="config-form">
                                 <div class="form-group">
                                     <label>HTTP Port</label>
-                                    <input type="number" value="8080" class="form-control">
+                                    <input type="number" value="8080" class="form-control" title="HTTP Port" aria-label="HTTP Port">
                                 </div>
                                 <div class="form-group">
                                     <label>gRPC Port</label>
-                                    <input type="number" value="9090" class="form-control">
+                                    <input type="number" value="9090" class="form-control" title="gRPC Port" aria-label="gRPC Port">
                                 </div>
                                 <div class="form-group">
                                     <label>Read Timeout (s)</label>
-                                    <input type="number" value="30" class="form-control">
+                                    <input type="number" value="30" class="form-control" title="Read Timeout" aria-label="Read Timeout seconds">
                                 </div>
                                 <div class="form-group">
                                     <label>Write Timeout (s)</label>
-                                    <input type="number" value="30" class="form-control">
+                                    <input type="number" value="30" class="form-control" title="Write Timeout" aria-label="Write Timeout seconds">
                                 </div>
                             </div>
                         </div>
@@ -375,17 +375,17 @@
                                 <div class="form-group">
                                     <label>Enabled</label>
                                     <label class="toggle">
-                                        <input type="checkbox" checked>
+                                        <input type="checkbox" checked title="Enable rate limiting" aria-label="Enable rate limiting">
                                         <span class="toggle-slider"></span>
                                     </label>
                                 </div>
                                 <div class="form-group">
                                     <label>Requests per second</label>
-                                    <input type="number" value="1000" class="form-control">
+                                    <input type="number" value="1000" class="form-control" title="Requests per second" aria-label="Requests per second">
                                 </div>
                                 <div class="form-group">
                                     <label>Burst size</label>
-                                    <input type="number" value="1500" class="form-control">
+                                    <input type="number" value="1500" class="form-control" title="Burst size" aria-label="Burst size">
                                 </div>
                             </div>
                         </div>
@@ -398,17 +398,17 @@
                                 <div class="form-group">
                                     <label>Enabled</label>
                                     <label class="toggle">
-                                        <input type="checkbox" checked>
+                                        <input type="checkbox" checked title="Enable cache" aria-label="Enable cache">
                                         <span class="toggle-slider"></span>
                                     </label>
                                 </div>
                                 <div class="form-group">
                                     <label>Max size</label>
-                                    <input type="number" value="10000" class="form-control">
+                                    <input type="number" value="10000" class="form-control" title="Cache max size" aria-label="Cache max size">
                                 </div>
                                 <div class="form-group">
                                     <label>TTL (minutes)</label>
-                                    <input type="number" value="5" class="form-control">
+                                    <input type="number" value="5" class="form-control" title="Cache TTL" aria-label="Cache TTL minutes">
                                 </div>
                             </div>
                         </div>
@@ -421,17 +421,17 @@
                                 <div class="form-group">
                                     <label>Classifier Enabled</label>
                                     <label class="toggle">
-                                        <input type="checkbox" checked>
+                                        <input type="checkbox" checked title="Enable classifier" aria-label="Enable classifier">
                                         <span class="toggle-slider"></span>
                                     </label>
                                 </div>
                                 <div class="form-group">
                                     <label>Min Confidence</label>
-                                    <input type="number" value="0.85" step="0.01" min="0" max="1" class="form-control">
+                                    <input type="number" value="0.85" step="0.01" min="0" max="1" class="form-control" title="Minimum confidence" aria-label="Minimum confidence">
                                 </div>
                                 <div class="form-group">
                                     <label>Prediction Cache Size</label>
-                                    <input type="number" value="5000" class="form-control">
+                                    <input type="number" value="5000" class="form-control" title="Prediction cache size" aria-label="Prediction cache size">
                                 </div>
                             </div>
                         </div>
@@ -449,7 +449,7 @@
                         <div class="card-header">
                             <h3>System Logs</h3>
                             <div class="header-actions">
-                                <select class="log-level">
+                                <select class="log-level" title="Log level filter" aria-label="Log level filter">
                                     <option>All Levels</option>
                                     <option>DEBUG</option>
                                     <option>INFO</option>

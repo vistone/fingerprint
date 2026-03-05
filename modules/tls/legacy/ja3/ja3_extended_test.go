@@ -9,7 +9,7 @@ import (
 
 	tls "github.com/bogdanfinn/utls"
 	errdefs "github.com/vistone/fingerprint/modules/errors"
-	"github.com/vistone/fingerprint/modules/profiles/legacy"
+	profiles "github.com/vistone/fingerprint/modules/profiles/legacy"
 )
 
 // ============================================================================
@@ -625,11 +625,10 @@ func TestComputeJA3ByProfileName(t *testing.T) {
 func TestFindProfileByJA3_Extended(t *testing.T) {
 	// 保存原始状态并在测试后恢复
 	originalMapped := MappedTLSClients
-	originalIndexOnce := ja3ProfileIndexOnce
 	originalIndex := ja3ProfileIndex
 	defer func() {
 		MappedTLSClients = originalMapped
-		ja3ProfileIndexOnce = originalIndexOnce
+		ja3ProfileIndexOnce = sync.Once{}
 		ja3ProfileIndex = originalIndex
 	}()
 
@@ -815,11 +814,10 @@ func TestFindProfileByJA3_Extended(t *testing.T) {
 func TestFindProfileByJA3_WithRealProfiles(t *testing.T) {
 	// 保存原始状态
 	originalMapped := MappedTLSClients
-	originalIndexOnce := ja3ProfileIndexOnce
 	originalIndex := ja3ProfileIndex
 	defer func() {
 		MappedTLSClients = originalMapped
-		ja3ProfileIndexOnce = originalIndexOnce
+		ja3ProfileIndexOnce = sync.Once{}
 		ja3ProfileIndex = originalIndex
 	}()
 
@@ -864,9 +862,9 @@ func TestFindProfileByJA3_WithRealProfiles(t *testing.T) {
 // TestErrorWrapping 测试错误包装和解包
 func TestErrorWrapping(t *testing.T) {
 	tests := []struct {
-		name         string
-		err          error
-		isTargetErr  func(error) bool
+		name          string
+		err           error
+		isTargetErr   func(error) bool
 		expectedMatch bool
 	}{
 		{
