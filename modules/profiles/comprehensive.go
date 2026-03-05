@@ -47,7 +47,7 @@ func initChromeProfiles() {
 	for _, v := range chromeVersions {
 		p := ClientProfile{
 			ID:             v.id,
-			Name:           "Chrome " + v.version[:strings.Index(v.version, ".")],
+			Name:           "Chrome " + getMajorVersion(v.version),
 			BrowserType:    core.BrowserChrome,
 			BrowserVersion: v.version,
 			OS:             v.os,
@@ -74,7 +74,7 @@ func initChromeProfiles() {
 				SecFetchSite:    "none",
 				SecFetchMode:    "navigate",
 				SecFetchDest:    "document",
-				SecCHUA:         `"Chromium";v="` + v.version[:3] + `", "Google Chrome";v="` + v.version[:3] + `"`,
+				SecCHUA:         `"Chromium";v="` + safeSliceVersion(v.version) + `", "Google Chrome";v="` + safeSliceVersion(v.version) + `"`,
 				SecCHUAMobile:   "?0",
 				SecCHUAPlatform: platformString(v.os),
 			},
@@ -121,7 +121,7 @@ func initFirefoxProfiles() {
 	for _, v := range firefoxVersions {
 		p := ClientProfile{
 			ID:             v.id,
-			Name:           "Firefox " + v.version[:strings.Index(v.version, ".")],
+			Name:           "Firefox " + getMajorVersion(v.version),
 			BrowserType:    core.BrowserFirefox,
 			BrowserVersion: v.version,
 			OS:             v.os,
@@ -286,7 +286,7 @@ func initAndroidProfiles() {
 			Headers: &core.HTTPHeaders{
 				Accept:          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 				AcceptLanguage:  "en-US,en;q=0.9",
-				SecCHUA:         `"Android";v="` + v.android + `", "Chrome";v="` + v.version[:3] + `"`,
+				SecCHUA:         `"Android";v="` + v.android + `", "Chrome";v="` + safeSliceVersion(v.version) + `"`,
 				SecCHUAMobile:   "?1",
 				SecCHUAPlatform: `"Android"`,
 			},
@@ -322,7 +322,7 @@ func initEdgeProfiles() {
 			OS:             core.OSWindows11,
 			Headers: &core.HTTPHeaders{
 				Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-				SecCHUA: `"Microsoft Edge";v="` + v.version[:3] + `", "Chromium";v="` + v.version[:3] + `"`,
+				SecCHUA: `"Microsoft Edge";v="` + safeSliceVersion(v.version) + `", "Chromium";v="` + safeSliceVersion(v.version) + `"`,
 			},
 		}
 		Register(p)
@@ -352,7 +352,7 @@ func initOperaProfiles() {
 			OS:             core.OSWindows10,
 			Headers: &core.HTTPHeaders{
 				Accept:  "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-				SecCHUA: `"Opera";v="` + v.version[:2] + `"`,
+				SecCHUA: `"Opera";v="` + safeSliceVersion(v.version) + `"`,
 			},
 		}
 		Register(p)
