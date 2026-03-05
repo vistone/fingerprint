@@ -103,7 +103,7 @@ func (d *dynamicClientProfile) GetClientHelloSpec() (tls.ClientHelloSpec, error)
 	refVal := reflect.ValueOf(d.value)
 	method := refVal.MethodByName("GetClientHelloSpec")
 	if !method.IsValid() {
-		return tls.ClientHelloSpec{}, fmt.Errorf("对象未实现 GetClientHelloSpec 方法")
+		return tls.ClientHelloSpec{}, fmt.Errorf("object does not implement GetClientHelloSpec method")
 	}
 
 	results := method.Call(nil)
@@ -116,7 +116,7 @@ func (d *dynamicClientProfile) GetClientHelloSpec() (tls.ClientHelloSpec, error)
 			return spec, err
 		}
 	}
-	return tls.ClientHelloSpec{}, fmt.Errorf("方法调用失败")
+	return tls.ClientHelloSpec{}, fmt.Errorf("method invocation failed")
 }
 
 func buildJA3ProfileIndex() {
@@ -372,7 +372,7 @@ func validateClientHelloSpec(spec tls.ClientHelloSpec) error {
 func ComputeJA3FromProfile(profile ClientProfile) (*JA3Result, error) {
 	spec, err := profile.GetClientHelloSpec()
 	if err != nil {
-		return nil, fmt.Errorf("获取 ClientHelloSpec 失败: %w", err)
+		return nil, fmt.Errorf("failed to get ClientHelloSpec: %w", err)
 	}
 	return ComputeJA3FromSpec(spec)
 }
@@ -381,7 +381,7 @@ func ComputeJA3FromProfile(profile ClientProfile) (*JA3Result, error) {
 func ComputeJA3ByProfileName(profileName string) (*JA3Result, error) {
 	profile, ok := MappedTLSClients[profileName]
 	if !ok {
-		return nil, fmt.Errorf("指纹 %s 不存在", profileName)
+		return nil, fmt.Errorf("fingerprint %s not found", profileName)
 	}
 	return ComputeJA3FromProfile(profile)
 }

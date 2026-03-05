@@ -276,14 +276,13 @@ func (lm *LoggingMiddleware) Process(ctx context.Context, stageName string, data
 			"error", err,
 			"duration_ms", duration.Milliseconds(),
 		)
-	} else {
-		lm.logger.Info("stage completed",
-			"stage", stageName,
-			"duration_ms", duration.Milliseconds(),
-		)
+		return fmt.Errorf("stage %s: %w", stageName, err)
 	}
-
-	return err
+	lm.logger.Info("stage completed",
+		"stage", stageName,
+		"duration_ms", duration.Milliseconds(),
+	)
+	return nil
 }
 
 // MetricsMiddleware 指标中间件
@@ -307,7 +306,10 @@ func (mm *MetricsMiddleware) Process(ctx context.Context, stageName string, data
 	success := err == nil
 	mm.metrics.Record(stageName, duration, success)
 
-	return err
+	if err != nil {
+		return fmt.Errorf("stage %s: %w", stageName, err)
+	}
+	return nil
 }
 
 // RecoveryMiddleware 恢复中间件（捕获 panic）
@@ -352,7 +354,10 @@ func (tm *TimeoutMiddleware) Process(ctx context.Context, stageName string, data
 
 	select {
 	case err := <-done:
-		return err
+		if err != nil {
+			return fmt.Errorf("stage %s: %w", stageName, err)
+		}
+		return nil
 	case <-timeoutCtx.Done():
 		return fmt.Errorf("stage %s timeout after %v", stageName, tm.timeout)
 	}
@@ -384,7 +389,7 @@ func (cm *CachingMiddleware) Process(ctx context.Context, stageName string, data
 
 	// 执行阶段
 	if err := next(ctx, data); err != nil {
-		return err
+		return fmt.Errorf("stage %s: %w", stageName, err)
 	}
 
 	// 缓存结果（限制缓存大小）

@@ -4,6 +4,7 @@ package ml
 
 import (
 	"math"
+	"sort"
 	"sync"
 
 	"github.com/vistone/fingerprint/modules/core"
@@ -107,13 +108,9 @@ func (c *SimpleClassifier) PredictTopK(features []float64, k int) []Prediction {
 	}
 
 	// 按距离排序（距离越小越相似）
-	for i := 0; i < len(results)-1; i++ {
-		for j := i + 1; j < len(results); j++ {
-			if results[i].distance > results[j].distance {
-				results[i], results[j] = results[j], results[i]
-			}
-		}
-	}
+	sort.Slice(results, func(i, j int) bool {
+		return results[i].distance < results[j].distance
+	})
 
 	// 转换为置信度
 	var predictions []Prediction

@@ -3,6 +3,7 @@ package ml
 
 import (
 	"math"
+	"sort"
 
 	"github.com/vistone/fingerprint/modules/core"
 	"github.com/vistone/fingerprint/modules/profiles"
@@ -342,13 +343,9 @@ func (fe *FeatureExtractor) AnalyzeFeatureImportance(trainingData []*core.Featur
 	}
 
 	// 按重要性排序
-	for i := 0; i < len(result)-1; i++ {
-		for j := i + 1; j < len(result); j++ {
-			if result[i].Importance < result[j].Importance {
-				result[i], result[j] = result[j], result[i]
-			}
-		}
-	}
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Importance > result[j].Importance
+	})
 
 	return result
 }

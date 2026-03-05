@@ -331,7 +331,7 @@ func ComputeJA4FromSpec(spec tls.ClientHelloSpec) (*JA4Result, error) {
 func ComputeJA4FromProfile(profile ClientProfile) (*JA4Result, error) {
 	spec, err := profile.GetClientHelloSpec()
 	if err != nil {
-		return nil, fmt.Errorf("获取 ClientHelloSpec 失败: %w", err)
+		return nil, fmt.Errorf("failed to get ClientHelloSpec: %w", err)
 	}
 	return ComputeJA4FromSpec(spec)
 }
@@ -339,11 +339,11 @@ func ComputeJA4FromProfile(profile ClientProfile) (*JA4Result, error) {
 // ComputeJA4ByProfileName 根据指纹名称计算 JA4 指纹
 func ComputeJA4ByProfileName(profileName string) (*JA4Result, error) {
 	if MappedTLSClients == nil {
-		return nil, fmt.Errorf("JA4 客户端映射表未初始化")
+		return nil, fmt.Errorf("JA4 client mapping not initialized")
 	}
 	profile, ok := MappedTLSClients[profileName]
 	if !ok {
-		return nil, fmt.Errorf("指纹 %s 不存在", profileName)
+		return nil, fmt.Errorf("fingerprint %s not found", profileName)
 	}
 	return ComputeJA4FromProfile(profile)
 }

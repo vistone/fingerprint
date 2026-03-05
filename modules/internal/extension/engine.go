@@ -243,12 +243,12 @@ func (e *ProcessingEngine) Process(request *ProcessingRequest) *ProcessingResult
 func (e *ProcessingEngine) parseExtension(ctx context.Context, request *ProcessingRequest, result *ProcessingResult) error {
 	parser, err := GetParser(request.ExtensionType)
 	if err != nil {
-		return err
+		return fmt.Errorf("get parser for %v: %w", request.ExtensionType, err)
 	}
 
 	parsedData, err := parser.Parse(request.RawData, ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("parse extension data: %w", err)
 	}
 
 	result.ParsedData = parsedData
@@ -265,7 +265,7 @@ func (e *ProcessingEngine) analyzeExtension(ctx context.Context, request *Proces
 
 	analysisResult, err := analyzer.Analyze(result.ParsedData, request.AnalysisConfig)
 	if err != nil {
-		return err
+		return fmt.Errorf("analyze extension data: %w", err)
 	}
 
 	result.AnalysisResults = append(result.AnalysisResults, analysisResult)
@@ -292,7 +292,7 @@ func (e *ProcessingEngine) handleExtension(ctx context.Context, request *Process
 
 		handlerResult, err := handler.Handle(event)
 		if err != nil {
-			return err
+			return fmt.Errorf("handle extension event: %w", err)
 		}
 
 		result.Events = append(result.Events, event)
@@ -383,7 +383,7 @@ func (e *ProcessingEngine) executeInterceptors(phase string, request *Processing
 
 	for _, interceptor := range interceptors {
 		if err := interceptor.Intercept(phase, request, result); err != nil {
-			return err
+			return fmt.Errorf("intercept phase %s: %w", phase, err)
 		}
 	}
 

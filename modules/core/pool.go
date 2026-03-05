@@ -72,13 +72,9 @@ func (p *FeatureVectorPool) Get() *FeatureVector {
 				p.metrics.recordGet(true) // hit
 			}
 		}
-		// 重置状态
-		for k := range fv.Features {
-			delete(fv.Features, k)
-		}
-		for k := range fv.Metadata {
-			delete(fv.Metadata, k)
-		}
+		// 重置状态 - 直接重建 map 更快
+		fv.Features = make(map[FeatureType]float64, 32)
+		fv.Metadata = make(map[string]interface{}, 8)
 		return fv
 	}
 	return nil
@@ -90,13 +86,9 @@ func (p *FeatureVectorPool) Put(fv *FeatureVector) {
 		return
 	}
 	
-	// 清理敏感数据
-	for k := range fv.Features {
-		delete(fv.Features, k)
-	}
-	for k := range fv.Metadata {
-		delete(fv.Metadata, k)
-	}
+	// 清理敏感数据 - 直接重建 map 更快
+	fv.Features = make(map[FeatureType]float64, 32)
+	fv.Metadata = make(map[string]interface{}, 8)
 	
 	if p.metrics != nil {
 		p.metrics.recordPut()
@@ -165,10 +157,8 @@ func (p *HTTPHeadersPool) Get() *HTTPHeaders {
 		h.Accept = ""
 		h.AcceptLanguage = ""
 		h.AcceptEncoding = ""
-		// Custom headers are cleared below
-		for k := range h.Custom {
-			delete(h.Custom, k)
-		}
+		// Custom headers are cleared below - 直接重建 map 更快
+		h.Custom = make(map[string]string, 8)
 		return h
 	}
 	return nil
@@ -180,10 +170,8 @@ func (p *HTTPHeadersPool) Put(h *HTTPHeaders) {
 		return
 	}
 	
-	// 清理敏感数据
-	for k := range h.Custom {
-		delete(h.Custom, k)
-	}
+	// 清理敏感数据 - 直接重建 map 更快
+	h.Custom = make(map[string]string, 8)
 	
 	if p.metrics != nil {
 		p.metrics.recordPut()
@@ -376,12 +364,9 @@ func NewMapPool(config *PoolConfig) *MapPool {
 // Get 从池中获取 map
 func (p *MapPool) Get() map[string]interface{} {
 	v := p.pool.Get()
-	if m, ok := v.(map[string]interface{}); ok {
-		// 清空 map
-		for k := range m {
-			delete(m, k)
-		}
-		return m
+	if _, ok := v.(map[string]interface{}); ok {
+		// 清空 map - 直接重建更快
+		return make(map[string]interface{}, 16)
 	}
 	return nil
 }
@@ -392,10 +377,8 @@ func (p *MapPool) Put(m map[string]interface{}) {
 		return
 	}
 	
-	// 清理 map
-	for k := range m {
-		delete(m, k)
-	}
+	// 清理 map - 直接重建更快，让 GC 回收旧 map
+	m = make(map[string]interface{}, 16)
 	
 	if p.metrics != nil {
 		p.metrics.recordPut()

@@ -568,7 +568,7 @@ func TestComputeJA3ByProfileName(t *testing.T) {
 			name:        "non-existing profile",
 			profileName: "non_existing_profile",
 			wantErr:     true,
-			errMsg:      "不存在",
+			errMsg:      "not found",
 		},
 		{
 			name:        "profile that returns error",
@@ -719,7 +719,7 @@ func TestFindProfileByJA3_Extended(t *testing.T) {
 			},
 			ja3Hash:        "00000000000000000000000000000000",
 			expectedResult: nil,
-			description:    "不存在的哈希应该返回 nil",
+			description:    "non-existent hash should return nil",
 		},
 		{
 			name: "case insensitive match - uppercase",

@@ -55,7 +55,7 @@ func (v *Validator) ValidateString(s string) error {
 // ValidateIP validates an IP address
 func (v *Validator) ValidateIP(ip string) error {
 	if err := v.ValidateString(ip); err != nil {
-		return err
+		return fmt.Errorf("validate IP: %w", err)
 	}
 
 	parsedIP := net.ParseIP(ip)
@@ -77,7 +77,7 @@ func (v *Validator) ValidatePort(port int) error {
 // ValidateHex validates a hexadecimal string
 func (v *Validator) ValidateHex(s string) error {
 	if err := v.ValidateString(s); err != nil {
-		return err
+		return fmt.Errorf("validate hex: %w", err)
 	}
 
 	if !v.allowedPatterns["hex"].MatchString(s) {
@@ -90,7 +90,7 @@ func (v *Validator) ValidateHex(s string) error {
 // ValidateBase64 validates a base64 string
 func (v *Validator) ValidateBase64(s string) error {
 	if err := v.ValidateString(s); err != nil {
-		return err
+		return fmt.Errorf("validate base64: %w", err)
 	}
 
 	if !v.allowedPatterns["base64"].MatchString(s) {
@@ -103,7 +103,7 @@ func (v *Validator) ValidateBase64(s string) error {
 // ValidateUserAgent validates a User-Agent string
 func (v *Validator) ValidateUserAgent(ua string) error {
 	if err := v.ValidateString(ua); err != nil {
-		return err
+		return fmt.Errorf("validate user agent: %w", err)
 	}
 
 	// Check for common injection patterns
@@ -121,7 +121,7 @@ func (v *Validator) ValidateUserAgent(ua string) error {
 // ValidateHeaderName validates an HTTP header name
 func (v *Validator) ValidateHeaderName(name string) error {
 	if err := v.ValidateString(name); err != nil {
-		return err
+		return fmt.Errorf("validate header name: %w", err)
 	}
 
 	// Header names should only contain printable ASCII characters except colon
@@ -137,7 +137,7 @@ func (v *Validator) ValidateHeaderName(name string) error {
 // ValidateHeaderValue validates an HTTP header value
 func (v *Validator) ValidateHeaderValue(value string) error {
 	if err := v.ValidateString(value); err != nil {
-		return err
+		return fmt.Errorf("validate header value: %w", err)
 	}
 
 	// Check for CRLF injection

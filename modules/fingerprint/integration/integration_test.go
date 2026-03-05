@@ -242,7 +242,7 @@ func TestConcurrentAccess(t *testing.T) {
 				// 测试随机指纹获取
 				result, err := random.GetRandomFingerprint()
 				if err != nil {
-					errors <- fmt.Errorf("GetRandomFingerprint 失败: %v", err)
+					errors <- fmt.Errorf("GetRandomFingerprint failed: %v", err)
 					continue
 				}
 

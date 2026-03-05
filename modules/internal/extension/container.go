@@ -235,19 +235,19 @@ func (c *Container) Initialize() error {
 	// 预先初始化关键组件
 	// 使用类型化访问器确保正确的工厂注册和初始化
 	if _, err := c.GetValidator(); err != nil {
-		return err
+		return fmt.Errorf("init validator: %w", err)
 	}
 
 	if _, err := c.GetSecurityAuditor(); err != nil {
-		return err
+		return fmt.Errorf("init security auditor: %w", err)
 	}
 
 	if _, err := c.GetRequestGuard(); err != nil {
-		return err
+		return fmt.Errorf("init request guard: %w", err)
 	}
 
 	if _, err := c.GetRateLimiter(); err != nil {
-		return err
+		return fmt.Errorf("init rate limiter: %w", err)
 	}
 
 	c.mu.Lock()
