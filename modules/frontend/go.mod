@@ -7,6 +7,8 @@ require (
 	github.com/vistone/fingerprint/modules/ml v1.0.3
 )
 
+require github.com/vistone/fingerprint/modules/profiles v1.0.3 // indirect
+
 replace (
 	github.com/vistone/fingerprint/modules/core => ../core
 	github.com/vistone/fingerprint/modules/ml => ../ml
