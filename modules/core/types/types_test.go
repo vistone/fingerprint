@@ -115,8 +115,8 @@ func TestOperatingSystemsSlice(t *testing.T) {
 		expectedItems []OperatingSystem
 	}{
 		{
-			name:        "OperatingSystems切片应包含8个操作系统",
-			expectedLen: 8,
+			name:        "OperatingSystems切片应包含12个操作系统",
+			expectedLen: 12,
 			expectedItems: []OperatingSystem{
 				OSWindows10,
 				OSWindows11,
@@ -126,6 +126,10 @@ func TestOperatingSystemsSlice(t *testing.T) {
 				OSLinux,
 				OSLinuxUbuntu,
 				OSLinuxDebian,
+				OSLinuxFedora,
+				OSiOS,
+				OSiPadOS,
+				OSAndroid,
 			},
 		},
 	}

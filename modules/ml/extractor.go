@@ -334,7 +334,7 @@ func (fe *FeatureExtractor) AnalyzeFeatureImportance(trainingData []*core.Featur
 	}
 
 	// 转换为切片并排序
-	var result []FeatureImportance
+	result := make([]FeatureImportance, 0, len(importance))
 	for ft, imp := range importance {
 		result = append(result, FeatureImportance{
 			Feature:    ft,
@@ -379,7 +379,7 @@ func (fe *FeatureExtractor) SelectTopFeatures(importance []FeatureImportance, to
 		topK = len(importance)
 	}
 
-	var result []core.FeatureType
+	result := make([]core.FeatureType, 0, topK)
 	for i := 0; i < topK; i++ {
 		result = append(result, importance[i].Feature)
 	}

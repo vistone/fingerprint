@@ -101,7 +101,7 @@ func (c *SimpleClassifier) PredictTopK(features []float64, k int) []Prediction {
 	}
 
 	// 计算到每个类别的加权距离
-	var results []distanceResult
+	results := make([]distanceResult, 0, len(c.classes))
 	for label, center := range c.classes {
 		dist := c.weightedDistance(features, center)
 		results = append(results, distanceResult{label: label, distance: dist})
@@ -113,7 +113,7 @@ func (c *SimpleClassifier) PredictTopK(features []float64, k int) []Prediction {
 	})
 
 	// 转换为置信度
-	var predictions []Prediction
+	predictions := make([]Prediction, 0, min(k, len(results)))
 	for i := 0; i < k && i < len(results); i++ {
 		// 将距离转换为置信度（距离越小置信度越高）
 		confidence := 1.0 / (1.0 + results[i].distance)
@@ -219,4 +219,12 @@ func (vc *VersionClassifier) Train(features [][]float64, labels []string) error 
 // Predict 预测版本
 func (vc *VersionClassifier) Predict(features []float64) (string, float64) {
 	return vc.classifier.Predict(features)
+}
+
+// min returns the smaller of a and b
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
