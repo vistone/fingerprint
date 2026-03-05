@@ -171,8 +171,8 @@ func TestLRUCache_Stats(t *testing.T) {
 	t.Run("initial stats", func(t *testing.T) {
 		stats := cache.Stats()
 		testhelpers.AssertEqual(t, stats.Entries, 0)
-		testhelpers.AssertEqual(t, stats.Hits, 0)
-		testhelpers.AssertEqual(t, stats.Misses, 0)
+		testhelpers.AssertEqual(t, stats.Hits, int64(0))
+		testhelpers.AssertEqual(t, stats.Misses, int64(0))
 		testhelpers.AssertEqual(t, stats.HitRate, 0.0)
 	})
 
@@ -190,8 +190,8 @@ func TestLRUCache_Stats(t *testing.T) {
 
 		stats := cache.Stats()
 		testhelpers.AssertEqual(t, stats.Entries, 2)
-		testhelpers.AssertEqual(t, stats.Hits, 2)
-		testhelpers.AssertEqual(t, stats.Misses, 2)
+		testhelpers.AssertEqual(t, stats.Hits, int64(2))
+		testhelpers.AssertEqual(t, stats.Misses, int64(2))
 		testhelpers.AssertEqual(t, stats.HitRate, 0.5)
 	})
 }

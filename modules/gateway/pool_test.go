@@ -172,9 +172,15 @@ func TestConnectionPool_HealthCheck(t *testing.T) {
 	pool.SetFactory(factory)
 	pool.SetHealthCheck(healthCheck)
 
-	// Add some connections
+	// Hold connections and put them back to fill the pool
+	// (Get creates new, Put returns to pool)
+	conns := make([]interface{}, 0, 3)
 	for i := 0; i < 3; i++ {
 		conn, _ := pool.Get()
+		conns = append(conns, conn)
+	}
+	// Now put all back to pool
+	for _, conn := range conns {
 		pool.Put(conn)
 	}
 
@@ -208,9 +214,14 @@ func TestConnectionPool_Close(t *testing.T) {
 	}
 	pool.SetFactory(factory)
 
-	// Add connections
+	// Hold connections and put them back to fill the pool
+	conns := make([]interface{}, 0, 3)
 	for i := 0; i < 3; i++ {
 		conn, _ := pool.Get()
+		conns = append(conns, conn)
+	}
+	// Now put all back to pool
+	for _, conn := range conns {
 		pool.Put(conn)
 	}
 

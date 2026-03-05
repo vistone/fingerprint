@@ -136,20 +136,38 @@ func ConvertToGatewayRequest(req *GRPCAnalyzeRequest) *AnalyzeRequest {
 
 // ConvertFromGatewayResponse 转换网关响应为 gRPC 响应
 func ConvertFromGatewayResponse(resp *AnalyzeResponse) *GRPCAnalyzeResponse {
-	return &GRPCAnalyzeResponse{
+	if resp == nil {
+		return nil
+	}
+
+	result := &GRPCAnalyzeResponse{
 		FingerprintHash:  resp.FingerprintHash,
-		Protocol:         string(resp.Classification.Protocol),
-		BrowserFamily:    string(resp.Classification.Family),
-		BrowserVersion:   resp.Classification.Version,
-		Confidence:       resp.Classification.Confidence,
-		RiskLevel:        resp.RiskAssessment.Level.String(),
-		RiskScore:        resp.RiskAssessment.Score,
-		JA3Hash:          resp.JA3.Hash,
-		JA4Fingerprint:   resp.JA4.Fingerprint,
 		DefenseHints:     resp.DefenseHints,
 		Cached:           resp.Cached,
 		ProcessingTimeMs: resp.ProcessingTimeMs,
 	}
+
+	if resp.Classification != nil {
+		result.Protocol = string(resp.Classification.Protocol)
+		result.BrowserFamily = string(resp.Classification.Family)
+		result.BrowserVersion = resp.Classification.Version
+		result.Confidence = resp.Classification.Confidence
+	}
+
+	if resp.RiskAssessment != nil {
+		result.RiskLevel = resp.RiskAssessment.Level.String()
+		result.RiskScore = resp.RiskAssessment.Score
+	}
+
+	if resp.JA3 != nil {
+		result.JA3Hash = resp.JA3.Hash
+	}
+
+	if resp.JA4 != nil {
+		result.JA4Fingerprint = resp.JA4.Fingerprint
+	}
+
+	return result
 }
 
 // ==================== gRPC 客户端 ====================

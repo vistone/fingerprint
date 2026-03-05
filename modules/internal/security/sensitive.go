@@ -126,6 +126,9 @@ func (m *Masker) MaskEmail(email string) string {
 	// Mask most of local part
 	if len(local) > 2 {
 		local = local[:2] + strings.Repeat(string(m.maskChar), len(local)-2)
+	} else if len(local) > 0 {
+		// For short local part (1-2 chars), mask completely
+		local = strings.Repeat(string(m.maskChar), len(local))
 	}
 
 	return local + "@" + domain

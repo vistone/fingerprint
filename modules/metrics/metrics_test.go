@@ -216,7 +216,7 @@ func TestFingerprintMetrics(t *testing.T) {
 		fm.RecordClassification("Firefox", 0.87, time.Millisecond*15)
 
 		stats := fm.GetStats()
-		testhelpers.AssertEqual(t, stats.TotalClassifications, 2)
+		testhelpers.AssertEqual(t, stats.TotalClassifications, int64(2))
 		testhelpers.AssertEqual(t, stats.AverageConfidence > 0, true)
 	})
 
@@ -225,14 +225,14 @@ func TestFingerprintMetrics(t *testing.T) {
 		fm.RecordCacheHit()
 
 		stats := fm.GetStats()
-		testhelpers.AssertEqual(t, stats.CacheHits, 2)
+		testhelpers.AssertEqual(t, stats.CacheHits, int64(2))
 	})
 
 	t.Run("record cache miss", func(t *testing.T) {
 		fm.RecordCacheMiss()
 
 		stats := fm.GetStats()
-		testhelpers.AssertEqual(t, stats.CacheMisses, 1)
+		testhelpers.AssertEqual(t, stats.CacheMisses, int64(1))
 		testhelpers.AssertEqual(t, stats.CacheHitRate < 1.0, true)
 	})
 

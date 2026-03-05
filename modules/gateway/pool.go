@@ -39,6 +39,7 @@ type ConnectionPool struct {
 	healthCheck   func(interface{}) bool
 	running       bool
 	stopHealthCheck chan struct{}
+	activeCount   int // 当前活跃连接数（已分配但未归还）
 }
 
 // NewConnectionPool creates a new connection pool
@@ -81,6 +82,11 @@ func (p *ConnectionPool) Get() (interface{}, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
+	// Check if we've reached max active connections
+	if p.activeCount >= p.maxSize {
+		return nil, ErrPoolExhausted
+	}
+
 	// Try to get an existing connection
 	for len(p.connections) > 0 {
 		// Get from the end for O(1) removal
@@ -93,19 +99,18 @@ func (p *ConnectionPool) Get() (interface{}, error) {
 			continue // Expired, skip
 		}
 
+		p.activeCount++
 		pc.LastUsed = time.Now()
 		return pc.Connection, nil
 	}
 
 	// No available connection, create new one if factory is set
 	if p.factory != nil {
-		if len(p.connections) >= p.maxSize {
-			return nil, ErrPoolExhausted
-		}
 		conn, err := p.factory()
 		if err != nil {
 			return nil, err
 		}
+		p.activeCount++
 		return conn, nil
 	}
 
@@ -121,7 +126,12 @@ func (p *ConnectionPool) Put(conn interface{}) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	// Don't exceed max size
+	// Decrease active count
+	if p.activeCount > 0 {
+		p.activeCount--
+	}
+
+	// Don't exceed max size for pooled connections
 	if len(p.connections) >= p.maxSize {
 		return nil // Silently drop excess connections
 	}
@@ -230,5 +240,6 @@ func (p *ConnectionPool) Close() error {
 	defer p.mu.Unlock()
 
 	p.connections = p.connections[:0]
+	p.activeCount = 0
 	return nil
 }

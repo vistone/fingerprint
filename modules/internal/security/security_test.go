@@ -231,7 +231,7 @@ func TestSanitizer_SanitizeHTML(t *testing.T) {
 		{
 			name:     "with script tag",
 			input:    "<script>alert(1)</script>",
-			expected: "&lt;script&gt;alert(1)&lt;/script&gt;",
+			expected: "&lt;script&gt;alert(1)&lt;&#x2F;script&gt;",
 		},
 		{
 			name:     "with quotes",
