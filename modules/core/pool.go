@@ -11,10 +11,10 @@ import (
 type PoolConfig struct {
 	// MaxSize 池中最大对象数（0 = 无限制）
 	MaxSize int
-	
+
 	// InitialSize 初始对象数
 	InitialSize int
-	
+
 	// EnableMetrics 是否启用监控
 	EnableMetrics bool
 }
@@ -38,27 +38,27 @@ func NewFeatureVectorPool(config *PoolConfig) *FeatureVectorPool {
 	if config == nil {
 		config = &DefaultPoolConfig
 	}
-	
+
 	p := &FeatureVectorPool{
 		config: *config,
 	}
-	
+
 	if config.EnableMetrics {
 		p.metrics = GlobalMonitor.Register("feature_vector")
 	}
-	
+
 	p.pool.New = func() interface{} {
 		if p.metrics != nil {
 			p.metrics.recordGet(false) // miss
 		}
 		return NewFeatureVector()
 	}
-	
+
 	// 预分配初始对象
 	for i := 0; i < config.InitialSize; i++ {
 		p.pool.Put(NewFeatureVector())
 	}
-	
+
 	return p
 }
 
@@ -68,7 +68,7 @@ func (p *FeatureVectorPool) Get() *FeatureVector {
 	if fv, ok := v.(*FeatureVector); ok {
 		if p.metrics != nil {
 			// 通过 New 函数已经记录了 miss，这里只记录 hit
-			if fv.Features != nil && len(fv.Features) > 0 {
+			if len(fv.Features) > 0 {
 				p.metrics.recordGet(true) // hit
 			}
 		}
@@ -85,15 +85,15 @@ func (p *FeatureVectorPool) Put(fv *FeatureVector) {
 	if fv == nil {
 		return
 	}
-	
+
 	// 清理敏感数据 - 直接重建 map 更快
 	fv.Features = make(map[FeatureType]float64, 32)
 	fv.Metadata = make(map[string]interface{}, 8)
-	
+
 	if p.metrics != nil {
 		p.metrics.recordPut()
 	}
-	
+
 	p.pool.Put(fv)
 }
 
@@ -121,15 +121,15 @@ func NewHTTPHeadersPool(config *PoolConfig) *HTTPHeadersPool {
 	if config == nil {
 		config = &DefaultPoolConfig
 	}
-	
+
 	p := &HTTPHeadersPool{
 		config: *config,
 	}
-	
+
 	if config.EnableMetrics {
 		p.metrics = GlobalMonitor.Register("http_headers")
 	}
-	
+
 	p.pool.New = func() interface{} {
 		if p.metrics != nil {
 			p.metrics.recordGet(false)
@@ -138,13 +138,13 @@ func NewHTTPHeadersPool(config *PoolConfig) *HTTPHeadersPool {
 			Custom: make(map[string]string, 16),
 		}
 	}
-	
+
 	for i := 0; i < config.InitialSize; i++ {
 		p.pool.Put(&HTTPHeaders{
 			Custom: make(map[string]string, 16),
 		})
 	}
-	
+
 	return p
 }
 
@@ -169,14 +169,14 @@ func (p *HTTPHeadersPool) Put(h *HTTPHeaders) {
 	if h == nil {
 		return
 	}
-	
+
 	// 清理敏感数据 - 直接重建 map 更快
 	h.Custom = make(map[string]string, 8)
-	
+
 	if p.metrics != nil {
 		p.metrics.recordPut()
 	}
-	
+
 	p.pool.Put(h)
 }
 
@@ -204,22 +204,22 @@ func NewStringBuilderPool(config *PoolConfig) *StringBuilderPool {
 	if config == nil {
 		config = &DefaultPoolConfig
 	}
-	
+
 	p := &StringBuilderPool{
 		config: *config,
 	}
-	
+
 	if config.EnableMetrics {
 		p.metrics = GlobalMonitor.Register("string_builder")
 	}
-	
+
 	p.pool.New = func() interface{} {
 		if p.metrics != nil {
 			p.metrics.recordGet(false)
 		}
 		return &strings.Builder{}
 	}
-	
+
 	return p
 }
 
@@ -238,11 +238,11 @@ func (p *StringBuilderPool) Put(sb *strings.Builder) {
 	if sb == nil {
 		return
 	}
-	
+
 	if p.metrics != nil {
 		p.metrics.recordPut()
 	}
-	
+
 	p.pool.Put(sb)
 }
 
@@ -270,22 +270,22 @@ func NewBufferPool(config *PoolConfig) *BufferPool {
 	if config == nil {
 		config = &DefaultPoolConfig
 	}
-	
+
 	p := &BufferPool{
 		config: *config,
 	}
-	
+
 	if config.EnableMetrics {
 		p.metrics = GlobalMonitor.Register("buffer")
 	}
-	
+
 	p.pool.New = func() interface{} {
 		if p.metrics != nil {
 			p.metrics.recordGet(false)
 		}
 		return &bytes.Buffer{}
 	}
-	
+
 	return p
 }
 
@@ -304,17 +304,17 @@ func (p *BufferPool) Put(b *bytes.Buffer) {
 	if b == nil {
 		return
 	}
-	
+
 	// 限制缓冲区大小，防止内存泄漏
 	if b.Cap() > 64*1024 { // 64KB
 		// 不归还过大的缓冲区，让 GC 回收
 		return
 	}
-	
+
 	if p.metrics != nil {
 		p.metrics.recordPut()
 	}
-	
+
 	p.pool.Put(b)
 }
 
@@ -342,22 +342,22 @@ func NewMapPool(config *PoolConfig) *MapPool {
 	if config == nil {
 		config = &DefaultPoolConfig
 	}
-	
+
 	p := &MapPool{
 		config: *config,
 	}
-	
+
 	if config.EnableMetrics {
 		p.metrics = GlobalMonitor.Register("map")
 	}
-	
+
 	p.pool.New = func() interface{} {
 		if p.metrics != nil {
 			p.metrics.recordGet(false)
 		}
 		return make(map[string]interface{}, 16)
 	}
-	
+
 	return p
 }
 
@@ -376,14 +376,14 @@ func (p *MapPool) Put(m map[string]interface{}) {
 	if m == nil {
 		return
 	}
-	
+
 	// 清理 map - 直接重建更快，让 GC 回收旧 map
 	m = make(map[string]interface{}, 16)
-	
+
 	if p.metrics != nil {
 		p.metrics.recordPut()
 	}
-	
+
 	p.pool.Put(m)
 }
 
@@ -415,23 +415,23 @@ func NewSlicePool(size int, config *PoolConfig) *SlicePool {
 	if size <= 0 {
 		size = 1024 // 默认 1KB
 	}
-	
+
 	p := &SlicePool{
 		config: *config,
 		size:   size,
 	}
-	
+
 	if config.EnableMetrics {
 		p.metrics = GlobalMonitor.Register("slice")
 	}
-	
+
 	p.pool.New = func() interface{} {
 		if p.metrics != nil {
 			p.metrics.recordGet(false)
 		}
 		return make([]byte, 0, size)
 	}
-	
+
 	return p
 }
 
@@ -449,16 +449,16 @@ func (p *SlicePool) Put(s []byte) {
 	if s == nil {
 		return
 	}
-	
+
 	// 限制容量，防止内存泄漏
 	if cap(s) > p.size*4 {
 		return // 不归还过大的切片
 	}
-	
+
 	if p.metrics != nil {
 		p.metrics.recordPut()
 	}
-	
+
 	p.pool.Put(s[:0]) // 重置长度
 }
 
@@ -490,7 +490,7 @@ var Pools = &GlobalPools{}
 // InitPools 初始化全局对象池
 func InitPools() {
 	config := &DefaultPoolConfig
-	
+
 	Pools.FeatureVectors = NewFeatureVectorPool(config)
 	Pools.HTTPHeaders = NewHTTPHeadersPool(config)
 	Pools.Strings = NewStringBuilderPool(config)
