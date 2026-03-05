@@ -10,7 +10,7 @@
 package main
 
 import (
-    "github.com/vistone/fingerprint/internal/metrics"
+    "github.com/vistone/fingerprint/modules/internal/metrics"
 )
 
 func main() {

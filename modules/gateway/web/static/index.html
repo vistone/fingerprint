@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fingerprint Gateway - Admin Console</title>
+    <link rel="stylesheet" href="/admin/static/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">🔐</div>
+                <h1>Fingerprint<br><small>Gateway</small></h1>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#dashboard" class="nav-item active" data-page="dashboard">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#profiles" class="nav-item" data-page="profiles">
+                    <span class="icon">🌐</span>
+                    <span>Profiles</span>
+                </a>
+                <a href="#analytics" class="nav-item" data-page="analytics">
+                    <span class="icon">📈</span>
+                    <span>Analytics</span>
+                </a>
+                <a href="#requests" class="nav-item" data-page="requests">
+                    <span class="icon">🔍</span>
+                    <span>Requests</span>
+                </a>
+                <a href="#config" class="nav-item" data-page="config">
+                    <span class="icon">⚙️</span>
+                    <span>Config</span>
+                </a>
+                <a href="#logs" class="nav-item" data-page="logs">
+                    <span class="icon">📋</span>
+                    <span>Logs</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="version">v3.0.0</div>
+                <div class="status online">● Online</div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" id="menuToggle">☰</button>
+                    <h2 id="pageTitle">Dashboard</h2>
+                </div>
+                <div class="header-right">
+                    <div class="search-box">
+                        <input type="text" placeholder="Search..." id="globalSearch">
+                        <button>🔍</button>
+                    </div>
+                    <div class="notifications">
+                        <button class="icon-btn">🔔</button>
+                        <span class="badge">3</span>
+                    </div>
+                    <div class="user-menu">
+                        <button class="user-btn">
+                            <span class="avatar">👤</span>
+                            <span>Admin</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content">
+                <!-- Dashboard Page -->
+                <div class="page active" id="dashboard">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">🌐</div>
+                            <div class="stat-info">
+                                <h3>Total Profiles</h3>
+                                <p class="stat-value" id="totalProfiles">-</p>
+                                <span class="stat-change positive">+80 this month</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-info">
+                                <h3>Requests/sec</h3>
+                                <p class="stat-value" id="requestsPerSec">-</p>
+                                <span class="stat-change positive">+12% vs last hour</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⏱️</div>
+                            <div class="stat-info">
+                                <h3>Avg Latency</h3>
+                                <p class="stat-value" id="avgLatency">-</p>
+                                <span class="stat-change positive">-5ms vs last hour</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-info">
+                                <h3>Success Rate</h3>
+                                <p class="stat-value" id="successRate">-</p>
+                                <span class="stat-change positive">99.9% uptime</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="card chart-card">
+                            <div class="card-header">
+                                <h3>Request Volume</h3>
+                                <select class="time-range">
+                                    <option>Last 1 hour</option>
+                                    <option>Last 6 hours</option>
+                                    <option>Last 24 hours</option>
+                                </select>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="requestChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card chart-card">
+                            <div class="card-header">
+                                <h3>Classification Distribution</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="classificationChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Recent Classifications</h3>
+                                <a href="#requests" class="link">View All</a>
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>JA3 Hash</th>
+                                        <th>Browser</th>
+                                        <th>Confidence</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentClassifications">
+                                    <tr><td colspan="5" class="loading">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>System Status</h3>
+                            </div>
+                            <div class="status-list">
+                                <div class="status-item">
+                                    <span class="status-label">API Server</span>
+                                    <span class="status-badge online">Running</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">gRPC Server</span>
+                                    <span class="status-badge online">Running</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">ML Classifier</span>
+                                    <span class="status-badge online">Active</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">Cache</span>
+                                    <span class="status-badge online">Connected</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">Database</span>
+                                    <span class="status-badge online">Connected</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profiles Page -->
+                <div class="page" id="profiles">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Browser Profiles</h3>
+                            <div class="header-actions">
+                                <input type="text" placeholder="Search profiles..." id="profileSearch" class="search-input">
+                                <select id="browserFilter">
+                                    <option value="">All Browsers</option>
+                                    <option value="chrome">Chrome</option>
+                                    <option value="firefox">Firefox</option>
+                                    <option value="safari">Safari</option>
+                                    <option value="edge">Edge</option>
+                                    <option value="opera">Opera</option>
+                                </select>
+                                <select id="osFilter">
+                                    <option value="">All OS</option>
+                                    <option value="windows">Windows</option>
+                                    <option value="macos">macOS</option>
+                                    <option value="linux">Linux</option>
+                                    <option value="ios">iOS</option>
+                                    <option value="android">Android</option>
+                                </select>
+                                <button class="btn btn-primary">+ Add Profile</button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table" id="profilesTable">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Browser</th>
+                                        <th>Version</th>
+                                        <th>OS</th>
+                                        <th>TLS Version</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="profilesTableBody">
+                                    <tr><td colspan="7" class="loading">Loading profiles...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination">
+                            <span id="profileCount">0 profiles</span>
+                            <div class="page-buttons">
+                                <button class="btn btn-sm" disabled>← Prev</button>
+                                <button class="btn btn-sm">Next →</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Page -->
+                <div class="page" id="analytics">
+                    <div class="analytics-grid">
+                        <div class="card chart-card wide">
+                            <div class="card-header">
+                                <h3>Traffic Overview</h3>
+                                <select class="time-range">
+                                    <option>Last 24 hours</option>
+                                    <option>Last 7 days</option>
+                                    <option>Last 30 days</option>
+                                </select>
+                            </div>
+                            <div class="chart-container large">
+                                <canvas id="trafficChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Browser Distribution</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="browserChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>OS Distribution</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="osChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Top Fingerprints</h3>
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>JA3 Hash</th>
+                                        <th>Count</th>
+                                        <th>%</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topFingerprints">
+                                    <tr><td colspan="3" class="loading">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Geographic Distribution</h3>
+                            </div>
+                            <div class="geo-placeholder">
+                                🗺️ World Map Placeholder
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Requests Page -->
+                <div class="page" id="requests">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Request Log</h3>
+                            <div class="header-actions">
+                                <input type="text" placeholder="Search by IP, JA3, or User-Agent..." class="search-input">
+                                <button class="btn">🔍</button>
+                                <button class="btn btn-secondary">Export</button>
+                            </div>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>IP</th>
+                                    <th>Method</th>
+                                    <th>Path</th>
+                                    <th>JA3</th>
+                                    <th>Classification</th>
+                                    <th>Latency</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requestsTable">
+                                <tr><td colspan="8" class="loading">Loading requests...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Config Page -->
+                <div class="page" id="config">
+                    <div class="config-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Server Configuration</h3>
+                            </div>
+                            <div class="config-form">
+                                <div class="form-group">
+                                    <label>HTTP Port</label>
+                                    <input type="number" value="8080" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>gRPC Port</label>
+                                    <input type="number" value="9090" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Read Timeout (s)</label>
+                                    <input type="number" value="30" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Write Timeout (s)</label>
+                                    <input type="number" value="30" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Rate Limiting</h3>
+                            </div>
+                            <div class="config-form">
+                                <div class="form-group">
+                                    <label>Enabled</label>
+                                    <label class="toggle">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label>Requests per second</label>
+                                    <input type="number" value="1000" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Burst size</label>
+                                    <input type="number" value="1500" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Cache Configuration</h3>
+                            </div>
+                            <div class="config-form">
+                                <div class="form-group">
+                                    <label>Enabled</label>
+                                    <label class="toggle">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label>Max size</label>
+                                    <input type="number" value="10000" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>TTL (minutes)</label>
+                                    <input type="number" value="5" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>ML Configuration</h3>
+                            </div>
+                            <div class="config-form">
+                                <div class="form-group">
+                                    <label>Classifier Enabled</label>
+                                    <label class="toggle">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label>Min Confidence</label>
+                                    <input type="number" value="0.85" step="0.01" min="0" max="1" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Prediction Cache Size</label>
+                                    <input type="number" value="5000" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-actions">
+                        <button class="btn btn-primary">💾 Save Changes</button>
+                        <button class="btn btn-secondary">↩️ Reset</button>
+                    </div>
+                </div>
+
+                <!-- Logs Page -->
+                <div class="page" id="logs">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>System Logs</h3>
+                            <div class="header-actions">
+                                <select class="log-level">
+                                    <option>All Levels</option>
+                                    <option>DEBUG</option>
+                                    <option>INFO</option>
+                                    <option>WARNING</option>
+                                    <option>ERROR</option>
+                                </select>
+                                <button class="btn">🔄 Refresh</button>
+                                <button class="btn btn-secondary">📥 Download</button>
+                            </div>
+                        </div>
+                        <div class="log-container">
+                            <pre class="log-output" id="logOutput">Loading logs...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/admin/static/js/app.js"></script>
+    <script src="/admin/static/js/charts.js"></script>
+    <script src="/admin/static/js/api.js"></script>
+</body>
+</html>

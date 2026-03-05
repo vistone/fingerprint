@@ -4,6 +4,43 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Go Workspace 架构重构** (2026-03-05)
+  - 将单模块项目重构为 Go Workspace 多模块架构
+  - 根目录移除 `go.mod`，使用 `go.work` 管理 14 个模块
+  - 模块结构：
+    - `modules/core` - 核心类型（零依赖）
+    - `modules/profiles` - 指纹配置（187+ 指纹）
+    - `modules/tls` - TLS 指纹分析
+    - `modules/http` - HTTP 指纹分析
+    - `modules/ml` - ML 分类器
+    - `modules/defense` - 安全防护
+    - `modules/frontend` - 前端 SDK
+    - `modules/gateway` - API 网关
+    - `modules/generator` - 指纹生成器
+    - `modules/network` - 网络层分析
+    - `modules/internal` - 内部工具
+    - `modules/config` - 配置管理
+    - `modules/plugin` - 插件系统
+    - `modules/fingerprint` - Facade 统一入口
+  - 迁移根目录代码到对应模块：
+    - `types/` → `modules/core/types/`
+    - `profiles/` → `modules/profiles/legacy/`
+    - `http/` → `modules/http/legacy/`
+    - `tls/` → `modules/tls/legacy/`
+    - `security/` → `modules/defense/legacy/`
+    - `generator/` → `modules/generator/`
+    - `network/` → `modules/network/`
+    - `internal/` → `modules/internal/`
+    - `config/` → `modules/config/`
+    - `plugin/` → `modules/plugin/`
+  - 更新所有导入路径为新的模块路径
+  - 文档对齐：
+    - 更新 `docs/ARCHITECTURE.md` - Go Workspace 架构说明
+    - 更新 `docs/API.md` - 新模块导入路径
+    - 更新 `docs/DEVELOPER_GUIDE.md` - 开发环境设置
+
 ### Added
 
 - **WebSocket 指纹异常检测** (2026-03-04)

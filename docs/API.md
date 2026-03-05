@@ -1,14 +1,14 @@
 # API 文档
 
-本文档描述 fingerprint 库的公共 API 使用方式。
+本文档描述 fingerprint 库的公共 API 使用方式（Go Workspace 版本）。
 
 ## 快速开始
 
 ### 安装
 
 ```bash
-go get github.com/vistone/fingerprint
-```plaintext
+go get github.com/vistone/fingerprint/modules/fingerprint
+```
 
 ### 基本使用
 
@@ -16,577 +16,393 @@ go get github.com/vistone/fingerprint
 package main
 
 import (
-    "github.com/vistone/fingerprint/profiles"
-    "github.com/vistone/fingerprint/tls/ja3"
+    "github.com/vistone/fingerprint/modules/profiles"
+    "github.com/vistone/fingerprint/modules/tls"
 )
 
 func main() {
-    // 选择 Profile
-    profile := profiles.Chrome_120
+    // 获取指纹
+    profile, _ := profiles.Get("chrome_133")
     
-    // 获取 TLS 配置
-    spec := profile.GetClientHelloSpec()
-    
-    // 使用 utls 建立连接
-    // ...
+    // 使用 TLS 模块
+    ja3 := tls.CalculateJA3(clientHello)
 }
-```plaintext
+```
 
-## Profile API
+## 导入路径对照表
 
-### ClientProfile
+| 旧路径 (废弃) | 新路径 |
+|--------------|--------|
+| `github.com/vistone/fingerprint` | `github.com/vistone/fingerprint/modules/fingerprint` |
+| `github.com/vistone/fingerprint/profiles` | `github.com/vistone/fingerprint/modules/profiles` |
+| `github.com/vistone/fingerprint/tls/ja3` | `github.com/vistone/fingerprint/modules/tls` |
+| `github.com/vistone/fingerprint/http/ja4h` | `github.com/vistone/fingerprint/modules/http/legacy/ja4h` |
+| `github.com/vistone/fingerprint/internal/config` | `github.com/vistone/fingerprint/modules/config` |
+| `github.com/vistone/fingerprint/internal/tcpip` | `github.com/vistone/fingerprint/modules/internal/tcpip` |
+| `github.com/vistone/fingerprint/types` | `github.com/vistone/fingerprint/modules/core/types` |
 
-完整的客户端指纹配置。
+## Core 模块 API
 
-```go
-type ClientProfile struct {
-    ClientHelloSpec     tls.ClientHelloSpec
-    HTTP2Settings       map[http2.SettingID]uint32
-    HTTP2PseudoHeaders  []string
-    ConnectionFlow      uint32
-    PriorityFrames      []http2.Priority
-}
-```plaintext
-
-#### 方法
-
-**GetClientHelloSpec**
+### 基础类型
 
 ```go
-func (p ClientProfile) GetClientHelloSpec() (tls.ClientHelloSpec, error)
-```plaintext
+import "github.com/vistone/fingerprint/modules/core"
 
-返回 TLS ClientHello 配置。
+// 浏览器类型
+const (
+    BrowserChrome  = core.BrowserChrome
+    BrowserFirefox = core.BrowserFirefox
+    BrowserSafari  = core.BrowserSafari
+    BrowserEdge    = core.BrowserEdge
+    BrowserOpera   = core.BrowserOpera
+    BrowserBrave   = core.BrowserBrave
+)
 
-```go
-profile := profiles.Chrome_120
-spec, err := profile.GetClientHelloSpec()
-if err != nil {
-    log.Fatal(err)
-}
+// 操作系统类型
+const (
+    OSWindows10   = core.OSWindows10
+    OSWindows11   = core.OSWindows11
+    OSMacOS13     = core.OSMacOS13
+    OSMacOS14     = core.OSMacOS14
+    OSMacOS15     = core.OSMacOS15
+    OSLinux       = core.OSLinux
+    OSiOS         = core.OSiOS
+    OSAndroid     = core.OSAndroid
+)
+```
 
-// 使用 utls
-cfg := &tls.Config{ServerName: "example.com"}
-conn := tls.UClient(conn, cfg, tls.HelloCustom)
-conn.ApplyPreset(spec)
-```plaintext
+## Profiles 模块 API
 
-**GetSettings**
-
-```go
-func (p ClientProfile) GetSettings() map[http2.SettingID]uint32
-```plaintext
-
-返回 HTTP/2 SETTINGS 帧参数。
-
-```go
-settings := profile.GetSettings()
-for id, value := range settings {
-    fmt.Printf("Setting %d = %d\n", id, value)
-}
-```plaintext
-
-**GetPseudoHeaderOrder**
+### 获取指纹
 
 ```go
-func (p ClientProfile) GetPseudoHeaderOrder() []string
-```plaintext
+import "github.com/vistone/fingerprint/modules/profiles"
 
-返回 HTTP/2 伪头部顺序。
-
-```go
-order := profile.GetPseudoHeaderOrder()
-// 返回: []string{":method", ":authority", ":scheme", ":path"}
-```plaintext
-
-### Profile 选择
-
-```go
-// 内置 Profile
-profile := profiles.Chrome_120
-profile := profiles.Firefox_121
-profile := profiles.Safari_17
-
-// 通过名称获取
-profile, ok := profiles.Get("chrome_120")
+// 通过 ID 获取
+profile, ok := profiles.Get("chrome_133")
 if !ok {
     log.Fatal("profile not found")
 }
 
-// 通过 User-Agent 自动匹配
-profile := profiles.FromUserAgent(ua)
-```plaintext
+// 获取随机指纹
+profile := profiles.GetRandom()
 
-## TLS API
+// 按浏览器类型获取
+chromeProfiles := profiles.GetByBrowser(core.BrowserChrome)
 
-### JA3
+// 获取所有指纹
+allProfiles := profiles.GetAll()
+```
 
-#### Parse
-
-```go
-func Parse(ja3 string) (*JA3, error)
-```plaintext
-
-解析 JA3 字符串。
+### 预定义指纹变量
 
 ```go
-ja3 := "769,47-53-5-10,0-10-11,23-24-25,0"
-parsed, err := ja3.Parse(ja3)
-if err != nil {
-    log.Fatal(err)
+// Chrome 系列
+profiles.Chrome115, profiles.Chrome116, ... profiles.Chrome140
+profiles.Chrome131, profiles.Chrome133  // 内置
+
+// Firefox 系列  
+profiles.Firefox115, ... profiles.Firefox135
+
+// Safari 系列
+profiles.Safari16_0, ... profiles.Safari18_2
+
+// Edge 系列
+profiles.Edge115, ... profiles.Edge130
+
+// Opera 系列
+profiles.Opera100, ... profiles.Opera110
+
+// Brave 系列
+profiles.Brave1_60, ... profiles.Brave1_72
+
+// 移动端
+profiles.IOSSafari16, profiles.IOSSafari17, profiles.IOSSafari18
+profiles.AndroidChrome115, ... profiles.AndroidChrome131
+profiles.AndroidFirefox115, ... profiles.AndroidFirefox130
+```
+
+### 注册自定义指纹
+
+```go
+myProfile := profiles.ClientProfile{
+    ID:             "my_custom",
+    Name:           "My Custom Profile",
+    BrowserType:    core.BrowserChrome,
+    BrowserVersion: "120.0",
+    OS:             core.OSWindows11,
+    OSVersion:      "10.0.22631",
+    TLSVersion:     0x0303,
+    CipherSuites:   []uint16{0x1301, 0x1302, 0x1303},
+    Headers: &core.HTTPHeaders{
+        Accept:         "text/html,*/*",
+        AcceptLanguage: "en-US,en;q=0.9",
+    },
 }
 
-fmt.Printf("Version: %d\n", parsed.Version)
-fmt.Printf("Ciphers: %v\n", parsed.CipherSuites)
-```plaintext
+profiles.Register(myProfile)
+```
 
-#### Calculate
+## Fingerprint Facade API
 
-```go
-func Calculate(data []byte) string
-```plaintext
-
-从 ClientHello 数据计算 JA3 指纹。
+### 统一入口
 
 ```go
-clientHello := []byte{...} // TLS ClientHello 消息
-fingerprint := ja3.Calculate(clientHello)
-fmt.Printf("JA3: %s\n", fingerprint)
-```plaintext
+import "github.com/vistone/fingerprint/modules/fingerprint"
 
-#### String
+// 获取随机指纹
+profile := fingerprint.GetRandom()
 
-```go
-func (j *JA3) String() string
-```plaintext
+// 按浏览器获取
+chrome := fingerprint.GetRandomByBrowser(fingerprint.BrowserChrome)
 
-将 JA3 结构序列化为字符串。
+// 分析请求
+analyzer := fingerprint.NewAnalyzer()
+result := analyzer.Analyze(request)
+```
 
-```go
-ja3Obj := &ja3.JA3{
-    Version:     769,
-    CipherSuites: []uint16{47, 53, 5, 10},
-    Extensions:   []uint16{0, 10, 11},
-    EllipticCurves: []uint16{23, 24, 25},
-    EllipticCurvePointFormats: []uint8{0},
-}
-fmt.Println(ja3Obj.String())
-```plaintext
+## TLS 模块 API
 
-### JA4
+### JA3 指纹
 
 ```go
-func CalculateJA4(clientHello []byte) (string, error)
-```plaintext
+import "github.com/vistone/fingerprint/modules/tls"
 
-计算 JA4 指纹。
+// 计算 JA3
+ja3 := tls.CalculateJA3(clientHello)
+
+// 计算 JA3 (legacy)
+ja3, err := tls.CalculateJA3Legacy(clientHello)
+```
+
+### JA4/JA4S (Legacy)
 
 ```go
+import "github.com/vistone/fingerprint/modules/tls/legacy/ja4"
+import "github.com/vistone/fingerprint/modules/tls/legacy/ja4s"
+
+// JA4
 fp, err := ja4.CalculateJA4(clientHello)
-if err != nil {
-    log.Fatal(err)
-}
-fmt.Printf("JA4: %s\n", fp)
-// 输出: t13d1516h2_8daaf6152771_b1ff8e5f1d09
-```plaintext
 
-### JA4S
+// JA4S
+result, err := ja4s.ComputeJA4S(serverHelloData)
+```
 
-```go
-func ComputeJA4S(data ServerHelloData) (*JA4SResult, error)
-func ComputeJA4SFromBytes(serverHelloBytes []byte) (*JA4SResult, error)
-func MatchJA4S(hash1, hash2 string) bool
-```plaintext
+## HTTP 模块 API
 
-计算 JA4S（Server Hello）指纹。
+### JA4H (Legacy)
 
 ```go
-// 从结构化数据计算
-result, err := ja4s.ComputeJA4S(ja4s.ServerHelloData{
-    TLSVersion:  0x0304,
-    CipherSuite: 0x1301,
-    Extensions:  []uint16{0x002b, 0x0033},
-    Compression: 0,
-})
-if err != nil {
-    log.Fatal(err)
-}
-fmt.Printf("JA4S: %s\n", result.Hash)
+import "github.com/vistone/fingerprint/modules/http/legacy/ja4h"
 
-// 从原始字节数据计算
-result, err = ja4s.ComputeJA4SFromBytes(serverHelloBytes)
-
-// 比较两个 JA4S 哈希
-match := ja4s.MatchJA4S(hash1, hash2)
-```plaintext
-
-## HTTP API
-
-### HTTP/2 分析
-
-#### AnalyzeFrame
-
-```go
-func AnalyzeFrame(data []byte) (*FrameInfo, error)
-```plaintext
-
-分析 HTTP/2 帧。
-
-```go
-frameData := []byte{0x00, 0x00, 0x00, 0x04, 0x01, ...}
-info, err := http2.AnalyzeFrame(frameData)
-if err != nil {
-    log.Fatal(err)
-}
-
-fmt.Printf("Type: %s\n", info.Type)
-fmt.Printf("Flags: %d\n", info.Flags)
-fmt.Printf("StreamID: %d\n", info.StreamID)
-```plaintext
-
-#### ParseSettings
-
-```go
-func ParseSettings(data []byte) (map[SettingID]uint32, error)
-```plaintext
-
-解析 SETTINGS 帧负载。
-
-```go
-settings, err := http2.ParseSettings(frameData)
-if err != nil {
-    log.Fatal(err)
-}
-
-for id, value := range settings {
-    fmt.Printf("%s = %d\n", id.String(), value)
-}
-```plaintext
-
-### JA4H
-
-```go
-func CalculateJA4H(req *http.Request) (string, error)
-```plaintext
-
-计算 HTTP 请求指纹。
-
-```go
-req, _ := http.NewRequest("GET", "https://example.com/", nil)
-req.Header.Set("User-Agent", "Mozilla/5.0...")
-req.Header.Set("Accept", "text/html")
-
+// 计算 JA4H
 fp, err := ja4h.CalculateJA4H(req)
-if err != nil {
-    log.Fatal(err)
-}
-fmt.Printf("JA4H: %s\n", fp)
-```plaintext
+```
 
-### Client Hints
+### Client Hints (Legacy)
 
 ```go
-func ParseClientHints(headers http.Header) (*ClientHints, error)
-```plaintext
+import "github.com/vistone/fingerprint/modules/http/legacy/clienthints"
 
-解析 Client Hints 头。
+// 解析 Client Hints
+hints, err := clienthints.ParseClientHints(headers)
+```
 
-```go
-hints, err := clienthints.ParseClientHints(req.Header)
-if err != nil {
-    log.Fatal(err)
-}
+## ML 模块 API
 
-fmt.Printf("Platform: %s\n", hints.Platform)
-fmt.Printf("Mobile: %v\n", hints.Mobile)
-```plaintext
-
-## Config API
-
-### 全局配置
+### 分类器
 
 ```go
-import "github.com/vistone/fingerprint/internal/config"
+import "github.com/vistone/fingerprint/modules/ml"
 
-// 获取当前配置
-cfg := config.Get()
+// 创建分类器
+classifier := ml.NewClassifier(ml.Config{
+    Threshold: 0.8,
+})
 
-// 获取克隆（线程安全）
-localCfg := cfg.Clone()
-```plaintext
+// 训练
+classifier.Train(dataset)
 
-### 动态配置
+// 预测
+result := classifier.Predict(features)
+```
+
+## Defense 模块 API
+
+### 异常检测
 
 ```go
-// 监听配置变更
+import "github.com/vistone/fingerprint/modules/defense"
+
+// 创建检测器
+detector := defense.NewDetector()
+
+// 分析
+score := detector.Analyze(fingerprint)
+```
+
+## Gateway 模块 API
+
+### API 网关
+
+```go
+import "github.com/vistone/fingerprint/modules/gateway"
+
+// 创建网关
+gw := gateway.New(gateway.Config{
+    RateLimit: 1000,
+})
+
+// 启动
+gw.Start(":8080")
+```
+
+## Generator 模块 API
+
+### 指纹生成
+
+```go
+import "github.com/vistone/fingerprint/modules/generator"
+
+// 生成随机指纹
+profile := generator.GenerateRandom()
+
+// 生成特定浏览器指纹
+profile := generator.GenerateForBrowser(core.BrowserChrome)
+```
+
+## Network 模块 API
+
+### TCP/IP 分析
+
+```go
+import "github.com/vistone/fingerprint/modules/network"
+
+// 分析 TCP
+behavior := network.AnalyzeTCP(packet)
+
+// 分析 QUIC
+quicInfo := network.AnalyzeQUIC(packet)
+```
+
+## Internal 模块 API
+
+### 工具函数
+
+```go
+import "github.com/vistone/fingerprint/modules/internal/utils"
+
+// 随机选择
+choice := utils.RandomChoice(items)
+```
+
+### 指标
+
+```go
+import "github.com/vistone/fingerprint/modules/internal/metrics"
+
+// 记录指标
+metrics.RecordFingerprintGeneration("Chrome", "Windows", nil)
+```
+
+## Config 模块 API
+
+### 配置管理
+
+```go
+import "github.com/vistone/fingerprint/modules/config"
+
+// 加载配置
+cfg := config.Load("config.yaml")
+
+// 监听变更
 ch := make(chan config.Change)
 config.Watch(ch)
-
-go func() {
-    for change := range ch {
-        fmt.Printf("Config changed: %s\n", change.Path)
-    }
-}()
-
-// 手动重载
-if err := config.Reload(); err != nil {
-    log.Fatal(err)
-}
-```plaintext
-
-### Feature Extraction 配置
-
-```go
-featCfg := config.GetFeatureExtractionConfig()
-
-if featCfg.TLS.JA3.Enabled {
-    // 启用 JA3 提取
-}
-
-if featCfg.HTTP.Headers.Enabled {
-    // 启用 HTTP 头部提取
-}
-```plaintext
-
-## TCP/IP API
-
-### 分析网络行为
-
-```go
-import "github.com/vistone/fingerprint/internal/tcpip"
-
-// 分析数据包
-behavior, err := tcpip.AnalyzeNetworkBehavior(packet)
-if err != nil {
-    log.Fatal(err)
-}
-
-fmt.Printf("OS: %s\n", behavior.OS)
-fmt.Printf("TTL: %d\n", behavior.TTL)
-fmt.Printf("Window Size: %d\n", behavior.WindowSize)
-```plaintext
-
-### TCP 签名匹配
-
-```go
-signature := tcpip.TCPSignature{
-    WindowSize: 65535,
-    Options:    []byte{0x02, 0x04, 0x05, 0xb4, 0x01, 0x03, 0x03, 0x08},
-    TTL:        64,
-}
-
-os, confidence := tcpip.MatchOSSignature(signature)
-fmt.Printf("Detected OS: %s (confidence: %.2f)\n", os, confidence)
-```plaintext
-
-## Metrics API
-
-### 默认服务器
-
-```go
-import "github.com/vistone/fingerprint/internal/metrics"
-
-// 启动指标服务器
-metrics.InitDefaultServer(":9090")
-defer metrics.StopDefaultServer()
-```plaintext
-
-### 自定义指标
-
-```go
-// 创建计数器
-counter := metrics.NewCounter("my_custom_total", "Description")
-counter.Inc()
-
-// 创建直方图
-histogram := metrics.NewHistogram("my_duration_ms", "Description", 
-    []float64{10, 50, 100, 500, 1000})
-histogram.Observe(duration)
-```plaintext
-
-### 记录指标
-
-```go
-// 记录指纹生成
-metrics.RecordFingerprintGeneration("Chrome", "Windows", nil)
-
-// 记录错误
-metrics.RecordGenerationError("Chrome")
-
-// 记录缓存命中/未命中
-metrics.RecordCacheHit()
-metrics.RecordCacheMiss()
-```plaintext
-
-## 错误处理
-
-### 预定义错误
-
-```go
-var (
-    ErrInvalidProfile = errors.New("invalid client profile")
-    ErrNotFound       = errors.New("profile not found")
-    ErrParseError     = errors.New("parse error")
-)
-```plaintext
-
-### 错误检查
-
-```go
-profile, err := profiles.Get(name)
-if err != nil {
-    if errors.Is(err, profiles.ErrNotFound) {
-        // 使用默认 Profile
-        profile = profiles.Chrome_120
-    } else {
-        log.Fatal(err)
-    }
-}
-```plaintext
+```
 
 ## 完整示例
 
-### 指纹代理服务器
+### 使用 Facade 模块
 
 ```go
 package main
 
 import (
     "log"
-    "net/http"
-    "net/http/httputil"
-    "net/url"
-    
-    "github.com/vistone/fingerprint/internal/metrics"
-    "github.com/vistone/fingerprint/profiles"
+    "github.com/vistone/fingerprint/modules/fingerprint"
 )
 
 func main() {
-    // 启动指标服务器
-    metrics.InitDefaultServer(":9090")
-    defer metrics.StopDefaultServer()
-    
-    // 目标服务器
-    target, _ := url.Parse("http://localhost:8080")
-    proxy := httputil.NewSingleHostReverseProxy(target)
-    
-    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        // 记录请求
-        start := time.Now()
-        defer func() {
-            metrics.RecordFingerprintGeneration(
-                profiles.DetectBrowser(r),
-                profiles.DetectOS(r),
-                nil,
-            )
-            metrics.ObserveGenerationDuration(time.Since(start))
-        }()
-        
-        // 代理请求
-        proxy.ServeHTTP(w, r)
-    })
-    
-    log.Println("Server listening on :8080")
-    log.Fatal(http.ListenAndServe(":8080", nil))
+    // 获取随机 Chrome 指纹
+    profile := fingerprint.GetRandomByBrowser(fingerprint.BrowserChrome)
+    log.Printf("Selected: %s", profile.Name)
 }
-```plaintext
+```
 
-### 自定义 Profile 加载器
+### 直接使用子模块
 
 ```go
-type FileProfileSource struct {
-    Dir string
-}
+package main
 
-func (s *FileProfileSource) Load() ([]profiles.ClientProfile, error) {
-    entries, err := os.ReadDir(s.Dir)
-    if err != nil {
-        return nil, err
+import (
+    "log"
+    "github.com/vistone/fingerprint/modules/core"
+    "github.com/vistone/fingerprint/modules/profiles"
+    "github.com/vistone/fingerprint/modules/tls"
+)
+
+func main() {
+    // 获取指纹
+    profile, ok := profiles.Get("chrome_133")
+    if !ok {
+        log.Fatal("not found")
     }
     
-    var profiles []profiles.ClientProfile
-    for _, entry := range entries {
-        if filepath.Ext(entry.Name()) != ".yaml" {
-            continue
-        }
-        
-        data, err := os.ReadFile(filepath.Join(s.Dir, entry.Name()))
-        if err != nil {
-            return nil, err
-        }
-        
-        var profile profiles.ClientProfile
-        if err := yaml.Unmarshal(data, &profile); err != nil {
-            return nil, err
-        }
-        
-        profiles = append(profiles, profile)
-    }
-    
-    return profiles, nil
+    // 计算 JA3
+    ja3 := tls.CalculateJA3(clientHello)
+    log.Printf("JA3: %s", ja3)
 }
+```
 
-// 使用
-source := &FileProfileSource{Dir: "./custom-profiles"}
-profiles, err := source.Load()
-```plaintext
-
-## 最佳实践
-
-### 1. Profile 缓存
+## 错误处理
 
 ```go
-var profileCache = sync.Map{}
+import (
+    "errors"
+    "github.com/vistone/fingerprint/modules/profiles"
+)
 
-func GetCachedProfile(name string) (profiles.ClientProfile, bool) {
-    if v, ok := profileCache.Load(name); ok {
+profile, err := profiles.Get("unknown")
+if err != nil {
+    if errors.Is(err, profiles.ErrNotFound) {
+        // 使用默认指纹
+        profile = profiles.Chrome133
+    }
+}
+```
+
+## 性能优化
+
+### Profile 缓存
+
+```go
+var cache = sync.Map{}
+
+func GetCached(id string) (profiles.ClientProfile, bool) {
+    if v, ok := cache.Load(id); ok {
         return v.(profiles.ClientProfile), true
     }
     
-    profile, ok := profiles.Get(name)
+    profile, ok := profiles.Get(id)
     if ok {
-        profileCache.Store(name, profile)
+        cache.Store(id, profile)
     }
     return profile, ok
 }
-```plaintext
+```
 
-### 2. 连接池
+## 版本兼容性
 
-```go
-var dialer = &utls.Dialer{
-    Config: &tls.Config{
-        InsecureSkipVerify: true,
-    },
-}
-
-func GetConnection(ctx context.Context, addr string, spec tls.ClientHelloSpec) (*tls.Conn, error) {
-    conn, err := dialer.DialContext(ctx, "tcp", addr)
-    if err != nil {
-        return nil, err
-    }
-    
-    uconn := tls.UClient(conn, nil, tls.HelloCustom)
-    if err := uconn.ApplyPreset(spec); err != nil {
-        conn.Close()
-        return nil, err
-    }
-    
-    return uconn, nil
-}
-```plaintext
-
-### 3. 超时控制
-
-```go
-ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-defer cancel()
-
-conn, err := GetConnection(ctx, "example.com:443", spec)
-if err != nil {
-    if ctx.Err() == context.DeadlineExceeded {
-        // 处理超时
-    }
-    return err
-}
-```plaintext
+- **v0.x.x**: 当前版本，Go Workspace 架构
+- **legacy 包**: 向后兼容的旧代码
+- **核心 API**: 稳定，不会破坏性变更

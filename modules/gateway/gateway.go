@@ -460,14 +460,14 @@ func (rl *RateLimiter) cleanup() {
 
 // FingerprintCache 指纹缓存
 type FingerprintCache struct {
-	cache  map[string]*cacheEntry
+	cache  map[string]*fingerprintCacheEntry
 	size   int
 	ttl    time.Duration
 	mu     sync.RWMutex
 }
 
 // cacheEntry 缓存项
-type cacheEntry struct {
+type fingerprintCacheEntry struct {
 	response *AnalyzeResponse
 	expires  time.Time
 }
@@ -475,7 +475,7 @@ type cacheEntry struct {
 // NewFingerprintCache 创建新的指纹缓存
 func NewFingerprintCache(size int, ttl time.Duration) *FingerprintCache {
 	return &FingerprintCache{
-		cache: make(map[string]*cacheEntry),
+		cache: make(map[string]*fingerprintCacheEntry),
 		size:  size,
 		ttl:   ttl,
 	}
@@ -486,17 +486,17 @@ func (c *FingerprintCache) Get(key string) (*AnalyzeResponse, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	entry, ok := c.cache[key]
+	fentry, ok := c.cache[key]
 	if !ok {
 		return nil, false
 	}
 
 	// 检查是否过期
-	if time.Now().After(entry.expires) {
+	if time.Now().After(fentry.expires) {
 		return nil, false
 	}
 
-	return entry.response, true
+	return fentry.response, true
 }
 
 // Set 设置缓存
@@ -519,7 +519,7 @@ func (c *FingerprintCache) Set(key string, response *AnalyzeResponse) {
 		delete(c.cache, oldestKey)
 	}
 
-	c.cache[key] = &cacheEntry{
+	c.cache[key] = &fingerprintCacheEntry{
 		response: response,
 		expires:  time.Now().Add(c.ttl),
 	}

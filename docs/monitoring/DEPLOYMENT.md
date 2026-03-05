@@ -47,7 +47,7 @@ package main
 
 import (
     "log"
-    "github.com/vistone/fingerprint/internal/metrics"
+    "github.com/vistone/fingerprint/modules/internal/metrics"
 )
 
 func main() {

@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  gateway:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+    image: vistone/fingerprint:v3.0.0
+    container_name: fingerprint-gateway
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    environment:
+      - FP_HTTP_PORT=8080
+      - FP_GRPC_PORT=9090
+      - FP_LOG_LEVEL=info
+      - FP_RATE_LIMIT=1000
+      - FP_CACHE_SIZE=10000
+    volumes:
+      - gateway-data:/data
+    networks:
+      - fingerprint-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/fingerprint-gateway", "health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: fingerprint-prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - fingerprint-network
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: fingerprint-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - fingerprint-network
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+
+volumes:
+  gateway-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  fingerprint-network:
+    driver: bridge

@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fingerprint-gateway
+  namespace: fingerprint
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fingerprint-gateway
+  namespace: fingerprint
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fingerprint-gateway
+  namespace: fingerprint
+subjects:
+- kind: ServiceAccount
+  name: fingerprint-gateway
+  namespace: fingerprint
+roleRef:
+  kind: Role
+  name: fingerprint-gateway
+  apiGroup: rbac.authorization.k8s.io

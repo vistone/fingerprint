@@ -3,25 +3,24 @@ package main
 
 import (
 	"fmt"
-	"github.com/vistone/fingerprint/profiles"
+	"github.com/vistone/fingerprint/modules/profiles"
 )
 
 func main() {
-	// Simplest usage: just get a profile
-	profile := profiles.Chrome_120
-
-	// Get HTTP/2 settings
-	settings := profile.GetSettings()
-	fmt.Printf("HTTP/2 Settings (%d total):\n", len(settings))
-
-	for id, value := range settings {
-		fmt.Printf("  Setting %d: %d\n", id, value)
+	// Simplest usage: get a profile by ID
+	profile, ok := profiles.Get("chrome_133")
+	if !ok {
+		fmt.Println("Profile not found")
+		return
 	}
 
-	// Get pseudo header order
-	order := profile.GetPseudoHeaderOrder()
-	fmt.Printf("\nPseudo Header Order:\n")
-	for i, header := range order {
-		fmt.Printf("  %d. %s\n", i+1, header)
+	fmt.Printf("Profile: %s\n", profile.Name)
+	fmt.Printf("Browser: %s %s\n", profile.BrowserType, profile.BrowserVersion)
+	fmt.Printf("OS: %s %s\n", profile.OS, profile.OSVersion)
+	
+	// Get headers
+	if profile.Headers != nil {
+		fmt.Printf("\nAccept: %s\n", profile.Headers.Accept)
+		fmt.Printf("Accept-Language: %s\n", profile.Headers.AcceptLanguage)
 	}
 }

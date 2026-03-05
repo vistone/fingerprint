@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  # 主网关服务
+  gateway:
+    build: .
+    container_name: fingerprint-gateway
+    ports:
+      - "8080:8080"  # HTTP
+      - "9090:9090"  # gRPC
+    environment:
+      - FP_HTTP_PORT=8080
+      - FP_GRPC_PORT=9090
+      - FP_LOG_LEVEL=info
+      - FP_RATE_LIMIT=1000
+      - FP_CACHE_SIZE=10000
+      - FP_CACHE_TTL=5m
+    volumes:
+      - ./data:/data
+    networks:
+      - fingerprint-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/fingerprint-gateway", "-health-check"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Prometheus 监控
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: fingerprint-prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - fingerprint-net
+    restart: unless-stopped
+
+  # Grafana 仪表盘
+  grafana:
+    image: grafana/grafana:latest
+    container_name: fingerprint-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./deploy/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./deploy/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=fingerprint
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - fingerprint-net
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+  # Redis 缓存（可选）
+  redis:
+    image: redis:7-alpine
+    container_name: fingerprint-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - fingerprint-net
+    restart: unless-stopped
+
+  # Nginx 负载均衡器
+  nginx:
+    image: nginx:alpine
+    container_name: fingerprint-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deploy/ssl:/etc/nginx/ssl:ro
+    networks:
+      - fingerprint-net
+    restart: unless-stopped
+    depends_on:
+      - gateway
+
+networks:
+  fingerprint-net:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  grafana-data:
+  redis-data:

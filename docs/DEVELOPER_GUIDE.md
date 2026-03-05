@@ -6,7 +6,7 @@
 
 ### 前置要求
 
-- Go 1.23+
+- Go 1.25+
 - Make
 - Git
 - golangci-lint (可选，用于本地 lint)
@@ -18,19 +18,27 @@
 git clone https://github.com/vistone/fingerprint.git
 cd fingerprint
 
-# 下载依赖
-go mod download
+# 同步 workspace
+go work sync
+
+# 构建特定模块
+go build ./modules/core
+go build ./modules/profiles
+go build ./modules/fingerprint
 
 # 运行测试
-go test ./...
+go test ./modules/...
+
+# 运行特定模块测试
+go test ./modules/profiles/... -v
 
 # 运行带 race detector 的测试
-go test -race ./...
+go test -race ./modules/core/...
 
 # 生成覆盖率报告
-go test -coverprofile=coverage.out ./...
+go test -coverprofile=coverage.out ./modules/...
 go tool cover -html=coverage.out -o coverage.html
-```plaintext
+```
 
 ### Makefile 命令
 
@@ -41,32 +49,99 @@ make test-race     # 运行带 race detector 的测试
 make coverage      # 生成覆盖率报告
 make lint          # 运行 linter
 make fmt           # 格式化代码
-make generate      # 运行代码生成
 make clean         # 清理构建产物
-```plaintext
+```
 
-## 代码结构
+## Go Workspace 结构
+
+```plaintext
+github.com/vistone/fingerprint/
+├── go.work                     # Workspace 定义
+├── modules/                    # 所有模块
+│   ├── core/                   # 核心类型（零依赖）
+│   ├── profiles/               # 指纹配置
+│   ├── tls/                    # TLS 分析
+│   ├── http/                   # HTTP 分析
+│   ├── ml/                     # ML 分类器
+│   ├── defense/                # 安全防护
+│   ├── frontend/               # 前端 SDK
+│   ├── gateway/                # API 网关
+│   ├── generator/              # 指纹生成
+│   ├── network/                # 网络层
+│   ├── internal/               # 内部工具
+│   ├── config/                 # 配置管理
+│   ├── plugin/                 # 插件系统
+│   └── fingerprint/            # Facade 模块
+├── cmd/                        # 应用程序入口
+├── examples/                   # 示例代码
+└── test/                       # 集成测试
+```
+
+## 模块开发规范
 
 ### 目录约定
 
-```plaintext
-package/
-├── package.go          # 公共 API
-├── package_test.go     # 单元测试
-├── internal.go         # 内部实现
-├── internal_test.go    # 内部测试（测试私有函数）
-└── example_test.go     # 示例代码（会出现在文档中）
-```plaintext
+每个模块遵循以下结构：
 
-### 命名约定
+```plaintext
+modules/<module>/
+├── go.mod                  # 模块定义
+├── *.go                    # 公共 API
+├── *_test.go               # 单元测试
+└── legacy/                 # 遗留兼容代码（可选）
+    └── *.go
+```
 
-| 类型 | 命名规范 | 示例 |
-| ------ | ---------- | ------ |
-| 接口 | 后缀 `er` 或描述性名词 | `Reader`, `Generator` |
-| 结构体 | 驼峰命名 | `ClientProfile`, `HTTP2Spec` |
-| 私有函数 | 小写开头 | `parseExtensions` |
-| 常量 | 驼峰或大写下划线 | `MaxHeaderSize`, `TLS_RSA_WITH_AES_128_GCM_SHA256` |
-| 包名 | 全小写，简短 | `ja3`, `http2` |
+### 模块依赖原则
+
+```plaintext
+# 允许的依赖方向
+core (零依赖)
+    ▲
+    ├── profiles ──▶ core
+    ├── tls ───────▶ core
+    ├── http ──────▶ core
+    ├── ml ────────▶ core
+    └── ...
+
+# 禁止循环依赖
+A ──▶ B ──▶ A  ❌
+```
+
+### 创建新模块
+
+```bash
+# 1. 创建目录
+mkdir modules/mynewmodule
+cd modules/mynewmodule
+
+# 2. 初始化 go.mod
+cat > go.mod << 'EOF'
+module github.com/vistone/fingerprint/modules/mynewmodule
+
+go 1.25.7
+
+require github.com/vistone/fingerprint/modules/core v0.0.0
+
+replace github.com/vistone/fingerprint/modules/core => ../core
+EOF
+
+# 3. 创建 main.go
+cat > mynewmodule.go << 'EOF'
+package mynewmodule
+
+import "github.com/vistone/fingerprint/modules/core"
+
+// 公共 API
+EOF
+
+# 4. 添加到 workspace
+cd ../..
+echo "./modules/mynewmodule" >> go.work
+
+# 5. 同步
+go work sync
+```
 
 ## 编码规范
 
@@ -75,7 +150,7 @@ package/
 ```go
 // 错误包装：添加上下文
 if err != nil {
-    return fmt.Errorf("failed to parse JA3 %q: %w", ja3String, err)
+    return fmt.Errorf("failed to get profile %q: %w", id, err)
 }
 
 // 预定义错误
@@ -85,390 +160,221 @@ var (
 )
 
 // 错误检查
-if errors.Is(err, ErrNotFound) {
+if errors.Is(err, profiles.ErrNotFound) {
     // 处理未找到
 }
-```plaintext
+```
 
 ### 日志记录
 
 ```go
-// 使用结构化日志
-import "github.com/vistone/fingerprint/internal/logger"
+// 使用标准库日志或内部日志
+import "github.com/vistone/fingerprint/modules/internal/logger"
 
 logger.Debug("processing request", 
     "profile", profileName,
-    "duration_ms", duration.Milliseconds(),
+    "browser", browserType,
 )
+```
 
-logger.Info("profile loaded",
-    "name", profile.Name,
-    "version", profile.Version,
-)
-
-logger.Error("failed to generate fingerprint",
-    "error", err,
-    "request_id", reqID,
-)
-```plaintext
-
-### 配置使用
+### 并发安全
 
 ```go
-// 从全局配置获取
-cfg := config.Get()
-
-// 使用配置值
-if cfg.FeatureExtraction.Enabled {
-    // 启用特征提取
+// 使用 sync.RWMutex 保护共享状态
+type Registry struct {
+    mu       sync.RWMutex
+    profiles map[string]ClientProfile
 }
 
-// 配置克隆（线程安全）
-localCfg := cfg.Clone()
-```plaintext
-
-## 添加新的 Profile
-
-### 方法一：代码方式（传统）
-
-```go
-// profiles/custom_profiles.go
-func MyCustomProfile() ClientProfile {
-    return ClientProfile{
-        ClientHelloSpec: tls.ClientHelloSpec{
-            TLSVersion:       tls.VersionTLS13,
-            CipherSuites:     []uint16{0x1301, 0x1302},
-            CompressionMethods: []uint8{0},
-            Extensions: []tls.TLSExtension{
-                &tls.SNIExtension{},
-                &tls.SupportedCurvesExtension{Curves: []tls.CurveID{0x001d}},
-            },
-        },
-        HTTP2Settings: map[http2.SettingID]uint32{
-            http2.SettingInitialWindowSize: 131072,
-        },
-        // ... 其他配置
-    }
+func (r *Registry) Get(id string) (ClientProfile, bool) {
+    r.mu.RLock()
+    defer r.mu.RUnlock()
+    p, ok := r.profiles[id]
+    return p, ok
 }
-```plaintext
 
-### 方法二：YAML 方式（推荐）
+func (r *Registry) Register(p ClientProfile) {
+    r.mu.Lock()
+    defer r.mu.Unlock()
+    r.profiles[p.ID] = p
+}
+```
 
-```yaml
-# profiles/specs/my_custom.yaml
-name: MyCustom
-browser: CustomApp
-os: Linux
-version: "1.0"
-
-client_hello:
-  version: 0x0303
-  cipher_suites:
-    - TLS_AES_128_GCM_SHA256
-    - TLS_AES_256_GCM_SHA384
-  extensions:
-    - type: server_name
-    - type: supported_groups
-      data:
-        curves:
-          - X25519
-          - P-256
-
-http2:
-  settings:
-    initial_window_size: 131072
-    max_frame_size: 16384
-  priority:
-    exclusive: true
-    stream_dep: 0
-    weight: 256
-```plaintext
-
-然后运行代码生成：
-
-```bash
-go generate ./profiles/...
-```plaintext
-
-## 测试指南
+## 测试规范
 
 ### 单元测试
 
 ```go
-func TestParseJA3(t *testing.T) {
+func TestGet(t *testing.T) {
     tests := []struct {
-        name    string
-        input   string
-        want    *JA3
-        wantErr bool
+        name     string
+        id       string
+        wantOK   bool
     }{
-        {
-            name:  "valid",
-            input: "769,47-53-5-10,0-10-11,23-24-25,0",
-            want: &JA3{
-                Version: 769,
-                // ...
-            },
-        },
-        {
-            name:    "invalid",
-            input:   "invalid",
-            wantErr: true,
-        },
+        {"existing", "chrome_133", true},
+        {"non-existing", "unknown", false},
     }
     
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            got, err := Parse(tt.input)
-            if (err != nil) != tt.wantErr {
-                t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
-                return
-            }
-            if diff := cmp.Diff(tt.want, got); diff != "" {
-                t.Errorf("Parse() mismatch (-want +got):\n%s", diff)
+            got, ok := Get(tt.id)
+            if ok != tt.wantOK {
+                t.Errorf("Get() ok = %v, want %v", ok, tt.wantOK)
             }
         })
     }
 }
-```plaintext
+```
 
 ### 基准测试
 
 ```go
-func BenchmarkParseJA3(b *testing.B) {
-    input := "769,47-53-5-10-49161-49162-49171-49172-50-56-19-4,0-10-11,23-24-25,0"
-    
-    b.ReportAllocs()
-    b.ResetTimer()
-    
+func BenchmarkGet(b *testing.B) {
     for i := 0; i < b.N; i++ {
-        _, err := Parse(input)
-        if err != nil {
-            b.Fatal(err)
-        }
+        Get("chrome_133")
     }
 }
-```plaintext
+```
 
-### 模糊测试
+### 集成测试
 
 ```go
-func FuzzParseJA3(f *testing.F) {
-    f.Add("769,47-53-5-10,0-10-11,23-24-25,0")
+// test/integration_test.go
+package test
+
+import (
+    "testing"
+    "github.com/vistone/fingerprint/modules/profiles"
+    "github.com/vistone/fingerprint/modules/tls"
+)
+
+func TestIntegration(t *testing.T) {
+    profile, ok := profiles.Get("chrome_133")
+    if !ok {
+        t.Fatal("profile not found")
+    }
     
-    f.Fuzz(func(t *testing.T, input string) {
-        // 不应 panic
-        _, _ = Parse(input)
-    })
+    // 测试 TLS 指纹计算
+    ja3 := tls.CalculateJA3(clientHello)
+    if ja3 == "" {
+        t.Error("failed to calculate JA3")
+    }
 }
-```plaintext
+```
 
-### 测试最佳实践
+## 提交规范
 
-1. **表驱动测试**: 使用结构体切片定义测试用例
-2. **子测试**: 使用 `t.Run()` 为每个用例创建子测试
-3. **比较工具**: 使用 `github.com/google/go-cmp/cmp` 进行深度比较
-4. **并发测试**: 使用 `-race` 标志检测竞态条件
-5. **覆盖率**: 目标 > 80% 的关键路径
+### Commit Message 格式
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**Type:**
+- `feat`: 新功能
+- `fix`: 修复
+- `docs`: 文档
+- `refactor`: 重构
+- `test`: 测试
+- `chore`: 构建/工具
+
+**Scope:**
+- `core`, `profiles`, `tls`, `http`, `ml`, `defense`, `gateway`, etc.
+
+**示例:**
+```
+feat(profiles): add Chrome 140 support
+
+Add Chrome 140 fingerprint with updated TLS settings.
+
+Closes #123
+```
+
+## 发布流程
+
+### 版本号规则
+
+遵循 [Semantic Versioning](https://semver.org/):
+- `MAJOR`: 不兼容的 API 变更
+- `MINOR`: 向后兼容的功能添加
+- `PATCH`: 向后兼容的问题修复
+
+### 发布检查清单
+
+- [ ] 所有测试通过
+- [ ] 代码审查完成
+- [ ] 文档已更新
+- [ ] CHANGELOG.md 已更新
+- [ ] Tag 已创建
+
+```bash
+# 创建发布标签
+git tag -a v0.1.0 -m "Release v0.1.0"
+git push origin v0.1.0
+```
 
 ## 调试技巧
 
-### 启用调试日志
+### 查看模块依赖
 
-```go
-import "github.com/vistone/fingerprint/internal/logger"
+```bash
+# 查看 workspace 中的所有模块
+go work edit -json
 
-func init() {
-    logger.SetLevel(logger.DebugLevel)
-}
-```plaintext
+# 查看特定模块的依赖
+cd modules/profiles && go list -m all
 
-### 分析 Profile
+# 可视化依赖图
+cd modules/profiles && go mod graph | head -20
+```
 
-```go
-// 打印 Profile 详情
-profile := profiles.Chrome_120
-spew.Dump(profile)
+### 排查导入错误
 
-// 或者使用 JSON
-jsonData, _ := json.MarshalIndent(profile, "", "  ")
-fmt.Println(string(jsonData))
-```plaintext
+```bash
+# 检查导入路径是否正确
+go build ./modules/... 2>&1 | grep "cannot find module"
+
+# 确保 workspace 同步
+go work sync
+
+# 清理模块缓存
+go clean -modcache
+go work sync
+```
 
 ### 性能分析
 
 ```bash
 # CPU 分析
-go test -cpuprofile=cpu.prof -bench=. ./...
+go test -cpuprofile=cpu.prof -bench=. ./modules/profiles/...
 go tool pprof cpu.prof
 
 # 内存分析
-go test -memprofile=mem.prof -bench=. ./...
+go test -memprofile=mem.prof -bench=. ./modules/profiles/...
 go tool pprof mem.prof
+```
 
-# 跟踪
-go test -trace=trace.out ./...
-go tool trace trace.out
-```plaintext
+## 常见问题
 
-## 性能优化指南
+### Q: 如何处理循环依赖？
 
-### 1. 减少内存分配
+A: 将共享类型移动到 `core` 模块，或使用接口解耦。
 
-```go
-// 不好：每次调用都分配
-func Bad() []byte {
-    return make([]byte, 1024)
-}
+### Q: 如何添加新的浏览器指纹？
 
-// 好：使用 sync.Pool 复用
-var bufferPool = sync.Pool{
-    New: func() interface{} {
-        return make([]byte, 1024)
-    },
-}
+A: 在 `modules/profiles/` 中添加新的 `.go` 文件，参考 `chrome.go` 的模式。
 
-func Good() []byte {
-    buf := bufferPool.Get().([]byte)
-    defer bufferPool.Put(buf)
-    return buf[:n]
-}
-```plaintext
+### Q: 如何测试模块间的集成？
 
-### 2. 避免字符串转换
+A: 使用 `test/` 目录进行集成测试，或创建 `example_test.go`。
 
-```go
-// 不好
-for i := 0; i < len(data); i++ {
-    s := string(data[i])  // 分配
-    process(s)
-}
+## 参考资源
 
-// 好：批量处理
-process(string(data))  // 一次分配
-```plaintext
-
-### 3. 预分配切片
-
-```go
-// 不好
-ciphers := []uint16{}
-for _, c := range input {
-    ciphers = append(ciphers, c)  // 可能多次扩容
-}
-
-// 好
-ciphers := make([]uint16, 0, len(input))
-for _, c := range input {
-    ciphers = append(ciphers, c)
-}
-```plaintext
-
-## 发布流程
-
-### 版本号规范
-
-遵循语义化版本 (SemVer): `MAJOR.MINOR.PATCH`
-
-- **MAJOR**: 不兼容的 API 变更
-- **MINOR**: 向后兼容的功能添加
-- **PATCH**: 向后兼容的问题修复
-
-### 发布检查清单
-
-```markdown
-- [ ] 所有测试通过
-- [ ] 基准测试无回归
-- [ ] 覆盖率未下降
-- [ ] CHANGELOG 已更新
-- [ ] 版本号已更新
-- [ ] Tag 已创建
-- [ ] 文档已更新
-```plaintext
-
-### 创建 Release
-
-```bash
-# 1. 更新 CHANGELOG
-# 2. 更新版本号（如有必要）
-# 3. 提交更改
-git add -A
-git commit -m "chore: release v1.x.x"
-
-# 4. 打标签
-git tag -a v1.x.x -m "Release v1.x.x"
-
-# 5. 推送
-git push origin main --tags
-```plaintext
-
-## 故障排查
-
-### 常见问题
-
-#### 1. "undefined: tls.ClientHelloSpec"
-
-确保使用了正确的 utls 版本：
-
-```bash
-go get github.com/bogdanfinn/utls@latest
-```plaintext
-
-#### 2. Profile 选择不正确
-
-检查 User-Agent 解析逻辑：
-
-```go
-ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36..."
-browser, version, os := useragent.Parse(ua)
-fmt.Printf("Browser: %s, Version: %s, OS: %s\n", browser, version, os)
-```plaintext
-
-#### 3. 内存泄漏
-
-使用 pprof 分析：
-
-```go
-import _ "net/http/pprof"
-
-func init() {
-    go func() {
-        log.Println(http.ListenAndServe("localhost:6060", nil))
-    }()
-}
-```plaintext
-
-访问 `http://localhost:6060/debug/pprof/heap`
-
-## 贡献指南
-
-参见 [CONTRIBUTING.md](../CONTRIBUTING.md)
-
-### 提交信息规范
-
-```plaintext
-type(scope): subject
-
-body
-
-footer
-```plaintext
-
-类型：
-- `feat`: 新功能
-- `fix`: 修复
-- `docs`: 文档
-- `style`: 格式（不影响代码）
-- `refactor`: 重构
-- `test`: 测试
-- `chore`: 构建/工具
-
-示例：
-```plaintext
-feat(ja4): add JA4 fingerprint calculation
-
-Implement JA4 fingerprint as per the new spec.
-Supports both TLS 1.2 and TLS 1.3.
-
-Closes #123
-```plaintext
+- [Go Modules Reference](https://go.dev/ref/mod)
+- [Go Workspace Tutorial](https://go.dev/doc/tutorial/workspaces)
+- [Project Architecture](./ARCHITECTURE.md)
+- [API Documentation](./API.md)

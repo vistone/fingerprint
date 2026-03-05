@@ -6,11 +6,13 @@ package core
 type BrowserType string
 
 const (
-	BrowserChrome  BrowserType = "chrome"
-	BrowserFirefox BrowserType = "firefox"
-	BrowserSafari  BrowserType = "safari"
-	BrowserOpera   BrowserType = "opera"
-	BrowserEdge    BrowserType = "edge"
+	BrowserChrome   BrowserType = "chrome"
+	BrowserFirefox  BrowserType = "firefox"
+	BrowserSafari   BrowserType = "safari"
+	BrowserOpera    BrowserType = "opera"
+	BrowserEdge     BrowserType = "edge"
+	BrowserBrave    BrowserType = "brave"
+	BrowserSamsung  BrowserType = "samsung"
 )
 
 // OperatingSystem 操作系统类型
@@ -25,6 +27,10 @@ const (
 	OSLinux       OperatingSystem = "X11; Linux x86_64"
 	OSLinuxUbuntu OperatingSystem = "X11; Linux x86_64"
 	OSLinuxDebian OperatingSystem = "X11; Linux x86_64"
+	OSLinuxFedora OperatingSystem = "X11; Linux x86_64"
+	OSiOS         OperatingSystem = "iPhone; CPU iPhone OS 17_0"
+	OSiPadOS      OperatingSystem = "iPad; CPU OS 17_0"
+	OSAndroid     OperatingSystem = "Linux; Android 14"
 )
 
 // OperatingSystems 操作系统列表（用于随机选择）
@@ -37,6 +43,10 @@ var OperatingSystems = []OperatingSystem{
 	OSLinux,
 	OSLinuxUbuntu,
 	OSLinuxDebian,
+	OSLinuxFedora,
+	OSiOS,
+	OSiPadOS,
+	OSAndroid,
 }
 
 // HTTPHeaders 标准的 HTTP 请求头

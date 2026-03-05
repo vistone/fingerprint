@@ -223,47 +223,8 @@ var (
 	}
 )
 
-// Edge 指纹系列
-var (
-	Edge120 = ClientProfile{
-		ID: "edge_120", Name: "Edge 120",
-		BrowserType: core.BrowserEdge, BrowserVersion: "120.0.2210.61",
-		OS: core.OSWindows11, OSVersion: "10.0.22631",
-		TLSVersion: 0x0303,
-		CipherSuites: []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9},
-		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-			AcceptLanguage: "en-US,en;q=0.9",
-			SecCHUA: `"Microsoft Edge";v="120", "Chromium";v="120"`,
-		},
-	}
-
-	Edge130 = ClientProfile{
-		ID: "edge_130", Name: "Edge 130",
-		BrowserType: core.BrowserEdge, BrowserVersion: "130.0.2849.46",
-		OS: core.OSWindows11, OSVersion: "10.0.22631",
-		TLSVersion: 0x0303,
-		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-			SecCHUA: `"Microsoft Edge";v="130", "Chromium";v="130"`,
-		},
-	}
-)
-
 // Opera 指纹系列
 var (
-	Opera100 = ClientProfile{
-		ID: "opera_100", Name: "Opera 100",
-		BrowserType: core.BrowserOpera, BrowserVersion: "100.0.0.0",
-		OS: core.OSWindows10, OSVersion: "10.0.19045",
-		TLSVersion: 0x0303,
-		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-			AcceptLanguage: "en-US,en;q=0.9",
-			SecCHUA: `"Opera";v="100", "Chromium";v="114"`,
-		},
-	}
-
 	Opera105 = ClientProfile{
 		ID: "opera_105", Name: "Opera 105",
 		BrowserType: core.BrowserOpera, BrowserVersion: "105.0.0.0",
@@ -352,12 +313,7 @@ func init() {
 	Register(Safari170)
 	Register(Safari181)
 	
-	// Edge
-	Register(Edge120)
-	Register(Edge130)
-	
 	// Opera
-	Register(Opera100)
 	Register(Opera105)
 	
 	// Mobile

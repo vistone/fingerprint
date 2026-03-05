@@ -1,325 +1,389 @@
 # Fingerprint 架构文档
 
-本文档描述 fingerprint 库的整体架构、模块划分和设计决策。
+本文档描述 fingerprint 库的 Go Workspace 架构、模块划分和设计决策。
 
 ## 架构概览
 
 ```plaintext
 ┌─────────────────────────────────────────────────────────────────┐
-│                         Application Layer                        │
+│                     Go Workspace (go.work)                       │
 ├─────────────────────────────────────────────────────────────────┤
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
-│  │   Profiles   │  │   Config     │  │      Generator       │  │
-│  │   (pkg)      │  │   (pkg)      │  │      (pkg)           │  │
-│  └──────┬───────┘  └──────┬───────┘  └──────────┬───────────┘  │
-├─────────┼─────────────────┼────────────────────┼────────────────┤
-│         │                 │                    │                │
-│  ┌──────▼─────────────────▼────────────────────▼──────────┐    │
-│  │                    Core Library                        │    │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │    │
-│  │  │   TLS    │ │  HTTP/2  │ │  TCP/IP  │ │ Behavior │  │    │
-│  │  │  (pkg)   │ │  (pkg)   │ │  (pkg)   │ │  (pkg)   │  │    │
-│  │  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘  │    │
-│  └───────┼────────────┼────────────┼────────────┼────────┘    │
-├──────────┼────────────┼────────────┼────────────┼─────────────┤
-│          │            │            │            │             │
-│  ┌───────▼────────────▼────────────▼────────────▼──────────┐  │
-│  │                   Internal Packages                      │  │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐   │  │
-│  │  │ Extension│ │ Pipeline │ │  Utils   │ │  Cache   │   │  │
-│  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘   │  │
-│  └──────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │              modules/fingerprint (Facade)                 │   │
+│  │         统一 API 入口，整合所有子模块功能                  │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│                              │                                   │
+│  ┌─────────────┬─────────────┼─────────────┬─────────────┐      │
+│  │             │             │             │             │      │
+│  ▼             ▼             ▼             ▼             ▼      │
+│  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐  │
+│  │ core │  │profiles│  │ tls  │  │ http │  │  ml  │  │defense│  │
+│  └──────┘  └──────┘  └──────┘  └──────┘  └──────┘  └──────┘  │
+│  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐  │
+│  │frontend│  │gateway │  │generator│  │network│  │internal│  │config │  │
+│  └──────┘  └──────┘  └──────┘  └──────┘  └──────┘  └──────┘  │
+│                                                                  │
 └─────────────────────────────────────────────────────────────────┘
+```
+
+## Go Workspace 结构
+
 ```plaintext
+github.com/vistone/fingerprint/
+├── go.work                     # Workspace 定义
+├── modules/                    # 所有模块
+│   ├── fingerprint/            # 主 facade 模块
+│   ├── core/                   # 核心类型和接口
+│   │   └── types/              # 共享类型定义
+│   ├── profiles/               # 指纹配置管理
+│   │   ├── builtin.go          # 内置指纹
+│   │   ├── chrome.go           # Chrome 指纹
+│   │   ├── firefox.go          # Firefox 指纹
+│   │   ├── safari.go           # Safari 指纹
+│   │   ├── edge.go             # Edge 指纹
+│   │   ├── opera.go            # Opera 指纹
+│   │   ├── brave.go            # Brave 指纹
+│   │   ├── mobile.go           # 移动端指纹
+│   │   └── legacy/             # 遗留兼容代码
+│   ├── tls/                    # TLS 指纹分析
+│   │   ├── ja3.go              # JA3 实现
+│   │   └── legacy/             # JA4, JA4S, ECH 等
+│   ├── http/                   # HTTP 指纹分析
+│   │   └── legacy/             # HTTP/2, JA4H, Client Hints
+│   ├── ml/                     # ML 分类器
+│   ├── defense/                # 安全防护
+│   │   └── legacy/             # 行为分析、风险评估
+│   ├── frontend/               # 前端 SDK
+│   ├── gateway/                # API 网关
+│   ├── generator/              # 指纹生成器
+│   ├── network/                # 网络层分析
+│   ├── internal/               # 内部工具
+│   ├── config/                 # 配置管理
+│   └── plugin/                 # 插件系统
+├── cmd/                        # 应用程序入口
+├── examples/                   # 示例代码
+└── test/                       # 集成测试
+```
 
 ## 模块详解
 
-### 1. Profiles 模块 (`profiles/`)
+### 1. Core 模块 (`modules/core`)
 
-负责管理 TLS/HTTP 客户端指纹配置。
+**职责**: 提供所有模块共享的基础类型和接口。
+
+```go
+// 核心类型
+package core
+
+type BrowserType string
+type OperatingSystem string
+type ClientProfile struct { ... }
+type HTTPHeaders struct { ... }
+type TLSExtension struct { ... }
+```
+
+**零依赖原则**: core 模块不依赖任何其他内部模块。
+
+### 2. Profiles 模块 (`modules/profiles`)
+
+**职责**: 管理 TLS/HTTP 客户端指纹配置。
 
 ```plaintext
-profiles/
-├── client_profile.go          # ClientProfile 定义
-├── internal_browser_profiles.go   # 内置浏览器配置
-├── contributed_browser_profiles.go # 社区贡献配置
-├── custom_profiles.go         # 自定义配置
-└── specs/                     # YAML 规格目录
-    ├── chrome_120.yaml
-    ├── firefox_121.yaml
+modules/profiles/
+├── profile.go              # ClientProfile 定义和注册表
+├── builtin.go              # Chrome 133, Firefox 133, Safari 18
+├── chrome.go               # Chrome 115-140 系列
+├── firefox.go              # Firefox 115-135 系列
+├── safari.go               # Safari 16-18 系列
+├── edge.go                 # Edge 115-130 系列
+├── opera.go                # Opera 100-110 系列
+├── brave.go                # Brave 1.60-1.72 系列
+├── mobile.go               # iOS/Android 28个移动指纹
+├── comprehensive.go        # 程序化生成配置
+├── extended.go             # 扩展配置集合
+└── legacy/                 # 遗留兼容代码
+    ├── profiles.go
+    ├── contributed_browser_profiles.go
     └── ...
-```plaintext
+```
 
-**关键类型**:
-- `ClientProfile`: 完整的客户端配置
-- `ClientHelloSpec`: TLS 握手参数
-- `Settings`: HTTP/2 帧设置
-- `PseudoHeaderOrder`: 伪头部顺序
+**导入示例**:
+```go
+import "github.com/vistone/fingerprint/modules/profiles"
 
-### 2. TLS 模块 (`tls/`)
+// 获取指纹
+profile := profiles.Get("chrome_133")
 
-TLS 指纹分析和 JA3/JA4 计算。
+// 获取所有 Chrome 指纹
+chromeProfiles := profiles.GetByBrowser(core.BrowserChrome)
+```
 
-```plaintext
-tls/
-├── ja3/              # JA3 指纹计算
-├── ja4/              # JA4 指纹计算
-├── ja4s/             # JA4S 指纹计算
-├── ech/              # Encrypted Client Hello
-└── internal/utils/   # 内部工具
-```plaintext
+### 3. TLS 模块 (`modules/tls`)
 
-**功能**:
-- JA3 字符串解析和生成
-- JA4 指纹计算
-- TLS ClientHello 分析
-- ECH 支持（实验中）
-
-### 3. HTTP 模块 (`http/`)
-
-HTTP/2 和 HTTP 头部分析。
-
-```plaintext
-http/
-├── http2/            # HTTP/2 帧分析
-├── ja4h/             # JA4H HTTP 指纹
-├── headers/          # 头部分析
-├── useragent/        # User-Agent 解析
-├── clienthints/      # Client Hints 处理
-└── policy/           # HTTP 策略
-```plaintext
-
-**功能**:
-- HTTP/2 帧结构分析
-- SETTINGS、WINDOW_UPDATE、PRIORITY 帧解析
-- HTTP 头部指纹 (JA4H)
-- Client Hints 处理
-
-### 4. TCP/IP 模块 (`internal/tcpip/`)
-
-TCP/IP 层指纹分析。
-
-**功能**:
-- TCP 窗口大小分析
-- TCP 选项解析
-- TTL/IPID 分析
-- OS 指纹识别
-
-### 5. Config 模块 (`internal/config/`)
-
-配置管理和动态更新。
-
-**关键类型**:
-- `ManagedConfig`: 可热重载的配置
-- `FeatureExtractionConfig`: 特征提取配置
-
-**特性**:
-- JSON/YAML 配置解析
-- 配置热重载（通过文件监听）
-- 配置克隆（优化版本）
-
-### 6. Internal 模块
-
-#### 6.1 Extension 模块 (`internal/extension/`)
-
-TLS 扩展解析。
-
-支持的扩展类型:
-- `server_name` (0)
-- `supported_groups` (10)
-- `ec_point_formats` (11)
-- `signature_algorithms` (13)
-- `application_layer_protocol_negotiation` (16)
-- `supported_versions` (43)
-- `psk_key_exchange_modes` (45)
-- `key_share` (51)
-- `grease_placeholder` ( grease )
-
-#### 6.2 Pipeline 模块 (`internal/pipeline/`)
-
-处理管道和中间件。
+**职责**: TLS 指纹分析和 JA3/JA4 计算。
 
 ```go
-type Processor interface {
-    Process(ctx context.Context, data interface{}) (interface{}, error)
-}
+import "github.com/vistone/fingerprint/modules/tls"
 
-type Pipeline struct {
-    processors []Processor
-}
-```plaintext
+// JA3 指纹
+ja3 := tls.CalculateJA3(clientHello)
 
-#### 6.3 Cache 模块 (`internal/cache/`)
+// JA4 指纹 (legacy)
+ja4 := tls.CalculateJA4(clientHello)
+```
 
-缓存实现。
+### 4. HTTP 模块 (`modules/http`)
+
+**职责**: HTTP/2 和 HTTP 头部分析。
 
 ```go
-type Cache interface {
-    Get(key string) (interface{}, bool)
-    Set(key string, value interface{}, ttl time.Duration)
-    Delete(key string)
-}
-```plaintext
+import "github.com/vistone/fingerprint/modules/http"
 
-## 数据流
+// HTTP/2 帧分析
+frames := http.ParseHTTP2Frames(data)
 
-### 指纹生成流程
+// JA4H 指纹 (legacy)
+ja4h := http.CalculateJA4H(headers)
+```
+
+### 5. ML 模块 (`modules/ml`)
+
+**职责**: 机器学习分类器。
+
+```go
+import "github.com/vistone/fingerprint/modules/ml"
+
+// 创建分类器
+classifier := ml.NewClassifier(ml.Config{
+    Threshold: 0.8,
+})
+
+// 训练
+classifier.Train(dataset)
+
+// 预测
+result := classifier.Predict(features)
+```
+
+### 6. Defense 模块 (`modules/defense`)
+
+**职责**: 安全防护和风险评估。
+
+```go
+import "github.com/vistone/fingerprint/modules/defense"
+
+// 检测异常
+detector := defense.NewDetector()
+score := detector.Analyze(fingerprint)
+```
+
+### 7. Frontend 模块 (`modules/frontend`)
+
+**职责**: JavaScript SDK 和前端集成。
+
+```go
+import "github.com/vistone/fingerprint/modules/frontend"
+
+// 生成前端配置
+config := frontend.GenerateSDKConfig(profile)
+```
+
+### 8. Gateway 模块 (`modules/gateway`)
+
+**职责**: API 网关和流量管理。
+
+```go
+import "github.com/vistone/fingerprint/modules/gateway"
+
+// 创建网关
+gw := gateway.New(gateway.Config{
+    RateLimit: 1000,
+})
+```
+
+### 9. Generator 模块 (`modules/generator`)
+
+**职责**: 指纹生成和随机化。
+
+```go
+import "github.com/vistone/fingerprint/modules/generator"
+
+// 生成随机指纹
+profile := generator.GenerateRandom()
+```
+
+### 10. Network 模块 (`modules/network`)
+
+**职责**: 网络层分析（TCP/IP, QUIC）。
+
+```go
+import "github.com/vistone/fingerprint/modules/network"
+
+// TCP 指纹
+tcpFingerprint := network.AnalyzeTCP(packet)
+```
+
+### 11. Internal 模块 (`modules/internal`)
+
+**职责**: 内部工具和共享实现。
+
+```go
+import "github.com/vistone/fingerprint/modules/internal/utils"
+import "github.com/vistone/fingerprint/modules/internal/metrics"
+```
+
+### 12. Config 模块 (`modules/config`)
+
+**职责**: 配置管理和热重载。
+
+```go
+import "github.com/vistone/fingerprint/modules/config"
+
+// 加载配置
+cfg := config.Load("config.yaml")
+```
+
+### 13. Plugin 模块 (`modules/plugin`)
+
+**职责**: 插件系统。
+
+```go
+import "github.com/vistone/fingerprint/modules/plugin"
+
+// 注册插件
+plugin.Register("custom", myPlugin)
+```
+
+## 使用方式
+
+### 方式一: 使用 Facade 模块 (推荐)
+
+```go
+import "github.com/vistone/fingerprint/modules/fingerprint"
+
+// 获取随机指纹
+profile := fingerprint.GetRandom()
+
+// 获取指定浏览器指纹
+chrome := fingerprint.GetByBrowser(fingerprint.BrowserChrome)
+
+// 分析指纹
+analyzer := fingerprint.NewAnalyzer()
+result := analyzer.Analyze(request)
+```
+
+### 方式二: 直接导入子模块
+
+```go
+import (
+    "github.com/vistone/fingerprint/modules/core"
+    "github.com/vistone/fingerprint/modules/profiles"
+    "github.com/vistone/fingerprint/modules/tls"
+)
+
+profile, _ := profiles.Get("chrome_133")
+ja3 := tls.CalculateJA3(clientHello)
+```
+
+## 依赖关系
 
 ```plaintext
-┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
-│  Client  │───▶│   TLS    │───▶│   HTTP   │───▶│  Output  │
-│  Request │    │  Layer   │    │  Layer   │    │          │
-└──────────┘    └────┬─────┘    └────┬─────┘    └──────────┘
-                     │               │
-                     ▼               ▼
-              ┌──────────┐    ┌──────────┐
-              │  JA3/4   │    │  JA4H    │
-              │Fingerprint│   │Fingerprint│
-              └──────────┘    └──────────┘
-```plaintext
-
-### Profile 选择流程
-
-```plaintext
-┌──────────────┐
-│ User Request │
-└──────┬───────┘
-       │
-       ▼
-┌──────────────┐     ┌──────────────┐
-│ Parse UA/    │────▶│ Match        │
-│ Client Hints │     │ Profile      │
-└──────────────┘     └──────┬───────┘
-                            │
-              ┌─────────────┼─────────────┐
-              ▼             ▼             ▼
-        ┌─────────┐   ┌─────────┐   ┌─────────┐
-        │ Chrome  │   │ Firefox │   │ Safari  │
-        └────┬────┘   └────┬────┘   └────┬────┘
-             │             │             │
-             └─────────────┴─────────────┘
-                           │
-                           ▼
-                    ┌──────────────┐
-                    │ Return Spec  │
-                    └──────────────┘
-```plaintext
+core (零依赖)
+    ▲
+    │
+    ├── profiles ──┬──▶ tls
+    │              ├──▶ http
+    │              └──▶ internal
+    │
+    ├── tls ──────▶ internal
+    │
+    ├── http ─────▶ tls (optional)
+    │
+    ├── ml ───────▶ core
+    │
+    ├── defense ──┬──▶ ml
+    │             └──▶ internal
+    │
+    ├── frontend ──▶ ml
+    │
+    ├── gateway ──┬──▶ defense
+    │             ├──▶ frontend
+    │             └──▶ ml
+    │
+    └── fingerprint ──▶ 所有模块
+```
 
 ## 设计原则
 
 ### 1. 模块化设计
 
-- 每个模块有明确的职责边界
+- 每个模块有独立的 go.mod
 - 模块间通过接口通信
-- 支持独立测试和替换
+- 支持独立测试和版本控制
 
-### 2. 可扩展性
-
-```go
-// 处理器接口允许自定义扩展
-type FingerprintProcessor interface {
-    Process(ctx context.Context, req *Request) (*Fingerprint, error)
-}
-
-// 插件系统
-func RegisterPlugin(name string, plugin Plugin) error
-```plaintext
-
-### 3. 性能优化
-
-| 组件 | 优化策略 | 效果 |
-| ------ | ---------- | ------ |
-| Config Clone | 手写 Clone 替代 JSON | 5-10x 提升 |
-| Profile Cache | LRU 缓存 | 避免重复生成 |
-| Extension Parse | 预分配切片 | 减少内存分配 |
-
-### 4. 线程安全
-
-```go
-// 使用 sync.RWMutex 保护共享状态
-type Manager struct {
-    mu      sync.RWMutex
-    configs map[string]*Config
-}
-
-func (m *Manager) Get(name string) (*Config, bool) {
-    m.mu.RLock()
-    defer m.mu.RUnlock()
-    c, ok := m.configs[name]
-    return c, ok
-}
-```plaintext
-
-## 依赖关系
+### 2. 零依赖核心
 
 ```plaintext
-profiles ──┬──▶ tls
-           ├──▶ http
-           └──▶ internal/extension
+modules/core/
+├── go.mod          # 零外部依赖
+├── types.go        # 基础类型
+└── interfaces.go   # 共享接口
+```
 
-tls ───────▶ internal/utils
+### 3. 渐进式复杂度
 
-http ──────▶ tls (optional)
-           ▶ internal/extension
-
-internal/config ──▶ (no external deps in pkg)
-
-internal/tcpip ───▶ (self-contained)
 ```plaintext
+Level 1: core        (基础类型)
+Level 2: profiles    (指纹配置)
+Level 3: tls/http    (协议分析)
+Level 4: ml/defense  (高级功能)
+Level 5: gateway     (完整系统)
+```
+
+### 4. 向后兼容
+
+遗留代码保留在 `legacy/` 子目录中，逐步迁移。
 
 ## 性能特征
 
-| 操作 | 时间复杂度 | 空间复杂度 | 说明 |
-| ------ | ----------- | ----------- | ------ |
-| Profile 选择 | O(1) | O(1) | 哈希表查找 |
-| JA3 解析 | O(n) | O(n) | n = 字符串长度 |
-| HTTP/2 分析 | O(m) | O(m) | m = 帧数量 |
-| Config Clone | O(1) | O(1) | 固定大小结构 |
+| 操作 | 时间复杂度 | 说明 |
+|------|-----------|------|
+| Profile 选择 | O(1) | 哈希表查找 |
+| JA3 解析 | O(n) | n = 字符串长度 |
+| HTTP/2 分析 | O(m) | m = 帧数量 |
+| 指纹注册 | O(1) | 187+ 指纹预注册 |
 
 ## 扩展点
 
-### 1. 自定义 Profile 源
+### 自定义 Profile
 
 ```go
-type ProfileSource interface {
-    Load() ([]ClientProfile, error)
-    Watch(changes chan<- ProfileChange) error
+// 创建自定义指纹
+myProfile := profiles.ClientProfile{
+    ID: "my_custom",
+    BrowserType: core.BrowserChrome,
+    // ...
 }
 
-// 实现：文件、数据库、配置中心等
-```plaintext
+// 注册
+profiles.Register(myProfile)
+```
 
-### 2. 自定义分析器
+### 自定义分析器
 
 ```go
-type Analyzer interface {
-    Name() string
-    Analyze(ctx context.Context, data []byte) (Analysis, error)
+type CustomAnalyzer struct{}
+
+func (a *CustomAnalyzer) Analyze(data []byte) error {
+    // 自定义分析逻辑
+    return nil
 }
+```
 
-// 注册：RegisterAnalyzer("custom", &CustomAnalyzer{})
-```plaintext
+## 模块版本策略
 
-### 3. 输出格式化
-
-```go
-type Formatter interface {
-    Format(fp *Fingerprint) ([]byte, error)
-}
-
-// JSON, YAML, Protobuf 等实现
-```plaintext
-
-## 未来架构演进
-
-### 阶段 1: 配置外部化（当前）
-- 将 Profile 从代码迁移到 YAML
-- 支持热重载
-
-### 阶段 2: 插件化（计划中）
-- WASM 插件支持
-- 动态加载分析器
-
-### 阶段 3: 分布式（长期）
-- 指纹数据共享
-- 分布式缓存
+- **core**: v1.x.x - 稳定 API
+- **profiles**: v0.x.x - 频繁更新指纹
+- **ml**: v0.x.x - 实验性功能
+- **legacy 代码**: 标记为 Deprecated

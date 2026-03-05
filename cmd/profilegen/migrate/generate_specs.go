@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/bogdanfinn/fhttp/http2"
-	"github.com/vistone/fingerprint/profiles"
+	"github.com/vistone/fingerprint/modules/profiles/legacy"
 	"gopkg.in/yaml.v3"
 )
 

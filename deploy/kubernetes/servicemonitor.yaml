@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: fingerprint-gateway
+  namespace: fingerprint
+  labels:
+    app: fingerprint-gateway
+spec:
+  selector:
+    matchLabels:
+      app: fingerprint-gateway
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+    honorLabels: true
+    metricRelabelings:
+    - sourceLabels: [__name__]
+      regex: 'fp_.*'
+      action: keep
