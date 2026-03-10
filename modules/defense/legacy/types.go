@@ -1,4 +1,4 @@
 package security
 
-// ModuleName Security 模块名称。
+// ModuleName is the Security module name.
 const ModuleName = "security"

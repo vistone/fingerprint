@@ -1,3 +1,3 @@
 package security
 
-// Package security 提供安全分析相关模块入口。
+// Package security provides entry for security analysis related modules.
