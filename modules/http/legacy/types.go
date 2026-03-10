@@ -1,4 +1,4 @@
 package http
 
-// ModuleName HTTP 模块名称。
+// ModuleName HTTP module name.
 const ModuleName = "http"
