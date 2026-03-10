@@ -5,61 +5,61 @@ import (
 	"strings"
 )
 
-// PermissionDirective 权限指令
+// PermissionDirective permission directive
 type PermissionDirective struct {
-	// 功能名称
+	// Feature name
 	FeatureName string
 
-	// 获准的源列表
+	// List of allowed origins
 	AllowedOrigins []string
 
-	// 包含通配符
+	// Contains wildcard
 	HasWildcard bool
 
-	// 包含 self
+	// Contains self
 	HasSelf bool
 
-	// 包含明确的 none
+	// Contains explicit none
 	HasNone bool
 
-	// 是否允许所有
+	// Allows all
 	AllowAll bool
 
-	// 是否是默认允许行为
+	// Is default allow behavior
 	IsDefault bool
 }
 
-// PermissionsPolicy 权限策略（Permissions-Policy 头）
+// PermissionsPolicy permissions policy (Permissions-Policy header)
 type PermissionsPolicy struct {
-	// 权限指令映射
+	// Permission directive mapping
 	Directives map[string]*PermissionDirective
 
-	// 是否为传统格式（Feature-Policy）
+	// Legacy format (Feature-Policy)
 	IsLegacy bool
 
-	// 原始头值
+	// Raw header value
 	RawValue string
 
-	// 异常标记
+	// Anomaly flags
 	AnomalyFlags []string
 
-	// 风险分数
+	// Risk score
 	RiskScore float64
 
-	// 签名哈希
+	// Signature hash
 	Hash string
 }
 
-// PermissionsPolicyAnalyzer 权限策略分析器
+// PermissionsPolicyAnalyzer permissions policy analyzer
 type PermissionsPolicyAnalyzer struct {
-	// 标准功能列表
+	// Standard feature list
 	standardFeatures map[string]bool
 
-	// 已知危险组合
+	// Known dangerous combinations
 	dangerousCombinations [][]string
 }
 
-// NewPermissionsPolicyAnalyzer 创建权限策略分析器
+// NewPermissionsPolicyAnalyzer creates permissions policy analyzer
 func NewPermissionsPolicyAnalyzer() *PermissionsPolicyAnalyzer {
 	return &PermissionsPolicyAnalyzer{
 		standardFeatures: map[string]bool{
@@ -109,14 +109,14 @@ func NewPermissionsPolicyAnalyzer() *PermissionsPolicyAnalyzer {
 			"xr-spatial-tracking":             true,
 		},
 		dangerousCombinations: [][]string{
-			{"camera", "microphone", "geolocation"}, // 全面追踪
-			{"clipboard-read", "clipboard-write"},   // 剪贴板访问
-			{"payment", "usb", "serial"},            // 支付敏感操作
+			{"camera", "microphone", "geolocation"}, // Comprehensive tracking
+			{"clipboard-read", "clipboard-write"},   // Clipboard access
+			{"payment", "usb", "serial"},            // Payment sensitive operations
 		},
 	}
 }
 
-// ParsePermissionsPolicy 解析 Permissions-Policy 头
+// ParsePermissionsPolicy parses Permissions-Policy header
 func (a *PermissionsPolicyAnalyzer) ParsePermissionsPolicy(policyValue string) *PermissionsPolicy {
 	policy := &PermissionsPolicy{
 		Directives:   make(map[string]*PermissionDirective),
@@ -128,7 +128,7 @@ func (a *PermissionsPolicyAnalyzer) ParsePermissionsPolicy(policyValue string) *
 		return policy
 	}
 
-	// 检测是否为传统格式
+	// Detect legacy format
 	if strings.Contains(policyValue, ":") && !strings.Contains(policyValue, "=(") {
 		policy.IsLegacy = true
 	}
@@ -145,9 +145,9 @@ func (a *PermissionsPolicyAnalyzer) ParsePermissionsPolicy(policyValue string) *
 	return policy
 }
 
-// parseModernPolicy 解析现代 Permissions-Policy 格式
+// parseModernPolicy parses modern Permissions-Policy format
 func (a *PermissionsPolicyAnalyzer) parseModernPolicy(policy *PermissionsPolicy) {
-	// 格式: feature=(allowlist), feature2=(allowlist2)
+	// Format: feature=(allowlist), feature2=(allowlist2)
 	directives := strings.Split(policy.RawValue, ",")
 
 	for _, directive := range directives {
@@ -156,7 +156,7 @@ func (a *PermissionsPolicyAnalyzer) parseModernPolicy(policy *PermissionsPolicy)
 			continue
 		}
 
-		// 分离特性名和源列表
+		// Separate feature name and source list
 		parts := strings.SplitN(directive, "=(", 2)
 		if len(parts) != 2 {
 			policy.AnomalyFlags = append(policy.AnomalyFlags, fmt.Sprintf("MALFORMED_DIRECTIVE:%s", directive))
@@ -166,7 +166,7 @@ func (a *PermissionsPolicyAnalyzer) parseModernPolicy(policy *PermissionsPolicy)
 		featureName := strings.TrimSpace(parts[0])
 		sourceList := strings.TrimSuffix(strings.TrimSpace(parts[1]), ")")
 
-		// 检查未知特性
+		// Check unknown features
 		if !a.standardFeatures[featureName] {
 			policy.AnomalyFlags = append(policy.AnomalyFlags, fmt.Sprintf("UNKNOWN_FEATURE:%s", featureName))
 		}
@@ -177,9 +177,9 @@ func (a *PermissionsPolicyAnalyzer) parseModernPolicy(policy *PermissionsPolicy)
 	}
 }
 
-// parseFeaturePolicy 解析传统 Feature-Policy 格式
+// parseFeaturePolicy parses legacy Feature-Policy format
 func (a *PermissionsPolicyAnalyzer) parseFeaturePolicy(policy *PermissionsPolicy) {
-	// 格式: Feature-Policy: feature 'self' https://example.com
+	// Format: Feature-Policy: feature 'self' https://example.com
 	directives := strings.Split(policy.RawValue, ";")
 
 	for _, directive := range directives {
@@ -205,7 +205,7 @@ func (a *PermissionsPolicyAnalyzer) parseFeaturePolicy(policy *PermissionsPolicy
 	}
 }
 
-// parseSourceList 解析源列表（现代格式）
+// parseSourceList parses source list (modern format)
 func (a *PermissionsPolicyAnalyzer) parseSourceList(sourceList string) *PermissionDirective {
 	directive := &PermissionDirective{
 		AllowedOrigins: []string{},
@@ -222,7 +222,7 @@ func (a *PermissionsPolicyAnalyzer) parseSourceList(sourceList string) *Permissi
 		return directive
 	}
 
-	// 分离各源
+	// Separate sources
 	sources := strings.FieldsFunc(sourceList, func(r rune) bool {
 		return r == ' ' || r == '\t'
 	})
@@ -248,7 +248,7 @@ func (a *PermissionsPolicyAnalyzer) parseSourceList(sourceList string) *Permissi
 	return directive
 }
 
-// parseSourceListLegacy 解析源列表（传统格式）
+// parseSourceListLegacy parses source list (legacy format)
 func (a *PermissionsPolicyAnalyzer) parseSourceListLegacy(sourceList string) *PermissionDirective {
 	directive := &PermissionDirective{
 		AllowedOrigins: []string{},
@@ -287,16 +287,16 @@ func (a *PermissionsPolicyAnalyzer) parseSourceListLegacy(sourceList string) *Pe
 	return directive
 }
 
-// evaluatePolicyRisk 评估策略风险
+// evaluatePolicyRisk evaluates policy risk
 func (a *PermissionsPolicyAnalyzer) evaluatePolicyRisk(policy *PermissionsPolicy) {
 	risk := 0.0
 
-	// 检查异常
+	// Check anomalies
 	if len(policy.AnomalyFlags) > 0 {
 		risk += 0.1 * float64(len(policy.AnomalyFlags))
 	}
 
-	// 检查是否所有特性都允许 (*)
+	// Check if all features allow (*)
 	var allowAllFeatures []string
 	for feature, directive := range policy.Directives {
 		if directive.AllowAll {
@@ -309,7 +309,7 @@ func (a *PermissionsPolicyAnalyzer) evaluatePolicyRisk(policy *PermissionsPolicy
 		risk += 0.2
 	}
 
-	// 检查已知危险组合
+	// Check known dangerous combinations
 	for _, combination := range a.dangerousCombinations {
 		count := 0
 		for _, danger := range combination {
@@ -323,7 +323,7 @@ func (a *PermissionsPolicyAnalyzer) evaluatePolicyRisk(policy *PermissionsPolicy
 		}
 	}
 
-	// 检查缺少安全限制的敏感特性
+	// Check sensitive features without security restrictions
 	sensitiveFeaturesWithoutRestriction := []string{
 		"camera",
 		"microphone",
@@ -338,7 +338,7 @@ func (a *PermissionsPolicyAnalyzer) evaluatePolicyRisk(policy *PermissionsPolicy
 		}
 	}
 
-	// 检查传统格式（可能已过时或配置不当）
+	// Check legacy format (possibly outdated or misconfigured)
 	if policy.IsLegacy {
 		policy.AnomalyFlags = append(policy.AnomalyFlags, "LEGACY_FEATURE_POLICY_FORMAT")
 		risk += 0.1
@@ -347,9 +347,9 @@ func (a *PermissionsPolicyAnalyzer) evaluatePolicyRisk(policy *PermissionsPolicy
 	policy.RiskScore = risk
 }
 
-// calculateHash 计算策略哈希
+// calculateHash calculates policy hash
 func (a *PermissionsPolicyAnalyzer) calculateHash(policy *PermissionsPolicy) {
-	// 简单哈希：特性数量和异常数
+	// Simple hash: feature count and anomaly count
 	policy.Hash = fmt.Sprintf(
 		"%d-%d-%d",
 		len(policy.Directives),
@@ -358,7 +358,7 @@ func (a *PermissionsPolicyAnalyzer) calculateHash(policy *PermissionsPolicy) {
 	)
 }
 
-// GetPolicySummary 获取策略总结
+// GetPolicySummary gets policy summary
 func (a *PermissionsPolicyAnalyzer) GetPolicySummary(policy *PermissionsPolicy) string {
 	allowAll := 0
 	restricted := 0
@@ -372,7 +372,7 @@ func (a *PermissionsPolicyAnalyzer) GetPolicySummary(policy *PermissionsPolicy) 
 	}
 
 	return fmt.Sprintf(
-		"特性数: %d | 允许所有: %d | 受限: %d | 异常标记: %d | 风险分数: %.2f",
+		"Features: %d | Allow All: %d | Restricted: %d | Anomaly Flags: %d | Risk Score: %.2f",
 		len(policy.Directives),
 		allowAll,
 		restricted,
