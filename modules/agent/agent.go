@@ -1,16 +1,16 @@
-// Package agent 实现自主安全智能体（Autonomous Security Agent）
+// Package agent Implements the Autonomous Security Agent.
 //
-// 范式转移：从被动"指纹识别"到主动"行为智能体"
+// Paradigm shift: From passive "fingerprint recognition" to active "behavioral agent".
 //
-// 核心架构：Observe → Analyze → Decide → Act (OADA 循环)
+// Core architecture: Observe → Analyze → Decide → Act (OADA loop)
 //
-//   - Observer: 持续收集指纹分析事件流
-//   - BehaviorAnalyzer: 构建客户端行为画像，识别时序异常
-//   - StrategyEngine: 自适应策略引擎，根据威胁模式动态演化检测规则
-//   - Memory: 智能体记忆系统，存储学习到的模式与威胁签名
+//   - Observer: Continuously collect fingerprint analysis event stream
+//   - BehaviorAnalyzer: Build client behavioral profile, identify temporal anomalies
+//   - StrategyEngine: Adaptive strategy engine, dynamically evolve detection rules based on threat patterns
+//   - Memory: Agent memory system, store learned patterns and threat signatures
 //
-// Agent 不替换现有 ML/Defense 模块，而是在其之上构建更高层的
-// 自主决策能力，形成"感知-认知-决策-执行"完整闭环。
+// Agent does not replace existing ML/Defense modules, but builds higher-level
+// autonomous decision-making capabilities on top of them, forming a complete "Perception-Cognition-Decision-Execution" closed loop.
 package agent
 
 import (
@@ -24,109 +24,109 @@ import (
 	"github.com/vistone/fingerprint/modules/ml"
 )
 
-// ActionType 智能体动作类型
+// ActionType defines the types of actions an agent can take.
 type ActionType string
 
 const (
-	ActionAllow     ActionType = "allow"     // 放行
-	ActionMonitor   ActionType = "monitor"   // 监控（不阻断但加强观察）
-	ActionChallenge ActionType = "challenge" // 挑战验证（如 JS 验证、验证码）
-	ActionThrottle  ActionType = "throttle"  // 限速
-	ActionBlock     ActionType = "block"     // 阻断
+	ActionAllow     ActionType = "allow"     // Allow (pass through)
+	ActionMonitor   ActionType = "monitor"   // Monitor (no blocking, enhanced observation)
+	ActionChallenge ActionType = "challenge" // Challenge with verification (e.g., JS validation, CAPTCHA)
+	ActionThrottle  ActionType = "throttle"  // Rate limit
+	ActionBlock     ActionType = "block"     // Block
 )
 
-// ThreatClass 威胁分类
+// ThreatClass classifies the types of threats detected.
 type ThreatClass string
 
 const (
 	ThreatNone              ThreatClass = "none"
-	ThreatBot               ThreatClass = "bot"                // 自动化工具/爬虫
-	ThreatFingerprintSpoof  ThreatClass = "fingerprint_spoof"  // 指纹伪造
-	ThreatSessionAnomaly    ThreatClass = "session_anomaly"    // 会话异常
-	ThreatBehavioralAnomaly ThreatClass = "behavioral_anomaly" // 行为异常
-	ThreatEvasion           ThreatClass = "evasion"            // 主动逃避检测
+	ThreatBot               ThreatClass = "bot"                // Automated tools / crawler bots
+	ThreatFingerprintSpoof  ThreatClass = "fingerprint_spoof"  // Fingerprint spoofing
+	ThreatSessionAnomaly    ThreatClass = "session_anomaly"    // Session anomaly
+	ThreatBehavioralAnomaly ThreatClass = "behavioral_anomaly" // Behavioral anomaly
+	ThreatEvasion           ThreatClass = "evasion"            // Active evasion attempts
 )
 
-// Observation 单次观测事件——智能体的感知输入
+// Observation represents a single observation event - the agent's perception input.
 type Observation struct {
 	ID        string
-	ClientID  string // 客户端标识 (IP 或 session)
+	ClientID  string // Client identifier (IP or session)
 	Timestamp time.Time
 
-	// 来自现有管线的原始数据
+	// Raw data from existing pipeline
 	Features       *core.FeatureVector
 	Classification *ml.ClassificationResult
 	Detection      *defense.DetectionResult
 	RiskAssessment *core.RiskAssessment
 
-	// 指纹标识
+	// Fingerprint hash identifier
 	FingerprintHash string
 
-	// 元信息
+	// Metadata information
 	Metadata map[string]string
 }
 
-// Decision 智能体决策结果——丰富了原始风险评估
+// Decision represents the agent's decision result - enriched version of raw risk assessment.
 type Decision struct {
-	// 决策动作
+	// Decision action to take
 	Action ActionType `json:"action"`
 
-	// 威胁分类
+	// Detected threat classification
 	ThreatClass ThreatClass `json:"threat_class"`
 
-	// 综合置信度 [0,1]
+	// Composite confidence score [0,1]
 	Confidence float64 `json:"confidence"`
 
-	// 行为画像摘要
+	// Behavioral profile summary
 	BehaviorSummary *BehaviorSummary `json:"behavior_summary,omitempty"`
 
-	// 被触发的自适应规则
+	// Triggered adaptive strategies
 	TriggeredStrategies []string `json:"triggered_strategies,omitempty"`
 
-	// 知识库匹配结果——跨层一致性校验
+	// Knowledge base match results - cross-layer consistency check
 	KnowledgeMatch *MatchResult `json:"knowledge_match,omitempty"`
 
-	// 建议（补充 RiskAssessment.Suggestions）
+	// Insights (supplements RiskAssessment.Suggestions)
 	Insights []string `json:"insights,omitempty"`
 
-	// 处理耗时
+	// Processing latency in microseconds
 	LatencyUs int64 `json:"latency_us"`
 }
 
-// BehaviorSummary 行为画像摘要
+// BehaviorSummary summarizes the behavioral profile.
 type BehaviorSummary struct {
 	TotalObservations   int     `json:"total_observations"`
-	UniqueFP            int     `json:"unique_fingerprints"`    // 不同指纹数
-	FPSwitchRate        float64 `json:"fp_switch_rate"`         // 指纹切换频率 (switches/min)
-	AvgRequestInterval  float64 `json:"avg_request_interval_s"` // 平均请求间隔(秒)
-	ConsistencyScore    float64 `json:"consistency_score"`      // 指纹一致性得分 [0,1]
-	RiskTrend           float64 `json:"risk_trend"`             // 风险趋势 (-1~1, 正=恶化)
+	UniqueFP            int     `json:"unique_fingerprints"`    // Number of distinct fingerprints
+	FPSwitchRate        float64 `json:"fp_switch_rate"`         // Fingerprint switch rate (switches/min)
+	AvgRequestInterval  float64 `json:"avg_request_interval_s"` // Average request interval (seconds)
+	ConsistencyScore    float64 `json:"consistency_score"`      // Fingerprint consistency score [0,1]
+	RiskTrend           float64 `json:"risk_trend"`             // Risk trend (-1~1, positive=worsening)
 	SessionDurationSecs float64 `json:"session_duration_s"`
 }
 
-// AgentConfig 智能体配置
+// AgentConfig defines the configuration for the agent.
 type AgentConfig struct {
-	// 行为分析
-	SessionWindow   time.Duration // 会话窗口长度（默认 30min）
-	MaxObservations int           // 每客户端最大保留观测数
-	CleanupInterval time.Duration // 过期会话清理间隔
-	SessionTimeout  time.Duration // 会话超时（无活动后过期）
+	// Behavioral analysis
+	SessionWindow   time.Duration // Session window duration (default 30min)
+	MaxObservations int           // Maximum observations to retain per client
+	CleanupInterval time.Duration // Cleanup interval for expired sessions
+	SessionTimeout  time.Duration // Session timeout (expires if inactive)
 
-	// 策略引擎
-	StrategyUpdateInterval time.Duration // 策略自动演化间隔
-	MinObservationsToLearn int           // 触发学习的最少观测数
+	// Strategy engine
+	StrategyUpdateInterval time.Duration // Strategy auto-evolution interval
+	MinObservationsToLearn int           // Minimum observations to trigger learning
 
-	// 阈值
-	FPSwitchRateThreshold float64 // 指纹切换频率异常阈值
-	ConsistencyThreshold  float64 // 一致性得分异常阈值
-	RequestBurstThreshold float64 // 请求突发异常阈值 (req/s)
-	RiskEscalationFactor  float64 // 风险升级因子
+	// Thresholds
+	FPSwitchRateThreshold float64 // Fingerprint switch rate anomaly threshold
+	ConsistencyThreshold  float64 // Consistency score anomaly threshold
+	RequestBurstThreshold float64 // Request burst anomaly threshold (req/s)
+	RiskEscalationFactor  float64 // Risk escalation factor
 
-	// 后台协程
-	Enabled bool // 是否启用 Agent
+	// Background goroutines
+	Enabled bool // Whether to enable the Agent
 }
 
-// DefaultAgentConfig 默认配置
+// DefaultAgentConfig provides the default configuration.
 var DefaultAgentConfig = &AgentConfig{
 	SessionWindow:          30 * time.Minute,
 	MaxObservations:        500,
@@ -134,14 +134,14 @@ var DefaultAgentConfig = &AgentConfig{
 	SessionTimeout:         30 * time.Minute,
 	StrategyUpdateInterval: 10 * time.Minute,
 	MinObservationsToLearn: 20,
-	FPSwitchRateThreshold:  3.0,  // 每分钟 3 次指纹切换视为异常
-	ConsistencyThreshold:   0.4,  // 一致性低于 0.4 视为可疑
-	RequestBurstThreshold:  10.0, // 每秒 10 请求视为突发
+	FPSwitchRateThreshold:  3.0,  // 3+ fingerprint switches per minute considered anomalous
+	ConsistencyThreshold:   0.4,  // Consistency score below 0.4 indicates suspicious activity
+	RequestBurstThreshold:  10.0, // 10+ requests per second considered burst
 	RiskEscalationFactor:   1.5,
 	Enabled:                true,
 }
 
-// Agent 自主安全智能体
+// Agent is the Autonomous Security Agent implementation.
 type Agent struct {
 	config    *AgentConfig
 	behavior  *BehaviorAnalyzer
@@ -155,7 +155,7 @@ type Agent struct {
 	mu     sync.RWMutex
 }
 
-// NewAgent 创建新的安全智能体
+// NewAgent creates a new Autonomous Security Agent with the provided configuration.
 func NewAgent(config *AgentConfig) *Agent {
 	if config == nil {
 		config = DefaultAgentConfig
@@ -175,7 +175,7 @@ func NewAgent(config *AgentConfig) *Agent {
 	}
 }
 
-// Start 启动智能体后台协程（清理、策略演化等）
+// Start initiates the agent's background goroutines (cleanup, strategy evolution, etc.)
 func (a *Agent) Start() {
 	a.wg.Add(2)
 	go a.cleanupLoop()
