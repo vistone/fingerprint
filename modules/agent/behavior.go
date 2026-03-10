@@ -5,20 +5,20 @@ import (
 	"time"
 )
 
-// BehaviorAnalyzer 行为分析器
+// BehaviorAnalyzer behavior analyzer
 //
-// 从观测历史中提取行为特征，构建安全行为画像。
-// 关注维度：
-//   - 指纹稳定性（切换频率、唯一指纹数）
-//   - 请求模式（间隔、突发、周期性）
-//   - 风险趋势（风险分数的时间序列变化方向）
-//   - 分类一致性（ML 分类结果是否前后一致）
+// Extracts behavioral features from observation history, builds security behavior profile.
+// Focus dimensions:
+//   - Fingerprint stability (switching frequency, unique fingerprint count)
+//   - Request patterns (interval, burst, periodicity)
+//   - Risk trend (time series change direction of risk scores)
+//   - Classification consistency (whether ML classification results are consistent)
 type BehaviorAnalyzer struct {
 	config *AgentConfig
 	memory *Memory
 }
 
-// NewBehaviorAnalyzer 创建行为分析器
+// NewBehaviorAnalyzer create behavior analyzer
 func NewBehaviorAnalyzer(config *AgentConfig, memory *Memory) *BehaviorAnalyzer {
 	return &BehaviorAnalyzer{
 		config: config,
@@ -26,7 +26,7 @@ func NewBehaviorAnalyzer(config *AgentConfig, memory *Memory) *BehaviorAnalyzer 
 	}
 }
 
-// Analyze 分析指定客户端的行为画像
+// Analyze analyze behavior profile of specified client
 func (ba *BehaviorAnalyzer) Analyze(clientID string) *BehaviorSummary {
 	session := ba.memory.GetSession(clientID)
 	if session == nil || len(session.Observations) == 0 {
@@ -46,31 +46,31 @@ func (ba *BehaviorAnalyzer) Analyze(clientID string) *BehaviorSummary {
 		return summary
 	}
 
-	// 会话时长
+	// Session duration
 	first := obs[0].Timestamp
 	last := obs[n-1].Timestamp
 	duration := last.Sub(first)
 	summary.SessionDurationSecs = duration.Seconds()
 
-	// 指纹切换频率
+	// Fingerprint switching frequency
 	switches := ba.countFPSwitches(obs)
 	if duration > 0 {
 		summary.FPSwitchRate = float64(switches) / duration.Minutes()
 	}
 
-	// 平均请求间隔
+	// Average request interval
 	summary.AvgRequestInterval = ba.avgInterval(obs)
 
-	// 一致性得分
+	// Consistency score
 	summary.ConsistencyScore = ba.consistencyScore(obs)
 
-	// 风险趋势
+	// Risk trend
 	summary.RiskTrend = ba.riskTrend(obs)
 
 	return summary
 }
 
-// countFPSwitches 统计指纹切换次数
+// countFPSwitches count fingerprint switches
 func (ba *BehaviorAnalyzer) countFPSwitches(obs []*Observation) int {
 	switches := 0
 	for i := 1; i < len(obs); i++ {
@@ -81,7 +81,7 @@ func (ba *BehaviorAnalyzer) countFPSwitches(obs []*Observation) int {
 	return switches
 }
 
-// avgInterval 计算平均请求间隔（秒）
+// avgInterval calculate average request interval (seconds)
 func (ba *BehaviorAnalyzer) avgInterval(obs []*Observation) float64 {
 	if len(obs) < 2 {
 		return 0
@@ -93,24 +93,24 @@ func (ba *BehaviorAnalyzer) avgInterval(obs []*Observation) float64 {
 	return total.Seconds() / float64(len(obs)-1)
 }
 
-// consistencyScore 计算指纹一致性得分 [0,1]
+// consistencyScore calculate fingerprint consistency score [0,1]
 //
-// 基于两个因子：
-// 1. 指纹多样性：唯一指纹数 / 总观测数（越低越一致）
-// 2. ML 分类稳定性：主分类占比
+// Based on two factors:
+// 1. Fingerprint diversity: unique fingerprint count / total observations (lower is more consistent)
+// 2. ML classification stability: dominant classification proportion
 func (ba *BehaviorAnalyzer) consistencyScore(obs []*Observation) float64 {
 	if len(obs) == 0 {
 		return 1.0
 	}
 
-	// 因子1: 指纹多样性（反向）
+	// Factor 1: Fingerprint diversity (inverted)
 	fpSet := make(map[string]struct{})
 	for _, o := range obs {
 		fpSet[o.FingerprintHash] = struct{}{}
 	}
 	diversityPenalty := float64(len(fpSet)) / float64(len(obs))
 
-	// 因子2: ML 分类一致性
+	// Factor 2: ML classification consistency
 	familyCounts := make(map[string]int)
 	for _, o := range obs {
 		if o.Classification != nil {
@@ -128,22 +128,22 @@ func (ba *BehaviorAnalyzer) consistencyScore(obs []*Observation) float64 {
 		classStability = float64(maxCount) / float64(len(obs))
 	}
 
-	// 加权合并
+	// Weighted merge
 	score := 0.5*(1.0-diversityPenalty) + 0.5*classStability
 	return math.Max(0, math.Min(1, score))
 }
 
-// riskTrend 计算风险趋势 [-1, 1]
+// riskTrend calculate risk trend [-1, 1]
 //
-// 使用最近观测的风险分数做简单线性回归斜率，
-// 正值表示风险在上升，负值表示风险在下降。
+// Uses simple linear regression slope on risk scores of recent observations,
+// positive value indicates risk is rising, negative value indicates risk is falling.
 func (ba *BehaviorAnalyzer) riskTrend(obs []*Observation) float64 {
 	n := len(obs)
 	if n < 3 {
 		return 0
 	}
 
-	// 只取最近 20 条
+	// Only take most recent 20
 	start := 0
 	if n > 20 {
 		start = n - 20
@@ -151,7 +151,7 @@ func (ba *BehaviorAnalyzer) riskTrend(obs []*Observation) float64 {
 	recent := obs[start:]
 	m := len(recent)
 
-	// 简单线性回归 y = a + bx
+	// Simple linear regression y = a + bx
 	var sumX, sumY, sumXY, sumX2 float64
 	for i, o := range recent {
 		x := float64(i)
@@ -172,6 +172,6 @@ func (ba *BehaviorAnalyzer) riskTrend(obs []*Observation) float64 {
 	}
 
 	slope := (fm*sumXY - sumX*sumY) / denom
-	// 归一化到 [-1, 1]
+	// Normalize to [-1, 1]
 	return math.Max(-1, math.Min(1, slope*10))
 }
