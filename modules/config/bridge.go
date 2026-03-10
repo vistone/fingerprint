@@ -2,63 +2,63 @@ package config
 
 import ic "github.com/vistone/fingerprint/modules/internal/config"
 
-// ConfigCenter 配置中心。
+// ConfigCenter configuration center.
 type ConfigCenter = ic.ConfigCenter
 
-// ConfigManager 配置管理器。
+// ConfigManager configuration manager.
 type ConfigManager = ic.ConfigManager
 
-// HealthChecker 配置健康检查器。
+// HealthChecker configuration health checker.
 type HealthChecker = ic.HealthChecker
 
-// ManagedConfig 被管理配置对象。
+// ManagedConfig managed configuration object.
 type ManagedConfig = ic.ManagedConfig
 
-// ConfigChange 配置变更信息。
+// ConfigChange configuration change info.
 type ConfigChange = ic.ConfigChange
 
-// ConfigChangeListener 配置变更监听器接口。
+// ConfigChangeListener configuration change listener interface.
 type ConfigChangeListener = ic.ConfigChangeListener
 
-// BehaviorAnalysisConfig 行为分析配置。
+// BehaviorAnalysisConfig behavioranalyzeconfiguration。
 type BehaviorAnalysisConfig = ic.BehaviorAnalysisConfig
 
-// RiskScoringConfig 风险评分配置。
+// RiskScoringConfig risk scoring configuration.
 type RiskScoringConfig = ic.RiskScoringConfig
 
-// FeatureExtractionConfig 特征提取配置。
+// FeatureExtractionConfig featureextractconfiguration。
 type FeatureExtractionConfig = ic.FeatureExtractionConfig
 
-// QUICConfig QUIC 配置。
+// QUICConfig QUIC configuration。
 type QUICConfig = ic.QUICConfig
 
-// TLSConfig TLS 配置。
+// TLSConfig TLS configuration。
 type TLSConfig = ic.TLSConfig
 
-// GlobalConfig 全局配置。
+// GlobalConfig global configuration.
 type GlobalConfig = ic.GlobalConfig
 
-// InitializeConfigCenter 初始化全局配置中心。
+// InitializeConfigCenter initialize global configuration center.
 func InitializeConfigCenter() error {
 	return ic.InitializeConfigCenter()
 }
 
-// InitializeConfigCenterWithDefaults 使用默认配置初始化。
+// InitializeConfigCenterWithDefaults initialize with default configuration.
 func InitializeConfigCenterWithDefaults() error {
 	return ic.InitializeConfigCenterWithDefaults()
 }
 
-// GetConfigCenter 获取全局配置中心。
+// GetConfigCenter get global configuration center.
 func GetConfigCenter() *ConfigCenter {
 	return ic.GetConfigCenter()
 }
 
-// GetConfigManager 获取全局配置管理器。
+// GetConfigManager get global configuration manager.
 func GetConfigManager() *ConfigManager {
 	return ic.GetConfigManager()
 }
 
-// GetHealthChecker 获取全局健康检查器。
+// GetHealthChecker get global health checker.
 func GetHealthChecker() *HealthChecker {
 	return ic.GetHealthChecker()
 }
