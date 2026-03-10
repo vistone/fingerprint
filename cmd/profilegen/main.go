@@ -1,15 +1,15 @@
 //go:build profilegen
 // +build profilegen
 
-// profilegen - 浏览器指纹配置代码生成工具
+// profilegen - browser fingerprint configuration code generation tool
 //
-// 该工具从 YAML 配置文件生成类型安全的 Go 代码，消除 nolint:composites 警告。
+// This tool generates type-safe Go code from YAML configuration files, eliminating nolint:composites warnings.
 //
-// 使用方式:
+// Usage:
 //
 //	go run ./cmd/profilegen -input profiles/specs -output profiles/generated.go
 //
-// 配置文件格式见: profiles/specs/chrome_133.yaml
+// Configuration file format see: profiles/specs/chrome_133.yaml
 package main
 
 import (
@@ -36,14 +36,14 @@ import (
 )
 
 func init() {
-	// 注册所有生成的指纹配置
+	// register all generated fingerprint configurations
 	{{- range .Profiles }}
 	registerGeneratedProfile("{{ .Name }}", {{ .VarName }})
 	{{- end }}
 }
 
 {{ range .Profiles }}
-// {{ .VarName }} 是 {{ .DisplayName }} 的指纹配置（代码生成）
+// {{ .VarName }} is the fingerprint configuration for {{ .DisplayName }} (code generated)
 var {{ .VarName }} = ClientProfile{
 	clientHelloId: tls.ClientHelloID{
 		Client:               "{{ .Client }}",
@@ -91,7 +91,7 @@ var {{ .VarName }} = ClientProfile{
 	{{- end }}
 }
 
-// {{ .VarName }}SpecFactory 创建 {{ .DisplayName }} 的 TLS ClientHello 规范
+// {{ .VarName }}SpecFactory creates TLS ClientHello specification for {{ .DisplayName }}
 func {{ .VarName }}SpecFactory() (tls.ClientHelloSpec, error) {
 	return tls.ClientHelloSpec{
 		CipherSuites: []uint16{
@@ -114,7 +114,7 @@ func {{ .VarName }}SpecFactory() (tls.ClientHelloSpec, error) {
 {{ end }}
 `
 
-// ProfileSpec 定义单个指纹配置
+// ProfileSpec defines a single fingerprint configuration
 type ProfileSpec struct {
 	Name                 string
 	VarName              string
@@ -144,7 +144,7 @@ type Priority struct {
 	PriorityParam
 }
 
-// TemplateData 传递给模板的总数据
+// TemplateData contains all data passed to template
 type TemplateData struct {
 	Timestamp   string
 	SourceFiles string
@@ -153,54 +153,54 @@ type TemplateData struct {
 
 func main() {
 	var (
-		inputDir   = flag.String("input", "profiles/specs", "输入配置文件目录")
-		outputFile = flag.String("output", "profiles/generated.go", "输出 Go 文件路径")
+		inputDir   = flag.String("input", "profiles/specs", "input configuration file directory")
+		outputFile = flag.String("output", "profiles/generated.go", "output Go file path")
 	)
 	flag.Parse()
 
-	// 确保输入目录存在
+	// ensure input directory exists
 	if _, err := os.Stat(*inputDir); os.IsNotExist(err) {
-		fmt.Fprintf(os.Stderr, "错误: 输入目录不存在: %s\n", *inputDir)
+		fmt.Fprintf(os.Stderr, "error: input directory does not exist: %s\n", *inputDir)
 		os.Exit(1)
 	}
 
-	// 解析所有 YAML 文件
+	// parse all YAML files
 	profiles, files, err := parseAllProfiles(*inputDir)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "错误: 解析配置文件失败: %v\n", err)
+		fmt.Fprintf(os.Stderr, "error: failed to parse configuration files: %v\n", err)
 		os.Exit(1)
 	}
 
 	if len(profiles) == 0 {
-		fmt.Fprintf(os.Stderr, "警告: 未找到任何 YAML 配置文件\n")
+		fmt.Fprintf(os.Stderr, "warning: no YAML configuration files found\n")
 		os.Exit(1)
 	}
 
-	// 准备模板数据
+	// prepare template data
 	data := TemplateData{
 		Timestamp:   time.Now().Format(time.RFC3339),
 		SourceFiles: strings.Join(files, ", "),
 		Profiles:    profiles,
 	}
 
-	// 生成代码
+	// generate code
 	if err := generateCode(data, *outputFile); err != nil {
-		fmt.Fprintf(os.Stderr, "错误: 生成代码失败: %v\n", err)
+		fmt.Fprintf(os.Stderr, "error: failed to generate code: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("✓ 成功生成 %d 个指纹配置到 %s\n", len(profiles), *outputFile)
-	fmt.Printf("✓ 源文件: %s\n", strings.Join(files, ", "))
+	fmt.Printf("✓ successfully generated %d fingerprint configurations to %s\n", len(profiles), *outputFile)
+	fmt.Printf("✓ source files: %s\n", strings.Join(files, ", "))
 }
 
-// parseAllProfiles 从指定目录解析所有 YAML 配置文件
+// parseAllProfiles parses all YAML configuration files from specified directory
 func parseAllProfiles(inputDir string) ([]ProfileSpec, []string, error) {
 	var profiles []ProfileSpec
 	var files []string
 
 	entries, err := os.ReadDir(inputDir)
 	if err != nil {
-		return nil, nil, fmt.Errorf("读取目录失败: %w", err)
+		return nil, nil, fmt.Errorf("failed to read directory: %w", err)
 	}
 
 	for _, entry := range entries {
@@ -215,15 +215,15 @@ func parseAllProfiles(inputDir string) ([]ProfileSpec, []string, error) {
 		filePath := filepath.Join(inputDir, entry.Name())
 		content, err := os.ReadFile(filePath)
 		if err != nil {
-			return nil, nil, fmt.Errorf("读取文件失败 %s: %w", filePath, err)
+			return nil, nil, fmt.Errorf("failed to read file %s: %w", filePath, err)
 		}
 
 		var spec ProfileSpec
 		if err := yaml.Unmarshal(content, &spec); err != nil {
-			return nil, nil, fmt.Errorf("解析 YAML 文件失败 %s: %w", filePath, err)
+			return nil, nil, fmt.Errorf("parse YAML filefailed %s: %w", filePath, err)
 		}
 
-		// 生成变量名（将文件名转换为驼峰命名）
+		// generate variable name (convert file name to camelCase)
 		spec.VarName = strings.TrimSuffix(entry.Name(), filepath.Ext(entry.Name()))
 
 		profiles = append(profiles, spec)
@@ -233,29 +233,29 @@ func parseAllProfiles(inputDir string) ([]ProfileSpec, []string, error) {
 	return profiles, files, nil
 }
 
-// generateCode 使用模板生成 Go 代码
+// generateCode generates Go code using template
 func generateCode(data TemplateData, outputPath string) error {
 	tmpl, err := template.New("profiles").Parse(generatedCodeTemplate)
 	if err != nil {
-		return fmt.Errorf("解析模板失败: %w", err)
+		return fmt.Errorf("parsetemplatefailed: %w", err)
 	}
 
-	// 创建输出目录
+	// create output directory
 	dir := filepath.Dir(outputPath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		return fmt.Errorf("创建目录失败: %w", err)
+		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
-	// 创建输出文件
+	// create output file
 	file, err := os.Create(outputPath)
 	if err != nil {
-		return fmt.Errorf("创建文件失败: %w", err)
+		return fmt.Errorf("createfilefailed: %w", err)
 	}
 	defer file.Close()
 
-	// 执行模板
+	// executetemplate
 	if err := tmpl.Execute(file, data); err != nil {
-		return fmt.Errorf("执行模板失败: %w", err)
+		return fmt.Errorf("executetemplatefailed: %w", err)
 	}
 
 	return nil
