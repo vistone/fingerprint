@@ -1,5 +1,5 @@
-// Package frontend 提供前端指纹 SDK 功能
-// 包括 JavaScript 代码生成和服务端处理
+// Package frontend provides frontend fingerprint SDK functionality
+// Including JavaScript code generation and server-side processing
 package frontend
 
 import (
@@ -16,7 +16,7 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles"
 )
 
-// SDK 前端 SDK 管理器
+// SDK frontend SDK manager
 type SDK struct {
 	config    *SDKConfig
 	sessions  map[string]*Session
@@ -24,16 +24,16 @@ type SDK struct {
 	mu        sync.RWMutex
 }
 
-// SDKConfig SDK 配置
+// SDKConfig SDK configuration
 type SDKConfig struct {
-	// 噪声注入配置
+	// Noise injection configuration
 	EnableCanvasNoise bool
 	EnableAudioNoise  bool
 	EnableWebGLNoise  bool
 	EnableTimingNoise bool
 	NoiseLevel        float64 // 0.0 - 1.0
 
-	// 收集配置
+	// Collection configuration
 	CollectCanvas   bool
 	CollectWebGL    bool
 	CollectAudio    bool
@@ -43,11 +43,11 @@ type SDKConfig struct {
 	CollectHardware bool
 	CollectTiming   bool
 
-	// 会话配置
+	// Session configuration
 	SessionTimeout time.Duration
 }
 
-// DefaultSDKConfig 默认 SDK 配置
+// DefaultSDKConfig default SDK configuration
 var DefaultSDKConfig = &SDKConfig{
 	EnableCanvasNoise: true,
 	EnableAudioNoise:  true,
@@ -67,7 +67,7 @@ var DefaultSDKConfig = &SDKConfig{
 	SessionTimeout: core.DefaultSessionTimeout,
 }
 
-// NewSDK 创建新的 SDK 管理器
+// NewSDK creates a new SDK manager
 func NewSDK(config *SDKConfig) *SDK {
 	if config == nil {
 		config = DefaultSDKConfig
@@ -79,7 +79,7 @@ func NewSDK(config *SDKConfig) *SDK {
 	}
 }
 
-// Session 前端会话
+// Session frontend session
 type Session struct {
 	ID           string
 	CreatedAt    time.Time
@@ -88,7 +88,7 @@ type Session struct {
 	Fingerprint  *ml.FrontendFingerprintData
 }
 
-// GenerateJSCore 生成核心 JavaScript 代码
+// GenerateJSCore generates core JavaScript code
 func (sdk *SDK) GenerateJSCore() string {
 	return fmt.Sprintf(`
 // Fingerprint SDK Core v1.0
@@ -98,7 +98,7 @@ func (sdk *SDK) GenerateJSCore() string {
     const CONFIG = %s;
     const SESSION_ID = '%s';
 
-    // 噪声生成器
+    // Noise generator
     class NoiseGenerator {
         constructor(level) {
             this.level = level;
@@ -126,7 +126,7 @@ func (sdk *SDK) GenerateJSCore() string {
         }
     }
 
-    // 指纹收集器
+    // Fingerprint collector
     class FingerprintCollector {
         constructor() {
             this.noiseGen = new NoiseGenerator(CONFIG.NoiseLevel);
@@ -155,7 +155,7 @@ func (sdk *SDK) GenerateJSCore() string {
                 canvas.height = 50;
                 const ctx = canvas.getContext('2d');
 
-                // 绘制
+                // Draw
                 ctx.textBaseline = 'alphabetic';
                 ctx.fillStyle = '#f60';
                 ctx.fillRect(0, 0, 200, 50);
@@ -163,7 +163,7 @@ func (sdk *SDK) GenerateJSCore() string {
                 ctx.font = '11pt "Times New Roman"';
                 ctx.fillText('Fingerprint v1.0', 2, 15);
 
-                // 添加噪声
+                // Add noise
                 const noise = this.noiseGen.generateCanvasNoise();
                 if (noise) {
                     const imageData = ctx.getImageData(0, 0, 200, 50);
@@ -234,7 +234,7 @@ func (sdk *SDK) GenerateJSCore() string {
 
                 oscillator.stop();
 
-                // 添加噪声
+                // Add noise
                 const noise = this.noiseGen.generateAudioNoise();
                 if (noise) {
                     for (let i = 0; i < buffer.length; i++) {
@@ -350,7 +350,7 @@ func (sdk *SDK) GenerateJSCore() string {
             const noise = this.noiseGen.generateTimingNoise();
             const start = performance.now() + noise;
 
-            // 执行一些计算
+            // Execute some calculations
             let sum = 0;
             for (let i = 0; i < 1000000; i++) {
                 sum += i;
@@ -415,7 +415,7 @@ func (sdk *SDK) GenerateJSCore() string {
         }
     }
 
-    // 主 API
+    // Main API
     global.FingerprintSDK = {
         version: '1.0.0',
 
@@ -437,7 +437,7 @@ func (sdk *SDK) GenerateJSCore() string {
         },
 
         init: function() {
-            // 自动收集并发送
+            // Auto collect and send
             this.collect().then(data => {
                 if (CONFIG.endpoint) {
                     this.send(CONFIG.endpoint, data);
@@ -450,7 +450,7 @@ func (sdk *SDK) GenerateJSCore() string {
 `, sdk.toJSON(), sdk.generateSessionID())
 }
 
-// GenerateJSInjector 生成注入脚本
+// GenerateJSInjector generates injection script
 func (sdk *SDK) GenerateJSInjector(endpoint string) string {
 	core := sdk.GenerateJSCore()
 	return fmt.Sprintf(`%s
@@ -460,7 +460,7 @@ window.FingerprintSDK.init();
 `, core)
 }
 
-// HandleCollect HTTP 处理函数
+// HandleCollect HTTP handler function
 func (sdk *SDK) HandleCollect(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -478,7 +478,7 @@ func (sdk *SDK) HandleCollect(w http.ResponseWriter, r *http.Request) {
 		sessionID = sdk.generateSessionID()
 	}
 
-	// 存储会话
+	// Store session
 	sdk.mu.Lock()
 	sdk.sessions[sessionID] = &Session{
 		ID:           sessionID,
@@ -488,7 +488,7 @@ func (sdk *SDK) HandleCollect(w http.ResponseWriter, r *http.Request) {
 	}
 	sdk.mu.Unlock()
 
-	// 提取特征
+	// Extract features
 	features := sdk.extractor.ExtractFromFrontend(data)
 
 	response := map[string]interface{}{
@@ -501,7 +501,7 @@ func (sdk *SDK) HandleCollect(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// GetSession 获取会话
+// GetSession gets session
 func (sdk *SDK) GetSession(id string) (*Session, bool) {
 	sdk.mu.RLock()
 	defer sdk.mu.RUnlock()
@@ -510,7 +510,7 @@ func (sdk *SDK) GetSession(id string) (*Session, bool) {
 	return session, ok
 }
 
-// CleanupSessions 清理过期会话
+// CleanupSessions cleans up expired sessions
 func (sdk *SDK) CleanupSessions() {
 	sdk.mu.Lock()
 	defer sdk.mu.Unlock()
@@ -523,25 +523,25 @@ func (sdk *SDK) CleanupSessions() {
 	}
 }
 
-// toJSON 将配置转换为 JSON
+// toJSON converts configuration to JSON
 func (sdk *SDK) toJSON() string {
 	data, _ := json.Marshal(sdk.config)
 	return string(data)
 }
 
-// generateSessionID 生成会话 ID
+// generateSessionID generates session ID
 func (sdk *SDK) generateSessionID() string {
 	b := make([]byte, 16)
 	rand.Read(b)
 	return base64.URLEncoding.EncodeToString(b)
 }
 
-// NoiseGenerator 噪声生成器实现
+// NoiseGenerator noise generator implementation
 type NoiseGenerator struct {
 	Level float64
 }
 
-// GenerateCanvasNoise 生成 Canvas 噪声
+// GenerateCanvasNoise generates Canvas noise
 func (ng *NoiseGenerator) GenerateCanvasNoise(seed int64) map[string]float64 {
 	return map[string]float64{
 		"r": (float64(seed%100)/100.0 - 0.5) * ng.Level * 2,
@@ -550,19 +550,19 @@ func (ng *NoiseGenerator) GenerateCanvasNoise(seed int64) map[string]float64 {
 	}
 }
 
-// Generate 实现接口
+// Generate implements interface
 func (ng *NoiseGenerator) Generate(seed int64) interface{} {
 	return ng.GenerateCanvasNoise(seed)
 }
 
-// CombinedFingerprint 综合指纹（服务端 + 前端）
+// CombinedFingerprint combined fingerprint (server + frontend)
 type CombinedFingerprint struct {
 	Server   *ml.ServerFingerprintData
 	Frontend *ml.FrontendFingerprintData
 	Combined *core.FeatureVector
 }
 
-// Combine 合并服务端和前端指纹
+// Combine merges server and frontend fingerprints
 func (sdk *SDK) Combine(server *ml.ServerFingerprintData, frontend *ml.FrontendFingerprintData) *CombinedFingerprint {
 	combined := sdk.extractor.ExtractCombined(*server, *frontend)
 
@@ -573,14 +573,14 @@ func (sdk *SDK) Combine(server *ml.ServerFingerprintData, frontend *ml.FrontendF
 	}
 }
 
-// GenerateAntiDetectionCode 生成完整的 JavaScript 反检测代码（P3 高熵）
-// 包括 WebGPU, MediaDevices, Permissions, Automation 对抗点
+// GenerateAntiDetectionCode generates complete JavaScript anti-detection code (P3 high entropy)
+// Including WebGPU, MediaDevices, Permissions, Automation countermeasures
 func (sdk *SDK) GenerateAntiDetectionCode(profile *profiles.ClientProfile) string {
 	generator := NewJSAntiDetectCodeGenerator(profile)
 	return generator.GenerateFullAntiDetectionCode()
 }
 
-// GenerateConsistencyValidationCode 生成跨层一致性校验代码
+// GenerateConsistencyValidationCode generates cross-layer consistency validation code
 func (sdk *SDK) GenerateConsistencyValidationCode(profile *profiles.ClientProfile) string {
 	generator := NewJSAntiDetectCodeGenerator(profile)
 	return generator.GenerateCrossLayerConsistencyCode()
