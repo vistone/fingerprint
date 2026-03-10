@@ -1,5 +1,5 @@
-// Package profiles - Chrome浏览器指纹
-// 包含Chrome 115-140版本的完整指纹配置
+// Package profiles - Chrome browser fingerprint
+// contains Chrome 115-140 version full fingerprint profiles
 package profiles
 
 import (
@@ -8,7 +8,7 @@ import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// getChromeTCPIP 返回 Chrome 浏览器对应操作系统的 TCP/IP 指纹
+// getChromeTCPIP returns Chrome browser's corresponding operating system's TCP/IP fingerprint
 func getChromeTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
 	base := &TCPIPFingerprint{
 		IPVersion:        4,
@@ -22,32 +22,32 @@ func getChromeTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
 		OptionsSignature: "M,N,W,N,N,S,T,E",
 	}
 
-	// 使用字符串包含判断，因为某些 OS 常量值相同（如 OSWindows10 和 OSWindows11）
+	// uses string containment check because some OS constant values are the same (e.g. OSWindows10 and OSWindows11)
 	osStr := string(osType)
 	
 	if strings.Contains(osStr, "Windows") {
-		// Windows 特征
+		// Windows characteristics
 		base.TTL = 128
 		base.WindowSize = 64240
 		base.WindowScale = 8
 		base.NoOperation = 2
 		base.JA4T = "t13d1715h2_8daaf6152771_9e7c7c2f41aa"
 	} else if strings.Contains(osStr, "Macintosh") || strings.Contains(osStr, "Mac OS") {
-		// macOS 特征
+		// macOS characteristics
 		base.TTL = 64
 		base.WindowSize = 65535
 		base.WindowScale = 6
 		base.NoOperation = 2
 		base.JA4T = "t13d1814h2_8daaf6152771_b0b889a3c9b7"
 	} else if strings.Contains(osStr, "Linux") || strings.Contains(osStr, "X11") {
-		// Linux 特征
+		// Linux characteristics
 		base.TTL = 64
 		base.WindowSize = 64240
 		base.WindowScale = 7
 		base.NoOperation = 2
 		base.JA4T = "t13d1714h2_8daaf6152771_02713a6ec338"
 	} else {
-		// 默认 Windows 特征
+		// default Windows characteristics
 		base.TTL = 128
 		base.WindowSize = 64240
 		base.WindowScale = 8
@@ -58,9 +58,9 @@ func getChromeTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
 	return base
 }
 
-// Chrome浏览器指纹 (115-140版本)
+// Chrome browser fingerprint (115-140 versions)
 var (
-	// Chrome 115-119 系列
+	// Chrome 115-119 series
 	Chrome115 = ClientProfile{
 		ID: "chrome_115", Name: "Chrome 115",
 		BrowserType: core.BrowserChrome, BrowserVersion: "115.0.5790.170",
@@ -446,7 +446,7 @@ var (
 )
 
 func init() {
-	// 注册所有Chrome指纹
+	// registers all Chrome fingerprints
 	profiles := []ClientProfile{
 		Chrome115, Chrome116, Chrome117, Chrome118, Chrome119,
 		Chrome121, Chrome122, Chrome123, Chrome125, Chrome126, Chrome127, Chrome128, Chrome129,
@@ -454,11 +454,11 @@ func init() {
 		Chrome141, Chrome142, Chrome143, Chrome144,
 	}
 	
-	// 为每个 profile 填充缺失的 HTTP/2 和 HTTP/3 配置
+	// for each profile fills in missing HTTP/2 and HTTP/3 profile
 	for i := range profiles {
 		p := &profiles[i]
 		
-		// 填充 HTTP/2 配置（如果缺失）
+		// padding HTTP/2 profile (if missing)
 		if p.HTTP2Settings.HeaderTableSize == 0 && p.HTTP2Settings.InitialWindowSize == 0 {
 			p.HTTP2Settings = core.HTTP2Settings{
 				HeaderTableSize:      65536,
@@ -471,12 +471,12 @@ func init() {
 			p.PseudoHeaderOrder = []string{":method", ":authority", ":scheme", ":path"}
 		}
 		
-		// 填充 ConnectionFlow（如果缺失）
+		// padding ConnectionFlow (if missing)
 		if p.ConnectionFlow == 0 {
 			p.ConnectionFlow = 15663105
 		}
 		
-		// 填充 HTTP/3 (QUIC) 配置（如果缺失）
+		// padding HTTP/3 (QUIC) profile (if missing)
 		if p.HTTP3Settings == nil {
 			p.HTTP3Settings = &core.HTTP3Settings{
 				QUICVersion:            core.QUICVersion1,
@@ -492,7 +492,7 @@ func init() {
 			p.QUICVersions = []uint32{core.QUICVersion1}
 		}
 		
-		// 填充 Headers（如果缺失）
+		// padding Headers (if missing)
 		if p.Headers == nil {
 			p.Headers = &core.HTTPHeaders{}
 		}
@@ -535,7 +535,7 @@ func init() {
 	}
 }
 
-// buildChromeUserAgent 构建 Chrome User-Agent
+// buildChromeUserAgent build Chrome User-Agent
 func buildChromeUserAgent(version string, os core.OperatingSystem) string {
 	osStr := string(os)
 	switch {
@@ -550,7 +550,7 @@ func buildChromeUserAgent(version string, os core.OperatingSystem) string {
 	}
 }
 
-// AllChromeProfiles 返回所有Chrome指纹
+// AllChromeProfiles returns all Chrome fingerprints
 func AllChromeProfiles() []ClientProfile {
 	return []ClientProfile{
 		Chrome115, Chrome116, Chrome117, Chrome118, Chrome119,

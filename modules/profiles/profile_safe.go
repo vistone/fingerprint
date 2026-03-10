@@ -1,11 +1,11 @@
-// Package profiles 提供安全的指纹配置操作
+// Package profiles provides safe fingerprint profile operations
 package profiles
 
 import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// SafeGetUserAgent 安全获取 User-Agent（带 nil 检查）
+// SafeGetUserAgent safely gets User-Agent (with nil check)
 func (p *ClientProfile) SafeGetUserAgent() string {
 	if p == nil || p.Headers == nil {
 		return ""
@@ -13,7 +13,7 @@ func (p *ClientProfile) SafeGetUserAgent() string {
 	return p.Headers.UserAgent
 }
 
-// SafeGetHeader 安全获取指定 Header
+// SafeGetHeader safely gets specified Header
 func (p *ClientProfile) SafeGetHeader(key string) string {
 	if p == nil || p.Headers == nil {
 		return ""
@@ -36,7 +36,7 @@ func (p *ClientProfile) SafeGetHeader(key string) string {
 	}
 }
 
-// Validate 验证指纹配置有效性
+// Validate validates fingerprint profile
 func (p *ClientProfile) Validate() error {
 	if p == nil {
 		return core.NewCodedError(core.ErrCodeNilPointer, "ClientProfile.Validate", nil)
@@ -44,7 +44,7 @@ func (p *ClientProfile) Validate() error {
 	
 	validator := core.NewValidator()
 	
-	// 基本字段验证
+	// basic field validation
 	validator.NotEmpty(p.ID, "profile.ID").
 		NotEmpty(p.Name, "profile.Name").
 		ValidBrowserType(p.BrowserType, "profile.BrowserType").
@@ -52,12 +52,12 @@ func (p *ClientProfile) Validate() error {
 		ValidOS(p.OS, "profile.OS").
 		NotEmpty(p.OSVersion, "profile.OSVersion")
 	
-	// 验证 TLS 版本
+	// validate TLS version
 	if p.TLSVersion != 0x0301 && p.TLSVersion != 0x0302 && p.TLSVersion != 0x0303 && p.TLSVersion != 0x0304 {
 		validator.AddErrorf("profile.TLSVersion is invalid: 0x%04x", p.TLSVersion)
 	}
 	
-	// 验证 CipherSuites 非空
+	// validate CipherSuites non-empty
 	if len(p.CipherSuites) == 0 {
 		validator.AddErrorf("profile.CipherSuites cannot be empty")
 	}
@@ -65,12 +65,12 @@ func (p *ClientProfile) Validate() error {
 	return validator.Error()
 }
 
-// IsValid 检查指纹是否有效
+// IsValid checks whether the fingerprint is valid
 func (p *ClientProfile) IsValid() bool {
 	return p.Validate() == nil
 }
 
-// Clone 安全克隆指纹配置
+// Clone safely clones fingerprint profile
 func (p *ClientProfile) Clone() *ClientProfile {
 	if p == nil {
 		return nil
@@ -98,7 +98,7 @@ func (p *ClientProfile) Clone() *ClientProfile {
 		Metadata:           make(map[string]interface{}, len(p.Metadata)),
 	}
 	
-	// 复制切片
+	// copy slices
 	copy(clone.CipherSuites, p.CipherSuites)
 	copy(clone.Extensions, p.Extensions)
 	copy(clone.SupportedCurves, p.SupportedCurves)
@@ -106,12 +106,12 @@ func (p *ClientProfile) Clone() *ClientProfile {
 	copy(clone.HTTP2Priorities, p.HTTP2Priorities)
 	copy(clone.PseudoHeaderOrder, p.PseudoHeaderOrder)
 	
-	// 复制 Headers
+	// copy Headers
 	if p.Headers != nil {
 		clone.Headers = p.Headers.Clone()
 	}
 	
-	// 复制 Metadata
+	// copy Metadata
 	for k, v := range p.Metadata {
 		clone.Metadata[k] = v
 	}
@@ -119,7 +119,7 @@ func (p *ClientProfile) Clone() *ClientProfile {
 	return clone
 }
 
-// GetRegistrySafe 安全获取注册表（带 nil 检查）
+// GetRegistrySafe safely gets the registry (with nil check)
 func GetRegistrySafe() *ProfileRegistry {
 	if DefaultRegistry == nil {
 		DefaultRegistry = NewProfileRegistry()
@@ -127,7 +127,7 @@ func GetRegistrySafe() *ProfileRegistry {
 	return DefaultRegistry
 }
 
-// RegisterSafe 安全注册指纹
+// RegisterSafe safely registers a fingerprint
 func RegisterSafe(profile ClientProfile) error {
 	if err := profile.Validate(); err != nil {
 		return err
@@ -136,7 +136,7 @@ func RegisterSafe(profile ClientProfile) error {
 	return nil
 }
 
-// GetSafe 安全获取指纹
+// GetSafe safely gets a fingerprint
 func GetSafe(id string) (ClientProfile, error) {
 	if id == "" {
 		return ClientProfile{}, core.NewCodedError(core.ErrCodeInvalidInput, "GetSafe", 

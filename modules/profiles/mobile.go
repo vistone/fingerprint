@@ -1,12 +1,12 @@
-// Package profiles - 移动设备浏览器指纹
-// 包含iOS Safari、Android Chrome、Firefox Mobile等移动浏览器指纹
+// Package profiles - mobile device browser fingerprint
+// contains iOS Safari, Android Chrome, Firefox Mobile and other mobile browser fingerprints
 package profiles
 
 import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// iOS Safari指纹
+// iOS Safari fingerprint
 
 var (
 	IOSSafari16 = ClientProfile{
@@ -113,7 +113,7 @@ var (
 	}
 )
 
-// Android Chrome指纹
+// Android Chrome fingerprint
 
 var (
 	AndroidChrome115 = ClientProfile{
@@ -204,7 +204,7 @@ var (
 	}
 )
 
-// Android Firefox指纹
+// Android Firefox fingerprint
 
 var (
 	AndroidFirefox115 = ClientProfile{
@@ -268,7 +268,7 @@ var (
 	}
 )
 
-// Samsung Internet指纹
+// Samsung Internet fingerprint
 
 var (
 	SamsungInternet22 = ClientProfile{
@@ -318,7 +318,7 @@ var (
 )
 
 func init() {
-	// 注册所有移动设备指纹
+	// registers all mobile device fingerprints
 	profiles := []ClientProfile{
 		// iOS Safari
 		IOSSafari16, IOSSafari17, IOSSafari18,
@@ -336,7 +336,7 @@ func init() {
 	}
 }
 
-// AllMobileProfiles 返回所有移动设备指纹
+// AllMobileProfiles returns all mobile device fingerprints
 func AllMobileProfiles() []ClientProfile {
 	return []ClientProfile{
 		// iOS Safari

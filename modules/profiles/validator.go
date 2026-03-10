@@ -1,4 +1,4 @@
-// Package profiles 提供指纹验证器
+// Package profiles provides fingerprint validator
 package profiles
 
 import (
@@ -9,7 +9,7 @@ import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// ProfileValidationResult 指纹验证结果
+// ProfileValidationResult fingerprint validation result
 type ProfileValidationResult struct {
 	Valid         bool
 	MissingFields []string
@@ -17,24 +17,24 @@ type ProfileValidationResult struct {
 	Errors        []string
 }
 
-// ProfileValidator 指纹验证器
+// ProfileValidator fingerprint validator
 type ProfileValidator struct {
 	strictMode bool
 }
 
-// NewProfileValidator 创建新的验证器
+// NewProfileValidator creates a new validator
 func NewProfileValidator() *ProfileValidator {
 	return &ProfileValidator{
 		strictMode: false,
 	}
 }
 
-// SetStrictMode 设置严格模式（缺失字段作为错误）
+// SetStrictMode sets strict mode (missing fields treated as errors)
 func (pv *ProfileValidator) SetStrictMode(strict bool) {
 	pv.strictMode = strict
 }
 
-// Validate 验证指纹配置
+// Validate validates fingerprint profile
 func (pv *ProfileValidator) Validate(profile ClientProfile) ProfileValidationResult {
 	result := ProfileValidationResult{
 		Valid:         true,
@@ -43,7 +43,7 @@ func (pv *ProfileValidator) Validate(profile ClientProfile) ProfileValidationRes
 		Errors:        []string{},
 	}
 
-	// 1. 必需字段检查
+	// 1. required field check
 	if profile.ID == "" {
 		result.Errors = append(result.Errors, "ID is required")
 		result.Valid = false
@@ -53,7 +53,7 @@ func (pv *ProfileValidator) Validate(profile ClientProfile) ProfileValidationRes
 		result.Valid = false
 	}
 
-	// 2. 浏览器类型检查
+	// 2. browser type check
 	if profile.BrowserType == "" {
 		result.MissingFields = append(result.MissingFields, "BrowserType")
 		if pv.strictMode {
@@ -62,7 +62,7 @@ func (pv *ProfileValidator) Validate(profile ClientProfile) ProfileValidationRes
 		}
 	}
 
-	// 3. 操作系统检查
+	// 3. operating system check
 	if profile.OS == "" {
 		result.MissingFields = append(result.MissingFields, "OS")
 		if pv.strictMode {
@@ -71,7 +71,7 @@ func (pv *ProfileValidator) Validate(profile ClientProfile) ProfileValidationRes
 		}
 	}
 
-	// 4. TLS 配置检查
+	// 4. TLS profile check
 	if profile.TLSVersion == 0 {
 		result.MissingFields = append(result.MissingFields, "TLSVersion")
 		result.Warnings = append(result.Warnings, "TLSVersion not specified, will use default TLS 1.2")
@@ -87,7 +87,7 @@ func (pv *ProfileValidator) Validate(profile ClientProfile) ProfileValidationRes
 		result.Warnings = append(result.Warnings, "TLS Extensions not configured")
 	}
 
-	// 5. HTTP Headers 检查
+	// 5. HTTP Headers check
 	if profile.Headers == nil {
 		result.MissingFields = append(result.MissingFields, "Headers")
 		result.Warnings = append(result.Warnings, "HTTP Headers missing, request will use defaults")
@@ -99,7 +99,7 @@ func (pv *ProfileValidator) Validate(profile ClientProfile) ProfileValidationRes
 		}
 	}
 
-	// 6. TCP/IP 配置检查
+	// 6. TCP/IP profile check
 	if profile.TCPIP == nil {
 		result.Warnings = append(result.Warnings, "TCPIP configuration missing, TCP fingerprint will not be applied")
 	} else {
@@ -108,12 +108,12 @@ func (pv *ProfileValidator) Validate(profile ClientProfile) ProfileValidationRes
 		}
 	}
 
-	// 7. HTTP/2 配置检查
+	// 7. HTTP/2 profile check
 	if profile.HTTP2Settings.HeaderTableSize == 0 {
 		result.Warnings = append(result.Warnings, "HTTP/2 Settings not configured")
 	}
 
-	// 8. 版本信息完整性
+	// 8. version information completeness
 	if profile.BrowserVersion == "" {
 		result.Warnings = append(result.Warnings, "BrowserVersion not specified")
 	}
@@ -124,13 +124,13 @@ func (pv *ProfileValidator) Validate(profile ClientProfile) ProfileValidationRes
 	return result
 }
 
-// HeaderValidationResult 头部验证结果
+// HeaderValidationResult header validation result
 type HeaderValidationResult struct {
 	Missing []string
 	Empty   []string
 }
 
-// ValidateHeaders 验证 HTTP 头
+// ValidateHeaders validates HTTP headers
 func ValidateHeaders(headers *core.HTTPHeaders) HeaderValidationResult {
 	result := HeaderValidationResult{
 		Missing: []string{},
@@ -141,7 +141,7 @@ func ValidateHeaders(headers *core.HTTPHeaders) HeaderValidationResult {
 		return result
 	}
 
-	// 必需的 headers
+	// required headers
 	requiredHeaders := map[string]string{
 		"User-Agent":      headers.UserAgent,
 		"Accept":          headers.Accept,
@@ -155,7 +155,7 @@ func ValidateHeaders(headers *core.HTTPHeaders) HeaderValidationResult {
 		}
 	}
 
-	// Chrome 特有 headers
+	// Chrome specific headers
 	chromeHeaders := map[string]string{
 		"Sec-CH-UA":          headers.SecCHUA,
 		"Sec-CH-UA-Mobile":   headers.SecCHUAMobile,
@@ -171,7 +171,7 @@ func ValidateHeaders(headers *core.HTTPHeaders) HeaderValidationResult {
 	return result
 }
 
-// ValidateTCPIP 验证 TCP/IP 配置
+// ValidateTCPIP validate TCP/IP profile
 func ValidateTCPIP(tcpip *TCPIPFingerprint) string {
 	if tcpip == nil {
 		return "TCPIP is nil"
@@ -192,12 +192,12 @@ func ValidateTCPIP(tcpip *TCPIPFingerprint) string {
 	return ""
 }
 
-// ValidateAndRepair 验证并修复 profile
+// ValidateAndRepair validates and repairs profile
 func ValidateAndRepair(profile *ClientProfile) ProfileValidationResult {
 	validator := NewProfileValidator()
 	result := validator.Validate(*profile)
 
-	// 自动修复逻辑
+	// auto-repair logic
 	if profile.TLSVersion == 0 {
 		profile.TLSVersion = 0x0303 // TLS 1.2
 	}
@@ -206,7 +206,7 @@ func ValidateAndRepair(profile *ClientProfile) ProfileValidationResult {
 		profile.Headers = &core.HTTPHeaders{}
 	}
 
-	// 确保关键字段不为空
+	// ensures critical fields are not empty
 	if profile.Headers.UserAgent == "" {
 		profile.Headers.UserAgent = generateDefaultUserAgent(profile.BrowserType)
 	}
@@ -220,8 +220,8 @@ func ValidateAndRepair(profile *ClientProfile) ProfileValidationResult {
 		profile.Headers.AcceptEncoding = "gzip, deflate, br"
 	}
 
-	// 修复 Brave 历史 profile 中的异常 UA/CH-UA（如 Chrome/1.xx, v="1"），
-	// 这些值会被部分站点当作异常流量并返回 403。
+	// repair Brave history profile anomaly in UA/CH-UA (e.g. Chrome/1.xx, v="1"),
+	// these values may be flagged as anomalous traffic by some sites and return 403.
 	normalizeBraveHeaders(profile)
 
 	return result
@@ -248,7 +248,7 @@ func normalizeBraveHeaders(profile *ClientProfile) {
 			"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%d.0.0.0 Safari/537.36",
 			major,
 		)
-		// 对部分严格站点，Brave 品牌标识会触发风控；兼容场景使用 Chrome 品牌组合。
+		// for some strict sites, Brave brand identifiers may trigger risk controls; use Chrome brand combination for compatibility.
 		profile.Headers.SecCHUA = fmt.Sprintf(`"Chromium";v="%d", "Google Chrome";v="%d"`, major, major)
 		if profile.Headers.SecCHUAMobile == "" {
 			profile.Headers.SecCHUAMobile = "?0"
@@ -265,7 +265,7 @@ func deriveBraveChromiumMajor(braveVersion string) int {
 		return 0
 	}
 
-	// Brave 1.xx 通常对应 Chromium (xx + 59)，例如 1.60 -> 119。
+	// Brave 1.xx typically corresponds to Chromium (xx + 59), e.g. 1.60 -> 119.
 	minor, err := strconv.Atoi(parts[1])
 	if err != nil {
 		return 0
@@ -276,7 +276,7 @@ func deriveBraveChromiumMajor(braveVersion string) int {
 	return minor + 59
 }
 
-// generateDefaultUserAgent 生成默认 User-Agent
+// generateDefaultUserAgent generates default User-Agent
 func generateDefaultUserAgent(browserType core.BrowserType) string {
 	switch browserType {
 	case core.BrowserChrome:
@@ -292,7 +292,7 @@ func generateDefaultUserAgent(browserType core.BrowserType) string {
 	}
 }
 
-// ValidateProfileList 验证整个 profile 列表
+// ValidateProfileList validates the entire profile list
 func ValidateProfileList(profiles []ClientProfile) map[string]ProfileValidationResult {
 	validator := NewProfileValidator()
 	results := make(map[string]ProfileValidationResult)

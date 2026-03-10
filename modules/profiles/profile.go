@@ -1,4 +1,4 @@
-// Package profiles 提供浏览器指纹配置管理
+// Package profiles provides browser fingerprint profile management
 package profiles
 
 import (
@@ -8,7 +8,7 @@ import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// CreateTCPIP 根据操作系统创建 TCP/IP 指纹
+// CreateTCPIP creates TCP/IP fingerprint based on operating system
 func CreateTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
 	base := &TCPIPFingerprint{
 		IPVersion:        4,
@@ -43,14 +43,14 @@ func CreateTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
 		base.NoOperation = 2
 		base.JA4T = "t13d1714h2_8daaf6152771_02713a6ec338"
 	} else if strings.Contains(osStr, "iPhone") || strings.Contains(osStr, "iPad") {
-		// iOS 特征
+		// iOS characteristics
 		base.TTL = 64
 		base.WindowSize = 65535
 		base.WindowScale = 6
 		base.NoOperation = 2
 		base.JA4T = "t13d1814h2_8daaf6152771_b0b889a3c9b7"
 	} else if strings.Contains(osStr, "Android") {
-		// Android 特征
+		// Android characteristics
 		base.TTL = 64
 		base.WindowSize = 65535
 		base.WindowScale = 6
@@ -67,170 +67,170 @@ func CreateTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
 	return base
 }
 
-// TCPIPFingerprint TCP/IP 层指纹配置
+// TCPIPFingerprint TCP/IP layer fingerprint profile
 type TCPIPFingerprint struct {
-	// IP 层配置
-	IPVersion  uint8  // IP 版本 (4 或 6)
-	TTL        uint8  // TTL 值
-	DF         bool   // Don't Fragment 标志
-	Flags      uint8  // IP 标志位
-	TotalLen   uint16 // IP 包总长度
-	FragOffset uint16 // 分片偏移
+	// IP layer profile
+	IPVersion  uint8  // IP version (4 or 6)
+	TTL        uint8  // TTL value
+	DF         bool   // Don't Fragment flag
+	Flags      uint8  // IP flags
+	TotalLen   uint16 // IP total packet length
+	FragOffset uint16 // fragment offset
 
-	// TCP 层配置
-	WindowSize    uint16 // TCP 窗口大小
-	MSS           uint16 // 最大段大小
-	WindowScale   uint8  // 窗口缩放因子
-	SAckPermitted bool   // SACK 许可
-	Timestamps    bool   // 时间戳选项
-	NoOperation   int    // NOP 数量
-	EndOfOptions  bool   // 选项列表结束
+	// TCP layer profile
+	WindowSize    uint16 // TCP window size
+	MSS           uint16 // maximum segment size
+	WindowScale   uint8  // window scale factor
+	SAckPermitted bool   // SACK permitted
+	Timestamps    bool   // timestamp option
+	NoOperation   int    // NOP count
+	EndOfOptions  bool   // end of options list
 
-	// TCP 标志
+	// TCP flag
 	SYN bool
 	ACK bool
 
-	// TCP 选项指纹字符串 (如 "M,W,S,T,N,N,E")
+	// TCP options fingerprint string (e.g. "M,W,S,T,N,N,E")
 	OptionsSignature string
 
-	// 综合指纹
-	JA4T string // JA4T TCP 指纹哈希
+	// comprehensive fingerprint
+	JA4T string // JA4T TCP fingerprint hash
 }
 
-// JSAntiDetection JavaScript 反检测对抗点配置
+// JSAntiDetection JavaScript anti-detection countermeasure profile
 type JSAntiDetection struct {
-	// WebGPU 对抗点
+	// WebGPU countermeasures
 	WebGPU *WebGPUAntiDetect
 
-	// MediaDevices 对抗点
+	// MediaDevices countermeasures
 	MediaDevices *MediaDevicesAntiDetect
 
-	// Permissions API 对抗点
+	// Permissions API countermeasures
 	Permissions *PermissionsAntiDetect
 
-	// Automation 对抗点
+	// Automation countermeasures
 	Automation *AutomationAntiDetect
 }
 
-// WebGPUAntiDetect WebGPU 对抗配置
+// WebGPUAntiDetect WebGPU countermeasure profile
 type WebGPUAntiDetect struct {
-	Available    bool              // 是否支持 WebGPU
-	AdapterName  string            // GPU 适配器名称
-	DeviceType   string            // 设备类型 (integrated, discrete, virtual)
-	VendorID     string            // GPU 厂商 ID
-	FeatureFlags []string          // 高级特性列表
-	LimitValues  map[string]uint64 // 各项限制值
-	BackendType  string            // 后端类型 (vulkan, metal, dx12, etc)
+	Available    bool              // whether supported WebGPU
+	AdapterName  string            // GPU adapter name
+	DeviceType   string            // device type (integrated, discrete, virtual)
+	VendorID     string            // GPU vendor ID
+	FeatureFlags []string          // advanced features list
+	LimitValues  map[string]uint64 // various limit values
+	BackendType  string            // backend type (vulkan, metal, dx12, etc)
 }
 
-// MediaDevicesAntiDetect MediaDevices 对抗配置
+// MediaDevicesAntiDetect MediaDevices countermeasure profile
 type MediaDevicesAntiDetect struct {
-	VideoInputs          []*MediaDeviceInfo     // 视频输入设备列表
-	AudioInputs          []*MediaDeviceInfo     // 音频输入设备列表
-	AudioOutputs         []*MediaDeviceInfo     // 音频输出设备列表
-	getSources           []string               // navigator.mediaDevices.enumerateDevices 返回值
-	UserMediaConstraints map[string]interface{} // getUserMedia 约束集
+	VideoInputs          []*MediaDeviceInfo     // video input device list
+	AudioInputs          []*MediaDeviceInfo     // audio input device list
+	AudioOutputs         []*MediaDeviceInfo     // audio output device list
+	getSources           []string               // navigator.mediaDevices.enumerateDevices return value
+	UserMediaConstraints map[string]interface{} // getUserMedia constraint set
 }
 
-// MediaDeviceInfo 媒体设备信息
+// MediaDeviceInfo media device information
 type MediaDeviceInfo struct {
-	DeviceID  string // 设备唯一 ID
-	GroupID   string // 设备组 ID (同物理设备)
-	Kind      string // 设备类型 (videoinput, audioinput, audiooutput)
-	Label     string // 设备标签/名称
-	VendorID  string // 制造商 ID (USB 设备)
-	ProductID string // 产品 ID (USB 设备)
+	DeviceID  string // device unique ID
+	GroupID   string // device group ID (same physical device)
+	Kind      string // device type (videoinput, audioinput, audiooutput)
+	Label     string // device label/name
+	VendorID  string // manufacturer ID (USB device)
+	ProductID string // product ID (USB device)
 }
 
-// PermissionsAntiDetect Permissions API 对抗配置
+// PermissionsAntiDetect Permissions API countermeasure profile
 type PermissionsAntiDetect struct {
-	PermissionState  map[string]string // 权限名称 -> 状态 (granted, denied, prompt)
-	RequestsAndroid  bool              // Android: 权限请求行为
-	ShowNotification bool              // notifications 权限
-	AccessCamera     bool              // camera 权限
-	AccessMicrophone bool              // microphone 权限
-	Geolocation      bool              // geolocation 权限
+	PermissionState  map[string]string // permission name -> status (granted, denied, prompt)
+	RequestsAndroid  bool              // Android: permission request behavior
+	ShowNotification bool              // notifications permission
+	AccessCamera     bool              // camera permission
+	AccessMicrophone bool              // microphone permission
+	Geolocation      bool              // geolocation permission
 }
 
-// AutomationAntiDetect Automation 对抗配置
+// AutomationAntiDetect Automation countermeasure profile
 type AutomationAntiDetect struct {
-	WebDriver        bool // navigator.webdriver 标记 (false = 隐藏)
-	Headless         bool // 是否隐藏 headless 特征
-	ChromeDebugPort  bool // Chrome DevTools 端口隐藏
-	Phantom          bool // phantomjs 特征隐藏
-	Selenium         bool // selenium 驱动检测隐藏
-	Puppeteer        bool // puppeteer 检测隐藏
-	Playwright       bool // playwright 检测隐藏
-	PluginsOverride  bool // plugins 数组欺骗
-	LanguageOverride bool // language 属性欺骗
-	ProductOverride  bool // product 属性欺骗 (Navigator.product)
-	VendorOverride   bool // vendor 属性欺骗
-	RuntimeOverride  bool // constructor name 欺骗
+	WebDriver        bool // navigator.webdriver marker (false = concealment)
+	Headless         bool // whether hidden headless characteristics
+	ChromeDebugPort  bool // Chrome DevTools port concealment
+	Phantom          bool // phantomjs feature concealment
+	Selenium         bool // selenium driver detection concealment
+	Puppeteer        bool // puppeteer detection concealment
+	Playwright       bool // playwright detection concealment
+	PluginsOverride  bool // plugins array spoofing
+	LanguageOverride bool // language property spoofing
+	ProductOverride  bool // product property spoofing (Navigator.product)
+	VendorOverride   bool // vendor property spoofing
+	RuntimeOverride  bool // constructor name spoofing
 }
 
-// ClientProfile 客户端指纹配置
+// ClientProfile client fingerprint profile
 type ClientProfile struct {
-	// 核心标识
+	// core identifier
 	ID          string
 	Name        string
 	Description string
 
-	// 浏览器信息
+	// browser information
 	BrowserType    core.BrowserType
 	BrowserVersion string
 
-	// 操作系统信息
+	// operating system information
 	OS        core.OperatingSystem
 	OSVersion string
 	OSArch    string
 	OSBitness string
 
-	// TLS 配置
+	// TLS profile
 	TLSVersion      uint16
 	CipherSuites    []uint16
 	Extensions      []core.TLSExtension
 	SupportedCurves []core.CurveID
 	SupportedPoints []uint8
 
-	// HTTP/2 配置
+	// HTTP/2 profile
 	HTTP2Settings     core.HTTP2Settings
 	HTTP2Priorities   []core.HTTP2Priority
 	PseudoHeaderOrder []string
 	ConnectionFlow    uint32
 
-	// HTTP/3 (QUIC) 配置
+	// HTTP/3 (QUIC) profile
 	HTTP3Settings *core.HTTP3Settings
 	QUICVersions  []uint32
 
-	// HTTP 头配置
+	// HTTP header profile
 	Headers *core.HTTPHeaders
 
-	// TCP/IP 指纹配置 (新增)
+	// TCP/IP fingerprint profile (new)
 	TCPIP *TCPIPFingerprint
 
-	// JavaScript 反检测对抗点 (P3 高熵)
+	// JavaScript anti-detection countermeasures (P3 high entropy)
 	JSAntiDetection *JSAntiDetection
 
-	// 元数据
+	// metadata
 	Metadata map[string]interface{}
 }
 
-// GetID 返回指纹唯一标识
+// GetID returns the fingerprint unique identifier
 func (p ClientProfile) GetID() string {
 	return p.ID
 }
 
-// GetBrowserType 返回浏览器类型
+// GetBrowserType returns the browser type
 func (p ClientProfile) GetBrowserType() core.BrowserType {
 	return p.BrowserType
 }
 
-// GetOS 返回操作系统
+// GetOS returns the operating system
 func (p ClientProfile) GetOS() core.OperatingSystem {
 	return p.OS
 }
 
-// GetUserAgent 返回 User-Agent
+// GetUserAgent returns User-Agent
 func (p ClientProfile) GetUserAgent() string {
 	if p.Headers != nil {
 		return p.Headers.UserAgent
@@ -238,37 +238,37 @@ func (p ClientProfile) GetUserAgent() string {
 	return ""
 }
 
-// GetHeaders 返回 HTTP Headers
+// GetHeaders returns HTTP Headers
 func (p ClientProfile) GetHeaders() *core.HTTPHeaders {
 	return p.Headers
 }
 
-// GetSpec 返回指纹规范
+// GetSpec returns the fingerprint specification
 func (p ClientProfile) GetSpec() core.FingerprintSpec {
 	return p
 }
 
-// ProfileRegistry 指纹注册表
+// ProfileRegistry fingerprint registry
 type ProfileRegistry struct {
 	mu       sync.RWMutex
 	profiles map[string]ClientProfile
 }
 
-// NewProfileRegistry 创建新的指纹注册表
+// NewProfileRegistry creates a new fingerprint registry
 func NewProfileRegistry() *ProfileRegistry {
 	return &ProfileRegistry{
 		profiles: make(map[string]ClientProfile),
 	}
 }
 
-// Register 注册指纹
+// Register registers a fingerprint
 func (r *ProfileRegistry) Register(profile ClientProfile) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.profiles[profile.ID] = profile
 }
 
-// Get 获取指纹
+// Get gets a fingerprint
 func (r *ProfileRegistry) Get(id string) (ClientProfile, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -276,7 +276,7 @@ func (r *ProfileRegistry) Get(id string) (ClientProfile, bool) {
 	return p, ok
 }
 
-// GetByBrowser 按浏览器类型获取所有指纹
+// GetByBrowser gets all fingerprints by browser type
 func (r *ProfileRegistry) GetByBrowser(browser core.BrowserType) []ClientProfile {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -289,7 +289,7 @@ func (r *ProfileRegistry) GetByBrowser(browser core.BrowserType) []ClientProfile
 	return result
 }
 
-// GetByOS 按操作系统获取所有指纹
+// GetByOS gets all fingerprints by operating system
 func (r *ProfileRegistry) GetByOS(os core.OperatingSystem) []ClientProfile {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -302,7 +302,7 @@ func (r *ProfileRegistry) GetByOS(os core.OperatingSystem) []ClientProfile {
 	return result
 }
 
-// GetAll 获取所有指纹
+// GetAll gets all fingerprints
 func (r *ProfileRegistry) GetAll() []ClientProfile {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -313,37 +313,37 @@ func (r *ProfileRegistry) GetAll() []ClientProfile {
 	return result
 }
 
-// Count 返回指纹数量
+// Count returns the number of fingerprints
 func (r *ProfileRegistry) Count() int {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return len(r.profiles)
 }
 
-// DefaultRegistry 默认全局注册表
+// DefaultRegistry default global registry
 var DefaultRegistry = NewProfileRegistry()
 
-// Register 向默认注册表注册指纹
+// Register registers a fingerprint in the default registry
 func Register(profile ClientProfile) {
 	DefaultRegistry.Register(profile)
 }
 
-// Get 从默认注册表获取指纹
+// Get gets a fingerprint from the default registry
 func Get(id string) (ClientProfile, bool) {
 	return DefaultRegistry.Get(id)
 }
 
-// GetByBrowser 从默认注册表按浏览器类型获取指纹
+// GetByBrowser gets fingerprints by browser type from the default registry
 func GetByBrowser(browser core.BrowserType) []ClientProfile {
 	return DefaultRegistry.GetByBrowser(browser)
 }
 
-// GetAll 从默认注册表获取所有指纹
+// GetAll gets all fingerprints from the default registry
 func GetAll() []ClientProfile {
 	return DefaultRegistry.GetAll()
 }
 
-// GetRandom 随机获取一个指纹
+// GetRandom randomly gets a fingerprint
 func GetRandom() ClientProfile {
 	all := DefaultRegistry.GetAll()
 	if len(all) == 0 {
@@ -352,7 +352,7 @@ func GetRandom() ClientProfile {
 	return core.RandomChoice(all)
 }
 
-// GetRandomByBrowser 按浏览器类型随机获取指纹
+// GetRandomByBrowser randomly gets a fingerprint by browser type
 func GetRandomByBrowser(browser core.BrowserType) ClientProfile {
 	profiles := DefaultRegistry.GetByBrowser(browser)
 	if len(profiles) == 0 {

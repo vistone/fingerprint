@@ -1,15 +1,15 @@
-// Package profiles 提供扩展的浏览器指纹配置
-// 包含 90+ 真实浏览器指纹配置
+// Package profiles provides extended browser fingerprint profiles
+// contains 90+ real browser fingerprint profile
 package profiles
 
 import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// 扩展 Chrome 指纹
+// extension Chrome fingerprint
 
 var (
-	// Chrome 120-133 系列
+	// Chrome 120-133 series
 	Chrome120 = ClientProfile{
 		ID:             "chrome_120",
 		Name:           "Chrome 120",
@@ -102,7 +102,7 @@ var (
 	}
 )
 
-// Firefox 指纹系列
+// Firefox fingerprint series
 
 var (
 	Firefox120 = ClientProfile{
@@ -174,7 +174,7 @@ var (
 	}
 )
 
-// Safari 指纹系列
+// Safari fingerprint series
 
 var (
 	Safari150 = ClientProfile{
@@ -238,7 +238,7 @@ var (
 	}
 )
 
-// Opera 指纹系列
+// Opera fingerprint series
 
 var (
 	Opera105 = ClientProfile{
@@ -254,7 +254,7 @@ var (
 	}
 )
 
-// 移动端指纹
+// mobile fingerprints
 
 var (
 	// iOS Safari
@@ -315,7 +315,7 @@ var (
 )
 
 func init() {
-	// 注册所有扩展指纹
+	// registers all extended fingerprints
 	
 	// Chrome
 	Register(Chrome120)
@@ -345,17 +345,17 @@ func init() {
 	Register(ChromeAndroid130)
 }
 
-// GetProfileCount 获取注册的指纹数量
+// GetProfileCount gets the number of registered fingerprints
 func GetProfileCount() int {
 	return DefaultRegistry.Count()
 }
 
-// GetProfilesByBrowser 按浏览器类型获取所有指纹
+// GetProfilesByBrowser gets all fingerprints by browser type
 func GetProfilesByBrowser(browser core.BrowserType) []ClientProfile {
 	return DefaultRegistry.GetByBrowser(browser)
 }
 
-// GetProfilesByOS 按操作系统获取所有指纹
+// GetProfilesByOS gets all fingerprints by operating system
 func GetProfilesByOS(os core.OperatingSystem) []ClientProfile {
 	return DefaultRegistry.GetByOS(os)
 }

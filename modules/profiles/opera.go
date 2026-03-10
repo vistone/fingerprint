@@ -1,19 +1,19 @@
-// Package profiles - Opera浏览器指纹
-// 包含Opera 100-110版本的完整指纹配置
+// Package profiles - Opera browser fingerprint
+// contains Opera 100-110 version full fingerprint profiles
 package profiles
 
 import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// Opera浏览器指纹 (100-110版本)
-// operaTCPIP 返回 Opera 的 TCP/IP 指纹
+// Opera browser fingerprint (100-110 versions)
+// operaTCPIP returns Opera TCP/IP fingerprint
 func operaTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
 	return CreateTCPIP(osType)
 }
 
 var (
-	// Opera One系列 (Chromium 100+)
+	// Opera One series (Chromium 100+)
 	Opera100 = ClientProfile{
 		ID: "opera_100", Name: "Opera 100",
 		BrowserType: core.BrowserOpera, BrowserVersion: "100.0",
@@ -118,16 +118,16 @@ var (
 )
 
 func init() {
-	// 注册所有Opera指纹
+	// registers all Opera fingerprints
 	profiles := []ClientProfile{
 		Opera100, Opera102, Opera104, Opera106, Opera108, Opera110,
 	}
 	
-	// 为每个 profile 填充缺失的 HTTP/2 和 HTTP/3 配置
+	// for each profile fills in missing HTTP/2 and HTTP/3 profile
 	for i := range profiles {
 		p := &profiles[i]
 		
-		// 填充 HTTP/2 配置（如果缺失）
+		// padding HTTP/2 profile (if missing)
 		if p.HTTP2Settings.HeaderTableSize == 0 && p.HTTP2Settings.InitialWindowSize == 0 {
 			p.HTTP2Settings = core.HTTP2Settings{
 				HeaderTableSize:      65536,
@@ -140,12 +140,12 @@ func init() {
 			p.PseudoHeaderOrder = []string{":method", ":authority", ":scheme", ":path"}
 		}
 		
-		// 填充 ConnectionFlow（如果缺失）
+		// padding ConnectionFlow (if missing)
 		if p.ConnectionFlow == 0 {
 			p.ConnectionFlow = 15663105
 		}
 		
-		// 填充 HTTP/3 (QUIC) 配置（如果缺失）
+		// padding HTTP/3 (QUIC) profile (if missing)
 		if p.HTTP3Settings == nil {
 			p.HTTP3Settings = &core.HTTP3Settings{
 				QUICVersion:            core.QUICVersion1,
@@ -161,7 +161,7 @@ func init() {
 			p.QUICVersions = []uint32{core.QUICVersion1}
 		}
 		
-		// 填充 Headers（如果缺失）
+		// padding Headers (if missing)
 		if p.Headers == nil {
 			p.Headers = &core.HTTPHeaders{}
 		}
@@ -204,7 +204,7 @@ func init() {
 	}
 }
 
-// AllOperaProfiles 返回所有Opera指纹
+// AllOperaProfiles returns all Opera fingerprints
 func AllOperaProfiles() []ClientProfile {
 	return []ClientProfile{
 		Opera100, Opera102, Opera104, Opera106, Opera108, Opera110,
