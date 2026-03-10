@@ -4,16 +4,16 @@ import (
 	"fmt"
 )
 
-// CloneableConfig 可克隆配置的接口
+// CloneableConfig is the interface for cloneable configurations
 type CloneableConfig interface {
 	Clone() interface{}
 }
 
-// DeepCopy 执行深复制。相比 JSON 序列化方式的优势：
-// 1. 编译时安全（不依赖 JSON tag）
-// 2. 性能更好（避免序列化开销）
-// 3. 可以支持不可序列化的字段（如 sync.Mutex）
-// 4. 错误处理更清晰
+// DeepCopy performs a deep copy. Advantages over JSON serialization:
+// 1. Compile-time safety (no dependency on JSON tags)
+// 2. Better performance (avoids serialization overhead)
+// 3. Can support non-serializable fields (e.g., sync.Mutex)
+// 4. Clearer error handling
 func DeepCopy(config *ManagedConfig) (*ManagedConfig, error) {
 	if config == nil {
 		return nil, nil
@@ -21,7 +21,7 @@ func DeepCopy(config *ManagedConfig) (*ManagedConfig, error) {
 
 	result := &ManagedConfig{}
 
-	// 深复制每个嵌套结构
+	// Deep copy each nested structure
 	if config.BehaviorAnalysis != nil {
 		result.BehaviorAnalysis = cloneBehaviorAnalysisConfig(config.BehaviorAnalysis)
 	}
@@ -53,7 +53,7 @@ func DeepCopy(config *ManagedConfig) (*ManagedConfig, error) {
 	return result, nil
 }
 
-// cloneBehaviorAnalysisConfig 深复制行为分析配置
+// cloneBehaviorAnalysisConfig deep copies the behavior analysis configuration
 func cloneBehaviorAnalysisConfig(c *BehaviorAnalysisConfig) *BehaviorAnalysisConfig {
 	if c == nil {
 		return nil
@@ -68,7 +68,7 @@ func cloneBehaviorAnalysisConfig(c *BehaviorAnalysisConfig) *BehaviorAnalysisCon
 	}
 }
 
-// cloneRiskScoringConfig 深复制风险评分配置
+// cloneRiskScoringConfig deep copies the risk scoring configuration
 func cloneRiskScoringConfig(c *RiskScoringConfig) *RiskScoringConfig {
 	if c == nil {
 		return nil
@@ -86,7 +86,7 @@ func cloneRiskScoringConfig(c *RiskScoringConfig) *RiskScoringConfig {
 	return result
 }
 
-// cloneRiskWeights 深复制风险权重
+// cloneRiskWeights deep copies the risk weights
 func cloneRiskWeights(w *RiskWeights) *RiskWeights {
 	if w == nil {
 		return nil
@@ -103,7 +103,7 @@ func cloneRiskWeights(w *RiskWeights) *RiskWeights {
 	}
 }
 
-// cloneFeatureExtractionConfig 深复制特征提取配置
+// cloneFeatureExtractionConfig deep copies the feature extraction configuration
 func cloneFeatureExtractionConfig(c *FeatureExtractionConfig) *FeatureExtractionConfig {
 	if c == nil {
 		return nil
@@ -114,7 +114,7 @@ func cloneFeatureExtractionConfig(c *FeatureExtractionConfig) *FeatureExtraction
 		MobileScreenWidthMax:  c.MobileScreenWidthMax,
 		DesktopScreenWidthMin: c.DesktopScreenWidthMin,
 	}
-	// 深复制字符串切片
+	// Deep copy string slices
 	if c.ToolMarkers != nil {
 		result.ToolMarkers = make([]string, len(c.ToolMarkers))
 		copy(result.ToolMarkers, c.ToolMarkers)
@@ -126,7 +126,7 @@ func cloneFeatureExtractionConfig(c *FeatureExtractionConfig) *FeatureExtraction
 	return result
 }
 
-// cloneQUICConfig 深复制 QUIC 配置
+// cloneQUICConfig deep copies the QUIC configuration
 func cloneQUICConfig(c *QUICConfig) *QUICConfig {
 	if c == nil {
 		return nil
@@ -136,7 +136,7 @@ func cloneQUICConfig(c *QUICConfig) *QUICConfig {
 		MinStreamData:          c.MinStreamData,
 		TransportParamCapacity: c.TransportParamCapacity,
 	}
-	// 深复制 uint32 切片
+	// Deep copy uint32 slices
 	if c.SupportedVersions != nil {
 		result.SupportedVersions = make([]uint32, len(c.SupportedVersions))
 		copy(result.SupportedVersions, c.SupportedVersions)
@@ -144,7 +144,7 @@ func cloneQUICConfig(c *QUICConfig) *QUICConfig {
 	return result
 }
 
-// cloneTLSConfig 深复制 TLS 配置
+// cloneTLSConfig deep copies the TLS configuration
 func cloneTLSConfig(c *TLSConfig) *TLSConfig {
 	if c == nil {
 		return nil
@@ -152,7 +152,7 @@ func cloneTLSConfig(c *TLSConfig) *TLSConfig {
 	result := &TLSConfig{
 		AnomalyFlagsCapacity: c.AnomalyFlagsCapacity,
 	}
-	// 深复制 uint16 切片
+	// Deep copy uint16 slices
 	if c.WeakCipherSuites != nil {
 		result.WeakCipherSuites = make([]uint16, len(c.WeakCipherSuites))
 		copy(result.WeakCipherSuites, c.WeakCipherSuites)
@@ -168,7 +168,7 @@ func cloneTLSConfig(c *TLSConfig) *TLSConfig {
 	return result
 }
 
-// cloneGlobalConfig 深复制全局配置
+// cloneGlobalConfig deep copies the global configuration
 func cloneGlobalConfig(c *GlobalConfig) *GlobalConfig {
 	if c == nil {
 		return nil
@@ -182,7 +182,7 @@ func cloneGlobalConfig(c *GlobalConfig) *GlobalConfig {
 	}
 }
 
-// cloneConfigMetadata 深复制配置元数据
+// cloneConfigMetadata deep copies the configuration metadata
 func cloneConfigMetadata(m *ConfigMetadata) *ConfigMetadata {
 	if m == nil {
 		return nil
@@ -195,7 +195,7 @@ func cloneConfigMetadata(m *ConfigMetadata) *ConfigMetadata {
 	}
 }
 
-// ValidateDeepCopy 验证深复制的有效性
+// ValidateDeepCopy validates the correctness of a deep copy
 func ValidateDeepCopy(original *ManagedConfig, copied *ManagedConfig) error {
 	if original == nil && copied == nil {
 		return nil
@@ -205,12 +205,12 @@ func ValidateDeepCopy(original *ManagedConfig, copied *ManagedConfig) error {
 		return fmt.Errorf("deep copy failed: one is nil while the other is not")
 	}
 
-	// 检查指针不同（真正的深复制，而不是浅复制）
+	// Check that the pointers are different (a true deep copy, not a shallow copy)
 	if &original == &copied {
 		return fmt.Errorf("deep copy failed: returned same pointer")
 	}
 
-	// 检查嵌套对象也是不同的指针
+	// Check that nested objects also have different pointers
 	if original.BehaviorAnalysis != nil && copied.BehaviorAnalysis != nil {
 		if &original.BehaviorAnalysis == &copied.BehaviorAnalysis {
 			return fmt.Errorf("deep copy failed: BehaviorAnalysis is same pointer")

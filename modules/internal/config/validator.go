@@ -4,21 +4,21 @@ import (
 	"fmt"
 )
 
-// ConfigValidator 配置验证器
+// ConfigValidator is a configuration validator
 type ConfigValidator struct {
 	rules []ValidationRule
 }
 
-// ValidationRule 验证规则
+// ValidationRule represents a validation rule
 type ValidationRule struct {
-	// 规则名称
+	// Rule name
 	Name string
 
-	// 验证函数
+	// Validation function
 	Validate func(*ManagedConfig) error
 }
 
-// ValidationError 验证错误
+// ValidationError represents a validation error
 type ValidationError struct {
 	Field  string
 	Reason string
@@ -29,21 +29,21 @@ func (ve ValidationError) Error() string {
 	return fmt.Sprintf("validation error on %s: %s (value: %v)", ve.Field, ve.Reason, ve.Value)
 }
 
-// NewConfigValidator 创建配置验证器
+// NewConfigValidator creates a new configuration validator
 func NewConfigValidator() *ConfigValidator {
 	validator := &ConfigValidator{
 		rules: make([]ValidationRule, 0),
 	}
 
-	// 注册默认验证规则
+	// Register default validation rules
 	validator.registerDefaultRules()
 
 	return validator
 }
 
-// registerDefaultRules 注册默认验证规则
+// registerDefaultRules registers default validation rules
 func (cv *ConfigValidator) registerDefaultRules() {
-	// 行为分析验证
+	// Behavior analysis validation
 	cv.AddRule("behavior_analysis_min_requests", func(cfg *ManagedConfig) error {
 		if cfg.BehaviorAnalysis == nil {
 			return nil
@@ -90,13 +90,13 @@ func (cv *ConfigValidator) registerDefaultRules() {
 		return nil
 	})
 
-	// 风险评分验证
+	// Risk scoring validation
 	cv.AddRule("risk_scoring_thresholds", func(cfg *ManagedConfig) error {
 		if cfg.RiskScoring == nil {
 			return nil
 		}
 
-		// 验证阈值顺序
+		// Validate threshold order
 		if cfg.RiskScoring.CriticalThreshold <= cfg.RiskScoring.HighThreshold {
 			return ValidationError{
 				Field:  "risk_scoring.thresholds",
@@ -105,7 +105,7 @@ func (cv *ConfigValidator) registerDefaultRules() {
 			}
 		}
 
-		// 验证有效范围
+		// Validate effective range
 		for threshold := cfg.RiskScoring.CriticalThreshold; threshold <= cfg.RiskScoring.LowThreshold; {
 			if threshold < 0 || threshold > 1 {
 				return ValidationError{
@@ -120,7 +120,7 @@ func (cv *ConfigValidator) registerDefaultRules() {
 		return nil
 	})
 
-	// 特征提取验证
+	// Feature extraction validation
 	cv.AddRule("features_thresholds", func(cfg *ManagedConfig) error {
 		if cfg.Features == nil {
 			return nil
@@ -161,7 +161,7 @@ func (cv *ConfigValidator) registerDefaultRules() {
 		return nil
 	})
 
-	// QUIC 验证
+	// QUIC validation
 	cv.AddRule("quic_parameters", func(cfg *ManagedConfig) error {
 		if cfg.QUIC == nil {
 			return nil
@@ -186,7 +186,7 @@ func (cv *ConfigValidator) registerDefaultRules() {
 		return nil
 	})
 
-	// 全局配置验证
+	// Global configuration validation
 	cv.AddRule("global_config", func(cfg *ManagedConfig) error {
 		if cfg.Global == nil {
 			return nil
@@ -212,7 +212,7 @@ func (cv *ConfigValidator) registerDefaultRules() {
 	})
 }
 
-// AddRule 添加自定义验证规则
+// AddRule adds a custom validation rule
 func (cv *ConfigValidator) AddRule(name string, validate func(*ManagedConfig) error) {
 	cv.rules = append(cv.rules, ValidationRule{
 		Name:     name,
@@ -220,7 +220,7 @@ func (cv *ConfigValidator) AddRule(name string, validate func(*ManagedConfig) er
 	})
 }
 
-// Validate 验证配置
+// Validate validates the configuration
 func (cv *ConfigValidator) Validate(config *ManagedConfig) []error {
 	errors := make([]error, 0)
 
@@ -233,8 +233,8 @@ func (cv *ConfigValidator) Validate(config *ManagedConfig) []error {
 	return errors
 }
 
-// ValidateField 验证指定字段
+// ValidateField validates the specified field
 func (cv *ConfigValidator) ValidateField(fieldPath string, value interface{}) error {
-	// 简化实现 - 实际应该有更复杂的字段验证逻辑
+	// Simplified implementation - in practice, more complex field validation logic should be used
 	return nil
 }

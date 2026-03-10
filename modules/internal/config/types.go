@@ -1,48 +1,48 @@
 package config
 
-// BehaviorAnalysisConfig 行为分析配置
+// BehaviorAnalysisConfig represents the behavior analysis configuration
 type BehaviorAnalysisConfig struct {
-	// 分析所需的最小请求数
+	// Minimum number of requests required for analysis
 	MinRequestsForAnalysis int `json:"min_requests_for_analysis"`
 
-	// 规律性阈值（0-1）
+	// Regularity threshold (0-1)
 	RegularityThreshold float64 `json:"regularity_threshold"`
 
-	// 熵阈值（0-1）
+	// Entropy threshold (0-1)
 	EntropyThreshold float64 `json:"entropy_threshold"`
 
-	// 异常间隔比率阈值（0-1）
+	// Anomalous interval rate threshold (0-1)
 	AnomalousIntervalRateThreshold float64 `json:"anomalous_interval_rate_threshold"`
 
-	// 请求历史容量（预分配）
+	// Request history capacity (pre-allocated)
 	RequestHistoryCapacity int `json:"request_history_capacity"`
 
-	// 信号容量（预分配）
+	// Signal capacity (pre-allocated)
 	SignalCapacity int `json:"signal_capacity"`
 }
 
-// RiskScoringConfig 风险评分配置
+// RiskScoringConfig represents the risk scoring configuration
 type RiskScoringConfig struct {
-	// Critical 威胁级阈值
+	// Critical threat level threshold
 	CriticalThreshold float64 `json:"critical_threshold"`
 
-	// High 威胁级阈值
+	// High threat level threshold
 	HighThreshold float64 `json:"high_threshold"`
 
-	// Medium 威胁级阈值
+	// Medium threat level threshold
 	MediumThreshold float64 `json:"medium_threshold"`
 
-	// Low 威胁级阈值
+	// Low threat level threshold
 	LowThreshold float64 `json:"low_threshold"`
 
-	// 最小置信度
+	// Minimum confidence
 	MinConfidence float64 `json:"min_confidence"`
 
-	// 权重配置
+	// Weights configuration
 	Weights *RiskWeights `json:"weights"`
 }
 
-// RiskWeights 风险评分权重
+// RiskWeights represents the risk scoring weights
 type RiskWeights struct {
 	Headless         float64 `json:"headless"`
 	Anomaly          float64 `json:"anomaly"`
@@ -54,71 +54,71 @@ type RiskWeights struct {
 	ExtensionAnomaly float64 `json:"extension_anomaly"`
 }
 
-// FeatureExtractionConfig 特征提取配置
+// FeatureExtractionConfig represents the feature extraction configuration
 type FeatureExtractionConfig struct {
-	// 高熵阈值（bits）
+	// High entropy threshold (bits)
 	EntropyHighThreshold float64 `json:"entropy_high_threshold"`
 
-	// 低熵阈值（unique bytes）
+	// Low entropy threshold (unique bytes)
 	EntropyLowThreshold int `json:"entropy_low_threshold"`
 
-	// 工具特征列表
+	// Tool marker list
 	ToolMarkers []string `json:"tool_markers"`
 
-	// 无头浏览器特征列表
+	// Headless browser marker list
 	HeadlessMarkers []string `json:"headless_markers"`
 
-	// 移动设备屏幕分辨率上限
+	// Maximum mobile device screen width
 	MobileScreenWidthMax int `json:"mobile_screen_width_max"`
 
-	// 桌面设备屏幕分辨率下限
+	// Minimum desktop device screen width
 	DesktopScreenWidthMin int `json:"desktop_screen_width_min"`
 }
 
-// QUICConfig QUIC 配置
+// QUICConfig represents the QUIC configuration
 type QUICConfig struct {
-	// 可疑的初始数据流大小下限
+	// Minimum suspicious initial max data size
 	MinInitialMaxData int `json:"min_initial_max_data"`
 
-	// 可疑的流数据大小下限
+	// Minimum suspicious stream data size
 	MinStreamData int `json:"min_stream_data"`
 
-	// 支持的协议版本
+	// Supported protocol versions
 	SupportedVersions []uint32 `json:"supported_versions"`
 
-	// 检测参数容量
+	// Detection parameter capacity
 	TransportParamCapacity int `json:"transport_param_capacity"`
 }
 
-// TLSConfig TLS 配置
+// TLSConfig represents the TLS configuration
 type TLSConfig struct {
-	// 弱密码套件列表
+	// Weak cipher suite list
 	WeakCipherSuites []uint16 `json:"weak_cipher_suites"`
 
-	// 支持的 TLS 版本
+	// Supported TLS versions
 	SupportedVersions []uint16 `json:"supported_versions"`
 
-	// GREASE 扩展列表
+	// GREASE extension list
 	GREASEExtensions []uint16 `json:"grease_extensions"`
 
-	// 异常标记容量
+	// Anomaly flags capacity
 	AnomalyFlagsCapacity int `json:"anomaly_flags_capacity"`
 }
 
-// GlobalConfig 全局配置
+// GlobalConfig represents the global configuration
 type GlobalConfig struct {
-	// 最大并发处理数
+	// Maximum concurrency
 	MaxConcurrency int `json:"max_concurrency"`
 
-	// 请求超时（毫秒）
+	// Request timeout (milliseconds)
 	RequestTimeout int `json:"request_timeout"`
 
-	// 缓存大小
+	// Cache size
 	CacheSize int `json:"cache_size"`
 
-	// 是否启用调试模式
+	// Whether to enable debug mode
 	DebugMode bool `json:"debug_mode"`
 
-	// 最大输入大小（字节）
+	// Maximum input size (bytes)
 	MaxInputSize int `json:"max_input_size"`
 }
