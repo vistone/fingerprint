@@ -14,11 +14,11 @@ import (
 )
 
 // ========================================================================
-// Pipeline 适配器：ProcessingEngine 改造
+// Pipeline Adapter: ProcessingEngine Refactoring
 // ========================================================================
 
-// ProcessWithPipeline 使用 Pipeline 框架处理扩展请求（新方式）
-// 与 Process() 方法功能相同，但使用 Pipeline 框架
+// ProcessWithPipeline processes extension requests using the Pipeline framework (new approach).
+// Functionally equivalent to Process(), but uses the Pipeline framework.
 func (e *ProcessingEngine) ProcessWithPipeline(request *ProcessingRequest) *ProcessingResult {
 	result := &ProcessingResult{
 		Success:         true,
