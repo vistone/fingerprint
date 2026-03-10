@@ -6,15 +6,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vistone/fingerprint/modules/profiles/legacy"
 	"github.com/vistone/fingerprint/modules/core/types"
+	profiles "github.com/vistone/fingerprint/modules/profiles/legacy"
 )
 
 // ============ client_hints.go Tests ============
 
 func TestNewClientHintsPolicy(t *testing.T) {
 	tests := []struct {
-		name        types.BrowserType
+		name           types.BrowserType
 		wantLowEntropy bool
 		wantDelegation bool
 		highEntropyLen int
@@ -78,13 +78,13 @@ func TestNewClientHintsPolicy(t *testing.T) {
 
 func TestGenerateClientHintsFromProfile(t *testing.T) {
 	tests := []struct {
-		name           string
-		profile        *profiles.ClientProfile
-		policy         *ClientHintsPolicy
-		wantSecCHUA    bool
-		wantSecCHMobile string
+		name              string
+		profile           *profiles.ClientProfile
+		policy            *ClientHintsPolicy
+		wantSecCHUA       bool
+		wantSecCHMobile   string
 		wantSecCHPlatform bool
-		wantHighEntropy bool
+		wantHighEntropy   bool
 	}{
 		{
 			name: "Chrome Desktop",
@@ -298,23 +298,23 @@ func TestClientHintsData_ApplyToHeaders(t *testing.T) {
 			},
 			wantLen: 3,
 			checks: map[string]string{
-				"Sec-CH-UA":         `"Google Chrome";v="120"`,
-				"Sec-CH-UA-Mobile":  "?0",
+				"Sec-CH-UA":          `"Google Chrome";v="120"`,
+				"Sec-CH-UA-Mobile":   "?0",
 				"Sec-CH-UA-Platform": `"Windows"`,
 			},
 		},
 		{
 			name: "With high entropy hints",
 			hints: &ClientHintsData{
-				SecCHUA:               `"Google Chrome";v="120"`,
-				SecCHUAMobile:         "?0",
-				SecCHUAPlatform:       `"Windows"`,
-				SecCHUAArch:           `"x86"`,
-				SecCHUABitness:        `"64"`,
+				SecCHUA:                `"Google Chrome";v="120"`,
+				SecCHUAMobile:          "?0",
+				SecCHUAPlatform:        `"Windows"`,
+				SecCHUAArch:            `"x86"`,
+				SecCHUABitness:         `"64"`,
 				SecCHUAFullVersionList: `"Not A(Brand";v="8.0.0.0", "Chromium";v="120.0.6099.109"`,
 				SecCHUAPlatformVersion: `"10.0.19045"`,
-				SecCHUAModel:          `""`,
-				SecCHUAWoW64:          "?0",
+				SecCHUAModel:           `""`,
+				SecCHUAWoW64:           "?0",
 			},
 			wantLen: 9,
 			checks: map[string]string{
@@ -326,14 +326,14 @@ func TestClientHintsData_ApplyToHeaders(t *testing.T) {
 		{
 			name: "With network hints",
 			hints: &ClientHintsData{
-				SecCHUA:         `"Google Chrome";v="120"`,
-				DeviceMemory:    "8",
-				DPR:             "1.5",
-				ViewportWidth:   "1920",
-				DownlinkSpeed:   "10",
-				ECT:             "4g",
-				RTT:             "50",
-				SaveData:        "off",
+				SecCHUA:       `"Google Chrome";v="120"`,
+				DeviceMemory:  "8",
+				DPR:           "1.5",
+				ViewportWidth: "1920",
+				DownlinkSpeed: "10",
+				ECT:           "4g",
+				RTT:           "50",
+				SaveData:      "off",
 			},
 			wantLen: 8,
 			checks: map[string]string{
@@ -1448,11 +1448,11 @@ func TestCHNegotiationAnalyzer_evaluateNegotiationRisk(t *testing.T) {
 	analyzer := NewCHNegotiationAnalyzer()
 
 	tests := []struct {
-		name           string
-		setupStrategy  func(*NegotiationStrategy)
-		wantMinRisk    float64
-		wantMaxRisk    float64
-		wantAnomaly    string
+		name          string
+		setupStrategy func(*NegotiationStrategy)
+		wantMinRisk   float64
+		wantMaxRisk   float64
+		wantAnomaly   string
 	}{
 		{
 			name: "Normal strategy",
@@ -1550,13 +1550,13 @@ func TestCHNegotiationAnalyzer_GetNegotiationSummary(t *testing.T) {
 	analyzer := NewCHNegotiationAnalyzer()
 
 	tests := []struct {
-		name           string
-		state          NegotiationState
-		negotiatedLen  int
-		rejectedLen    int
-		anomalyLen     int
-		riskScore      float64
-		wantInSummary  []string
+		name          string
+		state         NegotiationState
+		negotiatedLen int
+		rejectedLen   int
+		anomalyLen    int
+		riskScore     float64
+		wantInSummary []string
 	}{
 		{
 			name:          "Initial state",

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vistone/fingerprint/modules/profiles/legacy"
 	"github.com/vistone/fingerprint/modules/core/types"
+	profiles "github.com/vistone/fingerprint/modules/profiles/legacy"
 )
 
 // GetUserAgentByProfileName get User-Agent by profile name

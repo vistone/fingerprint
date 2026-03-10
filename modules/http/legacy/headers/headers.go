@@ -4,8 +4,8 @@ package headers
 import (
 	"fmt"
 
-	"github.com/vistone/fingerprint/modules/kit"
 	"github.com/vistone/fingerprint/modules/core/types"
+	utils "github.com/vistone/fingerprint/modules/kit"
 )
 
 // Global language list (sorted by usage frequency)

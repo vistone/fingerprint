@@ -87,10 +87,10 @@ func NewDetector() *Detector {
 			"selenium", "playwright", "cypress",
 		},
 		suspiciousKeyPatterns: [][]byte{
-			{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // All zeros
-						{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // All zeros
+			{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},        // All zeros
+			{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},        // All zeros
 			{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, // Incremental
-					{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, // Incremental
+			{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, // Incremental
 		},
 		normalHeaderOrders: map[string][]string{
 			"chrome": {
@@ -125,27 +125,27 @@ func (d *Detector) Detect(req *http.Request, fp *WebSocketFingerprint) *Detectio
 	d.checkMethod(req, result)
 
 	// 2. Check required headers
-		// 2. Check required headers
+	// 2. Check required headers
 	d.checkRequiredHeaders(req, result)
 
 	// 3. Analyze WebSocket Key
-		// 3. Analyze WebSocket Key
+	// 3. Analyze WebSocket Key
 	d.analyzeKey(fp, result)
 
 	// 4. Analyze header order
-		// 4. Analyze header order
+	// 4. Analyze header order
 	d.analyzeHeaderOrder(fp, result)
 
 	// 5. Check extensions
-		// 5. Check extensions
+	// 5. Check extensions
 	d.checkExtensions(fp, result)
 
 	// 6. Detect known bots
-		// 6. Detect known bots
+	// 6. Detect known bots
 	d.detectBot(req, result)
 
 	// 7. Calculate risk score
-		// 7. Calculate risk score
+	// 7. Calculate risk score
 	result.RiskScore = d.calculateRiskScore(result)
 	result.HasAnomaly = len(result.Anomalies) > 0
 
@@ -307,9 +307,9 @@ func (d *Detector) analyzeKey(fp *WebSocketFingerprint, result *DetectionResult)
 			Description: fmt.Sprintf("Low entropy in Sec-WebSocket-Key: %.2f (suspicious)", keyChar.Entropy),
 			Severity:    SeverityMedium,
 			Evidence: map[string]interface{}{
-				"entropy":       keyChar.Entropy,
-				"pattern_type":  keyChar.PatternType,
-				"has_pattern":   keyChar.HasPattern,
+				"entropy":      keyChar.Entropy,
+				"pattern_type": keyChar.PatternType,
+				"has_pattern":  keyChar.HasPattern,
 			},
 		})
 	}
@@ -354,10 +354,10 @@ func (d *Detector) analyzeHeaderOrder(fp *WebSocketFingerprint, result *Detectio
 			Description: fmt.Sprintf("Abnormal header order for %s (match score: %.2f)", browser, matchScore),
 			Severity:    SeverityLow,
 			Evidence: map[string]interface{}{
-				"browser":       browser,
-				"match_score":   matchScore,
-				"actual_order":  fp.Handshake.HeaderOrder,
-				"normal_order":  normalOrder,
+				"browser":      browser,
+				"match_score":  matchScore,
+				"actual_order": fp.Handshake.HeaderOrder,
+				"normal_order": normalOrder,
 			},
 		})
 	}
@@ -401,8 +401,8 @@ func (d *Detector) detectBot(req *http.Request, result *DetectionResult) {
 				Description: fmt.Sprintf("Detected known bot/automation pattern: %s", pattern),
 				Severity:    SeverityHigh,
 				Evidence: map[string]interface{}{
-					"pattern":     pattern,
-					"user_agent":  ua,
+					"pattern":    pattern,
+					"user_agent": ua,
 				},
 			})
 			break
@@ -438,7 +438,7 @@ func (d *Detector) calculateRiskScore(result *DetectionResult) int {
 	}
 
 	// Limit to 0-100
-		// Limit to 0-100
+	// Limit to 0-100
 	if score > 100 {
 		score = 100
 	}
