@@ -26,7 +26,8 @@ func NewCache() *Cache {
 	return c
 }
 
-// Set sets a cache item(key string, value interface{}, ttl time.Duration) {
+// Set sets a cache item
+func (c *Cache) Set(key string, value interface{}, ttl time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -37,7 +38,8 @@ func NewCache() *Cache {
 	}
 }
 
-// Get retrieves a cache item(key string) (interface{}, bool) {
+// Get retrieves a cache item
+func (c *Cache) Get(key string) (interface{}, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
@@ -47,6 +49,8 @@ func NewCache() *Cache {
 	}
 
 	// Check if expired
+	if time.Now().UnixNano() > item.expiration {
+		return nil, false
 	}
 
 	return item.value, true
@@ -121,13 +125,14 @@ func NewLRUCache(maxSize int) *LRUCache {
 	}
 }
 
-// Set sets a cache item(key string, value interface{}, ttl time.Duration) {
+// Set sets a cache item
+func (c *LRUCache) Set(key string, value interface{}, ttl time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	expiration := time.Now().Add(ttl).UnixNano()
 
-	// If already exists, update value and move to head
+	// 如果已存在，更新值并移动到头部
 	if item, exists := c.items[key]; exists {
 		item.value = value
 		item.expiration = expiration
@@ -135,7 +140,7 @@ func NewLRUCache(maxSize int) *LRUCache {
 		return
 	}
 
-	// Create new item
+	// 创建新项
 	newItem := &lruItem{
 		key:        key,
 		value:      value,
@@ -144,13 +149,14 @@ func NewLRUCache(maxSize int) *LRUCache {
 	c.items[key] = newItem
 	c.addToHead(newItem)
 
-	// If exceeds max size, remove tail
+	// 如果超过最大大小，移除尾部
 	if len(c.items) > c.maxSize {
 		c.removeTail()
 	}
 }
 
-// Get retrieves a cache item(key string) (interface{}, bool) {
+// Get retrieves a cache item
+func (c *LRUCache) Get(key string) (interface{}, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -160,10 +166,12 @@ func NewLRUCache(maxSize int) *LRUCache {
 	}
 
 	// Check if expired
+	if time.Now().UnixNano() > item.expiration {
+		c.removeItem(item)
 		return nil, false
 	}
 
-	// Move to head (most recently used)
+	// 移动到头部（最近使用）
 	c.moveToHead(item)
 	return item.value, true
 }
@@ -190,7 +198,7 @@ func (c *LRUCache) moveToHead(item *lruItem) {
 	c.addToHead(item)
 }
 
-// removeItem removes an item from the list
+// removeItem removes an item
 func (c *LRUCache) removeItem(item *lruItem) {
 	if item.prev != nil {
 		item.prev.next = item.next
