@@ -1,27 +1,27 @@
-// Package core 提供核心接口定义
+// Package core provides core interface definitions
 package core
 
-// FingerprintSpec 指纹规范接口
+// FingerprintSpec fingerprint specification interface
 type FingerprintSpec interface {
-	// GetID 返回指纹唯一标识
+	// GetID returns unique fingerprint identifier
 	GetID() string
-	// GetBrowserType 返回浏览器类型
+	// GetBrowserType returns browser type
 	GetBrowserType() BrowserType
-	// GetOS 返回操作系统
+	// GetOS returns operating system
 	GetOS() OperatingSystem
 }
 
-// TLSClient 定义 TLS 客户端能力
+// TLSClient defines TLS client capabilities
 type TLSClient interface {
-	// GetClientHelloSpec 返回 ClientHello 规范
+	// GetClientHelloSpec returns ClientHello specification
 	GetClientHelloSpec() (ClientHelloSpec, error)
-	// GetJA3 返回 JA3 指纹字符串
+	// GetJA3 returns JA3 fingerprint string
 	GetJA3() string
-	// GetJA4 返回 JA4 指纹字符串
+	// GetJA4 returns JA4 fingerprint string
 	GetJA4() string
 }
 
-// ClientHelloSpec TLS ClientHello 规范
+// ClientHelloSpec TLS ClientHello specification
 type ClientHelloSpec struct {
 	CipherSuites       []uint16
 	Extensions         []TLSExtension
@@ -31,13 +31,13 @@ type ClientHelloSpec struct {
 	CompressionMethods []uint8
 }
 
-// TLSExtension TLS 扩展定义
+// TLSExtension TLS extension definition
 type TLSExtension struct {
 	Type uint16
 	Data []byte
 }
 
-// CurveID 椭圆曲线 ID
+// CurveID elliptic curve ID
 type CurveID uint16
 
 const (
@@ -68,18 +68,18 @@ type HTTP2Priority struct {
 
 // HTTP3Settings HTTP/3 (QUIC) Settings
 type HTTP3Settings struct {
-	QUICVersion            uint32 // QUIC 版本 (e.g., 0x00000001 for RFC 9000)
-	InitialMaxData         uint64 // 初始最大数据量
-	InitialMaxStreamData   uint64 // 初始最大流数据量
-	InitialMaxStreamsBidi  uint64 // 初始最大双向流数
-	InitialMaxStreamsUni   uint64 // 初始最大单向流数
-	MaxUDPPayloadSize      uint64 // 最大 UDP 负载大小
-	AckDelayExponent       uint8  // ACK 延迟指数
-	MaxAckDelay            uint16 // 最大 ACK 延迟 (ms)
-	DisableActiveMigration bool   // 禁用连接迁移
+	QUICVersion            uint32 // QUIC version (e.g., 0x00000001 for RFC 9000)
+	InitialMaxData         uint64 // initial maximum data
+	InitialMaxStreamData   uint64 // initial maximum stream data
+	InitialMaxStreamsBidi  uint64 // initial maximum bidirectional streams
+	InitialMaxStreamsUni   uint64 // initial maximum unidirectional streams
+	MaxUDPPayloadSize      uint64 // maximum UDP payload size
+	AckDelayExponent       uint8  // ACK delay exponent
+	MaxAckDelay            uint16 // maximum ACK delay (ms)
+	DisableActiveMigration bool   // disable active connection migration
 }
 
-// QUICVersion 定义已知的 QUIC 版本
+// QUICVersion defines known QUIC versions
 const (
 	QUICVersion1       uint32 = 0x00000001 // RFC 9000
 	QUICVersionDraft29 uint32 = 0xff00001d // Draft 29
@@ -88,17 +88,17 @@ const (
 	QUICVersionDraft32 uint32 = 0xff000020 // Draft 32
 )
 
-// FingerprintResult 指纹结果接口
+// FingerprintResult fingerprint result interface
 type FingerprintResult interface {
-	// GetUserAgent 返回 User-Agent
+	// GetUserAgent return User-Agent
 	GetUserAgent() string
-	// GetHeaders 返回 HTTP Headers
+	// GetHeaders return HTTP Headers
 	GetHeaders() *HTTPHeaders
-	// GetSpec 返回指纹规范
+	// GetSpec returns fingerprint specification
 	GetSpec() FingerprintSpec
 }
 
-// ProtocolType 协议类型
+// ProtocolType protocoltype
 type ProtocolType string
 
 const (
@@ -109,7 +109,7 @@ const (
 	ProtocolHTTP3 ProtocolType = "http3"
 )
 
-// FeatureType 特征类型
+// FeatureType featuretype
 type FeatureType string
 
 const (
@@ -133,13 +133,13 @@ const (
 	FeatureBehaviorPattern FeatureType = "behavior_pattern"
 )
 
-// FeatureVector 特征向量
+// FeatureVector feature vector
 type FeatureVector struct {
 	Features map[FeatureType]float64
 	Metadata map[string]interface{}
 }
 
-// NewFeatureVector 创建新的特征向量
+// NewFeatureVector creates new feature vector
 func NewFeatureVector() *FeatureVector {
 	return &FeatureVector{
 		Features: make(map[FeatureType]float64),
@@ -147,17 +147,17 @@ func NewFeatureVector() *FeatureVector {
 	}
 }
 
-// Set 设置特征值
+// Set sets feature value
 func (fv *FeatureVector) Set(feature FeatureType, value float64) {
 	fv.Features[feature] = value
 }
 
-// Get 获取特征值
+// Get gets feature value
 func (fv *FeatureVector) Get(feature FeatureType) float64 {
 	return fv.Features[feature]
 }
 
-// ClassificationResult 分类结果
+// ClassificationResult classifyresult
 type ClassificationResult struct {
 	Protocol   ProtocolType
 	Family     BrowserType
@@ -166,7 +166,7 @@ type ClassificationResult struct {
 	Labels     map[string]string
 }
 
-// RiskLevel 风险等级
+// RiskLevel risk level
 type RiskLevel int
 
 const (
@@ -177,7 +177,7 @@ const (
 	RiskLevelCritical RiskLevel = 4
 )
 
-// String 返回风险等级的字符串表示
+// String returns string representation of risk level
 func (r RiskLevel) String() string {
 	switch r {
 	case RiskLevelNone:
@@ -195,7 +195,7 @@ func (r RiskLevel) String() string {
 	}
 }
 
-// RiskAssessment 风险评估结果
+// RiskAssessment risk assessment result
 type RiskAssessment struct {
 	Score       float64
 	Level       RiskLevel
@@ -203,15 +203,15 @@ type RiskAssessment struct {
 	Suggestions []string
 }
 
-// RiskFactor 风险因子
+// RiskFactor risk factor
 type RiskFactor struct {
 	Name        string
 	Weight      float64
 	Description string
 }
 
-// RiskLevelFromScore 根据风险分数计算风险等级
-// 分数范围: 0.0-1.0
+// RiskLevelFromScore calculates risk level from risk score
+// score range: 0.0-1.0
 func RiskLevelFromScore(score float64) RiskLevel {
 	switch {
 	case score >= 0.9:
