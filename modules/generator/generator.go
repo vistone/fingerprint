@@ -1,3 +1,3 @@
 package generator
 
-// Package generator 提供指纹生成相关模块入口。
+// Package generator provides entry for fingerprint generation related modules.

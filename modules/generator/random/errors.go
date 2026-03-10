@@ -9,21 +9,21 @@ import (
 )
 
 // ============================================================================
-// Random 子包错误定义
+// Random subpackage error definitions
 // ============================================================================
 
 var (
-	// ErrBrowserTypeNotSupported 表示浏览器类型不支持
+	// ErrBrowserTypeNotSupported indicates unsupported browser type
 	ErrBrowserTypeNotSupported = fmt.Errorf("%w: random generator", errs.ErrUnsupportedBrowser)
 
-	// ErrNoRandomProfileFound 表示没有找到随机指纹
+	// ErrNoRandomProfileFound indicates no random fingerprint profile found
 	ErrNoRandomProfileFound = fmt.Errorf("%w: random profiles", errs.ErrNoProfilesAvailable)
 
-	// ErrRandomProfileInvalid 表示随机指纹无效
+	// ErrRandomProfileInvalid indicates invalid random fingerprint profile
 	ErrRandomProfileInvalid = fmt.Errorf("%w: random profile is invalid", generator.ErrFailedToGenerateFingerprint)
 )
 
-// IsBrowserTypeNotSupported 检查错误是否为浏览器类型不支持
+// IsBrowserTypeNotSupported checks whether the error indicates unsupported browser type
 func IsBrowserTypeNotSupported(err error) bool {
 	if err == nil {
 		return false
@@ -31,7 +31,7 @@ func IsBrowserTypeNotSupported(err error) bool {
 	return errors.Is(err, ErrBrowserTypeNotSupported)
 }
 
-// IsNoRandomProfileFound 检查错误是否为没有随机指纹
+// IsNoRandomProfileFound checks whether the error indicates no random fingerprint profile
 func IsNoRandomProfileFound(err error) bool {
 	if err == nil {
 		return false
@@ -39,7 +39,7 @@ func IsNoRandomProfileFound(err error) bool {
 	return errors.Is(err, ErrNoRandomProfileFound)
 }
 
-// IsRandomProfileInvalid 检查错误是否为随机指纹无效
+// IsRandomProfileInvalid checks whether the error indicates invalid random fingerprint profile
 func IsRandomProfileInvalid(err error) bool {
 	if err == nil {
 		return false

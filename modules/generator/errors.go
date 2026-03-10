@@ -8,21 +8,21 @@ import (
 )
 
 // ============================================================================
-// 生成器子包错误定义
+// Generator subpackage error definitions
 // ============================================================================
 
 var (
-	// ErrNoProfilesAvailable 表示没有可用的指纹配置
+	// ErrNoProfilesAvailable indicates no available fingerprint profiles
 	ErrNoProfilesAvailable = fmt.Errorf("%w: for generators", errs.ErrNoProfilesAvailable)
 
-	// ErrFailedToGenerateFingerprint 表示指纹生成失败
+	// ErrFailedToGenerateFingerprint indicates fingerprint generation failure
 	ErrFailedToGenerateFingerprint = fmt.Errorf("%w: fingerprint generation failed", errs.ErrInvalidFingerprint)
 
-	// ErrInvalidRandomSource 表示随机源无效
+	// ErrInvalidRandomSource indicates invalid random source
 	ErrInvalidRandomSource = fmt.Errorf("%w: invalid random source", errs.ErrInvalidFingerprint)
 )
 
-// IsNoProfilesAvailable 检查错误是否为无可用指纹
+// IsNoProfilesAvailable checks whether the error indicates no available fingerprints
 func IsNoProfilesAvailable(err error) bool {
 	if err == nil {
 		return false
@@ -30,7 +30,7 @@ func IsNoProfilesAvailable(err error) bool {
 	return errors.Is(err, ErrNoProfilesAvailable)
 }
 
-// IsFailedToGenerateFingerprint 检查错误是否为指纹生成失败
+// IsFailedToGenerateFingerprint checks whether the error indicates fingerprint generation failure
 func IsFailedToGenerateFingerprint(err error) bool {
 	if err == nil {
 		return false

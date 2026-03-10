@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// TestErrorDefinitions 测试错误定义
+// TestErrorDefinitions tests error definitions
 func TestErrorDefinitions(t *testing.T) {
 	tests := []struct {
 		name string
@@ -41,7 +41,7 @@ func TestErrorDefinitions(t *testing.T) {
 	}
 }
 
-// TestIsNoProfilesAvailable 测试无可用指纹错误检查
+// TestIsNoProfilesAvailable tests no-available-fingerprint error check
 func TestIsNoProfilesAvailable(t *testing.T) {
 	tests := []struct {
 		name string
@@ -85,7 +85,7 @@ func TestIsNoProfilesAvailable(t *testing.T) {
 	}
 }
 
-// TestIsFailedToGenerateFingerprint 测试指纹生成失败错误检查
+// TestIsFailedToGenerateFingerprint tests fingerprint-generation-failure error check
 func TestIsFailedToGenerateFingerprint(t *testing.T) {
 	tests := []struct {
 		name string
@@ -129,9 +129,9 @@ func TestIsFailedToGenerateFingerprint(t *testing.T) {
 	}
 }
 
-// TestErrorWrapping 测试错误包装
+// TestErrorWrapping tests error wrapping
 func TestErrorWrapping(t *testing.T) {
-	// 测试错误是否可以被 errors.Is 识别
+	// Test whether errors can be recognized by errors.Is.
 	if !errors.Is(ErrNoProfilesAvailable, ErrNoProfilesAvailable) {
 		t.Error("ErrNoProfilesAvailable should be self-identifiable")
 	}
@@ -140,7 +140,7 @@ func TestErrorWrapping(t *testing.T) {
 		t.Error("ErrFailedToGenerateFingerprint should be self-identifiable")
 	}
 
-	// 测试错误不等于其他错误
+	// Test that one error does not match other errors.
 	if errors.Is(ErrNoProfilesAvailable, ErrFailedToGenerateFingerprint) {
 		t.Error("ErrNoProfilesAvailable should not match ErrFailedToGenerateFingerprint")
 	}
@@ -150,9 +150,9 @@ func TestErrorWrapping(t *testing.T) {
 	}
 }
 
-// TestPackageExports 测试包导出
+// TestPackageExports tests package exports
 func TestPackageExports(t *testing.T) {
-	// 确保所有导出变量不为 nil
+	// Ensure all exported variables are not nil.
 	if ErrNoProfilesAvailable == nil {
 		t.Error("ErrNoProfilesAvailable should not be nil")
 	}
