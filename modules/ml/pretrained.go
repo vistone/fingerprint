@@ -9,10 +9,10 @@ import (
 func InitWithSyntheticData(classifier *HierarchicalClassifier, sampleCount int) error {
 	// Generate synthetic dataset
 	dataset := GenerateSyntheticDataset("synthetic_init", sampleCount)
-	
+
 	// Convert to training data
 	trainingData := dataset.ToTrainingData()
-	
+
 	// Train classifier
 	return classifier.Train(trainingData)
 }
@@ -21,10 +21,10 @@ func InitWithSyntheticData(classifier *HierarchicalClassifier, sampleCount int) 
 func InitPretrainedClassifier() *HierarchicalClassifier {
 	hc := NewHierarchicalClassifier()
 	hc.Initialize()
-	
+
 	// Initialize with synthetic data (should load real training data in practice)
 	InitWithSyntheticData(hc, 1000)
-	
+
 	return hc
 }
 
@@ -71,35 +71,35 @@ func ExportBuiltinModel() *PretrainedModel {
 		},
 		FeatureWeights: []float64{1.0, 1.0, 0.8, 0.6, 0.9, 0.7, 0.7, 0.5},
 	}
-	
+
 	return model
 }
 
 // ModelInfo model information
 type ModelInfo struct {
-	Name           string
-	Version        string
-	Description    string
-	ProtocolCount  int
-	FamilyCount    int
-	VersionCount   int
-	TotalCenters   int
+	Name          string
+	Version       string
+	Description   string
+	ProtocolCount int
+	FamilyCount   int
+	VersionCount  int
+	TotalCenters  int
 }
 
 // GetModelInfo get model information
 func GetModelInfo(model *PretrainedModel) *ModelInfo {
 	protocolCount := len(model.ProtocolCenters)
-	
+
 	familyCount := 0
 	for _, families := range model.FamilyCenters {
 		familyCount += len(families)
 	}
-	
+
 	versionCount := 0
 	for _, versions := range model.VersionCenters {
 		versionCount += len(versions)
 	}
-	
+
 	return &ModelInfo{
 		Name:          model.Name,
 		Version:       model.Version,

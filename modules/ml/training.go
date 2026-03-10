@@ -12,10 +12,10 @@ import (
 
 // TrainingSample training sample
 type TrainingSample struct {
-	ID        string                 `json:"id"`
-	Features  *core.FeatureVector    `json:"features"`
-	Label     TrainingLabel          `json:"label"`
-	Metadata  map[string]interface{} `json:"metadata"`
+	ID       string                 `json:"id"`
+	Features *core.FeatureVector    `json:"features"`
+	Label    TrainingLabel          `json:"label"`
+	Metadata map[string]interface{} `json:"metadata"`
 }
 
 // TrainingLabel training label
@@ -37,10 +37,10 @@ type Dataset struct {
 
 // DatasetStats dataset statistics
 type DatasetStats struct {
-	TotalSamples     int            `json:"total_samples"`
-	ProtocolCounts   map[string]int `json:"protocol_counts"`
-	FamilyCounts     map[string]int `json:"family_counts"`
-	VersionCounts    map[string]int `json:"version_counts"`
+	TotalSamples   int            `json:"total_samples"`
+	ProtocolCounts map[string]int `json:"protocol_counts"`
+	FamilyCounts   map[string]int `json:"family_counts"`
+	VersionCounts  map[string]int `json:"version_counts"`
 }
 
 // DataLoader training data loader
@@ -72,9 +72,9 @@ func (dl *DataLoader) LoadDataset(filename string) (*Dataset, error) {
 // LoadMultipleDatasets load multiple datasets and merge
 func (dl *DataLoader) LoadMultipleDatasets(filenames []string) (*Dataset, error) {
 	merged := &Dataset{
-		Name:       "merged",
-		Version:    "1.0",
-		Samples:    make([]TrainingSample, 0),
+		Name:    "merged",
+		Version: "1.0",
+		Samples: make([]TrainingSample, 0),
 		Statistics: DatasetStats{
 			ProtocolCounts: make(map[string]int),
 			FamilyCounts:   make(map[string]int),
@@ -199,7 +199,7 @@ func (d *Dataset) extractVersionFeatures(fv *core.FeatureVector) []float64 {
 // SaveDataset save dataset to file
 func (d *Dataset) SaveDataset(path string) error {
 	d.updateStatistics()
-	
+
 	data, err := json.MarshalIndent(d, "", "  ")
 	if err != nil {
 		return fmt.Errorf("marshal dataset: %w", err)
@@ -214,13 +214,13 @@ func (d *Dataset) SaveDataset(path string) error {
 
 // PretrainedModel pretrained model
 type PretrainedModel struct {
-	Name        string                   `json:"name"`
-	Version     string                   `json:"version"`
-	Description string                   `json:"description"`
-	ProtocolCenters map[string][]float64 `json:"protocol_centers"`
-	FamilyCenters   map[string]map[string][]float64 `json:"family_centers"` // protocol -> family -> center
+	Name            string                          `json:"name"`
+	Version         string                          `json:"version"`
+	Description     string                          `json:"description"`
+	ProtocolCenters map[string][]float64            `json:"protocol_centers"`
+	FamilyCenters   map[string]map[string][]float64 `json:"family_centers"`  // protocol -> family -> center
 	VersionCenters  map[string]map[string][]float64 `json:"version_centers"` // family -> version -> center
-	FeatureWeights  []float64                `json:"feature_weights"`
+	FeatureWeights  []float64                       `json:"feature_weights"`
 }
 
 // ModelLoader model loader
@@ -252,7 +252,7 @@ func (ml *ModelLoader) LoadModel(filename string) (*PretrainedModel, error) {
 // SaveModel save model
 func (ml *ModelLoader) SaveModel(model *PretrainedModel, filename string) error {
 	path := filepath.Join(ml.modelPath, filename)
-	
+
 	data, err := json.MarshalIndent(model, "", "  ")
 	if err != nil {
 		return fmt.Errorf("marshal model: %w", err)
@@ -369,16 +369,16 @@ func GenerateSyntheticDataset(name string, sampleCount int) *Dataset {
 
 		// Generate feature vector (with some random variation)
 		fv := core.NewFeatureVector()
-		
+
 		// TLS features
 		fv.Set(core.FeatureTLSVersion, 0x0303)
 		fv.Set(core.FeatureCipherSuites, float64(8+i%5))
 		fv.Set(core.FeatureExtensions, float64(10+i%8))
-		
+
 		// HTTP features
 		fv.Set(core.FeatureHTTP2Settings, float64(65536+i*1000))
 		fv.Set(core.FeatureHTTPHeaders, float64(10+i%3))
-		
+
 		// Browser features
 		switch browser.family {
 		case core.BrowserChrome:
@@ -396,7 +396,7 @@ func GenerateSyntheticDataset(name string, sampleCount int) *Dataset {
 		}
 
 		sample := TrainingSample{
-			ID: fmt.Sprintf("sample_%d", i),
+			ID:       fmt.Sprintf("sample_%d", i),
 			Features: fv,
 			Label: TrainingLabel{
 				Protocol: protocol,

@@ -272,7 +272,7 @@ type WebGLData struct {
 
 // AudioData Audio fingerprint data
 type AudioData struct {
-	Entropy   float64
+	Entropy    float64
 	SampleRate float64
 }
 
@@ -283,7 +283,7 @@ type FontsData struct {
 
 // StorageData storage fingerprint data
 type StorageData struct {
-	LocalStorageSize  int
+	LocalStorageSize   int
 	SessionStorageSize int
 }
 

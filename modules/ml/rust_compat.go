@@ -13,14 +13,14 @@ import (
 
 // RustFingerprint Rust format fingerprint data
 type RustFingerprint struct {
-	ID              string                 `json:"id"`
-	Browser         string                 `json:"browser"`
-	Version         string                 `json:"version"`
-	OS              string                 `json:"os"`
-	TLS             RustTLSData            `json:"tls"`
-	HTTP2           RustHTTP2Data          `json:"http2"`
-	Headers         map[string]string      `json:"headers"`
-	Features        map[string]float64     `json:"features"`
+	ID       string             `json:"id"`
+	Browser  string             `json:"browser"`
+	Version  string             `json:"version"`
+	OS       string             `json:"os"`
+	TLS      RustTLSData        `json:"tls"`
+	HTTP2    RustHTTP2Data      `json:"http2"`
+	Headers  map[string]string  `json:"headers"`
+	Features map[string]float64 `json:"features"`
 }
 
 // RustTLSData Rust TLS data
@@ -49,26 +49,26 @@ type RustPriority struct {
 
 // RustDataset Rust format dataset
 type RustDataset struct {
-	Name        string            `json:"name"`
-	Version     string            `json:"version"`
-	Description string            `json:"description"`
+	Name         string            `json:"name"`
+	Version      string            `json:"version"`
+	Description  string            `json:"description"`
 	Fingerprints []RustFingerprint `json:"fingerprints"`
 }
 
 // RustModel Rust format model
 type RustModel struct {
-	Name           string                     `json:"name"`
-	Version        string                     `json:"version"`
-	ProtocolLayer  RustClassifierLayer        `json:"protocol_layer"`
-	FamilyLayers   map[string]RustClassifierLayer `json:"family_layers"`  // protocol -> layer
-	VersionLayers  map[string]RustClassifierLayer `json:"version_layers"` // family -> layer
+	Name          string                         `json:"name"`
+	Version       string                         `json:"version"`
+	ProtocolLayer RustClassifierLayer            `json:"protocol_layer"`
+	FamilyLayers  map[string]RustClassifierLayer `json:"family_layers"`  // protocol -> layer
+	VersionLayers map[string]RustClassifierLayer `json:"version_layers"` // family -> layer
 }
 
 // RustClassifierLayer Rust classifier layer
 type RustClassifierLayer struct {
-	Centroids   map[string][]float64 `json:"centroids"`  // label -> center
-	Weights     []float64            `json:"weights"`
-	FeatureNames []string            `json:"feature_names"`
+	Centroids    map[string][]float64 `json:"centroids"` // label -> center
+	Weights      []float64            `json:"weights"`
+	FeatureNames []string             `json:"feature_names"`
 }
 
 // RustImporter Rust data importer
@@ -119,7 +119,7 @@ func (ri *RustImporter) convertDataset(rust *RustDataset) *Dataset {
 func (ri *RustImporter) convertFingerprint(rust *RustFingerprint) TrainingSample {
 	// Create feature vector
 	fv := convertRustFeatures(rust.Features)
-	
+
 	// Convert label
 	label := TrainingLabel{
 		Protocol: inferProtocolFromFeatures(rust.Features),
@@ -144,29 +144,29 @@ func (ri *RustImporter) convertFingerprint(rust *RustFingerprint) TrainingSample
 // convertRustFeatures convert Rust features to Go feature vector
 func convertRustFeatures(rustFeatures map[string]float64) *core.FeatureVector {
 	fv := core.NewFeatureVector()
-	
+
 	// Feature name mapping
 	featureMapping := map[string]core.FeatureType{
-		"tls_version":       core.FeatureTLSVersion,
-		"cipher_suites":     core.FeatureCipherSuites,
-		"extensions":        core.FeatureExtensions,
-		"http2_settings":    core.FeatureHTTP2Settings,
-		"http_headers":      core.FeatureHTTPHeaders,
-		"user_agent":        core.FeatureUserAgent,
-		"canvas":            core.FeatureCanvas,
-		"webgl":             core.FeatureWebGL,
-		"audio":             core.FeatureAudio,
-		"fonts":             core.FeatureFonts,
-		"storage":           core.FeatureStorage,
-		"webrtc":            core.FeatureWebRTC,
-		"hardware":          core.FeatureHardware,
-		"timing":            core.FeatureTiming,
-		"headless_browser":  core.FeatureHeadlessBrowser,
-		"entropy":           core.FeatureEntropy,
-		"tool_marker":       core.FeatureToolMarker,
-		"behavior_pattern":  core.FeatureBehaviorPattern,
+		"tls_version":      core.FeatureTLSVersion,
+		"cipher_suites":    core.FeatureCipherSuites,
+		"extensions":       core.FeatureExtensions,
+		"http2_settings":   core.FeatureHTTP2Settings,
+		"http_headers":     core.FeatureHTTPHeaders,
+		"user_agent":       core.FeatureUserAgent,
+		"canvas":           core.FeatureCanvas,
+		"webgl":            core.FeatureWebGL,
+		"audio":            core.FeatureAudio,
+		"fonts":            core.FeatureFonts,
+		"storage":          core.FeatureStorage,
+		"webrtc":           core.FeatureWebRTC,
+		"hardware":         core.FeatureHardware,
+		"timing":           core.FeatureTiming,
+		"headless_browser": core.FeatureHeadlessBrowser,
+		"entropy":          core.FeatureEntropy,
+		"tool_marker":      core.FeatureToolMarker,
+		"behavior_pattern": core.FeatureBehaviorPattern,
 	}
-	
+
 	for rustName, value := range rustFeatures {
 		if goFeature, ok := featureMapping[rustName]; ok {
 			fv.Set(goFeature, value)
@@ -175,7 +175,7 @@ func convertRustFeatures(rustFeatures map[string]float64) *core.FeatureVector {
 			fv.Metadata[rustName] = value
 		}
 	}
-	
+
 	return fv
 }
 
@@ -286,24 +286,24 @@ func (d *Dataset) ExportToRust() *RustDataset {
 // convertGoFeatureToRust convert Go feature name to Rust feature name
 func convertGoFeatureToRust(ft core.FeatureType) string {
 	featureMapping := map[core.FeatureType]string{
-		core.FeatureTLSVersion:       "tls_version",
-		core.FeatureCipherSuites:     "cipher_suites",
-		core.FeatureExtensions:       "extensions",
-		core.FeatureHTTP2Settings:    "http2_settings",
-		core.FeatureHTTPHeaders:      "http_headers",
-		core.FeatureUserAgent:        "user_agent",
-		core.FeatureCanvas:           "canvas",
-		core.FeatureWebGL:            "webgl",
-		core.FeatureAudio:            "audio",
-		core.FeatureFonts:            "fonts",
-		core.FeatureStorage:          "storage",
-		core.FeatureWebRTC:           "webrtc",
-		core.FeatureHardware:         "hardware",
-		core.FeatureTiming:           "timing",
-		core.FeatureHeadlessBrowser:  "headless_browser",
-		core.FeatureEntropy:          "entropy",
-		core.FeatureToolMarker:       "tool_marker",
-		core.FeatureBehaviorPattern:  "behavior_pattern",
+		core.FeatureTLSVersion:      "tls_version",
+		core.FeatureCipherSuites:    "cipher_suites",
+		core.FeatureExtensions:      "extensions",
+		core.FeatureHTTP2Settings:   "http2_settings",
+		core.FeatureHTTPHeaders:     "http_headers",
+		core.FeatureUserAgent:       "user_agent",
+		core.FeatureCanvas:          "canvas",
+		core.FeatureWebGL:           "webgl",
+		core.FeatureAudio:           "audio",
+		core.FeatureFonts:           "fonts",
+		core.FeatureStorage:         "storage",
+		core.FeatureWebRTC:          "webrtc",
+		core.FeatureHardware:        "hardware",
+		core.FeatureTiming:          "timing",
+		core.FeatureHeadlessBrowser: "headless_browser",
+		core.FeatureEntropy:         "entropy",
+		core.FeatureToolMarker:      "tool_marker",
+		core.FeatureBehaviorPattern: "behavior_pattern",
 	}
 
 	if rustName, ok := featureMapping[ft]; ok {
@@ -315,7 +315,7 @@ func convertGoFeatureToRust(ft core.FeatureType) string {
 // SaveToRustFormat save to Rust format
 func (d *Dataset) SaveToRustFormat(path string) error {
 	rust := d.ExportToRust()
-	
+
 	data, err := json.MarshalIndent(rust, "", "  ")
 	if err != nil {
 		return fmt.Errorf("marshal rust dataset: %w", err)
@@ -330,7 +330,7 @@ func (d *Dataset) SaveToRustFormat(path string) error {
 
 // CompatibilityChecker compatibility checker
 type CompatibilityChecker struct {
-	goFeatures  map[string]bool
+	goFeatures   map[string]bool
 	rustFeatures map[string]bool
 }
 
@@ -383,7 +383,7 @@ func NewCompatibilityChecker() *CompatibilityChecker {
 // CheckFeatureCompatibility check feature compatibility
 func (cc *CompatibilityChecker) CheckFeatureCompatibility() map[string]string {
 	result := make(map[string]string)
-	
+
 	for feature := range cc.goFeatures {
 		if cc.rustFeatures[feature] {
 			result[feature] = "compatible"
@@ -391,13 +391,13 @@ func (cc *CompatibilityChecker) CheckFeatureCompatibility() map[string]string {
 			result[feature] = "go_only"
 		}
 	}
-	
+
 	for feature := range cc.rustFeatures {
 		if !cc.goFeatures[feature] {
 			result[feature] = "rust_only"
 		}
 	}
-	
+
 	return result
 }
 

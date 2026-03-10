@@ -10,7 +10,7 @@ import (
 
 func TestSimpleClassifier(t *testing.T) {
 	sc := NewSimpleClassifier(5)
-	
+
 	// Training data
 	features := [][]float64{
 		{1, 0, 0, 0, 0},
@@ -19,12 +19,12 @@ func TestSimpleClassifier(t *testing.T) {
 		{0, 0.9, 0.1, 0, 0},
 	}
 	labels := []string{"class_a", "class_a", "class_b", "class_b"}
-	
+
 	err := sc.Train(features, labels)
 	if err != nil {
 		t.Fatalf("Train failed: %v", err)
 	}
-	
+
 	// Predict
 	label, confidence := sc.Predict([]float64{0.95, 0, 0, 0, 0})
 	if label != "class_a" {
@@ -37,25 +37,25 @@ func TestSimpleClassifier(t *testing.T) {
 
 func TestSimpleClassifierPredictTopK(t *testing.T) {
 	sc := NewSimpleClassifier(2)
-	
+
 	features := [][]float64{
 		{1, 0},
 		{0, 1},
 	}
 	labels := []string{"a", "b"}
-	
+
 	sc.Train(features, labels)
-	
+
 	predictions := sc.PredictTopK([]float64{0.8, 0.2}, 2)
 	if len(predictions) != 2 {
 		t.Errorf("Expected 2 predictions, got %d", len(predictions))
 	}
-	
+
 	// First prediction should be "a"
 	if predictions[0].Label != "a" {
 		t.Errorf("Expected 'a' as top prediction, got %s", predictions[0].Label)
 	}
-	
+
 	// Confidence should be in descending order
 	if len(predictions) == 2 && predictions[0].Confidence < predictions[1].Confidence {
 		t.Error("Predictions should be sorted by confidence (descending)")
@@ -64,18 +64,18 @@ func TestSimpleClassifierPredictTopK(t *testing.T) {
 
 func TestProtocolClassifier(t *testing.T) {
 	pc := NewProtocolClassifier()
-	
+
 	features := [][]float64{
 		{0x0303, 8, 10, 65536, 10, 15},
 		{0x0304, 6, 8, 65536, 10, 20},
 	}
 	labels := []core.ProtocolType{core.ProtocolTLS, core.ProtocolHTTP3}
-	
+
 	err := pc.Train(features, labels)
 	if err != nil {
 		t.Fatalf("Train failed: %v", err)
 	}
-	
+
 	// Predict
 	protocol, conf := pc.Predict([]float64{0x0303, 8, 10, 65536, 10, 15})
 	if protocol != core.ProtocolTLS {
@@ -89,14 +89,14 @@ func TestProtocolClassifier(t *testing.T) {
 func TestHierarchicalClassifierInitialize(t *testing.T) {
 	hc := NewHierarchicalClassifier()
 	hc.Initialize()
-	
+
 	// Should create sub-classifiers after initialization
 	// Note: we can only test behavior since fields are private
 	result := hc.Classify(core.NewFeatureVector())
 	if result == nil {
 		t.Error("Classify should return result")
 	}
-	
+
 	if result.Labels["error"] != "classifier not trained" {
 		t.Error("Should indicate not trained before training")
 	}
@@ -105,7 +105,7 @@ func TestHierarchicalClassifierInitialize(t *testing.T) {
 func TestHierarchicalClassifierTrain(t *testing.T) {
 	hc := NewHierarchicalClassifier()
 	hc.Initialize()
-	
+
 	// Create simple training data
 	trainingData := &TrainingData{
 		ProtocolFeatures: [][]float64{
@@ -131,18 +131,18 @@ func TestHierarchicalClassifierTrain(t *testing.T) {
 			core.BrowserChrome: {"133"},
 		},
 	}
-	
+
 	err := hc.Train(trainingData)
 	if err != nil {
 		t.Fatalf("Train failed: %v", err)
 	}
-	
+
 	// Should be able to classify after training
 	fv := core.NewFeatureVector()
 	fv.Set(core.FeatureTLSVersion, 0x0303)
 	fv.Set(core.FeatureCipherSuites, 8)
 	fv.Set(core.FeatureExtensions, 10)
-	
+
 	result := hc.Classify(fv)
 	if result.Labels["error"] == "classifier not trained" {
 		t.Error("Should not show 'not trained' after training")
@@ -192,7 +192,7 @@ func TestClassificationResultIsHighConfidence(t *testing.T) {
 			expected: false,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.result.IsHighConfidence()
@@ -205,20 +205,20 @@ func TestClassificationResultIsHighConfidence(t *testing.T) {
 
 func TestGenerateSyntheticDataset(t *testing.T) {
 	dataset := GenerateSyntheticDataset("test", 50)
-	
+
 	if len(dataset.Samples) != 50 {
 		t.Errorf("Expected 50 samples, got %d", len(dataset.Samples))
 	}
-	
+
 	if dataset.Name != "test" {
 		t.Errorf("Expected name 'test', got %s", dataset.Name)
 	}
-	
+
 	// Check statistics
 	if dataset.Statistics.TotalSamples != 50 {
 		t.Errorf("Statistics.TotalSamples = %d, want 50", dataset.Statistics.TotalSamples)
 	}
-	
+
 	// Verify samples are assigned to different categories
 	if len(dataset.Statistics.ProtocolCounts) == 0 {
 		t.Error("Should have protocol counts")
@@ -231,7 +231,7 @@ func TestGenerateSyntheticDataset(t *testing.T) {
 func TestDatasetToTrainingData(t *testing.T) {
 	dataset := GenerateSyntheticDataset("test", 10)
 	trainingData := dataset.ToTrainingData()
-	
+
 	if len(trainingData.ProtocolFeatures) != 10 {
 		t.Errorf("Expected 10 protocol features, got %d", len(trainingData.ProtocolFeatures))
 	}
@@ -242,7 +242,7 @@ func TestDatasetToTrainingData(t *testing.T) {
 
 func BenchmarkSimpleClassifierPredict(b *testing.B) {
 	sc := NewSimpleClassifier(10)
-	
+
 	// Pre-training
 	features := make([][]float64, 100)
 	labels := make([]string, 100)
@@ -255,9 +255,9 @@ func BenchmarkSimpleClassifierPredict(b *testing.B) {
 		}
 	}
 	sc.Train(features, labels)
-	
+
 	query := []float64{50, 51}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, _ = sc.Predict(query)
@@ -267,16 +267,16 @@ func BenchmarkSimpleClassifierPredict(b *testing.B) {
 func BenchmarkHierarchicalClassifierClassify(b *testing.B) {
 	hc := NewHierarchicalClassifier()
 	hc.Initialize()
-	
+
 	// Initialize and train
 	dataset := GenerateSyntheticDataset("bench", 100)
 	trainingData := dataset.ToTrainingData()
 	hc.Train(trainingData)
-	
+
 	fv := core.NewFeatureVector()
 	fv.Set(core.FeatureTLSVersion, 0x0303)
 	fv.Set(core.FeatureCipherSuites, 8)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = hc.Classify(fv)
@@ -286,13 +286,13 @@ func BenchmarkHierarchicalClassifierClassify(b *testing.B) {
 func TestWeightedDistance(t *testing.T) {
 	sc := NewSimpleClassifier(2)
 	sc.weights = []float64{1.0, 2.0}
-	
+
 	// Test distance calculation with different weights
 	a := []float64{0, 0}
 	b := []float64{3, 4}
-	
+
 	dist := sc.weightedDistance(a, b)
-	
+
 	// Expected distance: sqrt(1*3^2 + 2*4^2) = sqrt(9 + 32) = sqrt(41) ≈ 6.4
 	expected := math.Sqrt(41)
 	if math.Abs(dist-expected) > 0.001 {
@@ -302,7 +302,7 @@ func TestWeightedDistance(t *testing.T) {
 
 func TestEmptyClassifier(t *testing.T) {
 	sc := NewSimpleClassifier(5)
-	
+
 	// Untrained classifier should return empty result
 	label, conf := sc.Predict([]float64{1, 2, 3, 4, 5})
 	if label != "" {
