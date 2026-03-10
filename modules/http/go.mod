@@ -3,11 +3,11 @@ module github.com/vistone/fingerprint/modules/http
 go 1.25.7
 
 require (
-	github.com/vistone/fingerprint/modules/core v1.0.3
-	github.com/vistone/fingerprint/modules/errors v1.0.3
-	github.com/vistone/fingerprint/modules/internal v1.0.3
-	github.com/vistone/fingerprint/modules/kit v1.0.3
-	github.com/vistone/fingerprint/modules/profiles v1.0.3
+	github.com/vistone/fingerprint/modules/core v1.0.4
+	github.com/vistone/fingerprint/modules/errors v1.0.4
+	github.com/vistone/fingerprint/modules/internal v1.0.4
+	github.com/vistone/fingerprint/modules/kit v1.0.4
+	github.com/vistone/fingerprint/modules/profiles v1.0.4
 )
 
 require (
