@@ -1,3 +1,3 @@
 package http
 
-// Package http 提供 HTTP 指纹相关模块入口。
+// Package http provides HTTP fingerprint module entry point.
