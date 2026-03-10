@@ -1,5 +1,5 @@
-// Package tcpip 提供集成的 TCP/IP 指纹分析
-// 结合 User-Agent、IP 地址和地理位置信息进行综合识别
+// Package tcpip provides integrated TCP/IP fingerprint analysis
+// combining User-Agent, IP address and geolocation for comprehensive identification
 package tcpip
 
 import (
@@ -9,52 +9,52 @@ import (
 	"sync"
 )
 
-// IntegratedFingerprinter 集成指纹分析器
+// IntegratedFingerprinter is an integrated fingerprint analyzer
 type IntegratedFingerprinter struct {
-	// 各层分析器
+	// Per-layer analyzers
 	 tcpipAnalyzer *TCPIPAnalyzer
 	 
-	 // 关联数据库
-	osUAMapping     map[string][]string // OS -> 常见UA模式
-	ipRegionDB      IPRegionDatabase    // IP地理位置数据库
-	osTCPSignatures map[string]OSSignature // OS -> TCP签名特征
+	 // Association databases
+	osUAMapping     map[string][]string // OS -> common UA patterns
+	ipRegionDB      IPRegionDatabase    // IP geolocation database
+	osTCPSignatures map[string]OSSignature // OS -> TCP signature features
 	 
-	 // 一致性规则
+	 // Consistency rules
 	consistencyRules []ConsistencyRule
 	 
 	mu sync.RWMutex
 }
 
-// ConsistencyRule 一致性检查规则
+// ConsistencyRule represents a consistency check rule
 type ConsistencyRule struct {
 	Name        string
 	Description string
 	Check       func(ctx *FingerprintContext) *Inconsistency
 }
 
-// FingerprintContext 指纹分析上下文
+// FingerprintContext represents a fingerprint analysis context
 type FingerprintContext struct {
-	// TCP/IP 层信息
+	// TCP/IP layer information
 	TCPPacket *TCPPacket
 	TCPSignature *TCPIPSignature
 	 
-	// 应用层信息
+	// Application layer information
 	UserAgent    string
 	HTTPHeaders  map[string]string
 	 
-	// 网络层信息
+	// Network layer information
 	SourceIP     string
 	DestIP       string
 	 
-	// 地理位置信息
+	// Geolocation information
 	GeoLocation  *GeoLocation
 	 
-	// 推断结果
+	// Inferred results
 	DetectedOS   string
 	DetectedDevice string
 }
 
-// GeoLocation 地理位置信息
+// GeoLocation represents geolocation information
 type GeoLocation struct {
 	Country     string
 	CountryCode string
@@ -67,13 +67,13 @@ type GeoLocation struct {
 	Longitude   float64
 }
 
-// IPRegionDatabase IP区域数据库接口
+// IPRegionDatabase is the IP region database interface
 type IPRegionDatabase interface {
 	Lookup(ip string) (*GeoLocation, error)
 	GetRegionSignature(country, isp string) string
 }
 
-// Inconsistency 不一致性报告
+// Inconsistency represents an inconsistency report
 type Inconsistency struct {
 	RuleName    string
 	Severity    string // high, medium, low
@@ -82,43 +82,43 @@ type Inconsistency struct {
 	Actual      string
 }
 
-// IntegratedResult 集成分析结果
+// IntegratedResult represents an integrated analysis result
 type IntegratedResult struct {
-	// 各层独立识别结果
+	// Per-layer independent identification results
 	TCPResult      *TCPIPResult
 	ParsedOSFromUA string
 	GeoInfo        *GeoLocation
 	 
-	// 交叉验证结果
+	// Cross-validation results
 	OSCrossValidation OSCrossValidationResult
 	IPUAConsistency   bool
 	GeoUAConsistency  bool
 	 
-	// 不一致性报告
+	// Inconsistency report
 	Inconsistencies []Inconsistency
 	 
-	// 综合评估
+	// Overall assessment
 	OverallConfidence float64
 	RiskScore         float64
 	FinalOS           string
 	FinalDeviceType   string
 	 
-	// 原始数据摘要
+	// Raw data summary
 	SourceIP      string
 	UserAgent     string
 	TCPSignature  string
 }
 
-// OSCrossValidationResult OS交叉验证结果
+// OSCrossValidationResult represents OS cross-validation results
 type OSCrossValidationResult struct {
 	OSFromTCP      string
 	OSFromUA       string
 	OSFromGeo      string
 	ConsensusOS    string
-	MatchScore     float64 // 0-1, 越高表示各层越一致
+	MatchScore     float64 // 0-1, higher means more consistency across layers
 }
 
-// NewIntegratedFingerprinter 创建集成指纹分析器
+// NewIntegratedFingerprinter creates an integrated fingerprint analyzer
 func NewIntegratedFingerprinter() *IntegratedFingerprinter {
 	ia := &IntegratedFingerprinter{
 		tcpipAnalyzer:     NewTCPIPAnalyzer(),
@@ -129,7 +129,7 @@ func NewIntegratedFingerprinter() *IntegratedFingerprinter {
 	return ia
 }
 
-// Analyze 执行集成指纹分析
+// Analyze performs integrated fingerprint analysis
 func (ia *IntegratedFingerprinter) Analyze(
 	packet *TCPPacket,
 	userAgent string,
@@ -152,39 +152,39 @@ func (ia *IntegratedFingerprinter) Analyze(
 		Inconsistencies: []Inconsistency{},
 	}
 	
-	// 1. TCP/IP 层分析
+	// 1. TCP/IP layer analysis
 	if packet != nil {
 		ia.analyzeTCPLayer(ctx, result)
 	}
 	
-	// 2. User-Agent 解析
+	// 2. User-Agent parsing
 	ia.parseUserAgent(ctx, result)
 	
-	// 3. IP 地理位置分析
+	// 3. IP geolocation analysis
 	ia.analyzeIPGeolocation(ctx, result)
 	
-	// 4. 交叉验证
+	// 4. Cross-validation
 	ia.crossValidate(ctx, result)
 	
-	// 5. 一致性检查
+	// 5. Consistency check
 	ia.checkConsistency(ctx, result)
 	
-	// 6. 综合评估
+	// 6. Overall assessment
 	ia.calculateOverallConfidence(result)
 	
 	return result, nil
 }
 
-// analyzeTCPLayer 分析 TCP/IP 层
+// analyzeTCPLayer analyzes the TCP/IP layer
 func (ia *IntegratedFingerprinter) analyzeTCPLayer(ctx *FingerprintContext, result *IntegratedResult) {
-	// 添加数据包到分析器
+	// Add packet to analyzer
 	ia.tcpipAnalyzer.AddPacket(ctx.TCPPacket)
 	
-	// 分析 TCP 特征
+	// Analyze TCP features
 	tcpResult := ia.tcpipAnalyzer.AnalyzePacket(ctx.TCPPacket)
 	result.TCPResult = tcpResult
 	
-	// 推断 OS
+	// Infer OS
 	if tcpResult != nil && tcpResult.OS != "" {
 		ctx.DetectedOS = tcpResult.OS
 		result.TCPSignature = fmt.Sprintf("TTL:%d,MSS:%d,Win:%d", 
@@ -194,7 +194,7 @@ func (ia *IntegratedFingerprinter) analyzeTCPLayer(ctx *FingerprintContext, resu
 	}
 }
 
-// parseUserAgent 解析 User-Agent
+// parseUserAgent parses the User-Agent
 func (ia *IntegratedFingerprinter) parseUserAgent(ctx *FingerprintContext, result *IntegratedResult) {
 	ua := ctx.UserAgent
 	if ua == "" {
@@ -203,7 +203,7 @@ func (ia *IntegratedFingerprinter) parseUserAgent(ctx *FingerprintContext, resul
 	
 	uaLower := strings.ToLower(ua)
 	
-	// 提取 OS 信息
+	// Extract OS information
 	osFromUA := ""
 	switch {
 	case strings.Contains(uaLower, "windows nt 10.0"):
@@ -223,7 +223,7 @@ func (ia *IntegratedFingerprinter) parseUserAgent(ctx *FingerprintContext, resul
 	result.ParsedOSFromUA = osFromUA
 	ctx.DetectedOS = osFromUA
 	
-	// 提取设备类型
+	// Extract device type
 	if strings.Contains(uaLower, "mobile") {
 		ctx.DetectedDevice = "Mobile"
 	} else if strings.Contains(uaLower, "tablet") || strings.Contains(uaLower, "ipad") {
@@ -233,19 +233,19 @@ func (ia *IntegratedFingerprinter) parseUserAgent(ctx *FingerprintContext, resul
 	}
 }
 
-// analyzeIPGeolocation 分析 IP 地理位置
+// analyzeIPGeolocation analyzes IP geolocation
 func (ia *IntegratedFingerprinter) analyzeIPGeolocation(ctx *FingerprintContext, result *IntegratedResult) {
 	if ctx.SourceIP == "" {
 		return
 	}
 	
-	// 解析 IP
+	// Parse IP
 	ip := net.ParseIP(ctx.SourceIP)
 	if ip == nil {
 		return
 	}
 	
-	// 检查是否为私有地址
+	// Check if it is a private address
 	if isPrivateIP(ip) {
 		result.GeoInfo = &GeoLocation{
 			Country: "Private",
@@ -254,7 +254,7 @@ func (ia *IntegratedFingerprinter) analyzeIPGeolocation(ctx *FingerprintContext,
 		return
 	}
 	
-	// 如果有 IP 区域数据库，进行查询
+	// If IP region database is available, perform lookup
 	if ia.ipRegionDB != nil {
 		geo, err := ia.ipRegionDB.Lookup(ctx.SourceIP)
 		if err == nil {
@@ -264,31 +264,31 @@ func (ia *IntegratedFingerprinter) analyzeIPGeolocation(ctx *FingerprintContext,
 	}
 }
 
-// crossValidate 交叉验证各层结果
+// crossValidate cross-validates results across layers
 func (ia *IntegratedFingerprinter) crossValidate(ctx *FingerprintContext, result *IntegratedResult) {
 	validation := OSCrossValidationResult{
 		OSFromTCP: result.TCPResult.OS,
 		OSFromUA:  result.ParsedOSFromUA,
 	}
 	
-	// 从地理位置推断 OS（某些地区/ISP有特定偏好）
+	// Infer OS from geolocation (some regions/ISPs have specific preferences)
 	if result.GeoInfo != nil {
 		validation.OSFromGeo = ia.inferOSFromGeography(result.GeoInfo)
 	}
 	
-	// 计算共识 OS
+	// Calculate consensus OS
 	osVotes := make(map[string]int)
 	if validation.OSFromTCP != "" {
 		osVotes[validation.OSFromTCP]++
 	}
 	if validation.OSFromUA != "" {
-		osVotes[validation.OSFromUA] += 2 // UA 权重更高
+		osVotes[validation.OSFromUA] += 2 // UA has higher weight
 	}
 	if validation.OSFromGeo != "" {
 		osVotes[validation.OSFromGeo]++
 	}
 	
-	// 找出得票最高的 OS
+	// Find the OS with the most votes
 	maxVotes := 0
 	for os, votes := range osVotes {
 		if votes > maxVotes {
@@ -297,7 +297,7 @@ func (ia *IntegratedFingerprinter) crossValidate(ctx *FingerprintContext, result
 		}
 	}
 	
-	// 计算匹配分数
+	// Calculate match score
 	matchCount := 0
 	totalLayers := 0
 	
@@ -328,14 +328,14 @@ func (ia *IntegratedFingerprinter) crossValidate(ctx *FingerprintContext, result
 	result.FinalOS = validation.ConsensusOS
 	result.FinalDeviceType = ctx.DetectedDevice
 	
-	// IP-UA 一致性：检查 UA 中的语言/地区是否与 IP 地理位置匹配
+	// IP-UA consistency: check if the language/region in UA matches IP geolocation
 	result.IPUAConsistency = ia.checkIPUAConsistency(ctx, result)
 	
-	// 地理位置-UA 一致性
+	// Geolocation-UA consistency
 	result.GeoUAConsistency = ia.checkGeoUAConsistency(ctx, result)
 }
 
-// checkConsistency 执行一致性检查规则
+// checkConsistency executes consistency check rules
 func (ia *IntegratedFingerprinter) checkConsistency(ctx *FingerprintContext, result *IntegratedResult) {
 	for _, rule := range ia.consistencyRules {
 		if inconsistency := rule.Check(ctx); inconsistency != nil {
@@ -344,24 +344,24 @@ func (ia *IntegratedFingerprinter) checkConsistency(ctx *FingerprintContext, res
 	}
 }
 
-// calculateOverallConfidence 计算综合置信度
+// calculateOverallConfidence calculates overall confidence
 func (ia *IntegratedFingerprinter) calculateOverallConfidence(result *IntegratedResult) {
-	confidence := 0.5 // 基础置信度
+	confidence := 0.5 // base confidence
 	
-	// TCP 层贡献 (0.3)
+	// TCP layer contribution (0.3)
 	if result.TCPResult != nil && result.TCPResult.Confidence > 0 {
 		confidence += result.TCPResult.Confidence * 0.3
 	}
 	
-	// UA 层贡献 (0.3)
+	// UA layer contribution (0.3)
 	if result.ParsedOSFromUA != "" {
 		confidence += 0.3
 	}
 	
-	// 交叉验证一致性贡献 (0.4)
+	// Cross-validation consistency contribution (0.4)
 	confidence += result.OSCrossValidation.MatchScore * 0.4
 	
-	// 如果不一致性严重，降低置信度
+	// If inconsistencies are severe, reduce confidence
 	for _, inc := range result.Inconsistencies {
 		switch inc.Severity {
 		case "high":
@@ -373,7 +373,7 @@ func (ia *IntegratedFingerprinter) calculateOverallConfidence(result *Integrated
 		}
 	}
 	
-	// 限制在 0-1 范围
+	// Clamp to 0-1 range
 	if confidence < 0 {
 		confidence = 0
 	}
@@ -387,11 +387,11 @@ func (ia *IntegratedFingerprinter) calculateOverallConfidence(result *Integrated
 	result.RiskScore = ia.calculateRiskScore(result)
 }
 
-// calculateRiskScore 计算风险分数
+// calculateRiskScore calculates risk score
 func (ia *IntegratedFingerprinter) calculateRiskScore(result *IntegratedResult) float64 {
 	risk := 0.0
 	
-	// 基于不一致性计算风险
+	// Calculate risk based on inconsistencies
 	for _, inc := range result.Inconsistencies {
 		switch inc.Severity {
 		case "high":
@@ -403,14 +403,14 @@ func (ia *IntegratedFingerprinter) calculateRiskScore(result *IntegratedResult) 
 		}
 	}
 	
-	// 低置信度增加风险
+	// Low confidence increases risk
 	if result.OverallConfidence < 0.3 {
 		risk += 0.3
 	} else if result.OverallConfidence < 0.5 {
 		risk += 0.15
 	}
 	
-	// IP-UA 不一致增加风险
+	// IP-UA inconsistency increases risk
 	if !result.IPUAConsistency {
 		risk += 0.2
 	}
@@ -422,18 +422,18 @@ func (ia *IntegratedFingerprinter) calculateRiskScore(result *IntegratedResult) 
 	return risk
 }
 
-// Helper 方法
+// Helper methods
 
 func (ia *IntegratedFingerprinter) inferOSFromGeography(geo *GeoLocation) string {
-	// 基于地理位置推断 OS（某些地区有特定偏好）
-	// 例如：某些企业网络可能统一使用 Windows
+	// Infer OS from geolocation (some regions have specific preferences)
+	// For example: some enterprise networks may use Windows uniformly
 	return ""
 }
 
 func (ia *IntegratedFingerprinter) checkIPUAConsistency(ctx *FingerprintContext, result *IntegratedResult) bool {
-	// 检查 UA 中的语言设置是否与 IP 地理位置匹配
+	// Check if the language settings in UA match IP geolocation
 	if ctx.GeoLocation == nil || ctx.HTTPHeaders == nil {
-		return true // 无法检查，默认为一致
+		return true // unable to check, default to consistent
 	}
 	
 	acceptLang := ctx.HTTPHeaders["Accept-Language"]
@@ -441,18 +441,18 @@ func (ia *IntegratedFingerprinter) checkIPUAConsistency(ctx *FingerprintContext,
 		return true
 	}
 	
-	// 简单检查：如果 IP 在中国但 UA 语言只有 en-US，可能不一致
-	// 实际应用需要更复杂的语言-地区映射
+	// Simple check: if IP is in China but UA language is only en-US, it may be inconsistent
+	// Real applications need more complex language-region mapping
 	return true
 }
 
 func (ia *IntegratedFingerprinter) checkGeoUAConsistency(ctx *FingerprintContext, result *IntegratedResult) bool {
-	// 检查 UA 中的时区/地区信息是否与地理位置匹配
+	// Check if the timezone/region info in UA matches geolocation
 	return true
 }
 
 func isPrivateIP(ip net.IP) bool {
-	// 检查是否为私有地址
+	// Check if it is a private address
 	privateRanges := []string{
 		"10.0.0.0/8",
 		"172.16.0.0/12",
@@ -469,7 +469,7 @@ func isPrivateIP(ip net.IP) bool {
 	return false
 }
 
-// buildOSUAMapping 构建 OS 到 UA 的映射
+// buildOSUAMapping builds the OS to UA mapping
 func buildOSUAMapping() map[string][]string {
 	return map[string][]string{
 		"Windows": {
@@ -497,12 +497,12 @@ func buildOSUAMapping() map[string][]string {
 	}
 }
 
-// buildConsistencyRules 构建一致性检查规则
+// buildConsistencyRules builds consistency check rules
 func buildConsistencyRules() []ConsistencyRule {
 	return []ConsistencyRule{
 		{
 			Name:        "TTL_OS_Mismatch",
-			Description: "检查 TTL 值与声称的 OS 是否匹配",
+			Description: "Check if TTL value matches the claimed OS",
 			Check: func(ctx *FingerprintContext) *Inconsistency {
 				if ctx.TCPPacket == nil || ctx.TCPPacket.IPHeader == nil {
 					return nil
@@ -511,7 +511,7 @@ func buildConsistencyRules() []ConsistencyRule {
 				ttl := ctx.TCPPacket.IPHeader.TimeToLive
 				uaOS := ""
 				
-				// 从 UA 推断 OS
+				// Infer OS from UA
 				uaLower := strings.ToLower(ctx.UserAgent)
 				switch {
 				case strings.Contains(uaLower, "windows"):
@@ -522,12 +522,12 @@ func buildConsistencyRules() []ConsistencyRule {
 					uaOS = "Linux"
 				}
 				
-				// Windows 通常使用 TTL 128，Linux/macOS 使用 64
+				// Windows typically uses TTL 128, Linux/macOS uses 64
 				if uaOS == "Windows" && ttl <= 64 {
 					return &Inconsistency{
 						RuleName:    "TTL_OS_Mismatch",
 						Severity:    "medium",
-						Description: "Windows 通常使用 TTL 128，但观察到 TTL <= 64",
+						Description: "Windows typically uses TTL 128, but observed TTL <= 64",
 						Expected:    "TTL ~128 for Windows",
 						Actual:      fmt.Sprintf("TTL %d", ttl),
 					}
@@ -538,7 +538,7 @@ func buildConsistencyRules() []ConsistencyRule {
 		},
 		{
 			Name:        "Mobile_WindowSize",
-			Description: "检查移动设备的窗口大小是否合理",
+			Description: "Check if the window size for mobile devices is reasonable",
 			Check: func(ctx *FingerprintContext) *Inconsistency {
 				if ctx.TCPPacket == nil {
 					return nil
@@ -547,12 +547,12 @@ func buildConsistencyRules() []ConsistencyRule {
 				isMobile := strings.Contains(strings.ToLower(ctx.UserAgent), "mobile")
 				windowSize := ctx.TCPPacket.WindowSize
 				
-				// 移动设备通常有较小的窗口大小
+				// Mobile devices typically have smaller window sizes
 				if isMobile && windowSize > 65000 {
 					return &Inconsistency{
 						RuleName:    "Mobile_WindowSize",
 						Severity:    "low",
-						Description: "移动设备通常窗口大小较小",
+						Description: "Mobile devices typically have smaller window sizes",
 						Expected:    "Window size < 65000 for mobile",
 						Actual:      fmt.Sprintf("Window size %d", windowSize),
 					}
@@ -564,7 +564,7 @@ func buildConsistencyRules() []ConsistencyRule {
 	}
 }
 
-// SetIPRegionDB 设置 IP 区域数据库
+// SetIPRegionDB sets the IP region database
 func (ia *IntegratedFingerprinter) SetIPRegionDB(db IPRegionDatabase) {
 	ia.mu.Lock()
 	defer ia.mu.Unlock()

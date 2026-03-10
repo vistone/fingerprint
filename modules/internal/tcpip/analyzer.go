@@ -1,4 +1,4 @@
-// Package tcpip 提供 TCP/IP 指纹识别的工具函数
+// Package tcpip provides utility functions for TCP/IP fingerprint identification
 package tcpip
 
 import (
@@ -7,24 +7,24 @@ import (
 	"strings"
 )
 
-// OSSignature 操作系统签名定义
+// OSSignature represents an operating system signature definition
 type OSSignature struct {
-	Name          string         // OS 名称
-	Family        string         // OS 家族
-	DefaultTTL    int            // 默认 TTL
-	WindowBase    int            // 窗口大小基数
-	MSS           int            // 最大段大小
-	TCPOptions    string         // TCP 选项
-	IPDFBit       bool           // IP DF 位
-	Quirks        string         // 特殊行为
-	ProbeResponse map[int]string // 根据不同 probe 的响应
+	Name          string         // OS name
+	Family        string         // OS family
+	DefaultTTL    int            // default TTL
+	WindowBase    int            // base window size
+	MSS           int            // Maximum Segment Size
+	TCPOptions    string         // TCP options
+	IPDFBit       bool           // IP DF bit
+	Quirks        string         // quirks
+	ProbeResponse map[int]string // responses to different probes
 }
 
-// BuildOSDatabase 构建操作系统数据库
+// BuildOSDatabase builds the operating system database
 func BuildOSDatabase() map[string]OSSignature {
 	db := make(map[string]OSSignature)
 
-	// Windows 系列
+	// Windows family
 	db["Windows_11"] = OSSignature{
 		Name:       "Windows 11",
 		Family:     "Windows",
@@ -57,7 +57,7 @@ func BuildOSDatabase() map[string]OSSignature {
 		IPDFBit:    true,
 	}
 
-	// Linux 系列
+	// Linux family
 	db["Linux_Kernel_5.x"] = OSSignature{
 		Name:       "Linux Kernel 5.x",
 		Family:     "Linux",
@@ -89,7 +89,7 @@ func BuildOSDatabase() map[string]OSSignature {
 		IPDFBit:    true,
 	}
 
-	// macOS 系列
+	// macOS family
 	db["macOS_13"] = OSSignature{
 		Name:       "macOS 13 (Ventura)",
 		Family:     "macOS",
@@ -136,21 +136,21 @@ func BuildOSDatabase() map[string]OSSignature {
 	return db
 }
 
-// ComputeTCPSignature 计算 TCP 签名
+// ComputeTCPSignature computes a TCP signature
 func ComputeTCPSignature(mss int, windowSize int, options string, flags string) string {
 	data := fmt.Sprintf("%d,%d,%s,%s", mss, windowSize, options, flags)
 	hash := md5.Sum([]byte(data))
 	return fmt.Sprintf("%x", hash)
 }
 
-// ComputeIPSignature 计算 IP 签名
+// ComputeIPSignature computes an IP signature
 func ComputeIPSignature(ttl int, flags uint8, id uint16) string {
 	data := fmt.Sprintf("%d,%d,%d", ttl, flags, id)
 	hash := md5.Sum([]byte(data))
 	return fmt.Sprintf("%x", hash)
 }
 
-// MatchOSSignature 匹配操作系统签名
+// MatchOSSignature matches an operating system signature
 func MatchOSSignature(db map[string]OSSignature, ttl int, mss int, options string) string {
 	bestMatch := ""
 	bestScore := 0.0
@@ -158,21 +158,21 @@ func MatchOSSignature(db map[string]OSSignature, ttl int, mss int, options strin
 	for osName, sig := range db {
 		score := 0.0
 
-		// TTL 匹配（权重 40%）
+		// TTL match (weight 40%)
 		if sig.DefaultTTL == ttl {
 			score += 0.4
 		} else if sig.DefaultTTL-ttl <= 10 && sig.DefaultTTL-ttl >= 0 {
 			score += 0.2
 		}
 
-		// MSS 匹配（权重 30%）
+		// MSS match (weight 30%)
 		if sig.MSS == mss {
 			score += 0.3
 		} else if mss > sig.MSS-100 && mss < sig.MSS+100 {
 			score += 0.15
 		}
 
-		// TCP 选项匹配（权重 30%）
+		// TCP options match (weight 30%)
 		if strings.Contains(options, sig.TCPOptions) {
 			score += 0.3
 		}
@@ -186,29 +186,29 @@ func MatchOSSignature(db map[string]OSSignature, ttl int, mss int, options strin
 	return bestMatch
 }
 
-// ExtractTCPOptions 提取 TCP 选项字符串
+// ExtractTCPOptions extracts a TCP options string
 //
-// 完整实现 TCP 选项解析，返回选项名称的逗号分隔字符串
-// 参考: RFC 793, RFC 1323, RFC 2018
-// TCP 选项格式: Kind(1B) | Length(1B) | Data(variable)
+// Full implementation of TCP options parsing, returns a comma-separated string of option names
+// Reference: RFC 793, RFC 1323, RFC 2018
+// TCP option format: Kind(1B) | Length(1B) | Data(variable)
 func ExtractTCPOptions(packet []byte) string {
-	// TCP 头部最小长度为 20 字节
+	// Minimum TCP header length is 20 bytes
 	if len(packet) < 20 {
 		return ""
 	}
 
-	// 从第 12 字节提取 Data Offset (高 4 位)
-	// Data Offset 表示 TCP 头部长度，单位是 32 位字（4 字节）
+	// Extract Data Offset from byte 12 (upper 4 bits)
+	// Data Offset represents the TCP header length in units of 32-bit words (4 bytes)
 	dataOffset := (packet[12] >> 4) * 4
 
-	// 验证头部长度
+	// Validate header length
 	if dataOffset < 20 || int(dataOffset) > len(packet) {
 		return ""
 	}
 
-	// 选项从第 20 字节开始，到 Data Offset 结束
+	// Options start at byte 20 and end at Data Offset
 	if dataOffset == 20 {
-		return "" // 没有选项
+		return "" // no options
 	}
 
 	optionsData := packet[20:dataOffset]
@@ -242,7 +242,7 @@ func ExtractTCPOptions(packet []byte) string {
 			break
 		}
 
-		// 解析具体选项
+		// Parse specific options
 		switch kind {
 		case 2:
 			options = append(options, "MSS")
@@ -267,7 +267,7 @@ func ExtractTCPOptions(packet []byte) string {
 		case 34:
 			options = append(options, "TFO")
 		default:
-			// 未知选项，记录其 Kind 值
+			// Unknown option, record its Kind value
 			options = append(options, fmt.Sprintf("OPT_%d", kind))
 		}
 
@@ -281,10 +281,10 @@ func ExtractTCPOptions(packet []byte) string {
 	return strings.Join(options, ",")
 }
 
-// AnalyzeTTL 分析 TTL 值推断初始 TTL
+// AnalyzeTTL analyzes the TTL value to infer the initial TTL
 func AnalyzeTTL(currentTTL int) int {
-	// 常见的初始 TTL：64/128 (Linux/Windows)
-	// 根据当前 TTL 推断初始值
+	// Common initial TTLs: 64/128 (Linux/Windows)
+	// Infer the initial value based on the current TTL
 	if currentTTL > 64 {
 		return 128
 	} else if currentTTL > 32 {
@@ -293,7 +293,7 @@ func AnalyzeTTL(currentTTL int) int {
 	return 32
 }
 
-// AnalyzeWindowSize 分析窗口大小
+// AnalyzeWindowSize analyzes the window size
 func AnalyzeWindowSize(size int) string {
 	if size > 60000 {
 		return "Large (Windows/macOS style)"
@@ -303,19 +303,19 @@ func AnalyzeWindowSize(size int) string {
 	return "Small"
 }
 
-// DetectSequenceNumberPattern 检测序列号模式
+// DetectSequenceNumberPattern detects sequence number patterns
 func DetectSequenceNumberPattern(seqNumbers []uint32) string {
 	if len(seqNumbers) < 2 {
 		return "Insufficient data"
 	}
 
-	// 计算差值
+	// Calculate differences
 	diffs := make([]int64, len(seqNumbers)-1)
 	for i := 0; i < len(diffs); i++ {
 		diffs[i] = int64(seqNumbers[i+1]) - int64(seqNumbers[i])
 	}
 
-	// 检查是否为随机或序列
+	// Check if random or sequential
 	var sum int64
 	for _, d := range diffs {
 		sum += d
@@ -330,7 +330,7 @@ func DetectSequenceNumberPattern(seqNumbers []uint32) string {
 	return "Sequential or low-entropy"
 }
 
-// AnalyzeNetworkBehavior 分析网络行为
+// AnalyzeNetworkBehavior analyzes network behavior
 func AnalyzeNetworkBehavior(rttValues []int64) map[string]interface{} {
 	result := make(map[string]interface{})
 
@@ -359,7 +359,7 @@ func AnalyzeNetworkBehavior(rttValues []int64) map[string]interface{} {
 	result["max_rtt_ms"] = max
 	result["variance"] = max - min
 
-	// 分类
+	// Classify
 	if avg < 10 {
 		result["network_type"] = "Local LAN"
 	} else if avg < 50 {
@@ -373,21 +373,21 @@ func AnalyzeNetworkBehavior(rttValues []int64) map[string]interface{} {
 	return result
 }
 
-// DetectAnomalies 检测网络异常
+// DetectAnomalies detects network anomalies
 func DetectAnomalies(ttl int, mss int, windowSize int) []string {
 	anomalies := make([]string, 0, 3)
 
-	// TTL 未设置为标准值
+	// TTL is not set to a standard value
 	if ttl != 64 && ttl != 128 && ttl != 32 {
 		anomalies = append(anomalies, fmt.Sprintf("Non-standard TTL: %d", ttl))
 	}
 
-	// MSS 异常
+	// MSS anomaly
 	if mss < 536 {
 		anomalies = append(anomalies, "MSS too small (potential DoS)")
 	}
 
-	// 窗口大小异常
+	// Window size anomaly
 	if windowSize < 1024 {
 		anomalies = append(anomalies, "Unusually small window size")
 	}
@@ -395,7 +395,7 @@ func DetectAnomalies(ttl int, mss int, windowSize int) []string {
 	return anomalies
 }
 
-// CalculateConfidence 计算匹配置信度
+// CalculateConfidence calculates matching confidence
 func CalculateConfidence(matches int, total int) float64 {
 	if total == 0 {
 		return 0.0

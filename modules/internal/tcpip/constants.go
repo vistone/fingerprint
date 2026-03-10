@@ -1,8 +1,8 @@
 package tcpip
 
-// TCP 协议常量
+// TCP protocol constants
 const (
-	// TCP 标志位
+	// TCP flags
 	FlagFIN = 1 << iota
 	FlagSYN
 	FlagRST
@@ -13,22 +13,22 @@ const (
 	FlagCWR
 )
 
-// TCP 选项类型
+// TCP option types
 const (
-	OptMSS      = 2  // 最大段大小
-	OptWS       = 3  // 窗口缩放
-	OptSACK     = 4  // 选择性确认
-	OptTS       = 8  // 时间戳
+	OptMSS      = 2  // Maximum Segment Size
+	OptWS       = 3  // Window Scale
+	OptSACK     = 4  // Selective Acknowledgment
+	OptTS       = 8  // Timestamp
 	OptNOP      = 1  // No Operation
-	OptEOL      = 0  // 选项列表结束
+	OptEOL      = 0  // End of Option List
 	OptSACKPerm = 4  // SACK Permitted
-	OptAltSum   = 14 // 替代校验和
+	OptAltSum   = 14 // Alternate Checksum
 	OptMD5      = 19 // TCP MD5
 	OptFastOpen = 34 // TCP Fast Open
 	OptMptcp    = 30 // MPTCP
 )
 
-// TTL 推荐值（基于操作系统）
+// TTL recommended values (based on operating system)
 const (
 	DefaultTTLLinux   = 64
 	DefaultTTLWindows = 128
@@ -37,22 +37,22 @@ const (
 	DefaultTTLAndroid = 64
 )
 
-// IP 标志位
+// IP flags
 const (
-	IPFlagMF = 0x20 // 更多分片
-	IPFlagDF = 0x40 // "不要分片"标志
-	IPFlagRF = 0x80 // 保留位
+	IPFlagMF = 0x20 // More Fragments
+	IPFlagDF = 0x40 // Don't Fragment flag
+	IPFlagRF = 0x80 // Reserved flag
 )
 
-// TCP 特征阈值
+// TCP feature thresholds
 const (
 	MinWindowSize = 512
 	MaxWindowSize = 1073741824 // 1GB
-	MinMSS        = 536        // 最小可行 MSS
+	MinMSS        = 536        // minimum viable MSS
 	MaxMSS        = 65495
 )
 
-// 网络设备特征
+// Network device signatures
 var NetworkDeviceSignatures = map[string]DeviceSignature{
 	"FritzBox_Router": {
 		Name:       "AVM FritzBox Router",
@@ -96,17 +96,17 @@ var NetworkDeviceSignatures = map[string]DeviceSignature{
 	},
 }
 
-// DeviceSignature 设备签名
+// DeviceSignature represents a device signature
 type DeviceSignature struct {
-	Name       string // 设备名称
-	Vendor     string // 厂商
-	Device     string // 设备类型
-	HTTPOS     string // HTTP 服务的 OS 特征
-	DefaultTTL int    // 默认 TTL
-	Behavior   string // 典型行为
+	Name       string // device name
+	Vendor     string // vendor
+	Device     string // device type
+	HTTPOS     string // OS fingerprint of the HTTP service
+	DefaultTTL int    // default TTL
+	Behavior   string // typical behavior
 }
 
-// TCPIPAnomalyType TCP/IP 异常类型
+// TCPIPAnomalyType represents a TCP/IP anomaly type
 type TCPIPAnomalyType string
 
 const (
@@ -123,7 +123,7 @@ const (
 	AnomalyTTLDecrement      TCPIPAnomalyType = "unexpected_ttl_decrement"
 )
 
-// VPNSignature VPN 特征
+// VPNSignatures defines VPN signatures
 var VPNSignatures = []string{
 	"non-standard_ttl",
 	"consistent_ip_id_counter",
@@ -132,7 +132,7 @@ var VPNSignatures = []string{
 	"specific_cipher_patterns",
 }
 
-// ProxySignature 代理特征
+// ProxySignatures defines proxy signatures
 var ProxySignatures = []string{
 	"time_sync_issues",
 	"inconsistent_tcp_options",
@@ -141,7 +141,7 @@ var ProxySignatures = []string{
 	"duplicate_sequence_numbers",
 }
 
-// BotSignature 机器人特征
+// BotSignatures defines bot signatures
 var BotSignatures = []string{
 	"abnormal_syn_timing",
 	"identical_tcp_fingerprints",
@@ -152,7 +152,7 @@ var BotSignatures = []string{
 	"impossible_os_combinations",
 }
 
-// RiskIndicators 风险指标
+// RiskIndicators represents risk indicators
 type RiskIndicators struct {
 	IsBot      bool
 	IsScanner  bool
@@ -164,7 +164,7 @@ type RiskIndicators struct {
 	RiskScore  float64
 }
 
-// CalculateRiskScore 计算总体风险评分
+// CalculateRiskScore calculates the overall risk score
 func CalculateRiskScore(indicators RiskIndicators) float64 {
 	score := 0.0
 

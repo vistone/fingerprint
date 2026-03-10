@@ -1,4 +1,4 @@
-// Package tcpip 集成指纹分析示例
+// Package tcpip integrated fingerprint analysis examples
 package tcpip
 
 import (
@@ -11,49 +11,49 @@ import (
 	"github.com/vistone/fingerprint/modules/core/types"
 )
 
-// ExampleIntegratedFingerprinter 展示集成指纹分析器的使用（使用真实指纹数据）
+// ExampleIntegratedFingerprinter demonstrates usage of the integrated fingerprint analyzer (using real fingerprint data)
 func ExampleIntegratedFingerprinter() {
-	// 创建集成指纹分析器
+	// Create integrated fingerprint analyzer
 	fingerprinter := NewIntegratedFingerprinter()
 	
-	// 设置 IP 地理位置数据库
+	// Set up IP geolocation database
 	geoDB := NewSimpleIPGeoDB()
 	fingerprinter.SetIPRegionDB(geoDB)
 	
-	// 获取真实的 Chrome on Windows 指纹（不是硬编码）
+	// Get real Chrome on Windows fingerprint (not hardcoded)
 	fpResult, err := random.GetRandomFingerprintByBrowserWithOS("chrome", types.OSWindows10)
 	if err != nil {
 		fmt.Printf("Failed to get fingerprint: %v\n", err)
 		return
 	}
 	
-	// 使用真实的 User-Agent 和 Headers
+	// Use real User-Agent and Headers
 	userAgent := fpResult.UserAgent
 	headers := fpResult.Headers.ToMap()
 	
-	// 从指纹配置获取 TCP 特征
+	// Get TCP features from fingerprint configuration
 	profile, ok := profiles.MappedTLSClients["chrome_120"]
 	if !ok {
-		// 回退到默认配置
+		// Fall back to default configuration
 		profile = profiles.DefaultClientProfile
 	}
 	
-	// 获取 TCP 配置信息
+	// Get TCP configuration info
 	tcpSettings := profile.GetSettings()
-	windowSize := uint16(65535) // Windows 默认
+	windowSize := uint16(65535) // Windows default
 	if ws, ok := tcpSettings[4]; ok { // 4 is the setting ID for initial window size
 		windowSize = uint16(ws)
 	}
 	
-	// 构造真实的 TCP 数据包（基于真实指纹配置）
+	// Construct real TCP packet (based on real fingerprint configuration)
 	packet := &TCPPacket{
 		IPHeader: &IPHeader{
 			Version:        4,
-			TimeToLive:     128, // Windows 默认 TTL
+			TimeToLive:     128, // Windows default TTL
 			Identification: 12345,
 			Flags:          0x02, // DF bit set
 			Protocol:       6,    // TCP
-			SourceAddress:  "8.8.8.8", // Google DNS (美国)
+			SourceAddress:  "8.8.8.8", // Google DNS (US)
 			DestAddress:    "192.168.1.1",
 		},
 		SourcePort:      54321,
@@ -64,69 +64,69 @@ func ExampleIntegratedFingerprinter() {
 		Flags:           0x02, // SYN
 	}
 	
-	// 执行集成分析
+	// Perform integrated analysis
 	result, err := fingerprinter.Analyze(packet, userAgent, headers)
 	if err != nil {
 		fmt.Printf("Analysis error: %v\n", err)
 		return
 	}
 	
-	// 输出分析结果
-	fmt.Printf("=== 集成指纹分析结果 ===\n")
-	fmt.Printf("源 IP: %s\n", result.SourceIP)
-	fmt.Printf("指纹 ID: %s\n", fpResult.HelloClientID)
+	// Output analysis results
+	fmt.Printf("=== Integrated Fingerprint Analysis Results ===\n")
+	fmt.Printf("Source IP: %s\n", result.SourceIP)
+	fmt.Printf("Fingerprint ID: %s\n", fpResult.HelloClientID)
 	fmt.Printf("\n")
 	
-	// 各层识别结果
-	fmt.Printf("--- 各层识别结果 ---\n")
+	// Per-layer identification results
+	fmt.Printf("--- Per-Layer Identification Results ---\n")
 	if result.TCPResult != nil {
-		fmt.Printf("TCP 层推断 OS: %s (置信度: %.2f)\n", result.TCPResult.OS, result.TCPResult.Confidence)
+		fmt.Printf("TCP layer inferred OS: %s (confidence: %.2f)\n", result.TCPResult.OS, result.TCPResult.Confidence)
 	}
-	fmt.Printf("UA 层推断 OS: %s\n", result.ParsedOSFromUA)
+	fmt.Printf("UA layer inferred OS: %s\n", result.ParsedOSFromUA)
 	if result.GeoInfo != nil {
-		fmt.Printf("地理位置: %s, %s (%s)\n", result.GeoInfo.City, result.GeoInfo.Country, result.GeoInfo.ISP)
+		fmt.Printf("Geolocation: %s, %s (%s)\n", result.GeoInfo.City, result.GeoInfo.Country, result.GeoInfo.ISP)
 	}
 	fmt.Printf("\n")
 	
-	// 交叉验证结果
-	fmt.Printf("--- 交叉验证 ---\n")
-	fmt.Printf("TCP 层 OS: %s\n", result.OSCrossValidation.OSFromTCP)
-	fmt.Printf("UA 层 OS: %s\n", result.OSCrossValidation.OSFromUA)
-	fmt.Printf("Geo 层 OS: %s\n", result.OSCrossValidation.OSFromGeo)
-	fmt.Printf("共识 OS: %s\n", result.OSCrossValidation.ConsensusOS)
-	fmt.Printf("匹配分数: %.2f\n", result.OSCrossValidation.MatchScore)
-	fmt.Printf("IP-UA 一致性: %v\n", result.IPUAConsistency)
+	// Cross-validation results
+	fmt.Printf("--- Cross-Validation ---\n")
+	fmt.Printf("TCP layer OS: %s\n", result.OSCrossValidation.OSFromTCP)
+	fmt.Printf("UA layer OS: %s\n", result.OSCrossValidation.OSFromUA)
+	fmt.Printf("Geo layer OS: %s\n", result.OSCrossValidation.OSFromGeo)
+	fmt.Printf("Consensus OS: %s\n", result.OSCrossValidation.ConsensusOS)
+	fmt.Printf("Match score: %.2f\n", result.OSCrossValidation.MatchScore)
+	fmt.Printf("IP-UA consistency: %v\n", result.IPUAConsistency)
 	fmt.Printf("\n")
 	
-	// 不一致性报告
+	// Inconsistency report
 	if len(result.Inconsistencies) > 0 {
-		fmt.Printf("--- 发现的不一致性 ---\n")
+		fmt.Printf("--- Detected Inconsistencies ---\n")
 		for _, inc := range result.Inconsistencies {
 			fmt.Printf("[%s] %s: %s\n", inc.Severity, inc.RuleName, inc.Description)
-			fmt.Printf("  期望: %s, 实际: %s\n", inc.Expected, inc.Actual)
+			fmt.Printf("  Expected: %s, Actual: %s\n", inc.Expected, inc.Actual)
 		}
 		fmt.Printf("\n")
 	}
 	
-	// 综合评估
-	fmt.Printf("--- 综合评估 ---\n")
-	fmt.Printf("最终识别 OS: %s\n", result.FinalOS)
-	fmt.Printf("设备类型: %s\n", result.FinalDeviceType)
-	fmt.Printf("综合置信度: %.2f\n", result.OverallConfidence)
-	fmt.Printf("风险分数: %.2f\n", result.RiskScore)
+	// Overall assessment
+	fmt.Printf("--- Overall Assessment ---\n")
+	fmt.Printf("Final identified OS: %s\n", result.FinalOS)
+	fmt.Printf("Device type: %s\n", result.FinalDeviceType)
+	fmt.Printf("Overall confidence: %.2f\n", result.OverallConfidence)
+	fmt.Printf("Risk score: %.2f\n", result.RiskScore)
 }
 
-// TestIntegratedFingerprinter_TCP 测试 TCP 层分析（使用真实指纹）
+// TestIntegratedFingerprinter_TCP tests TCP layer analysis (using real fingerprints)
 func TestIntegratedFingerprinter_TCP(t *testing.T) {
 	fingerprinter := NewIntegratedFingerprinter()
 	
-	// 获取真实的 Windows Chrome 指纹
+	// Get real Windows Chrome fingerprint
 	fpResult, err := random.GetRandomFingerprintByBrowserWithOS("chrome", types.OSWindows10)
 	if err != nil {
 		t.Fatalf("Failed to get fingerprint: %v", err)
 	}
 	
-	// 测试 Windows 指纹 (TTL=128)
+	// Test Windows fingerprint (TTL=128)
 	winPacket := &TCPPacket{
 		IPHeader: &IPHeader{
 			TimeToLive:     128,
@@ -149,21 +149,21 @@ func TestIntegratedFingerprinter_TCP(t *testing.T) {
 		result.FinalOS, fpResult.UserAgent[:50], result.OverallConfidence)
 }
 
-// TestIntegratedFingerprinter_MacOS 测试 macOS 指纹（使用真实指纹）
+// TestIntegratedFingerprinter_MacOS tests macOS fingerprint (using real fingerprints)
 func TestIntegratedFingerprinter_MacOS(t *testing.T) {
 	fingerprinter := NewIntegratedFingerprinter()
 	
-	// 获取真实的 macOS Safari 指纹
+	// Get real macOS Safari fingerprint
 	fpResult, err := random.GetRandomFingerprintByBrowserWithOS("safari", types.OSMacOS14)
 	if err != nil {
 		t.Fatalf("Failed to get fingerprint: %v", err)
 	}
 	
-	// macOS 通常使用 TTL 64
+	// macOS typically uses TTL 64
 	macPacket := &TCPPacket{
 		IPHeader: &IPHeader{
 			TimeToLive:     64,
-			SourceAddress:  "17.0.0.1", // Apple 的 IP 段
+			SourceAddress:  "17.0.0.1", // Apple's IP range
 		},
 		WindowSize: 65535,
 	}
@@ -180,11 +180,11 @@ func TestIntegratedFingerprinter_MacOS(t *testing.T) {
 	t.Logf("macOS fingerprint detected: OS=%s, UA=%s", result.FinalOS, fpResult.UserAgent[:50])
 }
 
-// TestIntegratedFingerprinter_Mobile 测试移动设备指纹（使用真实 iOS 指纹）
+// TestIntegratedFingerprinter_Mobile tests mobile device fingerprint (using real iOS fingerprints)
 func TestIntegratedFingerprinter_Mobile(t *testing.T) {
 	fingerprinter := NewIntegratedFingerprinter()
 	
-	// 获取真实的 iOS Safari 指纹
+	// Get real iOS Safari fingerprint
 	profile, ok := profiles.MappedTLSClients["safari_ios_16_0"]
 	if !ok {
 		t.Skip("safari_ios_16_0 profile not found")
@@ -195,7 +195,7 @@ func TestIntegratedFingerprinter_Mobile(t *testing.T) {
 		t.Fatalf("Failed to get UA: %v", err)
 	}
 	
-	// iPhone 指纹
+	// iPhone fingerprint
 	iphonePacket := &TCPPacket{
 		IPHeader: &IPHeader{
 			TimeToLive:     64,
@@ -204,7 +204,7 @@ func TestIntegratedFingerprinter_Mobile(t *testing.T) {
 		WindowSize: 65535,
 	}
 	
-	_ = profile // 使用 profile 避免未使用警告
+	_ = profile // Use profile to avoid unused variable warning
 	result, err := fingerprinter.Analyze(iphonePacket, ua, nil)
 	if err != nil {
 		t.Fatalf("Analyze failed: %v", err)
@@ -218,32 +218,32 @@ func TestIntegratedFingerprinter_Mobile(t *testing.T) {
 		result.FinalDeviceType, result.FinalOS, ua[:50])
 }
 
-// TestIntegratedFingerprinter_Inconsistency 测试不一致性检测（使用真实指纹数据构造不一致）
+// TestIntegratedFingerprinter_Inconsistency tests inconsistency detection (constructing inconsistent data using real fingerprints)
 func TestIntegratedFingerprinter_Inconsistency(t *testing.T) {
 	fingerprinter := NewIntegratedFingerprinter()
 	
-	// 获取真实的 Windows Chrome 指纹
+	// Get real Windows Chrome fingerprint
 	fpResult, err := random.GetRandomFingerprintByBrowserWithOS("chrome", types.OSWindows10)
 	if err != nil {
 		t.Fatalf("Failed to get fingerprint: %v", err)
 	}
 	
-	// 构造不一致的数据：声称 Windows 但 TTL 是 Linux 的 (64)
+	// Construct inconsistent data: claims Windows but TTL is Linux (64)
 	inconsistentPacket := &TCPPacket{
 		IPHeader: &IPHeader{
-			TimeToLive:     64, // Linux TTL，但 UA 声称 Windows (应该 128)
+			TimeToLive:     64, // Linux TTL, but UA claims Windows (should be 128)
 			SourceAddress:  "192.168.1.100",
 		},
-		WindowSize: 29200, // Linux 窗口大小
+		WindowSize: 29200, // Linux window size
 	}
 	
-	// 使用真实 Windows UA，但 TCP 特征是 Linux
+	// Use real Windows UA, but TCP characteristics are Linux
 	result, err := fingerprinter.Analyze(inconsistentPacket, fpResult.UserAgent, nil)
 	if err != nil {
 		t.Fatalf("Analyze failed: %v", err)
 	}
 	
-	// 应该检测到不一致
+	// Should detect inconsistency
 	hasInconsistency := false
 	for _, inc := range result.Inconsistencies {
 		if inc.RuleName == "TTL_OS_Mismatch" {
@@ -256,31 +256,31 @@ func TestIntegratedFingerprinter_Inconsistency(t *testing.T) {
 		t.Logf("Inconsistencies found: %v", result.Inconsistencies)
 	}
 	
-	// 风险分数应该较高
+	// Risk score should be high
 	if result.RiskScore == 0 {
 		t.Logf("Warning: Risk score is 0 despite inconsistency")
 	}
 }
 
-// TestIntegratedFingerprinter_Geolocation 测试地理位置集成（使用真实指纹）
+// TestIntegratedFingerprinter_Geolocation tests geolocation integration (using real fingerprints)
 func TestIntegratedFingerprinter_Geolocation(t *testing.T) {
 	fingerprinter := NewIntegratedFingerprinter()
 	
-	// 设置 IP 地理位置数据库
+	// Set up IP geolocation database
 	geoDB := NewSimpleIPGeoDB()
 	fingerprinter.SetIPRegionDB(geoDB)
 	
-	// 获取真实的 Windows Chrome 指纹
+	// Get real Windows Chrome fingerprint
 	fpResult, err := random.GetRandomFingerprintByBrowserWithOS("chrome", types.OSWindows10)
 	if err != nil {
 		t.Fatalf("Failed to get fingerprint: %v", err)
 	}
 	
-	// 使用美国 IP
+	// Use US IP
 	usPacket := &TCPPacket{
 		IPHeader: &IPHeader{
 			TimeToLive:     128,
-			SourceAddress:  "8.8.8.8", // Google DNS - 美国
+			SourceAddress:  "8.8.8.8", // Google DNS - US
 		},
 		WindowSize: 65535,
 	}
@@ -301,7 +301,7 @@ func TestIntegratedFingerprinter_Geolocation(t *testing.T) {
 	t.Logf("Geolocation: %s, %s, ISP: %s", result.GeoInfo.City, result.GeoInfo.Country, result.GeoInfo.ISP)
 }
 
-// TestIntegratedFingerprinter_AllOS 测试所有操作系统的指纹（使用真实指纹）
+// TestIntegratedFingerprinter_AllOS tests all OS fingerprints (using real fingerprints)
 func TestIntegratedFingerprinter_AllOS(t *testing.T) {
 	testCases := []struct {
 		name         string
@@ -333,7 +333,7 @@ func TestIntegratedFingerprinter_AllOS(t *testing.T) {
 	
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// 获取真实的指纹
+			// Get real fingerprint
 			fpResult, err := random.GetRandomFingerprintByBrowserWithOS(tc.browser, tc.os)
 			if err != nil {
 				t.Skipf("Failed to get %s fingerprint for %s: %v", tc.browser, tc.os, err)
