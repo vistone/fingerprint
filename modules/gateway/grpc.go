@@ -1,5 +1,5 @@
 // Package gateway 提供 gRPC API 支持
-// 注意：此文件使用简化的 gRPC 实现，完整实现需要 protobuf 代码生成
+// note:此file使用简化的 gRPC implement，完整implement需要 protobuf 代码generate
 package gateway
 
 import (
@@ -21,9 +21,9 @@ type GRPCServer struct {
 	gateway *Gateway
 }
 
-// NewGRPCServer 创建新的 gRPC 服务器
+// NewGRPCServer create新的 gRPC 服务器
 func NewGRPCServer(gateway *Gateway) *GRPCServer {
-	// 创建带拦截器的 gRPC 服务器
+	// create带拦截器的 gRPC 服务器
 	s := grpc.NewServer(
 		grpc.UnaryInterceptor(rateLimitInterceptor(gateway)),
 	)
@@ -37,10 +37,10 @@ func NewGRPCServer(gateway *Gateway) *GRPCServer {
 // rateLimitInterceptor 限流拦截器
 func rateLimitInterceptor(gateway *Gateway) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		// 从上下文中获取客户端 IP
+		// from上下文中get客户端 IP
 		clientIP := extractClientIP(ctx)
 
-		// 检查限流
+		// check限流
 		if !gateway.limiter.Allow(clientIP) {
 			return nil, status.Errorf(codes.ResourceExhausted, "rate limit exceeded")
 		}
@@ -49,7 +49,7 @@ func rateLimitInterceptor(gateway *Gateway) grpc.UnaryServerInterceptor {
 	}
 }
 
-// extractClientIP 从 gRPC 上下文中提取客户端 IP
+// extractClientIP from gRPC 上下文中extract客户端 IP
 func extractClientIP(ctx context.Context) string {
 	p, ok := peer.FromContext(ctx)
 	if !ok || p == nil || p.Addr == nil {
@@ -64,7 +64,7 @@ func extractClientIP(ctx context.Context) string {
 	return strings.TrimSpace(addr)
 }
 
-// Start 启动 gRPC 服务器
+// Start start gRPC 服务器
 func (s *GRPCServer) Start(port int) error {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
@@ -75,14 +75,14 @@ func (s *GRPCServer) Start(port int) error {
 	return s.server.Serve(listener)
 }
 
-// Stop 停止 gRPC 服务器
+// Stop stop gRPC 服务器
 func (s *GRPCServer) Stop() {
 	s.server.GracefulStop()
 }
 
-// ==================== gRPC 消息转换 ====================
+// ==================== gRPC messageconvert ====================
 
-// GRPCAnalyzeRequest gRPC 格式的分析请求
+// GRPCAnalyzeRequest gRPC formatanalyzerequest
 type GRPCAnalyzeRequest struct {
 	ClientID        string
 	TLSVersion      uint32
@@ -93,7 +93,7 @@ type GRPCAnalyzeRequest struct {
 	ClientIP        string
 }
 
-// GRPCAnalyzeResponse gRPC 格式的分析响应
+// GRPCAnalyzeResponse gRPC formatanalyzeresponse
 type GRPCAnalyzeResponse struct {
 	FingerprintHash  string
 	Protocol         string
@@ -109,9 +109,9 @@ type GRPCAnalyzeResponse struct {
 	ProcessingTimeMs int64
 }
 
-// ConvertToGatewayRequest 转换 gRPC 请求为网关请求
+// ConvertToGatewayRequest convert gRPC request为网关request
 func ConvertToGatewayRequest(req *GRPCAnalyzeRequest) *AnalyzeRequest {
-	// 转换 uint32 为 uint16
+	// convert uint32 为 uint16
 	cipherSuites := make([]uint16, len(req.CipherSuites))
 	for i, v := range req.CipherSuites {
 		cipherSuites[i] = uint16(v)
@@ -145,7 +145,7 @@ func ConvertToGatewayRequest(req *GRPCAnalyzeRequest) *AnalyzeRequest {
 	}
 }
 
-// ConvertFromGatewayResponse 转换网关响应为 gRPC 响应
+// ConvertFromGatewayResponse convert网关response为 gRPC response
 func ConvertFromGatewayResponse(resp *AnalyzeResponse) *GRPCAnalyzeResponse {
 	if resp == nil {
 		return nil
@@ -188,9 +188,9 @@ type GRPCClient struct {
 	conn *grpc.ClientConn
 }
 
-// NewGRPCClient 创建 gRPC 客户端
+// NewGRPCClient create gRPC 客户端
 func NewGRPCClient(address string) (*GRPCClient, error) {
-	// 使用不安全的连接（生产环境应该使用 TLS）
+	// 使用不安全的connect（生产环境应该使用 TLS）
 	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect: %w", err)
@@ -199,12 +199,12 @@ func NewGRPCClient(address string) (*GRPCClient, error) {
 	return &GRPCClient{conn: conn}, nil
 }
 
-// Close 关闭连接
+// Close closeconnect
 func (c *GRPCClient) Close() error {
 	return c.conn.Close()
 }
 
-// Connection 获取底层连接（用于高级用法）
+// Connection get底层connect（用于高级用法）
 func (c *GRPCClient) Connection() *grpc.ClientConn {
 	return c.conn
 }
@@ -218,7 +218,7 @@ type HybridServer struct {
 	grpcPort int
 }
 
-// NewHybridServer 创建混合服务器
+// NewHybridServer create混合服务器
 func NewHybridServer(gateway *Gateway, httpPort, grpcPort int) *HybridServer {
 	return &HybridServer{
 		gateway:  gateway,
@@ -227,9 +227,9 @@ func NewHybridServer(gateway *Gateway, httpPort, grpcPort int) *HybridServer {
 	}
 }
 
-// Start 启动混合服务器
+// Start start混合服务器
 func (s *HybridServer) Start() error {
-	// 启动 gRPC 服务器（在后台）
+	// start gRPC 服务器（在后台）
 	grpcServer := NewGRPCServer(s.gateway)
 	go func() {
 		if err := grpcServer.Start(s.grpcPort); err != nil {
@@ -237,21 +237,21 @@ func (s *HybridServer) Start() error {
 		}
 	}()
 
-	// 启动 HTTP 服务器（阻塞）
+	// start HTTP 服务器（阻塞）
 	return s.gateway.Start()
 }
 
-// Protocol 服务器协议类型
+// Protocol 服务器protocoltype
 type Protocol string
 
 const (
-	// ProtocolHTTP HTTP 协议
+	// ProtocolHTTP HTTP protocol
 	ProtocolHTTP Protocol = "http"
-	// ProtocolGRPC gRPC 协议
+	// ProtocolGRPC gRPC protocol
 	ProtocolGRPC Protocol = "grpc"
 )
 
-// ServerInfo 服务器信息
+// ServerInfo 服务器info
 type ServerInfo struct {
 	Protocol    Protocol
 	Port        int
@@ -259,7 +259,7 @@ type ServerInfo struct {
 	Connections int
 }
 
-// GetServerInfo 获取服务器信息
+// GetServerInfo get服务器info
 func (s *HybridServer) GetServerInfo() []ServerInfo {
 	return []ServerInfo{
 		{ProtocolHTTP, s.httpPort, "running", 0},

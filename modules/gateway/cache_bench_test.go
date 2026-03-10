@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// mockAnalyzeResponse 创建模拟的 AnalyzeResponse
+// mockAnalyzeResponse create模拟的 AnalyzeResponse
 func mockAnalyzeResponse(id string) *AnalyzeResponse {
 	return &AnalyzeResponse{
 		FingerprintHash:  id,
@@ -24,7 +24,7 @@ func mockAnalyzeResponse(id string) *AnalyzeResponse {
 	}
 }
 
-// BenchmarkLRUCacheGet 测试缓存读取性能
+// BenchmarkLRUCacheGet 测试cache读取性能
 func BenchmarkLRUCacheGet(b *testing.B) {
 	sizes := []int{100, 1000, 10000}
 
@@ -32,7 +32,7 @@ func BenchmarkLRUCacheGet(b *testing.B) {
 		b.Run(fmt.Sprintf("size_%d", size), func(b *testing.B) {
 			cache := NewLRUCache(size, 5*time.Minute)
 
-			// 预填充缓存
+			// 预填充cache
 			for i := 0; i < size; i++ {
 				key := fmt.Sprintf("key_%d", i)
 				cache.Set(key, mockAnalyzeResponse(key), 0)
@@ -51,7 +51,7 @@ func BenchmarkLRUCacheGet(b *testing.B) {
 	}
 }
 
-// BenchmarkLRUCacheSet 测试缓存写入性能
+// BenchmarkLRUCacheSet 测试cache写入性能
 func BenchmarkLRUCacheSet(b *testing.B) {
 	sizes := []int{100, 1000, 10000}
 
@@ -72,7 +72,7 @@ func BenchmarkLRUCacheSet(b *testing.B) {
 func BenchmarkLRUCacheMixed(b *testing.B) {
 	cache := NewLRUCache(10000, 5*time.Minute)
 
-	// 预填充 50% 缓存
+	// 预填充 50% cache
 	for i := 0; i < 5000; i++ {
 		key := fmt.Sprintf("key_%d", i)
 		cache.Set(key, mockAnalyzeResponse(key), 0)
@@ -97,7 +97,7 @@ func BenchmarkLRUCacheMixed(b *testing.B) {
 	})
 }
 
-// BenchmarkFingerprintCache 对比新旧缓存实现
+// BenchmarkFingerprintCache 对比新旧cacheimplement
 func BenchmarkFingerprintCache(b *testing.B) {
 	b.Run("LRUCache", func(b *testing.B) {
 		cache := NewFingerprintCache(10000, 5*time.Minute)
@@ -113,17 +113,17 @@ func BenchmarkFingerprintCache(b *testing.B) {
 	})
 }
 
-// TestCacheHitRate 测试缓存命中率
+// TestCacheHitRate 测试cache命中率
 func TestCacheHitRate(t *testing.T) {
 	cache := NewLRUCache(1000, 5*time.Minute)
 
-	// 填充缓存
+	// 填充cache
 	for i := 0; i < 1000; i++ {
 		key := fmt.Sprintf("key_%d", i)
 		cache.Set(key, mockAnalyzeResponse(key), 0)
 	}
 
-	// 测试 1000 次访问，期望命中率接近 100%
+	// 测试 1000 次visit，期望命中率接近 100%
 	hits := 0
 	misses := 0
 	for i := 0; i < 1000; i++ {
@@ -143,7 +143,7 @@ func TestCacheHitRate(t *testing.T) {
 	t.Logf("Cache hit rate: %.2f%% (hits: %d, misses: %d)", hitRate*100, hits, misses)
 }
 
-// TestCacheEviction 测试缓存淘汰
+// TestCacheEviction 测试cache淘汰
 func TestCacheEviction(t *testing.T) {
 	cache := NewLRUCache(100, 5*time.Minute)
 
@@ -153,37 +153,37 @@ func TestCacheEviction(t *testing.T) {
 		cache.Set(key, mockAnalyzeResponse(key), 0)
 	}
 
-	// 验证缓存大小不超过限制
+	// verifycachesize不超过limit
 	if cache.Len() > 100 {
 		t.Errorf("Cache size = %d, want <= 100", cache.Len())
 	}
 
-	// 验证最旧的项被淘汰（前面插入的应该已经不存在了）
+	// verify最旧的项被淘汰（前面插入的应该已经不存在了）
 	_, found := cache.Get("key_0")
 	if found {
 		t.Error("Oldest entry should have been evicted")
 	}
 
-	// 验证最新的项存在
+	// verify最新的项存在
 	_, found = cache.Get("key_199")
 	if !found {
 		t.Error("Newest entry should still exist")
 	}
 }
 
-// TestCacheExpiration 测试缓存过期
+// TestCacheExpiration 测试cache过期
 func TestCacheExpiration(t *testing.T) {
 	cache := NewLRUCache(100, 100*time.Millisecond)
 
 	// 添加项
 	cache.Set("key1", mockAnalyzeResponse("key1"), 0)
 
-	// 立即获取应该存在
+	// 立即get应该存在
 	if _, found := cache.Get("key1"); !found {
 		t.Error("Entry should exist immediately after set")
 	}
 
-	// 等待过期
+	// wait过期
 	time.Sleep(150 * time.Millisecond)
 
 	// 应该过期
@@ -192,12 +192,12 @@ func TestCacheExpiration(t *testing.T) {
 	}
 }
 
-// TestCacheThreadSafety 测试并发安全
+// TestCacheThreadSafety 测试concurrent安全
 func TestCacheThreadSafety(t *testing.T) {
 	cache := NewLRUCache(1000, 5*time.Minute)
 	done := make(chan bool)
 
-	// 启动多个 goroutine 同时读写
+	// start多个 goroutine 同时读写
 	for i := 0; i < 10; i++ {
 		go func(id int) {
 			for j := 0; j < 100; j++ {
@@ -209,40 +209,40 @@ func TestCacheThreadSafety(t *testing.T) {
 		}(i)
 	}
 
-	// 等待所有 goroutine 完成
+	// wait所有 goroutine complete
 	for i := 0; i < 10; i++ {
 		<-done
 	}
 
-	// 验证没有 panic，缓存状态正常
+	// verify没有 panic，cachestate正常
 	if cache.Len() == 0 {
 		t.Error("Cache should have some entries")
 	}
 }
 
-// TestCacheStats 测试缓存统计
+// TestCacheStats 测试cachestatistics
 func TestCacheStats(t *testing.T) {
 	cache := NewLRUCache(100, 5*time.Minute)
 
-	// 初始统计应为零
+	// 初始statistics应为零
 	stats := cache.Stats()
 	if stats.Hits != 0 || stats.Misses != 0 {
 		t.Error("Initial stats should be zero")
 	}
 
-	// 添加并获取
+	// 添加并get
 	for i := 0; i < 10; i++ {
 		key := fmt.Sprintf("key_%d", i)
 		cache.Set(key, mockAnalyzeResponse(key), 0)
 	}
 
-	// 获取存在的项（命中）
+	// get存在的项（命中）
 	for i := 0; i < 10; i++ {
 		key := fmt.Sprintf("key_%d", i)
 		cache.Get(key)
 	}
 
-	// 获取不存在的项（未命中）
+	// get不存在的项（未命中）
 	for i := 0; i < 5; i++ {
 		cache.Get("nonexistent_key")
 	}
@@ -264,14 +264,14 @@ func TestCacheStats(t *testing.T) {
 	}
 }
 
-// ExampleLRUCache 使用示例
+// ExampleLRUCache 使用example
 func ExampleLRUCache() {
 	cache := NewLRUCache(1000, 5*time.Minute)
 
-	// 设置值
+	// setting值
 	cache.Set("user:123", "user data", 0)
 
-	// 获取值
+	// get值
 	if data, found := cache.Get("user:123"); found {
 		fmt.Printf("Found: %v\n", data)
 	}
@@ -279,15 +279,15 @@ func ExampleLRUCache() {
 	// 输出: Found: user data
 }
 
-// TestCacheComparisonWithOldImplementation 对比新旧实现
+// TestCacheComparisonWithOldImplementation 对比新旧implement
 func TestCacheComparisonWithOldImplementation(t *testing.T) {
-	// 这个测试用于记录新旧实现的对比
-	// 旧实现：FingerprintCache（简单 map + 线性扫描淘汰）
-	// 新实现：基于 LRUCache（container/list + map）
+	// 这个测试用于log新旧implemented对比
+	// 旧implement：FingerprintCache（简单 map + 线性扫描淘汰）
+	// 新implement：基于 LRUCache（container/list + map）
 
 	t.Run("MemoryEfficiency", func(t *testing.T) {
-		// LRU 实现使用更多内存但提供更好的性能特征
-		// 此测试主要作为文档说明
+		// LRU implement使用更多内存但提供更好的性能feature
+		// 此测试主要作为文档description
 		t.Log("LRU cache uses container/list which has O(1) eviction")
 		t.Log("Old implementation used linear scan O(n) for eviction")
 	})
