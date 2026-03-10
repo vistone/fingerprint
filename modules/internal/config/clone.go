@@ -1,9 +1,9 @@
 package config
 
-// clone.go - 高效的配置深拷贝实现
-// 避免使用 JSON 序列化，提供更好的性能和类型安全
+// clone.go - Efficient deep copy implementation for configuration
+// Avoid JSON serialization to provide better performance and type safety
 
-// Clone 创建 ManagedConfig 的深拷贝
+// Clone creates a deep copy of ManagedConfig
 func (c *ManagedConfig) Clone() *ManagedConfig {
 	if c == nil {
 		return nil
@@ -20,7 +20,7 @@ func (c *ManagedConfig) Clone() *ManagedConfig {
 	}
 }
 
-// Clone 创建 BehaviorAnalysisConfig 的深拷贝
+// Clone creates a deep copy of BehaviorAnalysisConfig
 func (c *BehaviorAnalysisConfig) Clone() *BehaviorAnalysisConfig {
 	if c == nil {
 		return nil
@@ -36,7 +36,7 @@ func (c *BehaviorAnalysisConfig) Clone() *BehaviorAnalysisConfig {
 	}
 }
 
-// Clone 创建 RiskScoringConfig 的深拷贝
+// Clone creates a deep copy of RiskScoringConfig
 func (c *RiskScoringConfig) Clone() *RiskScoringConfig {
 	if c == nil {
 		return nil
@@ -57,7 +57,7 @@ func (c *RiskScoringConfig) Clone() *RiskScoringConfig {
 	return clone
 }
 
-// Clone 创建 RiskWeights 的深拷贝
+// Clone creates a deep copy of RiskWeights
 func (w *RiskWeights) Clone() *RiskWeights {
 	if w == nil {
 		return nil
@@ -75,7 +75,7 @@ func (w *RiskWeights) Clone() *RiskWeights {
 	}
 }
 
-// Clone 创建 FeatureExtractionConfig 的深拷贝
+// Clone creates a deep copy of FeatureExtractionConfig
 func (c *FeatureExtractionConfig) Clone() *FeatureExtractionConfig {
 	if c == nil {
 		return nil
@@ -88,7 +88,7 @@ func (c *FeatureExtractionConfig) Clone() *FeatureExtractionConfig {
 		DesktopScreenWidthMin: c.DesktopScreenWidthMin,
 	}
 
-	// 深拷贝切片
+	// Deep copy slices.
 	if c.ToolMarkers != nil {
 		clone.ToolMarkers = make([]string, len(c.ToolMarkers))
 		copy(clone.ToolMarkers, c.ToolMarkers)
@@ -102,7 +102,7 @@ func (c *FeatureExtractionConfig) Clone() *FeatureExtractionConfig {
 	return clone
 }
 
-// Clone 创建 QUICConfig 的深拷贝
+// Clone creates a deep copy of QUICConfig
 func (c *QUICConfig) Clone() *QUICConfig {
 	if c == nil {
 		return nil
@@ -122,7 +122,7 @@ func (c *QUICConfig) Clone() *QUICConfig {
 	return clone
 }
 
-// Clone 创建 TLSConfig 的深拷贝
+// Clone creates a deep copy of TLSConfig
 func (c *TLSConfig) Clone() *TLSConfig {
 	if c == nil {
 		return nil
@@ -150,7 +150,7 @@ func (c *TLSConfig) Clone() *TLSConfig {
 	return clone
 }
 
-// Clone 创建 GlobalConfig 的深拷贝
+// Clone creates a deep copy of GlobalConfig
 func (c *GlobalConfig) Clone() *GlobalConfig {
 	if c == nil {
 		return nil
@@ -165,7 +165,7 @@ func (c *GlobalConfig) Clone() *GlobalConfig {
 	}
 }
 
-// Clone 创建 ConfigMetadata 的深拷贝
+// Clone creates a deep copy of ConfigMetadata
 func (m *ConfigMetadata) Clone() *ConfigMetadata {
 	if m == nil {
 		return nil

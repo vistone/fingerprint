@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// TestManagedConfigClone 测试 ManagedConfig 深拷贝
+// TestManagedConfigClone tests ManagedConfig deep copy
 func TestManagedConfigClone(t *testing.T) {
 	original := &ManagedConfig{
 		BehaviorAnalysis: &BehaviorAnalysisConfig{
@@ -65,12 +65,12 @@ func TestManagedConfigClone(t *testing.T) {
 
 	clone := original.Clone()
 
-	// 验证值相等
+	// Validate values are equal.
 	if !reflect.DeepEqual(original, clone) {
 		t.Error("Clone should be equal to original")
 	}
 
-	// 验证深拷贝（修改 clone 不影响 original）
+	// Validate deep copy (modifying clone does not affect original).
 	clone.BehaviorAnalysis.MinRequestsForAnalysis = 999
 	if original.BehaviorAnalysis.MinRequestsForAnalysis == 999 {
 		t.Error("Clone is not deep copy - BehaviorAnalysis modified")
@@ -97,7 +97,7 @@ func TestManagedConfigClone(t *testing.T) {
 	}
 }
 
-// TestNilConfigClone 测试 nil 配置的克隆
+// TestNilConfigClone tests cloning nil config
 func TestNilConfigClone(t *testing.T) {
 	var nilConfig *ManagedConfig
 	if nilConfig.Clone() != nil {
@@ -111,7 +111,7 @@ func TestNilConfigClone(t *testing.T) {
 	}
 }
 
-// TestFeatureExtractionConfigClone 测试 FeatureExtractionConfig 克隆
+// TestFeatureExtractionConfigClone tests FeatureExtractionConfig clone
 func TestFeatureExtractionConfigClone(t *testing.T) {
 	original := &FeatureExtractionConfig{
 		EntropyHighThreshold:  7.0,
@@ -123,20 +123,20 @@ func TestFeatureExtractionConfigClone(t *testing.T) {
 
 	clone := original.Clone()
 
-	// 验证切片独立
+	// Validate slices are independent.
 	clone.ToolMarkers = append(clone.ToolMarkers, "new-marker")
 	if len(original.ToolMarkers) != 3 {
 		t.Error("ToolMarkers should not be affected by clone modification")
 	}
 
-	// 修改 clone 的 slice 元素
+	// Modify slice elements in clone.
 	clone.ToolMarkers[0] = "modified"
 	if original.ToolMarkers[0] == "modified" {
 		t.Error("ToolMarkers elements should be independent")
 	}
 }
 
-// TestQUICConfigClone 测试 QUICConfig 克隆
+// TestQUICConfigClone tests QUICConfig clone
 func TestQUICConfigClone(t *testing.T) {
 	original := &QUICConfig{
 		MinInitialMaxData:      10000,
@@ -147,14 +147,14 @@ func TestQUICConfigClone(t *testing.T) {
 
 	clone := original.Clone()
 
-	// 验证切片独立
+	// Validate slices are independent.
 	clone.SupportedVersions[0] = 0x99999999
 	if original.SupportedVersions[0] == 0x99999999 {
 		t.Error("SupportedVersions should be independent")
 	}
 }
 
-// TestTLSConfigClone 测试 TLSConfig 克隆
+// TestTLSConfigClone tests TLSConfig clone
 func TestTLSConfigClone(t *testing.T) {
 	original := &TLSConfig{
 		WeakCipherSuites:     []uint16{0x002f, 0x0035, 0x003c},
@@ -165,7 +165,7 @@ func TestTLSConfigClone(t *testing.T) {
 
 	clone := original.Clone()
 
-	// 验证所有切片独立
+	// Validate all slices are independent.
 	clone.WeakCipherSuites[0] = 0x9999
 	clone.SupportedVersions[0] = 0x9999
 	clone.GREASEExtensions[0] = 0x9999
@@ -181,7 +181,7 @@ func TestTLSConfigClone(t *testing.T) {
 	}
 }
 
-// BenchmarkManagedConfigClone 基准测试：ManagedConfig 深拷贝
+// BenchmarkManagedConfigClone benchmark: ManagedConfig deep copy
 func BenchmarkManagedConfigClone(b *testing.B) {
 	config := &ManagedConfig{
 		BehaviorAnalysis: &BehaviorAnalysisConfig{
@@ -219,7 +219,7 @@ func BenchmarkManagedConfigClone(b *testing.B) {
 	}
 }
 
-// BenchmarkFeatureExtractionConfigClone 基准测试：FeatureExtractionConfig 深拷贝
+// BenchmarkFeatureExtractionConfigClone benchmark: FeatureExtractionConfig deep copy
 func BenchmarkFeatureExtractionConfigClone(b *testing.B) {
 	config := &FeatureExtractionConfig{
 		ToolMarkers:     []string{"curl", "wget", "python-requests", "node-fetch"},

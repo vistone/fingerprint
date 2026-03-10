@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-// TestDeepCopy 测试深复制功能
+// TestDeepCopy tests deep copy functionality
 func TestDeepCopy(t *testing.T) {
 	original := &ManagedConfig{
 		BehaviorAnalysis: &BehaviorAnalysisConfig{
@@ -24,24 +24,24 @@ func TestDeepCopy(t *testing.T) {
 		t.Fatalf("DeepCopy failed: %v", err)
 	}
 
-	// 验证深复制的有效性
+	// Validate deep copy effectiveness.
 	if err := ValidateDeepCopy(original, copied); err != nil {
 		t.Fatalf("ValidateDeepCopy failed: %v", err)
 	}
 
-	// 验证数据完整性
+	// Validate data integrity.
 	if copied.BehaviorAnalysis.MinRequestsForAnalysis != 10 {
 		t.Errorf("expected MinRequestsForAnalysis=10, got %d", copied.BehaviorAnalysis.MinRequestsForAnalysis)
 	}
 
-	// 验证修改原始配置不会影响副本
+	// Validate that modifying the original config does not affect the copy.
 	original.BehaviorAnalysis.MinRequestsForAnalysis = 20
 	if copied.BehaviorAnalysis.MinRequestsForAnalysis != 10 {
 		t.Error("deep copy failed: modifying original affected the copy")
 	}
 }
 
-// TestDeepCopyNil 测试深复制 nil 配置
+// TestDeepCopyNil tests deep copying nil config
 func TestDeepCopyNil(t *testing.T) {
 	copied, err := DeepCopy(nil)
 	if err != nil {

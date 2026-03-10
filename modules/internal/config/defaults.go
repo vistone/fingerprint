@@ -2,7 +2,7 @@ package config
 
 import "time"
 
-// DefaultManagedConfig 创建默认配置
+// DefaultManagedConfig creates the default configuration
 func DefaultManagedConfig() *ManagedConfig {
 	return &ManagedConfig{
 		BehaviorAnalysis: &BehaviorAnalysisConfig{
