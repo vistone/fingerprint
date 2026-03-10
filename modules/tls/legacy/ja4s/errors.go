@@ -8,24 +8,24 @@ import (
 )
 
 // ============================================================================
-// JA4S 子包错误定义
+// JA4S subpackage error definitions
 // ============================================================================
 
 var (
-	// ErrInvalidServerHello 表示无效的 ServerHello 消息
+	// ErrInvalidServerHello indicates an invalid ServerHello message.
 	ErrInvalidServerHello = fmt.Errorf("%w: invalid server hello spec", errs.ErrInvalidFingerprint)
 
-	// ErrMissingServerHello 表示缺少 ServerHello
+	// ErrMissingServerHello indicates a missing ServerHello.
 	ErrMissingServerHello = fmt.Errorf("%w: missing server hello", errs.ErrInvalidFingerprint)
 
-	// ErrInvalidCipherSuite 表示无效的密码套件
+	// ErrInvalidCipherSuite indicates an invalid cipher suite.
 	ErrInvalidCipherSuite = fmt.Errorf("%w: invalid cipher suite", errs.ErrInvalidFingerprint)
 
-	// ErrUnsupportedExtension 表示不支持的扩展
+	// ErrUnsupportedExtension indicates an unsupported extension.
 	ErrUnsupportedExtension = fmt.Errorf("%w: unsupported extension", errs.ErrInvalidFingerprint)
 )
 
-// IsInvalidServerHello 检查错误是否为无效的 ServerHello
+// IsInvalidServerHello checks whether the error is invalid ServerHello
 func IsInvalidServerHello(err error) bool {
 	if err == nil {
 		return false
@@ -33,7 +33,7 @@ func IsInvalidServerHello(err error) bool {
 	return errors.Is(err, ErrInvalidServerHello)
 }
 
-// IsMissingServerHello 检查错误是否为缺少 ServerHello
+// IsMissingServerHello checks whether the error is missing ServerHello
 func IsMissingServerHello(err error) bool {
 	if err == nil {
 		return false
@@ -41,7 +41,7 @@ func IsMissingServerHello(err error) bool {
 	return errors.Is(err, ErrMissingServerHello)
 }
 
-// IsInvalidCipherSuite 检查错误是否为无效的密码套件
+// IsInvalidCipherSuite checks whether the error is invalid cipher suite
 func IsInvalidCipherSuite(err error) bool {
 	if err == nil {
 		return false

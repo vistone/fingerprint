@@ -4,10 +4,10 @@ import (
 	"testing"
 
 	tls "github.com/bogdanfinn/utls"
-	"github.com/vistone/fingerprint/modules/profiles/legacy"
+	profiles "github.com/vistone/fingerprint/modules/profiles/legacy"
 )
 
-// BenchmarkComputeJA3FromSpec_Simple 基准测试：简单 ClientHelloSpec
+// BenchmarkComputeJA3FromSpec_Simple benchmark: simple ClientHelloSpec
 func BenchmarkComputeJA3FromSpec_Simple(b *testing.B) {
 	spec := tls.ClientHelloSpec{
 		CipherSuites: []uint16{0x1301},
@@ -26,7 +26,7 @@ func BenchmarkComputeJA3FromSpec_Simple(b *testing.B) {
 	}
 }
 
-// BenchmarkComputeJA3FromSpec_Complex 基准测试：复杂 ClientHelloSpec
+// BenchmarkComputeJA3FromSpec_Complex benchmark: complex ClientHelloSpec
 func BenchmarkComputeJA3FromSpec_Complex(b *testing.B) {
 	spec := tls.ClientHelloSpec{
 		CipherSuites: []uint16{
@@ -56,7 +56,7 @@ func BenchmarkComputeJA3FromSpec_Complex(b *testing.B) {
 	}
 }
 
-// BenchmarkIsGREASEValue 基准测试：GREASE 值检测
+// BenchmarkIsGREASEValue benchmark: GREASE value detection
 func BenchmarkIsGREASEValue(b *testing.B) {
 	values := []uint16{0x0A0A, 0x1301, 0x1A1A, 0x1302, 0x2A2A}
 
@@ -69,7 +69,7 @@ func BenchmarkIsGREASEValue(b *testing.B) {
 	}
 }
 
-// BenchmarkFilterGREASEUint16 基准测试：GREASE 过滤
+// BenchmarkFilterGREASEUint16 benchmark: GREASE filtering
 func BenchmarkFilterGREASEUint16(b *testing.B) {
 	values := []uint16{0x1301, 0x0A0A, 0x1302, 0x1A1A, 0x1303, 0x2A2A}
 
@@ -80,7 +80,7 @@ func BenchmarkFilterGREASEUint16(b *testing.B) {
 	}
 }
 
-// BenchmarkMatchJA3 基准测试：JA3 哈希匹配
+// BenchmarkMatchJA3 benchmark: JA3 hash matching
 func BenchmarkMatchJA3(b *testing.B) {
 	hash1 := "769,47-53-5-10-49161-49162-49171-49172-50-56-19-4,0-10-11,23-24-25,0"
 	hash2 := "769,47-53-5-10-49161-49162-49171-49172-50-56-19-4,0-10-11,23-24-25,0"
@@ -92,9 +92,9 @@ func BenchmarkMatchJA3(b *testing.B) {
 	}
 }
 
-// BenchmarkComputeJA3FromProfile 基准测试：从 Profile 计算 JA3
+// BenchmarkComputeJA3FromProfile benchmark: compute JA3 from profile
 func BenchmarkComputeJA3FromProfile(b *testing.B) {
-	// 尝试初始化（忽略可能已初始化的错误）
+	// Try initialization (ignore possible already-initialized errors).
 	InitMappedTLSClientsRaw(profiles.MappedTLSClients)
 
 	b.ResetTimer()
@@ -104,7 +104,7 @@ func BenchmarkComputeJA3FromProfile(b *testing.B) {
 	}
 }
 
-// BenchmarkParallelComputeJA3FromSpec 并发基准测试
+// BenchmarkParallelComputeJA3FromSpec parallel benchmark
 func BenchmarkParallelComputeJA3FromSpec(b *testing.B) {
 	spec := tls.ClientHelloSpec{
 		CipherSuites: []uint16{0x1301, 0x1302, 0x1303},

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// HealthStatus 健康状态
+// HealthStatus represents health status
 type HealthStatus string
 
 const (
@@ -14,7 +14,7 @@ const (
 	Unhealthy HealthStatus = "UNHEALTHY"
 )
 
-// HealthCheckResult 检查结果
+// HealthCheckResult represents check result
 type HealthCheckResult struct {
 	Name      string
 	Status    HealthStatus
@@ -22,20 +22,20 @@ type HealthCheckResult struct {
 	Timestamp time.Time
 }
 
-// HealthChecker 健康检查器接口
+// HealthChecker is the health checker interface
 type HealthChecker interface {
 	Check() HealthCheckResult
 	Name() string
 }
 
-// Monitor 监控器
+// Monitor is the monitor
 type Monitor struct {
 	checkers map[string]HealthChecker
 	results  map[string]HealthCheckResult
 	mu       sync.RWMutex
 }
 
-// NewMonitor 创建监控器
+// NewMonitor creates a monitor
 func NewMonitor() *Monitor {
 	return &Monitor{
 		checkers: make(map[string]HealthChecker),
@@ -43,7 +43,7 @@ func NewMonitor() *Monitor {
 	}
 }
 
-// RegisterChecker 注册检查器
+// RegisterChecker registers a checker
 func (m *Monitor) RegisterChecker(checker HealthChecker) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -51,7 +51,7 @@ func (m *Monitor) RegisterChecker(checker HealthChecker) error {
 	return nil
 }
 
-// Check 执行检查
+// Check executes checks
 func (m *Monitor) Check() map[string]HealthCheckResult {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -61,7 +61,7 @@ func (m *Monitor) Check() map[string]HealthCheckResult {
 	return m.results
 }
 
-// GetStatus 获取总体状态
+// GetStatus gets overall status
 func (m *Monitor) GetStatus() HealthStatus {
 	m.mu.RLock()
 	defer m.mu.RUnlock()

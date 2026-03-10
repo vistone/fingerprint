@@ -3,12 +3,12 @@ package ja4
 import (
 	"testing"
 
-	"github.com/vistone/fingerprint/modules/profiles/legacy"
+	profiles "github.com/vistone/fingerprint/modules/profiles/legacy"
 )
 
-// TestComputeJA4FromRealProfiles 使用真实指纹配置测试 JA4 计算
+// TestComputeJA4FromRealProfiles tests JA4 computation using real fingerprint profiles
 func TestComputeJA4FromRealProfiles(t *testing.T) {
-	// 使用真实的 Chrome 133 指纹
+	// Use the real Chrome 133 fingerprint.
 	chromeProfile, ok := profiles.MappedTLSClients["chrome_133"]
 	if !ok {
 		t.Fatal("chrome_133 profile not found")
@@ -33,7 +33,7 @@ func TestComputeJA4FromRealProfiles(t *testing.T) {
 		t.Error("Expected non-empty JA4 raw string for chrome_133")
 	}
 
-	// 验证 JA4 哈希格式（应包含下划线分隔的部分）
+	// Verify JA4 hash format (should include underscore-separated parts).
 	if result.JA4A == "" {
 		t.Error("Expected non-empty JA4_a part")
 	}
@@ -43,7 +43,7 @@ func TestComputeJA4FromRealProfiles(t *testing.T) {
 	t.Logf("Chrome 133 Raw: %s", result.RawString)
 }
 
-// TestComputeJA4FromMultipleProfiles 测试多个真实指纹的 JA4 计算
+// TestComputeJA4FromMultipleProfiles tests JA4 computation for multiple real fingerprints
 func TestComputeJA4FromMultipleProfiles(t *testing.T) {
 	testProfiles := []string{
 		"chrome_133",
@@ -75,7 +75,7 @@ func TestComputeJA4FromMultipleProfiles(t *testing.T) {
 				t.Errorf("Expected non-empty JA4 hash for %s", profileName)
 			}
 
-			// 验证 JA4_a 部分（协议、TLS 版本、SNI 等）
+			// Verify the JA4_a section (protocol, TLS version, SNI, etc.).
 			if result.JA4A == "" {
 				t.Errorf("Expected non-empty JA4_a for %s", profileName)
 			}
@@ -85,7 +85,7 @@ func TestComputeJA4FromMultipleProfiles(t *testing.T) {
 	}
 }
 
-// TestComputeJA4FromProfile 测试直接从 Profile 计算 JA4
+// TestComputeJA4FromProfile tests computing JA4 directly from profile
 func TestComputeJA4FromProfile(t *testing.T) {
 	profile, ok := profiles.MappedTLSClients["chrome_133"]
 	if !ok {
@@ -105,7 +105,7 @@ func TestComputeJA4FromProfile(t *testing.T) {
 	t.Logf("JA4 from profile: %s", result.Hash)
 }
 
-// TestComputeJA4ByProfileName 测试通过名称计算 JA4
+// TestComputeJA4ByProfileName tests computing JA4 by profile name
 func TestComputeJA4ByProfileName(t *testing.T) {
 	result, err := ComputeJA4ByProfileName("chrome_133")
 	if err != nil {
@@ -117,7 +117,7 @@ func TestComputeJA4ByProfileName(t *testing.T) {
 		t.Error("Expected non-empty hash from profile name")
 	}
 
-	// 验证返回的各个部分
+	// Verify each returned section.
 	if result.JA4A == "" {
 		t.Error("Expected non-empty JA4_a")
 	}
