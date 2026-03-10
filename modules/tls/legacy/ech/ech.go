@@ -6,60 +6,60 @@ import (
 	"fmt"
 )
 
-// ECHAnalysisResult ECH (Encrypted Client Hello) 分析结果
+// ECHAnalysisResult ECH (Encrypted Client Hello) analysis result
 type ECHAnalysisResult struct {
-	// ECH 是否存在
+	// Whether ECH is present
 	ECHPresent bool
 
-	// ECH 配置类型
+	// ECH config type
 	ECHType string // "outer", "inner", "grease"
 
-	// ECH 版本
+	// ECH version
 	ECHVersion uint16
 
-	// ClientHello 类型
+	// ClientHello type
 	ClientHelloType string // "outer", "inner"
 
-	// 完整 ECH 特征哈希
+	// Full ECH feature hash
 	Hash string
 
-	// 可见字段签名（ECH 存在时的替代指纹）
+	// Visible fields signature (alternative fingerprint when ECH is present)
 	VisibleFieldsSignature string
 
-	// 异常判定分数
+	// Anomaly score
 	RiskScore float64
 
-	// 异常标记列表
+	// Anomaly flag list
 	AnomalyFlags []string
 
-	// 影响评估
+	// Impact assessment
 	Impact ECHImpact
 
-	// 建议的替代策略
+	// Suggested alternative strategies
 	AlternativeStrategies []string
 }
 
-// ECHImpact ECH 对指纹识别的影响
+// ECHImpact Impact of ECH on fingerprinting
 type ECHImpact struct {
-	// SNI 可见性
+	// SNI visibility
 	SNIVisible bool
 
-	// 受影响的指纹方法
+	// Affected fingerprinting methods
 	AffectedMethods []string
 
-	// 仍可用的指纹方法
+	// Still available fingerprinting methods
 	AvailableMethods []string
 
-	// 整体影响等级
+	// Overall impact level
 	ImpactLevel string // "none", "low", "medium", "high"
 }
 
-// ClientHelloData ClientHello 数据（用于 ECH 分析）
+// ClientHelloData ClientHello data (used for ECH analysis)
 type ClientHelloData struct {
-	// TLS 版本
+	// TLS version
 	TLSVersion uint16
 
-	// 扩展列表
+	// Extension list
 	Extensions []ExtensionData
 
 	// Cipher Suites
@@ -68,26 +68,26 @@ type ClientHelloData struct {
 	// Compression Methods
 	CompressionMethods []uint8
 
-	// 是否包含 SNI
+	// Whether SNI is present
 	HasSNI bool
 
-	// SNI 值（如果可见）
+	// SNI value (if visible)
 	SNI string
 }
 
-// ExtensionData 扩展数据
+// ExtensionData Extension data
 type ExtensionData struct {
 	Type uint16
 	Data []byte
 }
 
-// ECHAnalyzer ECH 分析器
+// ECHAnalyzer ECH analyzer
 type ECHAnalyzer struct {
-	// 已知的 ECH 配置
+	// Known ECH configurations
 	knownECHConfigs map[string]*ECHConfig
 }
 
-// ECHConfig 已知的 ECH 配置
+// ECHConfig Known ECH configuration
 type ECHConfig struct {
 	Name        string
 	Version     uint16
@@ -95,33 +95,33 @@ type ECHConfig struct {
 	RiskScore   float64
 }
 
-// NewECHAnalyzer 创建分析器
+// NewECHAnalyzer creates an analyzer
 func NewECHAnalyzer() *ECHAnalyzer {
 	return &ECHAnalyzer{
 		knownECHConfigs: initKnownECHConfigs(),
 	}
 }
 
-// AnalyzeClientHello 分析 ClientHello 中的 ECH
+// AnalyzeClientHello analyzes ECH in ClientHello
 func (a *ECHAnalyzer) AnalyzeClientHello(data ClientHelloData) (*ECHAnalysisResult, error) {
 	result := &ECHAnalysisResult{
 		AnomalyFlags:          []string{},
 		AlternativeStrategies: []string{},
 	}
 
-	// 1. 检测是否存在 ECH 扩展
+	// 1. Detect whether ECH extension is present
 	echExt := a.findECHExtension(data.Extensions)
 	result.ECHPresent = echExt != nil
 
 	if !result.ECHPresent {
-		// 没有 ECH，使用标准指纹方法
+		// No ECH, use standard fingerprinting methods
 		result.Impact.ImpactLevel = "none"
 		result.Impact.SNIVisible = data.HasSNI
 		result.Impact.AvailableMethods = []string{
 			"JA3", "JA4", "JA4S", "JA4H", "HTTP/2", "QUIC",
 		}
 
-		// 生成标准指纹哈希
+		// Generate standard fingerprint hash
 		result.VisibleFieldsSignature = a.generateVisibleFieldsSignature(data)
 		fullSignature := fmt.Sprintf("no_ech_%s", result.VisibleFieldsSignature)
 		hash := sha256.Sum256([]byte(fullSignature))
@@ -130,16 +130,16 @@ func (a *ECHAnalyzer) AnalyzeClientHello(data ClientHelloData) (*ECHAnalysisResu
 		return result, nil
 	}
 
-	// 2. 分析 ECH 配置
+	// 2. Analyze ECH configuration
 	a.analyzeECHExtension(echExt, result)
 
-	// 3. 评估影响
+	// 3. Assess impact
 	a.assessImpact(data, result)
 
-	// 4. 生成可见字段签名
+	// 4. Generate visible fields signature
 	result.VisibleFieldsSignature = a.generateVisibleFieldsSignature(data)
 
-	// 5. 计算完整哈希
+	// 5. Compute full hash
 	fullSignature := fmt.Sprintf("ech_%s_v%d_%s",
 		result.ECHType,
 		result.ECHVersion,
@@ -148,16 +148,16 @@ func (a *ECHAnalyzer) AnalyzeClientHello(data ClientHelloData) (*ECHAnalysisResu
 	hash := sha256.Sum256([]byte(fullSignature))
 	result.Hash = hex.EncodeToString(hash[:])
 
-	// 6. 异常检测
+	// 6. Anomaly detection
 	a.detectAnomalies(data, result)
 
-	// 7. 建议替代策略
+	// 7. Suggest alternative strategies
 	a.suggestAlternativeStrategies(result)
 
 	return result, nil
 }
 
-// findECHExtension 查找 ECH 扩展
+// findECHExtension finds the ECH extension
 func (a *ECHAnalyzer) findECHExtension(extensions []ExtensionData) *ExtensionData {
 	const (
 		ExtensionEncryptedClientHello = 0xfe0d // ECH extension type
@@ -173,29 +173,29 @@ func (a *ECHAnalyzer) findECHExtension(extensions []ExtensionData) *ExtensionDat
 	return nil
 }
 
-// analyzeECHExtension 分析 ECH 扩展
+// analyzeECHExtension analyzes the ECH extension
 func (a *ECHAnalyzer) analyzeECHExtension(ext *ExtensionData, result *ECHAnalysisResult) {
 	if ext == nil {
 		return
 	}
 
-	// 解析 ECH 类型和版本
+	// Parse ECH type and version
 	if len(ext.Data) < 2 {
 		result.ECHType = "unknown"
 		result.ECHVersion = 0
 		return
 	}
 
-	// ECH 版本在数据的前两个字节
+	// ECH version is in the first two bytes of data
 	result.ECHVersion = uint16(ext.Data[0])<<8 | uint16(ext.Data[1])
 
-	// GREASE 检测：版本号为 0
+	// GREASE detection: version number is 0
 	if result.ECHVersion == 0x0000 {
 		result.ECHType = "grease"
 		return
 	}
 
-	// 判断 ClientHello 类型（版本后的第一个字节）
+	// Determine ClientHello type (first byte after version)
 	if len(ext.Data) > 2 {
 		clientHelloType := ext.Data[2]
 		switch clientHelloType {
@@ -213,18 +213,18 @@ func (a *ECHAnalyzer) analyzeECHExtension(ext *ExtensionData, result *ECHAnalysi
 	}
 }
 
-// assessImpact 评估 ECH 影响
+// assessImpact assesses ECH impact
 func (a *ECHAnalyzer) assessImpact(data ClientHelloData, result *ECHAnalysisResult) {
-	result.Impact.SNIVisible = false // ECH 加密了 SNI
+	result.Impact.SNIVisible = false // ECH encrypted the SNI
 
-	// 受影响的方法
+	// Affected methods
 	result.Impact.AffectedMethods = []string{
 		"SNI-based routing",
 		"SNI filtering",
 		"Domain-specific policies",
 	}
 
-	// 仍可用的方法
+	// Still available methods
 	result.Impact.AvailableMethods = []string{
 		"JA3/JA4 fingerprinting",
 		"Cipher suite analysis",
@@ -235,25 +235,25 @@ func (a *ECHAnalyzer) assessImpact(data ClientHelloData, result *ECHAnalysisResu
 		"Behavioral analysis",
 	}
 
-	// 影响等级评估
+	// Impact level assessment
 	if result.ECHType == "grease" {
-		result.Impact.ImpactLevel = "low" // GREASE 不真正加密
+		result.Impact.ImpactLevel = "low" // GREASE does not truly encrypt
 	} else if result.ClientHelloType == "outer" {
-		result.Impact.ImpactLevel = "high" // Outer ClientHello，完整 ECH
+		result.Impact.ImpactLevel = "high" // Outer ClientHello, full ECH
 	} else {
 		result.Impact.ImpactLevel = "medium"
 	}
 }
 
-// generateVisibleFieldsSignature 生成可见字段签名
+// generateVisibleFieldsSignature generates a visible fields signature
 func (a *ECHAnalyzer) generateVisibleFieldsSignature(data ClientHelloData) string {
-	// 基于仍然可见的字段生成签名
+	// Generate signature based on still-visible fields
 	var parts []string
 
-	// TLS 版本
+	// TLS version
 	parts = append(parts, fmt.Sprintf("tls_%04x", data.TLSVersion))
 
-	// Cipher Suites（前5个）
+	// Cipher Suites (first 5)
 	cipherPart := "cs_"
 	for i, cs := range data.CipherSuites {
 		if i >= 5 {
@@ -263,7 +263,7 @@ func (a *ECHAnalyzer) generateVisibleFieldsSignature(data ClientHelloData) strin
 	}
 	parts = append(parts, cipherPart)
 
-	// 扩展类型（排除 ECH）
+	// Extension types (excluding ECH)
 	extPart := "ext_"
 	for _, ext := range data.Extensions {
 		if ext.Type != 0xfe0d && ext.Type != 0xfd00 {
@@ -281,35 +281,35 @@ func (a *ECHAnalyzer) generateVisibleFieldsSignature(data ClientHelloData) strin
 	return hex.EncodeToString(hash[:8])
 }
 
-// detectAnomalies 检测异常
+// detectAnomalies detects anomalies
 func (a *ECHAnalyzer) detectAnomalies(data ClientHelloData, result *ECHAnalysisResult) {
 	baseScore := 0.0
 
-	// 异常 1: GREASE ECH（可能是测试或探测）
+	// Anomaly 1: GREASE ECH (possibly testing or probing)
 	if result.ECHType == "grease" {
 		result.AnomalyFlags = append(result.AnomalyFlags, "GREASE_ECH")
 		baseScore += 0.1
 	}
 
-	// 异常 2: 未知 ECH 版本
+	// Anomaly 2: Unknown ECH version
 	if result.ECHVersion > 0xfe0d {
 		result.AnomalyFlags = append(result.AnomalyFlags, "UNKNOWN_ECH_VERSION")
 		baseScore += 0.15
 	}
 
-	// 异常 3: ECH 但仍有可见 SNI（配置错误）
+	// Anomaly 3: ECH but SNI still visible (misconfiguration)
 	if result.ECHPresent && data.HasSNI && result.ECHType != "grease" {
 		result.AnomalyFlags = append(result.AnomalyFlags, "ECH_WITH_VISIBLE_SNI")
 		baseScore += 0.3
 	}
 
-	// 异常 4: Outer ClientHello 缺少必要扩展
+	// Anomaly 4: Outer ClientHello missing required extensions
 	if result.ClientHelloType == "outer" && len(data.Extensions) < 5 {
 		result.AnomalyFlags = append(result.AnomalyFlags, "INCOMPLETE_OUTER_HELLO")
 		baseScore += 0.2
 	}
 
-	// 异常 5: TLS 版本过低但使用 ECH（ECH 需要 TLS 1.3）
+	// Anomaly 5: TLS version too old but using ECH (ECH requires TLS 1.3)
 	if data.TLSVersion < 0x0304 && result.ECHPresent {
 		result.AnomalyFlags = append(result.AnomalyFlags, "ECH_WITH_OLD_TLS")
 		baseScore += 0.35
@@ -321,56 +321,56 @@ func (a *ECHAnalyzer) detectAnomalies(data ClientHelloData, result *ECHAnalysisR
 	result.RiskScore = baseScore
 }
 
-// suggestAlternativeStrategies 建议替代策略
+// suggestAlternativeStrategies suggests alternative strategies
 func (a *ECHAnalyzer) suggestAlternativeStrategies(result *ECHAnalysisResult) {
 	if !result.ECHPresent {
 		return
 	}
 
-	// 基于 ECH 类型建议策略
+	// Suggest strategies based on ECH type
 	switch result.ECHType {
 	case "grease":
 		result.AlternativeStrategies = append(result.AlternativeStrategies,
-			"标准指纹方法仍完全可用（GREASE ECH 不加密）",
+			"Standard fingerprinting methods still fully available (GREASE ECH does not encrypt)",
 		)
 	case "outer":
 		result.AlternativeStrategies = append(result.AlternativeStrategies,
-			"使用 JA3/JA4 基于可见字段的指纹",
-			"分析 Cipher Suite 和扩展顺序",
-			"结合 HTTP/2 帧签名和 QUIC 特征",
-			"应用层行为分析（请求模式、时序）",
-			"IP 信誉和地理位置分析",
+			"Use JA3/JA4 fingerprinting based on visible fields",
+			"Analyze cipher suite and extension order",
+			"Combine HTTP/2 frame signatures and QUIC characteristics",
+			"Application layer behavior analysis (request patterns, timing)",
+			"IP reputation and geolocation analysis",
 		)
 	case "inner":
 		result.AlternativeStrategies = append(result.AlternativeStrategies,
-			"使用可见字段签名",
-			"跨请求行为关联",
-			"传输层特征分析",
+			"Use visible field signatures",
+			"Cross-request behavior correlation",
+			"Transport layer characteristic analysis",
 		)
 	}
 
-	// 通用建议
+	// General recommendations
 	if result.Impact.ImpactLevel == "high" || result.Impact.ImpactLevel == "medium" {
 		result.AlternativeStrategies = append(result.AlternativeStrategies,
-			"实施多层防御策略，不依赖单一指纹方法",
+			"Implement multi-layered defense strategy, do not rely on a single fingerprinting method",
 		)
 	}
 }
 
-// GetImpactSummary 获取影响摘要
+// GetImpactSummary gets the impact summary
 func (r *ECHAnalysisResult) GetImpactSummary() string {
 	if !r.ECHPresent {
-		return "无 ECH，标准指纹方法完全可用"
+		return "No ECH, standard fingerprinting methods fully available"
 	}
 
-	return fmt.Sprintf("ECH 类型: %s, 影响等级: %s, SNI 可见: %v",
+	return fmt.Sprintf("ECH type: %s, impact level: %s, SNI visible: %v",
 		r.ECHType,
 		r.Impact.ImpactLevel,
 		r.Impact.SNIVisible,
 	)
 }
 
-// ============ 已知配置库 ============
+// ============ Known configuration database ============
 
 func initKnownECHConfigs() map[string]*ECHConfig {
 	return map[string]*ECHConfig{
@@ -389,7 +389,7 @@ func initKnownECHConfigs() map[string]*ECHConfig {
 	}
 }
 
-// AnalyzeECH 便捷函数：分析 ECH
+// AnalyzeECH convenience function: analyzes ECH
 func AnalyzeECH(data ClientHelloData) (*ECHAnalysisResult, error) {
 	analyzer := NewECHAnalyzer()
 	return analyzer.AnalyzeClientHello(data)
