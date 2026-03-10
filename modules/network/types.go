@@ -1,4 +1,4 @@
 package network
 
-// ModuleName Network 模块名称。
+// ModuleName is the Network module name.
 const ModuleName = "network"

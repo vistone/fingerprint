@@ -286,7 +286,7 @@ func TestAnomalyScoreCapped(t *testing.T) {
 	}
 }
 
-// BenchmarkComputeJA4T 基准测试
+// BenchmarkComputeJA4T benchmark
 func BenchmarkComputeJA4T(b *testing.B) {
 	data := TCPSYNData{
 		WindowSize:  65535,

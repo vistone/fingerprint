@@ -394,7 +394,7 @@ func TestSetOSDatabase(t *testing.T) {
 	}
 }
 
-// BenchmarkAnalyzePacket 基准测试
+// BenchmarkAnalyzePacket benchmark
 func BenchmarkAnalyzePacket(b *testing.B) {
 	analyzer := NewTCPIPAnalyzer()
 	packet := TCPPacket{
