@@ -11,45 +11,45 @@ import (
 	"github.com/vistone/fingerprint/modules/internal/metrics"
 )
 
-// HTTP2SignatureResult HTTP/2 签名结果
+// HTTP2SignatureResult HTTP/2 signature result
 type HTTP2SignatureResult struct {
-	// 完整 HTTP/2 签名（SHA256）
+	// Complete HTTP/2 signature (SHA256)
 	Hash string
 
-	// 原始签名字符串（用于调试/验证）
+	// Raw signature string (for debugging/verification)
 	RawSignature string
 
-	// 分解的签名部分
-	SettingsSignature     string // Settings 帧签名
-	PrioritySignature     string // Priority 帧签名
-	HeadersSignature      string // Headers 帧签名
-	WindowUpdateSignature string // WindowUpdate 帧签名
+	// Decomposed signature parts
+	SettingsSignature     string // Settings frame signature
+	PrioritySignature     string // Priority frame signature
+	HeadersSignature      string // Headers frame signature
+	WindowUpdateSignature string // WindowUpdate frame signature
 
-	// 综合特征
-	FrameSequence string // 帧发送顺序特征
+	// Composite features
+	FrameSequence string // Frame sending order characteristics
 
-	// 异常判定分数
+	// Anomaly score
 	RiskScore float64
 
-	// 异常标记列表
+	// Anomaly flag list
 	AnomalyFlags []string
 
-	// 匹配的已知客户端指纹
+	// Matched known client fingerprints
 	MatchedClients []string
 }
 
-// HTTP2FrameData HTTP/2 帧数据
+// HTTP2FrameData HTTP/2 frame data
 type HTTP2FrameData struct {
 	Type       string                 // SETTINGS, PRIORITY, HEADERS, WINDOW_UPDATE
-	FrameID    uint32                 // 流 ID
-	Priority   *PriorityData          // 优先级信息
-	Settings   map[string]interface{} // SETTINGS 帧参数
-	Headers    []string               // 请求头顺序
-	WindowSize uint32                 // WINDOW_UPDATE 大小
-	Metadata   map[string]string      // 其他元数据
+	FrameID    uint32                 // Stream ID
+	Priority   *PriorityData          // Priority information
+	Settings   map[string]interface{} // SETTINGS frame parameters
+	Headers    []string               // Request header order
+	WindowSize uint32                 // WINDOW_UPDATE size
+	Metadata   map[string]string      // Other metadata
 }
 
-// PriorityData 优先级信息
+// PriorityData priority information
 type PriorityData struct {
 	DependsOn  uint32
 	StreamDep  uint32
@@ -58,12 +58,12 @@ type PriorityData struct {
 	DefaultExp bool
 }
 
-// HTTP2SignatureAnalyzer HTTP/2 签名分析器
+// HTTP2SignatureAnalyzer HTTP/2 signature analyzer
 type HTTP2SignatureAnalyzer struct {
 	knownClientProfiles map[string]*HTTP2ClientProfile
 }
 
-// HTTP2ClientProfile 已知的客户端配置
+// HTTP2ClientProfile known client configuration
 type HTTP2ClientProfile struct {
 	Name               string
 	BrowserName        string
@@ -75,14 +75,14 @@ type HTTP2ClientProfile struct {
 	RiskScore          float64
 }
 
-// NewHTTP2SignatureAnalyzer 创建分析器
+// NewHTTP2SignatureAnalyzer creates analyzer
 func NewHTTP2SignatureAnalyzer() *HTTP2SignatureAnalyzer {
 	return &HTTP2SignatureAnalyzer{
 		knownClientProfiles: initKnownHTTP2Profiles(),
 	}
 }
 
-// AnalyzeHTTP2Stream 分析 HTTP/2 流特征
+// AnalyzeHTTP2Stream analyzes HTTP/2 stream characteristics
 func (a *HTTP2SignatureAnalyzer) AnalyzeHTTP2Stream(frames []HTTP2FrameData) (*HTTP2SignatureResult, error) {
 	start := time.Now()
 	defer func() {
@@ -95,13 +95,13 @@ func (a *HTTP2SignatureAnalyzer) AnalyzeHTTP2Stream(frames []HTTP2FrameData) (*H
 	}
 
 	result := &HTTP2SignatureResult{
-		AnomalyFlags:      make([]string, 0, 8), // 预分配容量
+		AnomalyFlags:      make([]string, 0, 8), // Pre-allocate capacity
 		SettingsSignature: "",
 		PrioritySignature: "",
 		HeadersSignature:  "",
 	}
 
-	// 分类处理帧
+	// Classify and process frames
 	var settingsFrames, priorityFrames, headersFrames, windowUpdateFrames []HTTP2FrameData
 
 	for _, frame := range frames {
@@ -117,34 +117,34 @@ func (a *HTTP2SignatureAnalyzer) AnalyzeHTTP2Stream(frames []HTTP2FrameData) (*H
 		}
 	}
 
-	// 1. SETTINGS 帧签名
+	// 1. SETTINGS frame signature
 	if len(settingsFrames) > 0 {
 		result.SettingsSignature = generateSettingsSignature(settingsFrames[0])
 	}
 
-	// 2. PRIORITY 帧签名
+	// 2. PRIORITY frame signature
 	if len(priorityFrames) > 0 {
 		result.PrioritySignature = generatePrioritySignature(priorityFrames)
 	}
 
-	// 3. HEADERS 帧签名（请求头顺序）
+	// 3. HEADERS frame signature (request header order)
 	if len(headersFrames) > 0 {
 		result.HeadersSignature = generateHeadersSignature(headersFrames[0])
 	}
 
-	// 4. WINDOW_UPDATE 帧签名
+	// 4. WINDOW_UPDATE frame signature
 	if len(windowUpdateFrames) > 0 {
 		result.WindowUpdateSignature = generateWindowUpdateSignature(windowUpdateFrames)
 	}
 
-	// 5. 帧序列特征
+	// 5. Frame sequence characteristics
 	var frameTypes []string
 	for _, frame := range frames {
 		frameTypes = append(frameTypes, strings.ToLower(frame.Type[:3])) // SET, PRI, HEA, WIN
 	}
 	result.FrameSequence = strings.Join(frameTypes, "-")
 
-	// 构建完整签名字符串
+	// Build complete signature string
 	result.RawSignature = fmt.Sprintf(
 		"http2|%s|%s|%s|%s|%s",
 		result.SettingsSignature,
@@ -154,24 +154,24 @@ func (a *HTTP2SignatureAnalyzer) AnalyzeHTTP2Stream(frames []HTTP2FrameData) (*H
 		result.FrameSequence,
 	)
 
-	// 计算 SHA256 哈希
+	// Calculate SHA256 hash
 	hash := sha256.Sum256([]byte(result.RawSignature))
 	result.Hash = hex.EncodeToString(hash[:])
 
-	// 异常检测
+	// Anomaly detection
 	a.detectHTTP2Anomalies(result, settingsFrames, priorityFrames, headersFrames)
 
 	return result, nil
 }
 
-// detectHTTP2Anomalies 检测 HTTP/2 异常
+// detectHTTP2Anomalies detects HTTP/2 anomalies
 func (a *HTTP2SignatureAnalyzer) detectHTTP2Anomalies(
 	result *HTTP2SignatureResult,
 	settingsFrames, priorityFrames, headersFrames []HTTP2FrameData,
 ) {
 	baseScore := 0.0
 
-	// 异常 1: SETTINGS 帧参数异常
+	// Anomaly 1: SETTINGS frame parameter anomalies
 	if len(settingsFrames) > 0 {
 		if settingsFrames[0].Settings == nil || len(settingsFrames[0].Settings) == 0 {
 			result.AnomalyFlags = append(result.AnomalyFlags, "EMPTY_SETTINGS")
@@ -183,7 +183,7 @@ func (a *HTTP2SignatureAnalyzer) detectHTTP2Anomalies(
 		}
 	}
 
-	// 异常 2: 优先级树结构异常
+	// Anomaly 2: Priority tree structure anomalies
 	if len(priorityFrames) > 0 {
 		if !isValidPriorityTree(priorityFrames) {
 			result.AnomalyFlags = append(result.AnomalyFlags, "INVALID_PRIORITY_TREE")
@@ -191,7 +191,7 @@ func (a *HTTP2SignatureAnalyzer) detectHTTP2Anomalies(
 		}
 	}
 
-	// 异常 3: 请求头顺序异常
+	// Anomaly 3: Request header order anomalies
 	if len(headersFrames) > 0 {
 		if !isStandardHeaderOrder(headersFrames[0]) {
 			result.AnomalyFlags = append(result.AnomalyFlags, "UNUSUAL_HEADER_ORDER")
@@ -199,15 +199,15 @@ func (a *HTTP2SignatureAnalyzer) detectHTTP2Anomalies(
 		}
 	}
 
-	// 异常 4: 帧序列不合理
+	// Anomaly 4: Invalid frame sequence
 	if !isValidFrameSequence(result.FrameSequence) {
 		result.AnomalyFlags = append(result.AnomalyFlags, "INVALID_FRAME_SEQUENCE")
 		baseScore += 0.2
 	}
 
-	// 异常 5: 窗口更新参数异常
+	// Anomaly 5: Window update parameter anomalies
 	if result.WindowUpdateSignature == "" && len(settingsFrames) > 0 {
-		// 有 SETTINGS 但没有对应的 WINDOW_UPDATE
+		// Has SETTINGS but no corresponding WINDOW_UPDATE
 		result.AnomalyFlags = append(result.AnomalyFlags, "MISSING_WINDOW_UPDATE")
 		baseScore += 0.1
 	}
@@ -218,7 +218,7 @@ func (a *HTTP2SignatureAnalyzer) detectHTTP2Anomalies(
 	result.RiskScore = baseScore
 }
 
-// FindMatchingHTTP2Clients 查找匹配的已知 HTTP/2 客户端
+// FindMatchingHTTP2Clients finds matching known HTTP/2 clients
 func (a *HTTP2SignatureAnalyzer) FindMatchingHTTP2Clients(
 	result *HTTP2SignatureResult,
 	maxResults int,
@@ -226,7 +226,7 @@ func (a *HTTP2SignatureAnalyzer) FindMatchingHTTP2Clients(
 	var matches []string
 
 	for name, profile := range a.knownClientProfiles {
-		// 基于风险分数和签名特征的粗略匹配
+		// Rough matching based on risk score and signature features
 		if profile.RiskScore < result.RiskScore+0.2 {
 			matches = append(matches, name)
 		}
@@ -240,14 +240,14 @@ func (a *HTTP2SignatureAnalyzer) FindMatchingHTTP2Clients(
 	return matches
 }
 
-// ============ 辅助生成函数 ============
+// ============ Helper generation functions ============
 
 func generateSettingsSignature(frame HTTP2FrameData) string {
 	if frame.Settings == nil {
 		return "empty"
 	}
 
-	// 对 SETTINGS 参数排序并生成签名
+	// Sort SETTINGS parameters and generate signature
 	var keys []string
 	for k := range frame.Settings {
 		keys = append(keys, k)
@@ -260,14 +260,14 @@ func generateSettingsSignature(frame HTTP2FrameData) string {
 		parts = append(parts, fmt.Sprintf("%s=%v", k, v))
 	}
 
-	// 计算简单的哈希值
+	// Calculate simple hash value
 	sig := strings.Join(parts, ",")
 	hash := sha256.Sum256([]byte(sig))
-	return hex.EncodeToString(hash[:8]) // 取前 16 个字符
+	return hex.EncodeToString(hash[:8]) // Take first 16 characters
 }
 
 func generatePrioritySignature(frames []HTTP2FrameData) string {
-	// 基于优先级树的深度和宽度
+	// Based on priority tree depth and width
 	if len(frames) == 0 {
 		return "empty"
 	}
@@ -279,7 +279,7 @@ func generatePrioritySignature(frames []HTTP2FrameData) string {
 		}
 	}
 
-	// 计算哈希
+	// Calculate hash
 	text := sig.String()
 	if text == "" {
 		return "no_priority"
@@ -289,12 +289,12 @@ func generatePrioritySignature(frames []HTTP2FrameData) string {
 }
 
 func generateHeadersSignature(frame HTTP2FrameData) string {
-	// 基于请求头顺序和数量
+	// Based on request header order and count
 	if len(frame.Headers) == 0 {
 		return "empty"
 	}
 
-	// 伪代码头应该首先出现
+	// Pseudo-header should appear first
 	var sig strings.Builder
 	for _, h := range frame.Headers {
 		if strings.HasPrefix(h, ":") {
@@ -310,7 +310,7 @@ func generateHeadersSignature(frame HTTP2FrameData) string {
 }
 
 func generateWindowUpdateSignature(frames []HTTP2FrameData) string {
-	// 基于 WINDOW_UPDATE 的规模和频率
+	// Based on WINDOW_UPDATE size and frequency
 	if len(frames) == 0 {
 		return "empty"
 	}
@@ -320,7 +320,7 @@ func generateWindowUpdateSignature(frames []HTTP2FrameData) string {
 		totalSize += frame.WindowSize
 	}
 
-	// 分级：小(0-65k), 中(65k-1M), 大(>1M)
+	// Levels: small(0-65k), medium(65k-1M), large(>1M)
 	var level string
 	if totalSize < 65536 {
 		level = "small"
@@ -335,21 +335,21 @@ func generateWindowUpdateSignature(frames []HTTP2FrameData) string {
 	return hex.EncodeToString(hash[:8])
 }
 
-// ============ 验证函数 ============
+// ============ Validation functions ============
 
 func isValidPriorityTree(frames []HTTP2FrameData) bool {
-	// 简化检查：至少有一个有效的优先级帧
+	// Simplified check: at least one valid priority frame
 	for _, frame := range frames {
 		if frame.Priority != nil && frame.Priority.StreamDep > 0 {
 			return true
 		}
 	}
-	// 如果没有优先级帧也是有效的（流 0 是隐含的）
+	// If no priority frame, it is still valid (stream 0 is implicit)
 	return true
 }
 
 func isStandardHeaderOrder(frame HTTP2FrameData) bool {
-	// 检查伪代码头（以 : 开头）是否排在前面
+	// Check if pseudo-headers (starting with :) appear before others
 	if len(frame.Headers) < 2 {
 		return true
 	}
@@ -366,7 +366,7 @@ func isStandardHeaderOrder(frame HTTP2FrameData) bool {
 		}
 	}
 
-	// 伪代码头应该在普通头之前
+	// Pseudo-headers should appear before regular headers
 	if firstPseudoIdx != -1 && firstNormalIdx != -1 {
 		return firstPseudoIdx < firstNormalIdx
 	}
@@ -375,12 +375,12 @@ func isStandardHeaderOrder(frame HTTP2FrameData) bool {
 }
 
 func isValidFrameSequence(frameSeq string) bool {
-	// SETTINGS 通常首先出现，然后是其他帧类型
-	// set -> ... 的序列是最常见的
+	// SETTINGS typically appears first, followed by other frame types
+	// The sequence set -> ... is most common
 	return strings.HasPrefix(frameSeq, "set")
 }
 
-// ============ 已知配置库 ============
+// ============ Known configuration library ============
 
 func initKnownHTTP2Profiles() map[string]*HTTP2ClientProfile {
 	return map[string]*HTTP2ClientProfile{
@@ -417,7 +417,7 @@ func initKnownHTTP2Profiles() map[string]*HTTP2ClientProfile {
 	}
 }
 
-// ComputeHTTP2Signature 便捷函数：计算 HTTP/2 签名
+// ComputeHTTP2Signature convenience function: computes HTTP/2 signature
 func ComputeHTTP2Signature(frames []HTTP2FrameData) (*HTTP2SignatureResult, error) {
 	analyzer := NewHTTP2SignatureAnalyzer()
 	return analyzer.AnalyzeHTTP2Stream(frames)
