@@ -258,6 +258,9 @@ func alpnToJA4(alpn string) string {
 	if alpn == "" {
 		return "00"
 	}
+	if len(alpn) == 1 {
+		return alpn[0:1] + alpn[0:1]
+	}
 	return alpn[0:1] + alpn[len(alpn)-1:]
 }
 
