@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// TestAnalyzeRequest 测试请求分析
+// TestAnalyzeRequest tests request analysis
 func TestAnalyzeRequest(t *testing.T) {
 	analyzer := NewAnalyzer()
 
@@ -56,7 +56,7 @@ func TestAnalyzeRequest(t *testing.T) {
 	})
 }
 
-// TestAnalyzeSecWebSocketKey 测试 Key 分析
+// TestAnalyzeSecWebSocketKey tests Key analysis
 func TestAnalyzeSecWebSocketKey(t *testing.T) {
 	analyzer := NewAnalyzer()
 
@@ -104,7 +104,7 @@ func TestAnalyzeSecWebSocketKey(t *testing.T) {
 	}
 }
 
-// TestAnalyzeExtensions 测试扩展分析
+// TestAnalyzeExtensions tests extension analysis
 func TestAnalyzeExtensions(t *testing.T) {
 	analyzer := NewAnalyzer()
 
@@ -155,7 +155,7 @@ func TestAnalyzeExtensions(t *testing.T) {
 	})
 }
 
-// TestIdentifyBrowser 测试浏览器识别
+// TestIdentifyBrowser tests browser identification
 func TestIdentifyBrowser(t *testing.T) {
 	analyzer := NewAnalyzer()
 
@@ -209,7 +209,7 @@ func TestIdentifyBrowser(t *testing.T) {
 	}
 }
 
-// TestCompareFingerprints 测试指纹比较
+// TestCompareFingerprints tests fingerprint comparison
 func TestCompareFingerprints(t *testing.T) {
 	fp1 := &WebSocketFingerprint{
 		Handshake: WebSocketHandshake{
@@ -257,9 +257,9 @@ func TestCompareFingerprints(t *testing.T) {
 	})
 }
 
-// TestGenerateAcceptKey 测试 Accept Key 生成
+// TestGenerateAcceptKey tests Accept Key generation
 func TestGenerateAcceptKey(t *testing.T) {
-	// RFC 6455 测试向量
+	// RFC 6455 test vector
 	key := "dGhlIHNhbXBsZSBub25jZQ=="
 	expected := "s3pPLMBiTxaQ9kYGzzhZRbK+xOo="
 
@@ -273,7 +273,7 @@ func TestGenerateAcceptKey(t *testing.T) {
 	}
 }
 
-// TestIsValidWebSocketRequest 测试请求验证
+// TestIsValidWebSocketRequest tests request validation
 func TestIsValidWebSocketRequest(t *testing.T) {
 	tests := []struct {
 		name string
@@ -324,7 +324,7 @@ func TestIsValidWebSocketRequest(t *testing.T) {
 	}
 }
 
-// TestParseFrame 测试帧解析
+// TestParseFrame tests frame parsing
 func TestParseFrame(t *testing.T) {
 	t.Run("text_frame", func(t *testing.T) {
 		// FIN=1, Opcode=1 (text), MASK=1, Length=5
@@ -406,7 +406,7 @@ func TestParseFrame(t *testing.T) {
 	})
 }
 
-// TestAnalyzeFrame 测试帧分析
+// TestAnalyzeFrame tests frame analysis
 func TestAnalyzeFrame(t *testing.T) {
 	frame := &Frame{
 		FIN:           true,
@@ -426,7 +426,7 @@ func TestAnalyzeFrame(t *testing.T) {
 	}
 }
 
-// TestAnalyzeFrameStream 测试帧流分析
+// TestAnalyzeFrameStream tests frame stream analysis
 func TestAnalyzeFrameStream(t *testing.T) {
 	frames := []*Frame{
 		{Opcode: OpCodeText, MASK: true, PayloadLength: 100},
@@ -451,7 +451,7 @@ func TestAnalyzeFrameStream(t *testing.T) {
 	}
 }
 
-// BenchmarkAnalyzeRequest 基准测试
+// BenchmarkAnalyzeRequest benchmark test
 func BenchmarkAnalyzeRequest(b *testing.B) {
 	analyzer := NewAnalyzer()
 	req := createTestRequest()
@@ -467,7 +467,7 @@ func BenchmarkAnalyzeRequest(b *testing.B) {
 	}
 }
 
-// BenchmarkParseFrame 帧解析基准测试
+// BenchmarkParseFrame frame parsing benchmark test
 func BenchmarkParseFrame(b *testing.B) {
 	frame := []byte{
 		0x81, 0x85,
@@ -486,7 +486,7 @@ func BenchmarkParseFrame(b *testing.B) {
 	}
 }
 
-// createTestRequest 创建测试请求
+// createTestRequest creates a test request
 func createTestRequest() *http.Request {
 	req, _ := http.NewRequest("GET", "ws://example.com/ws", nil)
 	req.Header.Set("Host", "example.com")
@@ -499,7 +499,7 @@ func createTestRequest() *http.Request {
 	return req
 }
 
-// TestJaccardSimilarity 测试 Jaccard 相似度
+// TestJaccardSimilarity tests Jaccard similarity
 func TestJaccardSimilarity(t *testing.T) {
 	tests := []struct {
 		name string
@@ -550,7 +550,7 @@ func abs(x float64) float64 {
 	return x
 }
 
-// TestParseExtensionHeader 测试扩展头部解析
+// TestParseExtensionHeader tests extension header parsing
 func TestParseExtensionHeader(t *testing.T) {
 	tests := []struct {
 		name   string
