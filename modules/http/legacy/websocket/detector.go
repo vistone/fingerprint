@@ -6,31 +6,31 @@ import (
 	"strings"
 )
 
-// AnomalyType 异常类型
+// AnomalyType anomaly type
 type AnomalyType string
 
 const (
-	// AnomalyInvalidMethod 无效的 HTTP 方法
+	// AnomalyInvalidMethod invalid HTTP method
 	AnomalyInvalidMethod AnomalyType = "invalid_method"
-	// AnomalyMissingHeaders 缺少必需头部
+	// AnomalyMissingHeaders missing required headers
 	AnomalyMissingHeaders AnomalyType = "missing_headers"
-	// AnomalySuspiciousKey 可疑的 WebSocket Key
+	// AnomalySuspiciousKey suspicious WebSocket Key
 	AnomalySuspiciousKey AnomalyType = "suspicious_key"
-	// AnomalyLowEntropyKey 低熵 Key（可能是伪随机）
+	// AnomalyLowEntropyKey low entropy Key (possibly pseudo-random)
 	AnomalyLowEntropyKey AnomalyType = "low_entropy_key"
-	// AnomalyAbnormalHeaderOrder 异常的头部顺序
+	// AnomalyAbnormalHeaderOrder abnormal header order
 	AnomalyAbnormalHeaderOrder AnomalyType = "abnormal_header_order"
-	// AnomalySuspiciousExtensions 可疑的扩展
+	// AnomalySuspiciousExtensions suspicious extensions
 	AnomalySuspiciousExtensions AnomalyType = "suspicious_extensions"
-	// AnomalyKnownBotSignature 已知的机器人特征
+	// AnomalyKnownBotSignature known bot signature
 	AnomalyKnownBotSignature AnomalyType = "known_bot_signature"
-	// AnomalyFrameAnomaly 帧异常
+	// AnomalyFrameAnomaly frame anomaly
 	AnomalyFrameAnomaly AnomalyType = "frame_anomaly"
-	// AnomalyVersionMismatch 版本不匹配
+	// AnomalyVersionMismatch version mismatch
 	AnomalyVersionMismatch AnomalyType = "version_mismatch"
 )
 
-// Anomaly 异常检测结果的详细异常信息
+// Anomaly detailed anomaly information from detection result
 type Anomaly struct {
 	Type        AnomalyType
 	Description string
@@ -38,47 +38,47 @@ type Anomaly struct {
 	Evidence    map[string]interface{}
 }
 
-// Severity 严重程度
+// Severity severity level
 type Severity string
 
 const (
-	// SeverityInfo 信息级别
+	// SeverityInfo info level
 	SeverityInfo Severity = "info"
-	// SeverityLow 低级别
+	// SeverityLow low level
 	SeverityLow Severity = "low"
-	// SeverityMedium 中级别
+	// SeverityMedium medium level
 	SeverityMedium Severity = "medium"
-	// SeverityHigh 高级别
+	// SeverityHigh high level
 	SeverityHigh Severity = "high"
-	// SeverityCritical 严重级别
+	// SeverityCritical critical level
 	SeverityCritical Severity = "critical"
 )
 
-// Detector WebSocket 异常检测器
+// Detector WebSocket anomaly detector
 type Detector struct {
-	// 已知的机器人 User-Agent 模式
+	// Known bot User-Agent patterns
 	botPatterns []string
-	// 已知的异常 Key 模式
+	// Known suspicious Key patterns
 	suspiciousKeyPatterns [][]byte
-	// 正常的头部顺序（用于比较）
+	// Normal header orders (for comparison)
 	normalHeaderOrders map[string][]string
 }
 
-// DetectionResult 检测结果
+// DetectionResult detection result
 type DetectionResult struct {
-	// 是否检测到异常
+	// Whether anomaly detected
 	HasAnomaly bool
-	// 异常列表
+	// Anomaly list
 	Anomalies []Anomaly
-	// 风险评分 (0-100)
+	// Risk score (0-100)
 	RiskScore int
-	// 检测到的浏览器类型（如果有）
+	// Detected browser type (if any)
 	DetectedBrowser string
-	// 是否为已知的自动化工具
+	// Whether known automation tool
 	IsKnownBot bool
 }
 
-// NewDetector 创建新的检测器
+// NewDetector creates new detector
 func NewDetector() *Detector {
 	return &Detector{
 		botPatterns: []string{
@@ -87,8 +87,10 @@ func NewDetector() *Detector {
 			"selenium", "playwright", "cypress",
 		},
 		suspiciousKeyPatterns: [][]byte{
-			{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // 全零
-			{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, // 递增
+			{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // All zeros
+						{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // All zeros
+			{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, // Incremental
+					{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, // Incremental
 		},
 		normalHeaderOrders: map[string][]string{
 			"chrome": {
@@ -113,44 +115,50 @@ func NewDetector() *Detector {
 	}
 }
 
-// Detect 检测 WebSocket 请求的异常
+// Detect detects anomalies in WebSocket request
 func (d *Detector) Detect(req *http.Request, fp *WebSocketFingerprint) *DetectionResult {
 	result := &DetectionResult{
 		Anomalies: make([]Anomaly, 0),
 	}
 
-	// 1. 验证 HTTP 方法
+	// 1. Validate HTTP method
 	d.checkMethod(req, result)
 
-	// 2. 检查必需头部
+	// 2. Check required headers
+		// 2. Check required headers
 	d.checkRequiredHeaders(req, result)
 
-	// 3. 分析 WebSocket Key
+	// 3. Analyze WebSocket Key
+		// 3. Analyze WebSocket Key
 	d.analyzeKey(fp, result)
 
-	// 4. 分析头部顺序
+	// 4. Analyze header order
+		// 4. Analyze header order
 	d.analyzeHeaderOrder(fp, result)
 
-	// 5. 检查扩展
+	// 5. Check extensions
+		// 5. Check extensions
 	d.checkExtensions(fp, result)
 
-	// 6. 检测已知机器人
+	// 6. Detect known bots
+		// 6. Detect known bots
 	d.detectBot(req, result)
 
-	// 7. 计算风险评分
+	// 7. Calculate risk score
+		// 7. Calculate risk score
 	result.RiskScore = d.calculateRiskScore(result)
 	result.HasAnomaly = len(result.Anomalies) > 0
 
 	return result
 }
 
-// DetectFrameAnomalies 检测帧异常
+// DetectFrameAnomalies detects frame anomalies
 func (d *Detector) DetectFrameAnomalies(frame *Frame) *DetectionResult {
 	result := &DetectionResult{
 		Anomalies: make([]Anomaly, 0),
 	}
 
-	// 检查 RSV 位（应为 0，除非使用扩展）
+	// Check RSV bits (should be 0 unless using extensions)
 	if frame.RSV1 || frame.RSV2 || frame.RSV3 {
 		result.Anomalies = append(result.Anomalies, Anomaly{
 			Type:        AnomalyFrameAnomaly,
@@ -164,13 +172,13 @@ func (d *Detector) DetectFrameAnomalies(frame *Frame) *DetectionResult {
 		})
 	}
 
-	// 检查服务端发送的帧是否未掩码（服务端不应掩码）
+	// Check if server-sent frame is unmasked (server should not mask)
 	if !frame.MASK && frame.Opcode != OpCodeClose {
-		// 这可能是客户端帧，需要进一步验证
-		// 实际检测需要上下文
+		// This may be client frame, needs further verification
+		// Actual detection requires context
 	}
 
-	// 检查控制帧大小（控制帧载荷不应超过 125 字节）
+	// Check control frame size (control frame payload should not exceed 125 bytes)
 	if frame.Opcode >= 0x8 && frame.PayloadLength > 125 {
 		result.Anomalies = append(result.Anomalies, Anomaly{
 			Type:        AnomalyFrameAnomaly,
@@ -183,7 +191,7 @@ func (d *Detector) DetectFrameAnomalies(frame *Frame) *DetectionResult {
 		})
 	}
 
-	// 检查异常大的 payload
+	// Check unusually large payload
 	if frame.PayloadLength > 10*1024*1024 { // 10MB
 		result.Anomalies = append(result.Anomalies, Anomaly{
 			Type:        AnomalyFrameAnomaly,
@@ -201,7 +209,7 @@ func (d *Detector) DetectFrameAnomalies(frame *Frame) *DetectionResult {
 	return result
 }
 
-// checkMethod 检查 HTTP 方法
+// checkMethod checks HTTP method
 func (d *Detector) checkMethod(req *http.Request, result *DetectionResult) {
 	if req.Method != "GET" {
 		result.Anomalies = append(result.Anomalies, Anomaly{
@@ -215,7 +223,7 @@ func (d *Detector) checkMethod(req *http.Request, result *DetectionResult) {
 	}
 }
 
-// checkRequiredHeaders 检查必需头部
+// checkRequiredHeaders checks required headers
 func (d *Detector) checkRequiredHeaders(req *http.Request, result *DetectionResult) {
 	requiredHeaders := map[string]string{
 		"Upgrade":               "websocket",
@@ -230,7 +238,7 @@ func (d *Detector) checkRequiredHeaders(req *http.Request, result *DetectionResu
 	for header, expectedValue := range requiredHeaders {
 		value := req.Header.Get(header)
 		if value == "" {
-			// 尝试小写版本
+			// Try lowercase version
 			value = req.Header.Get(strings.ToLower(header))
 		}
 
@@ -264,11 +272,11 @@ func (d *Detector) checkRequiredHeaders(req *http.Request, result *DetectionResu
 	}
 }
 
-// analyzeKey 分析 WebSocket Key
+// analyzeKey analyzes WebSocket Key
 func (d *Detector) analyzeKey(fp *WebSocketFingerprint, result *DetectionResult) {
 	keyChar := fp.Handshake.SecWebSocketKeyCharacteristics
 
-	// 检查 Key 长度
+	// Check Key length
 	if keyChar.Length != 24 {
 		result.Anomalies = append(result.Anomalies, Anomaly{
 			Type:        AnomalySuspiciousKey,
@@ -280,7 +288,7 @@ func (d *Detector) analyzeKey(fp *WebSocketFingerprint, result *DetectionResult)
 		})
 	}
 
-	// 检查是否为标准 Base64
+	// Check if standard Base64
 	if !keyChar.IsStandardBase64 {
 		result.Anomalies = append(result.Anomalies, Anomaly{
 			Type:        AnomalySuspiciousKey,
@@ -292,7 +300,7 @@ func (d *Detector) analyzeKey(fp *WebSocketFingerprint, result *DetectionResult)
 		})
 	}
 
-	// 检查熵值
+	// Check entropy value
 	if keyChar.Entropy < 3.0 {
 		result.Anomalies = append(result.Anomalies, Anomaly{
 			Type:        AnomalyLowEntropyKey,
@@ -306,7 +314,7 @@ func (d *Detector) analyzeKey(fp *WebSocketFingerprint, result *DetectionResult)
 		})
 	}
 
-	// 检查已知模式
+	// Check known patterns
 	if keyChar.HasPattern && keyChar.PatternType != "" {
 		result.Anomalies = append(result.Anomalies, Anomaly{
 			Type:        AnomalySuspiciousKey,
@@ -319,13 +327,13 @@ func (d *Detector) analyzeKey(fp *WebSocketFingerprint, result *DetectionResult)
 	}
 }
 
-// analyzeHeaderOrder 分析头部顺序
+// analyzeHeaderOrder analyzes header order
 func (d *Detector) analyzeHeaderOrder(fp *WebSocketFingerprint, result *DetectionResult) {
 	if len(fp.Handshake.HeaderOrder) == 0 {
 		return
 	}
 
-	// 检查 User-Agent 以识别浏览器
+	// Check User-Agent to identify browser
 	browser := d.identifyBrowserFromUA(fp.Handshake.UserAgent)
 	if browser == "" {
 		return
@@ -336,10 +344,10 @@ func (d *Detector) analyzeHeaderOrder(fp *WebSocketFingerprint, result *Detectio
 		return
 	}
 
-	// 计算顺序匹配度
+	// Calculate order match score
 	matchScore := d.calculateHeaderOrderMatch(fp.Handshake.HeaderOrder, normalOrder)
 
-	// 如果匹配度太低，可能是异常的客户端
+	// If match score too low, possibly abnormal client
 	if matchScore < 0.3 {
 		result.Anomalies = append(result.Anomalies, Anomaly{
 			Type:        AnomalyAbnormalHeaderOrder,
@@ -355,9 +363,9 @@ func (d *Detector) analyzeHeaderOrder(fp *WebSocketFingerprint, result *Detectio
 	}
 }
 
-// checkExtensions 检查扩展
+// checkExtensions checks extensions
 func (d *Detector) checkExtensions(fp *WebSocketFingerprint, result *DetectionResult) {
-	// 检查是否有已知的可疑扩展
+	// Check if there are known suspicious extensions
 	suspiciousExts := []string{"x-unknown-extension", "malicious-ext"}
 
 	for _, ext := range fp.Extensions {
@@ -376,7 +384,7 @@ func (d *Detector) checkExtensions(fp *WebSocketFingerprint, result *DetectionRe
 	}
 }
 
-// detectBot 检测机器人
+// detectBot detects bots
 func (d *Detector) detectBot(req *http.Request, result *DetectionResult) {
 	ua := req.Header.Get("User-Agent")
 	if ua == "" {
@@ -402,7 +410,7 @@ func (d *Detector) detectBot(req *http.Request, result *DetectionResult) {
 	}
 }
 
-// calculateRiskScore 计算风险评分
+// calculateRiskScore calculates risk score
 func (d *Detector) calculateRiskScore(result *DetectionResult) int {
 	if len(result.Anomalies) == 0 {
 		return 0
@@ -424,12 +432,13 @@ func (d *Detector) calculateRiskScore(result *DetectionResult) int {
 		}
 	}
 
-	// 如果是已知机器人，增加风险分
+	// If known bot, increase risk score
 	if result.IsKnownBot {
 		score += 50
 	}
 
-	// 限制在 0-100
+	// Limit to 0-100
+		// Limit to 0-100
 	if score > 100 {
 		score = 100
 	}
@@ -437,7 +446,7 @@ func (d *Detector) calculateRiskScore(result *DetectionResult) int {
 	return score
 }
 
-// identifyBrowserFromUA 从 User-Agent 识别浏览器
+// identifyBrowserFromUA identifies browser from User-Agent
 func (d *Detector) identifyBrowserFromUA(ua string) string {
 	uaLower := strings.ToLower(ua)
 
@@ -457,26 +466,26 @@ func (d *Detector) identifyBrowserFromUA(ua string) string {
 	return ""
 }
 
-// calculateHeaderOrderMatch 计算头部顺序匹配度
+// calculateHeaderOrderMatch calculates header order match score
 func (d *Detector) calculateHeaderOrderMatch(actual, normal []string) float64 {
 	if len(actual) == 0 || len(normal) == 0 {
 		return 0.0
 	}
 
-	// 创建位置映射，使用 -1 表示不存在
+	// Create position mapping, use -1 for non-existent
 	normalPos := make(map[string]int)
 	for i, h := range normal {
 		normalPos[strings.ToLower(h)] = i
 	}
 
-	// 计算匹配的前几个头部
+	// Calculate matches for first few headers
 	matchCount := 0
-	checkCount := min(len(actual), len(normal), 5) // 检查前5个
+	checkCount := min(len(actual), len(normal), 5) // Check first 5
 
 	for i := 0; i < checkCount; i++ {
 		if i < len(actual) {
 			actualLower := strings.ToLower(actual[i])
-			// 只有当头部存在于 normal 中且位置匹配时才计数
+			// Only count when header exists in normal and position matches
 			if pos, exists := normalPos[actualLower]; exists && pos == i {
 				matchCount++
 			}
@@ -486,7 +495,7 @@ func (d *Detector) calculateHeaderOrderMatch(actual, normal []string) float64 {
 	return float64(matchCount) / float64(checkCount)
 }
 
-// GetSeverityWeight 获取严重程度权重
+// GetSeverityWeight gets severity weight
 func GetSeverityWeight(s Severity) int {
 	switch s {
 	case SeverityInfo:
@@ -504,7 +513,7 @@ func GetSeverityWeight(s Severity) int {
 	}
 }
 
-// min 返回最小值
+// min returns minimum value
 func min(values ...int) int {
 	if len(values) == 0 {
 		return 0
