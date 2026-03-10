@@ -1,42 +1,42 @@
-// Package ml 提供预训练模型和初始化功能
+// Package ml provides pretrained models and initialization functionality
 package ml
 
 import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// InitWithSyntheticData 使用合成数据初始化分类器
+// InitWithSyntheticData initialize classifier with synthetic data
 func InitWithSyntheticData(classifier *HierarchicalClassifier, sampleCount int) error {
-	// 生成合成数据集
+	// Generate synthetic dataset
 	dataset := GenerateSyntheticDataset("synthetic_init", sampleCount)
 	
-	// 转换为训练数据
+	// Convert to training data
 	trainingData := dataset.ToTrainingData()
 	
-	// 训练分类器
+	// Train classifier
 	return classifier.Train(trainingData)
 }
 
-// InitPretrainedClassifier 创建并初始化预训练分类器
+// InitPretrainedClassifier create and initialize pretrained classifier
 func InitPretrainedClassifier() *HierarchicalClassifier {
 	hc := NewHierarchicalClassifier()
 	hc.Initialize()
 	
-	// 使用合成数据初始化（实际应该加载真实训练数据）
+	// Initialize with synthetic data (should load real training data in practice)
 	InitWithSyntheticData(hc, 1000)
 	
 	return hc
 }
 
-// DefaultClassifier 默认预训练分类器（单例）
+// DefaultClassifier default pretrained classifier (singleton)
 var DefaultClassifier = InitPretrainedClassifier()
 
-// QuickClassify 使用默认分类器快速分类
+// QuickClassify quickly classify using default classifier
 func QuickClassify(features *core.FeatureVector) *ClassificationResult {
 	return DefaultClassifier.Classify(features)
 }
 
-// ExportBuiltinModel 导出内置模型
+// ExportBuiltinModel export builtin model
 func ExportBuiltinModel() *PretrainedModel {
 	model := &PretrainedModel{
 		Name:        "fingerprint_builtin",
@@ -75,7 +75,7 @@ func ExportBuiltinModel() *PretrainedModel {
 	return model
 }
 
-// ModelInfo 模型信息
+// ModelInfo model information
 type ModelInfo struct {
 	Name           string
 	Version        string
@@ -86,7 +86,7 @@ type ModelInfo struct {
 	TotalCenters   int
 }
 
-// GetModelInfo 获取模型信息
+// GetModelInfo get model information
 func GetModelInfo(model *PretrainedModel) *ModelInfo {
 	protocolCount := len(model.ProtocolCenters)
 	
