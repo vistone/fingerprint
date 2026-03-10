@@ -1,4 +1,4 @@
-// Package ml 提供训练数据加载和模型训练功能
+// Package ml provides training data loading and model training functionality
 package ml
 
 import (
@@ -10,7 +10,7 @@ import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// TrainingSample 训练样本
+// TrainingSample training sample
 type TrainingSample struct {
 	ID        string                 `json:"id"`
 	Features  *core.FeatureVector    `json:"features"`
@@ -18,7 +18,7 @@ type TrainingSample struct {
 	Metadata  map[string]interface{} `json:"metadata"`
 }
 
-// TrainingLabel 训练标签
+// TrainingLabel training label
 type TrainingLabel struct {
 	Protocol core.ProtocolType `json:"protocol"`
 	Family   core.BrowserType  `json:"family"`
@@ -26,7 +26,7 @@ type TrainingLabel struct {
 	OS       string            `json:"os"`
 }
 
-// Dataset 数据集
+// Dataset dataset
 type Dataset struct {
 	Name        string           `json:"name"`
 	Version     string           `json:"version"`
@@ -35,7 +35,7 @@ type Dataset struct {
 	Statistics  DatasetStats     `json:"statistics"`
 }
 
-// DatasetStats 数据集统计
+// DatasetStats dataset statistics
 type DatasetStats struct {
 	TotalSamples     int            `json:"total_samples"`
 	ProtocolCounts   map[string]int `json:"protocol_counts"`
@@ -43,17 +43,17 @@ type DatasetStats struct {
 	VersionCounts    map[string]int `json:"version_counts"`
 }
 
-// DataLoader 训练数据加载器
+// DataLoader training data loader
 type DataLoader struct {
 	dataPath string
 }
 
-// NewDataLoader 创建新的数据加载器
+// NewDataLoader create new data loader
 func NewDataLoader(dataPath string) *DataLoader {
 	return &DataLoader{dataPath: dataPath}
 }
 
-// LoadDataset 加载数据集
+// LoadDataset load dataset
 func (dl *DataLoader) LoadDataset(filename string) (*Dataset, error) {
 	path := filepath.Join(dl.dataPath, filename)
 	data, err := os.ReadFile(path)
@@ -69,7 +69,7 @@ func (dl *DataLoader) LoadDataset(filename string) (*Dataset, error) {
 	return &dataset, nil
 }
 
-// LoadMultipleDatasets 加载多个数据集并合并
+// LoadMultipleDatasets load multiple datasets and merge
 func (dl *DataLoader) LoadMultipleDatasets(filenames []string) (*Dataset, error) {
 	merged := &Dataset{
 		Name:       "merged",
@@ -94,7 +94,7 @@ func (dl *DataLoader) LoadMultipleDatasets(filenames []string) (*Dataset, error)
 	return merged, nil
 }
 
-// updateStatistics 更新数据集统计
+// updateStatistics update dataset statistics
 func (d *Dataset) updateStatistics() {
 	d.Statistics.TotalSamples = len(d.Samples)
 	d.Statistics.ProtocolCounts = make(map[string]int)
@@ -108,9 +108,9 @@ func (d *Dataset) updateStatistics() {
 	}
 }
 
-// ToTrainingData 转换为训练数据格式
+// ToTrainingData convert to training data format
 func (d *Dataset) ToTrainingData() *TrainingData {
-	// 按协议分组
+	// Group by protocol
 	protocolFeatures := make([][]float64, 0)
 	protocolLabels := make([]core.ProtocolType, 0)
 
@@ -154,7 +154,7 @@ func (d *Dataset) ToTrainingData() *TrainingData {
 	}
 }
 
-// extractProtocolFeatures 提取协议层特征
+// extractProtocolFeatures extract protocol layer features
 func (d *Dataset) extractProtocolFeatures(fv *core.FeatureVector) []float64 {
 	return []float64{
 		fv.Get(core.FeatureTLSVersion),
@@ -166,7 +166,7 @@ func (d *Dataset) extractProtocolFeatures(fv *core.FeatureVector) []float64 {
 	}
 }
 
-// extractFamilyFeatures 提取家族层特征
+// extractFamilyFeatures extract family layer features
 func (d *Dataset) extractFamilyFeatures(fv *core.FeatureVector) []float64 {
 	return []float64{
 		fv.Get(core.FeatureUserAgent),
@@ -180,7 +180,7 @@ func (d *Dataset) extractFamilyFeatures(fv *core.FeatureVector) []float64 {
 	}
 }
 
-// extractVersionFeatures 提取版本层特征
+// extractVersionFeatures extract version layer features
 func (d *Dataset) extractVersionFeatures(fv *core.FeatureVector) []float64 {
 	return []float64{
 		fv.Get(core.FeatureTLSVersion),
@@ -196,7 +196,7 @@ func (d *Dataset) extractVersionFeatures(fv *core.FeatureVector) []float64 {
 	}
 }
 
-// SaveDataset 保存数据集到文件
+// SaveDataset save dataset to file
 func (d *Dataset) SaveDataset(path string) error {
 	d.updateStatistics()
 	
@@ -212,7 +212,7 @@ func (d *Dataset) SaveDataset(path string) error {
 	return nil
 }
 
-// PretrainedModel 预训练模型
+// PretrainedModel pretrained model
 type PretrainedModel struct {
 	Name        string                   `json:"name"`
 	Version     string                   `json:"version"`
@@ -223,17 +223,17 @@ type PretrainedModel struct {
 	FeatureWeights  []float64                `json:"feature_weights"`
 }
 
-// ModelLoader 模型加载器
+// ModelLoader model loader
 type ModelLoader struct {
 	modelPath string
 }
 
-// NewModelLoader 创建新的模型加载器
+// NewModelLoader create new model loader
 func NewModelLoader(modelPath string) *ModelLoader {
 	return &ModelLoader{modelPath: modelPath}
 }
 
-// LoadModel 加载预训练模型
+// LoadModel load pretrained model
 func (ml *ModelLoader) LoadModel(filename string) (*PretrainedModel, error) {
 	path := filepath.Join(ml.modelPath, filename)
 	data, err := os.ReadFile(path)
@@ -249,7 +249,7 @@ func (ml *ModelLoader) LoadModel(filename string) (*PretrainedModel, error) {
 	return &model, nil
 }
 
-// SaveModel 保存模型
+// SaveModel save model
 func (ml *ModelLoader) SaveModel(model *PretrainedModel, filename string) error {
 	path := filepath.Join(ml.modelPath, filename)
 	
@@ -265,14 +265,14 @@ func (ml *ModelLoader) SaveModel(model *PretrainedModel, filename string) error 
 	return nil
 }
 
-// ToClassifier 将预训练模型转换为分类器
+// ToClassifier convert pretrained model to classifier
 func (pm *PretrainedModel) ToClassifier() *HierarchicalClassifier {
 	hc := NewHierarchicalClassifier()
 	hc.Initialize()
 
-	// 加载协议中心点
+	// Load protocol centers
 	for proto, center := range pm.ProtocolCenters {
-		// 这里需要访问私有字段，实际实现中需要提供方法
+		// Need to access private fields, actual implementation needs to provide methods
 		_ = proto
 		_ = center
 	}
@@ -280,25 +280,25 @@ func (pm *PretrainedModel) ToClassifier() *HierarchicalClassifier {
 	return hc
 }
 
-// Trainer 模型训练器
+// Trainer model trainer
 type Trainer struct {
 	classifier *HierarchicalClassifier
 	dataset    *Dataset
 }
 
-// NewTrainer 创建新的训练器
+// NewTrainer create new trainer
 func NewTrainer(classifier *HierarchicalClassifier) *Trainer {
 	return &Trainer{
 		classifier: classifier,
 	}
 }
 
-// LoadDataset 加载数据集
+// LoadDataset load dataset
 func (t *Trainer) LoadDataset(dataset *Dataset) {
 	t.dataset = dataset
 }
 
-// Train 训练模型
+// Train train model
 func (t *Trainer) Train() error {
 	if t.dataset == nil {
 		return fmt.Errorf("no dataset loaded")
@@ -308,13 +308,13 @@ func (t *Trainer) Train() error {
 	return t.classifier.Train(trainingData)
 }
 
-// TrainWithProgress 带进度回调的训练
+// TrainWithProgress training with progress callback
 func (t *Trainer) TrainWithProgress(progress func(epoch, total int, loss float64)) error {
-	// 简化实现，实际应该支持多 epoch 训练
+	// Simplified implementation, should support multi-epoch training in practice
 	return t.Train()
 }
 
-// ExportModel 导出训练好的模型
+// ExportModel export trained model
 func (t *Trainer) ExportModel(name, version string) *PretrainedModel {
 	model := &PretrainedModel{
 		Name:            name,
@@ -324,13 +324,13 @@ func (t *Trainer) ExportModel(name, version string) *PretrainedModel {
 		VersionCenters:  make(map[string]map[string][]float64),
 	}
 
-	// 从分类器导出中心点
-	// 注意：实际实现需要访问分类器内部状态
+	// Export centers from classifier
+	// Note: actual implementation needs to access classifier internal state
 
 	return model
 }
 
-// GenerateSyntheticDataset 生成合成训练数据
+// GenerateSyntheticDataset generate synthetic training data
 func GenerateSyntheticDataset(name string, sampleCount int) *Dataset {
 	dataset := &Dataset{
 		Name:        name,
@@ -344,7 +344,7 @@ func GenerateSyntheticDataset(name string, sampleCount int) *Dataset {
 		},
 	}
 
-	// 浏览器配置
+	// Browser configurations
 	browsers := []struct {
 		family  core.BrowserType
 		version string
@@ -367,19 +367,19 @@ func GenerateSyntheticDataset(name string, sampleCount int) *Dataset {
 		browser := browsers[i%len(browsers)]
 		protocol := protocols[i%len(protocols)]
 
-		// 生成特征向量（带有一些随机变化）
+		// Generate feature vector (with some random variation)
 		fv := core.NewFeatureVector()
 		
-		// TLS 特征
+		// TLS features
 		fv.Set(core.FeatureTLSVersion, 0x0303)
 		fv.Set(core.FeatureCipherSuites, float64(8+i%5))
 		fv.Set(core.FeatureExtensions, float64(10+i%8))
 		
-		// HTTP 特征
+		// HTTP features
 		fv.Set(core.FeatureHTTP2Settings, float64(65536+i*1000))
 		fv.Set(core.FeatureHTTPHeaders, float64(10+i%3))
 		
-		// 浏览器特征
+		// Browser features
 		switch browser.family {
 		case core.BrowserChrome:
 			fv.Set(core.FeatureUserAgent, 100.0+float64(i%20))
