@@ -1,5 +1,5 @@
-// Package ml 提供与 Rust 指纹库的数据兼容性
-// 支持从 Rust 版本导入训练数据和模型
+// Package ml provides data compatibility with Rust fingerprint library
+// Supports importing training data and models from Rust versions
 package ml
 
 import (
@@ -11,7 +11,7 @@ import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// RustFingerprint Rust 格式的指纹数据
+// RustFingerprint Rust format fingerprint data
 type RustFingerprint struct {
 	ID              string                 `json:"id"`
 	Browser         string                 `json:"browser"`
@@ -23,7 +23,7 @@ type RustFingerprint struct {
 	Features        map[string]float64     `json:"features"`
 }
 
-// RustTLSData Rust TLS 数据
+// RustTLSData Rust TLS data
 type RustTLSData struct {
 	Version         uint16   `json:"version"`
 	CipherSuites    []uint16 `json:"cipher_suites"`
@@ -32,14 +32,14 @@ type RustTLSData struct {
 	PointFormats    []uint8  `json:"point_formats"`
 }
 
-// RustHTTP2Data Rust HTTP/2 数据
+// RustHTTP2Data Rust HTTP/2 data
 type RustHTTP2Data struct {
 	Settings          map[string]uint32 `json:"settings"`
 	Priorities        []RustPriority    `json:"priorities"`
 	PseudoHeaderOrder []string          `json:"pseudo_header_order"`
 }
 
-// RustPriority Rust HTTP/2 优先级
+// RustPriority Rust HTTP/2 priority
 type RustPriority struct {
 	StreamID  uint32 `json:"stream_id"`
 	Weight    uint8  `json:"weight"`
@@ -47,7 +47,7 @@ type RustPriority struct {
 	Exclusive bool   `json:"exclusive"`
 }
 
-// RustDataset Rust 格式的数据集
+// RustDataset Rust format dataset
 type RustDataset struct {
 	Name        string            `json:"name"`
 	Version     string            `json:"version"`
@@ -55,7 +55,7 @@ type RustDataset struct {
 	Fingerprints []RustFingerprint `json:"fingerprints"`
 }
 
-// RustModel Rust 格式的模型
+// RustModel Rust format model
 type RustModel struct {
 	Name           string                     `json:"name"`
 	Version        string                     `json:"version"`
@@ -64,24 +64,24 @@ type RustModel struct {
 	VersionLayers  map[string]RustClassifierLayer `json:"version_layers"` // family -> layer
 }
 
-// RustClassifierLayer Rust 分类器层
+// RustClassifierLayer Rust classifier layer
 type RustClassifierLayer struct {
 	Centroids   map[string][]float64 `json:"centroids"`  // label -> center
 	Weights     []float64            `json:"weights"`
 	FeatureNames []string            `json:"feature_names"`
 }
 
-// RustImporter Rust 数据导入器
+// RustImporter Rust data importer
 type RustImporter struct {
 	dataPath string
 }
 
-// NewRustImporter 创建新的 Rust 数据导入器
+// NewRustImporter create new Rust data importer
 func NewRustImporter(dataPath string) *RustImporter {
 	return &RustImporter{dataPath: dataPath}
 }
 
-// ImportDataset 导入 Rust 格式的数据集
+// ImportDataset import Rust format dataset
 func (ri *RustImporter) ImportDataset(filename string) (*Dataset, error) {
 	path := filepath.Join(ri.dataPath, filename)
 	data, err := os.ReadFile(path)
@@ -97,7 +97,7 @@ func (ri *RustImporter) ImportDataset(filename string) (*Dataset, error) {
 	return ri.convertDataset(&rustDataset), nil
 }
 
-// convertDataset 转换 Rust 数据集为 Go 格式
+// convertDataset convert Rust dataset to Go format
 func (ri *RustImporter) convertDataset(rust *RustDataset) *Dataset {
 	dataset := &Dataset{
 		Name:        rust.Name,
@@ -115,12 +115,12 @@ func (ri *RustImporter) convertDataset(rust *RustDataset) *Dataset {
 	return dataset
 }
 
-// convertFingerprint 转换 Rust 指纹为 Go 训练样本
+// convertFingerprint convert Rust fingerprint to Go training sample
 func (ri *RustImporter) convertFingerprint(rust *RustFingerprint) TrainingSample {
-	// 创建特征向量
+	// Create feature vector
 	fv := convertRustFeatures(rust.Features)
 	
-	// 转换标签
+	// Convert label
 	label := TrainingLabel{
 		Protocol: inferProtocolFromFeatures(rust.Features),
 		Family:   inferBrowserFamily(rust.Browser),
@@ -141,11 +141,11 @@ func (ri *RustImporter) convertFingerprint(rust *RustFingerprint) TrainingSample
 	}
 }
 
-// convertRustFeatures 转换 Rust 特征为 Go 特征向量
+// convertRustFeatures convert Rust features to Go feature vector
 func convertRustFeatures(rustFeatures map[string]float64) *core.FeatureVector {
 	fv := core.NewFeatureVector()
 	
-	// 特征名称映射
+	// Feature name mapping
 	featureMapping := map[string]core.FeatureType{
 		"tls_version":       core.FeatureTLSVersion,
 		"cipher_suites":     core.FeatureCipherSuites,
@@ -171,7 +171,7 @@ func convertRustFeatures(rustFeatures map[string]float64) *core.FeatureVector {
 		if goFeature, ok := featureMapping[rustName]; ok {
 			fv.Set(goFeature, value)
 		} else {
-			// 未知特征存入元数据
+			// Store unknown features in metadata
 			fv.Metadata[rustName] = value
 		}
 	}
@@ -179,7 +179,7 @@ func convertRustFeatures(rustFeatures map[string]float64) *core.FeatureVector {
 	return fv
 }
 
-// inferProtocolFromFeatures 从特征推断协议类型
+// inferProtocolFromFeatures infer protocol type from features
 func inferProtocolFromFeatures(features map[string]float64) core.ProtocolType {
 	if _, ok := features["quic_version"]; ok {
 		return core.ProtocolQUIC
@@ -195,7 +195,7 @@ func inferProtocolFromFeatures(features map[string]float64) core.ProtocolType {
 	return core.ProtocolTLS
 }
 
-// inferBrowserFamily 推断浏览器家族
+// inferBrowserFamily infer browser family
 func inferBrowserFamily(browser string) core.BrowserType {
 	switch browser {
 	case "chrome", "Chrome":
@@ -213,7 +213,7 @@ func inferBrowserFamily(browser string) core.BrowserType {
 	}
 }
 
-// ImportModel 导入 Rust 格式的模型
+// ImportModel import Rust format model
 func (ri *RustImporter) ImportModel(filename string) (*PretrainedModel, error) {
 	path := filepath.Join(ri.dataPath, filename)
 	data, err := os.ReadFile(path)
@@ -229,7 +229,7 @@ func (ri *RustImporter) ImportModel(filename string) (*PretrainedModel, error) {
 	return ri.convertModel(&rustModel), nil
 }
 
-// convertModel 转换 Rust 模型为 Go 格式
+// convertModel convert Rust model to Go format
 func (ri *RustImporter) convertModel(rust *RustModel) *PretrainedModel {
 	model := &PretrainedModel{
 		Name:            rust.Name,
@@ -240,12 +240,12 @@ func (ri *RustImporter) convertModel(rust *RustModel) *PretrainedModel {
 		FeatureWeights:  rust.ProtocolLayer.Weights,
 	}
 
-	// 转换家族层
+	// Convert family layers
 	for proto, layer := range rust.FamilyLayers {
 		model.FamilyCenters[proto] = layer.Centroids
 	}
 
-	// 转换版本层
+	// Convert version layers
 	for family, layer := range rust.VersionLayers {
 		model.VersionCenters[family] = layer.Centroids
 	}
@@ -253,7 +253,7 @@ func (ri *RustImporter) convertModel(rust *RustModel) *PretrainedModel {
 	return model
 }
 
-// ExportToRust 导出为 Rust 格式（双向兼容）
+// ExportToRust export to Rust format (bidirectional compatibility)
 func (d *Dataset) ExportToRust() *RustDataset {
 	rust := &RustDataset{
 		Name:         d.Name,
@@ -271,7 +271,7 @@ func (d *Dataset) ExportToRust() *RustDataset {
 			Features: make(map[string]float64),
 		}
 
-		// 转换特征
+		// Convert features
 		for ft, value := range sample.Features.Features {
 			rustName := convertGoFeatureToRust(ft)
 			rustFp.Features[rustName] = value
@@ -283,7 +283,7 @@ func (d *Dataset) ExportToRust() *RustDataset {
 	return rust
 }
 
-// convertGoFeatureToRust 转换 Go 特征名称为 Rust 特征名称
+// convertGoFeatureToRust convert Go feature name to Rust feature name
 func convertGoFeatureToRust(ft core.FeatureType) string {
 	featureMapping := map[core.FeatureType]string{
 		core.FeatureTLSVersion:       "tls_version",
@@ -312,7 +312,7 @@ func convertGoFeatureToRust(ft core.FeatureType) string {
 	return string(ft)
 }
 
-// SaveToRustFormat 保存为 Rust 格式
+// SaveToRustFormat save to Rust format
 func (d *Dataset) SaveToRustFormat(path string) error {
 	rust := d.ExportToRust()
 	
@@ -328,13 +328,13 @@ func (d *Dataset) SaveToRustFormat(path string) error {
 	return nil
 }
 
-// CompatibilityChecker 兼容性检查器
+// CompatibilityChecker compatibility checker
 type CompatibilityChecker struct {
 	goFeatures  map[string]bool
 	rustFeatures map[string]bool
 }
 
-// NewCompatibilityChecker 创建新的兼容性检查器
+// NewCompatibilityChecker create new compatibility checker
 func NewCompatibilityChecker() *CompatibilityChecker {
 	return &CompatibilityChecker{
 		goFeatures: map[string]bool{
@@ -380,7 +380,7 @@ func NewCompatibilityChecker() *CompatibilityChecker {
 	}
 }
 
-// CheckFeatureCompatibility 检查特征兼容性
+// CheckFeatureCompatibility check feature compatibility
 func (cc *CompatibilityChecker) CheckFeatureCompatibility() map[string]string {
 	result := make(map[string]string)
 	
@@ -401,14 +401,14 @@ func (cc *CompatibilityChecker) CheckFeatureCompatibility() map[string]string {
 	return result
 }
 
-// ImportWithValidation 导入并验证
+// ImportWithValidation import and validate
 func (ri *RustImporter) ImportWithValidation(filename string) (*Dataset, error) {
 	dataset, err := ri.ImportDataset(filename)
 	if err != nil {
 		return nil, err
 	}
 
-	// 验证数据完整性
+	// Validate data integrity
 	issues := ri.validateDataset(dataset)
 	if len(issues) > 0 {
 		fmt.Printf("Import validation issues:\n")
@@ -420,7 +420,7 @@ func (ri *RustImporter) ImportWithValidation(filename string) (*Dataset, error) 
 	return dataset, nil
 }
 
-// validateDataset 验证数据集
+// validateDataset validate dataset
 func (ri *RustImporter) validateDataset(dataset *Dataset) []string {
 	var issues []string
 
@@ -428,7 +428,7 @@ func (ri *RustImporter) validateDataset(dataset *Dataset) []string {
 		issues = append(issues, "dataset has no samples")
 	}
 
-	// 检查样本完整性
+	// Check sample integrity
 	for i, sample := range dataset.Samples {
 		if sample.ID == "" {
 			issues = append(issues, fmt.Sprintf("sample %d has no ID", i))
