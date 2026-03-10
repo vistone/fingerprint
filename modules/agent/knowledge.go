@@ -7,96 +7,96 @@ import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// KnowledgeBase 全球指纹特征知识库
+// KnowledgeBase global fingerprint feature knowledge base
 //
-// 编码了真实浏览器指纹的"应有形态"——从 TLS 握手到 HTTP/2 帧、
-// 从 TCP/IP 栈到 JavaScript API，每个浏览器家族在每种 OS 上
-// 应该呈现什么样的特征组合。
+// Encodes the "canonical form" of real browser fingerprints — from TLS handshake to HTTP/2 frames,
+// from TCP/IP stack to JavaScript API, what feature combinations each browser family should
+// exhibit on each OS.
 //
-// Agent 利用这些知识来：
-//  1. 判断一组特征是否"合理"（一致性校验）
-//  2. 检测矛盾信号（如 Chrome 的 TLS 指纹 + Firefox 的 HTTP/2 设置）
-//  3. 识别伪造/反检测工具的蛛丝马迹
-//  4. 为指纹生成提供可靠的参考基准
+// Agent uses this knowledge to:
+//  1. Determine if a set of features is "reasonable" (consistency validation)
+//  2. Detect contradictory signals (e.g., Chrome TLS fingerprint + Firefox HTTP/2 settings)
+//  3. Identify traces of forgery/anti-detection tools
+//  4. Provide reliable reference baselines for fingerprint generation
 type KnowledgeBase struct {
-	// 浏览器指纹蓝图：每个 BrowserType → 版本 → OS → 期望特征
+	// Browser fingerprint blueprints: each BrowserType → version → OS → expected features
 	browsers map[core.BrowserType]*BrowserKnowledge
 
-	// TLS 特征字典
+	// TLS feature dictionary
 	tls *TLSKnowledge
 
-	// TCP/IP 特征字典
+	// TCP/IP feature dictionary
 	tcpip *TCPIPKnowledge
 
-	// HTTP/2 特征字典
+	// HTTP/2 feature dictionary
 	http2 *HTTP2Knowledge
 
-	// 全局统计
+	// Global statistics
 	stats *GlobalStats
 
 	mu sync.RWMutex
 }
 
-// BrowserKnowledge 单个浏览器家族的知识
+// BrowserKnowledge knowledge of a single browser family
 type BrowserKnowledge struct {
 	Family   core.BrowserType
 	Versions []VersionKnowledge
-	// 全版本通用的 TLS 特征签名
+	// TLS feature signatures common to all versions
 	CommonCipherSuites []uint16
 	CommonExtensions   []uint16
 	CommonCurves       []core.CurveID
-	// 该浏览器的市场份额估计 [0,1]
+	// Market share estimate of this browser [0,1]
 	MarketShare float64
 }
 
-// VersionKnowledge 单个版本的知识
+// VersionKnowledge knowledge of a single version
 type VersionKnowledge struct {
 	Version      string
 	VersionMajor int
-	// 支持的 OS 列表
+	// List of supported OS
 	SupportedOS []core.OperatingSystem
-	// TLS 指纹
+	// TLS fingerprint
 	TLSVersion   uint16
 	CipherSuites []uint16
 	Extensions   []uint16
 	Curves       []core.CurveID
-	// HTTP 指纹
-	SecCHUAPattern string // Sec-CH-UA 的模式
-	AcceptPattern  string // Accept 头模式
-	// HTTP/2 指纹
+	// HTTP fingerprint
+	SecCHUAPattern string // Sec-CH-UA pattern
+	AcceptPattern  string // Accept header pattern
+	// HTTP/2 fingerprint
 	H2InitialWindowSize    uint32
 	H2MaxConcurrentStreams uint32
 	H2HeaderTableSize      uint32
 	PseudoHeaderOrder      []string
 	ConnectionFlow         uint32
-	// 发布时间范围（用于判断版本合理性）
+	// Release time range (for determining version plausibility)
 	ReleasedYear int
-	Deprecated   bool // 是否已过时
+	Deprecated   bool // whether deprecated
 }
 
-// TLSKnowledge TLS 全局知识
+// TLSKnowledge global TLS knowledge
 type TLSKnowledge struct {
-	// 已知的合法 TLS 1.3 密码套件
+	// Known valid TLS 1.3 cipher suites
 	ValidTLS13Suites []uint16
-	// 已知的合法 TLS 1.2 密码套件（按浏览器分组）
+	// Known valid TLS 1.2 cipher suites (grouped by browser)
 	ValidTLS12Suites map[core.BrowserType][]uint16
-	// 已知的 TLS 扩展类型
+	// Known TLS extension types
 	KnownExtensions map[uint16]string
-	// 各浏览器的典型扩展数量范围
+	// Typical extension count range for each browser
 	ExtensionCountRange map[core.BrowserType][2]int // [min, max]
-	// 各浏览器的典型密码套件数量范围
+	// Typical cipher suite count range for each browser
 	CipherCountRange map[core.BrowserType][2]int
-	// 已知的 GREASE 值（Google 的 TLS 扩展随机化）
+	// Known GREASE values (Google's TLS extension randomization)
 	GREASEValues []uint16
 }
 
-// TCPIPKnowledge TCP/IP 栈指纹知识
+// TCPIPKnowledge TCP/IP stack fingerprint knowledge
 type TCPIPKnowledge struct {
-	// OS → 期望的 TCP/IP 参数
+	// OS → expected TCP/IP parameters
 	OSFingerprints map[string]*TCPIPExpected
 }
 
-// TCPIPExpected 期望的 TCP/IP 特征
+// TCPIPExpected expected TCP/IP features
 type TCPIPExpected struct {
 	TTL         uint8
 	WindowSize  uint16
@@ -107,13 +107,13 @@ type TCPIPExpected struct {
 	Timestamps  bool
 }
 
-// HTTP2Knowledge HTTP/2 协议指纹知识
+// HTTP2Knowledge HTTP/2 protocol fingerprint knowledge
 type HTTP2Knowledge struct {
-	// 浏览器 → 期望的 HTTP/2 设置
+	// Browser → expected HTTP/2 settings
 	BrowserSettings map[core.BrowserType]*H2Expected
 }
 
-// H2Expected 期望的 HTTP/2 参数
+// H2Expected expected HTTP/2 parameters
 type H2Expected struct {
 	InitialWindowSize    uint32
 	MaxConcurrentStreams uint32
@@ -124,7 +124,7 @@ type H2Expected struct {
 	PseudoHeaderOrder    []string
 }
 
-// GlobalStats 全局统计数据
+// GlobalStats global statistics data
 type GlobalStats struct {
 	TotalKnownBrowsers  int
 	TotalKnownVersions  int
@@ -133,31 +133,31 @@ type GlobalStats struct {
 	OSMarketShares      map[string]float64
 }
 
-// MatchResult 知识匹配结果
+// MatchResult knowledge match result
 type MatchResult struct {
-	// 是否找到匹配的已知指纹
+	// Whether a matching known fingerprint was found
 	Known bool `json:"known"`
-	// 最接近的浏览器家族
+	// Closest browser family
 	ClosestFamily core.BrowserType `json:"closest_family"`
-	// 最接近的版本
+	// Closest version
 	ClosestVersion string `json:"closest_version"`
-	// 匹配得分 [0,1]
+	// Match score [0,1]
 	MatchScore float64 `json:"match_score"`
-	// 检测到的矛盾信号
+	// Detected contradictory signals
 	Contradictions []Contradiction `json:"contradictions,omitempty"`
-	// 可疑度 [0,1]（矛盾越多越高）
+	// Suspicion score [0,1] (higher with more contradictions)
 	SuspicionScore float64 `json:"suspicion_score"`
 }
 
-// Contradiction 矛盾信号
+// Contradiction contradictory signal
 type Contradiction struct {
-	Field    string `json:"field"`    // 哪个特征域
-	Expected string `json:"expected"` // 已知值
-	Actual   string `json:"actual"`   // 实际观测值
+	Field    string `json:"field"`    // which feature domain
+	Expected string `json:"expected"` // known value
+	Actual   string `json:"actual"`   // actually observed value
 	Severity string `json:"severity"` // low / medium / high
 }
 
-// NewKnowledgeBase 创建并初始化全球指纹知识库
+// NewKnowledgeBase create and initialize global fingerprint knowledge base
 func NewKnowledgeBase() *KnowledgeBase {
 	kb := &KnowledgeBase{
 		browsers: make(map[core.BrowserType]*BrowserKnowledge),
@@ -172,12 +172,12 @@ func NewKnowledgeBase() *KnowledgeBase {
 }
 
 // ===================================================================
-// TLS 知识初始化
+// TLS knowledge initialization
 // ===================================================================
 
 func newTLSKnowledge() *TLSKnowledge {
 	return &TLSKnowledge{
-		// TLS 1.3 标准密码套件（3 个，所有现代浏览器通用）
+		// TLS 1.3 standard cipher suites (3, common to all modern browsers)
 		ValidTLS13Suites: []uint16{
 			0x1301, // TLS_AES_128_GCM_SHA256
 			0x1302, // TLS_AES_256_GCM_SHA384
@@ -191,18 +191,18 @@ func newTLSKnowledge() *TLSKnowledge {
 				0x002f, 0x0035, 0x000a, // RSA (fallback)
 			},
 			core.BrowserFirefox: {
-				0x1301, 0x1303, 0x1302, // TLS 1.3（Firefox 顺序不同）
+				0x1301, 0x1303, 0x1302, // TLS 1.3 (Firefox order is different)
 				0xc02b, 0xc02f, 0xcca9, 0xcca8, 0xc02c, 0xc030,
 				0xc00a, 0xc009, 0xc013, 0xc014,
 				0x0033, 0x0039, 0x002f, 0x0035,
 			},
 			core.BrowserSafari: {
-				0xc02c, 0xc02b, 0xc030, 0xc02f, // Safari 优先 ECDSA
+				0xc02c, 0xc02b, 0xc030, 0xc02f, // Safari prioritizes ECDSA
 				0xcca9, 0xcca8,
 				0xc00a, 0xc009, 0xc014, 0xc013,
 				0x002f, 0x0035, 0x000a,
 			},
-			core.BrowserEdge: { // Edge = Chromium 内核，与 Chrome 基本一致
+			core.BrowserEdge: { // Edge = Chromium kernel, basically identical to Chrome
 				0xc02b, 0xc02f, 0xc02c, 0xc030,
 				0xcca9, 0xcca8,
 				0xc013, 0xc014,
@@ -256,7 +256,7 @@ func newTLSKnowledge() *TLSKnowledge {
 }
 
 // ===================================================================
-// TCP/IP 知识初始化
+// TCP/IP knowledge initialization
 // ===================================================================
 
 func newTCPIPKnowledge() *TCPIPKnowledge {
@@ -287,7 +287,7 @@ func newTCPIPKnowledge() *TCPIPKnowledge {
 }
 
 // ===================================================================
-// HTTP/2 知识初始化
+// HTTP/2 knowledge initialization
 // ===================================================================
 
 func newHTTP2Knowledge() *HTTP2Knowledge {
@@ -316,11 +316,11 @@ func newHTTP2Knowledge() *HTTP2Knowledge {
 				MaxConcurrentStreams: 100,
 				HeaderTableSize:      4096,
 				MaxFrameSize:         16384,
-				MaxHeaderListSize:    0, // Safari 不发送此设置
+				MaxHeaderListSize:    0, // Safari doesn't send this setting
 				ConnectionFlow:       10485760,
 				PseudoHeaderOrder:    []string{":method", ":scheme", ":path", ":authority"},
 			},
-			core.BrowserEdge: { // Chromium 内核
+			core.BrowserEdge: { // Chromium kernel
 				InitialWindowSize:    6291456,
 				MaxConcurrentStreams: 1000,
 				HeaderTableSize:      65536,
@@ -334,11 +334,11 @@ func newHTTP2Knowledge() *HTTP2Knowledge {
 }
 
 // ===================================================================
-// 浏览器指纹蓝图初始化
+// Browser fingerprint blueprint initialization
 // ===================================================================
 
 func (kb *KnowledgeBase) loadBuiltinKnowledge() {
-	// Chrome 知识
+	// Chrome knowledge
 	kb.browsers[core.BrowserChrome] = &BrowserKnowledge{
 		Family:             core.BrowserChrome,
 		CommonCipherSuites: []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8},
@@ -373,7 +373,7 @@ func (kb *KnowledgeBase) loadBuiltinKnowledge() {
 		},
 	}
 
-	// Firefox 知识
+	// Firefox knowledge
 	kb.browsers[core.BrowserFirefox] = &BrowserKnowledge{
 		Family:             core.BrowserFirefox,
 		CommonCipherSuites: []uint16{0x1301, 0x1303, 0x1302, 0xc02b, 0xc02f, 0xcca9, 0xcca8, 0xc02c, 0xc030},
@@ -397,7 +397,7 @@ func (kb *KnowledgeBase) loadBuiltinKnowledge() {
 		},
 	}
 
-	// Safari 知识
+	// Safari knowledge
 	kb.browsers[core.BrowserSafari] = &BrowserKnowledge{
 		Family:             core.BrowserSafari,
 		CommonCipherSuites: []uint16{0xc02c, 0xc02b, 0xc030, 0xc02f, 0xcca9, 0xcca8, 0xc00a, 0xc009, 0xc014, 0xc013},
@@ -418,7 +418,7 @@ func (kb *KnowledgeBase) loadBuiltinKnowledge() {
 		},
 	}
 
-	// Edge 知识 (Chromium 内核)
+	// Edge knowledge (Chromium kernel)
 	kb.browsers[core.BrowserEdge] = &BrowserKnowledge{
 		Family:             core.BrowserEdge,
 		CommonCipherSuites: []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8},
@@ -435,7 +435,7 @@ func (kb *KnowledgeBase) loadBuiltinKnowledge() {
 		},
 	}
 
-	// Opera 知识 (Chromium 内核)
+	// Opera knowledge (Chromium kernel)
 	kb.browsers[core.BrowserOpera] = &BrowserKnowledge{
 		Family:             core.BrowserOpera,
 		CommonCipherSuites: []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8},
@@ -449,7 +449,7 @@ func (kb *KnowledgeBase) loadBuiltinKnowledge() {
 		},
 	}
 
-	// Brave 知识 (Chromium 内核，但有随机化)
+	// Brave knowledge (Chromium kernel, but with randomization)
 	kb.browsers[core.BrowserBrave] = &BrowserKnowledge{
 		Family:             core.BrowserBrave,
 		CommonCipherSuites: []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8},
@@ -485,21 +485,21 @@ func (kb *KnowledgeBase) computeStats() {
 	}
 	kb.stats.TotalKnownBrowsers = len(kb.browsers)
 	kb.stats.TotalKnownVersions = totalVersions
-	kb.stats.TotalKnownProfiles = totalVersions * 3 // 估算×OS 组合数
+	kb.stats.TotalKnownProfiles = totalVersions * 3 // Estimate × OS combinations
 }
 
 // ===================================================================
-// 查询接口
+// Query interface
 // ===================================================================
 
-// GetBrowserKnowledge 获取指定浏览器家族的知识
+// GetBrowserKnowledge get knowledge of specified browser family
 func (kb *KnowledgeBase) GetBrowserKnowledge(family core.BrowserType) *BrowserKnowledge {
 	kb.mu.RLock()
 	defer kb.mu.RUnlock()
 	return kb.browsers[family]
 }
 
-// IsKnownCipherSuite 检查密码套件是否已知
+// IsKnownCipherSuite check if cipher suite is known
 func (kb *KnowledgeBase) IsKnownCipherSuite(suite uint16) bool {
 	for _, s := range kb.tls.ValidTLS13Suites {
 		if s == suite {
@@ -516,7 +516,7 @@ func (kb *KnowledgeBase) IsKnownCipherSuite(suite uint16) bool {
 	return false
 }
 
-// IsGREASE 检查是否为 GREASE 值
+// IsGREASE check if value is a GREASE value
 func (kb *KnowledgeBase) IsGREASE(value uint16) bool {
 	for _, g := range kb.tls.GREASEValues {
 		if value == g {
@@ -526,22 +526,22 @@ func (kb *KnowledgeBase) IsGREASE(value uint16) bool {
 	return false
 }
 
-// GetExpectedTCPIP 获取指定 OS 的期望 TCP/IP 参数
+// GetExpectedTCPIP get expected TCP/IP parameters for specified OS
 func (kb *KnowledgeBase) GetExpectedTCPIP(osFamily string) *TCPIPExpected {
 	return kb.tcpip.OSFingerprints[osFamily]
 }
 
-// GetExpectedH2 获取指定浏览器的期望 HTTP/2 参数
+// GetExpectedH2 get expected HTTP/2 parameters for specified browser
 func (kb *KnowledgeBase) GetExpectedH2(family core.BrowserType) *H2Expected {
 	return kb.http2.BrowserSettings[family]
 }
 
-// Stats 返回全局统计
+// Stats return global statistics
 func (kb *KnowledgeBase) Stats() *GlobalStats {
 	return kb.stats
 }
 
-// FindClosestVersion 在指定浏览器中找到最匹配的版本
+// FindClosestVersion find the closest matching version in specified browser
 func (kb *KnowledgeBase) FindClosestVersion(family core.BrowserType, cipherSuites []uint16) *VersionKnowledge {
 	kb.mu.RLock()
 	defer kb.mu.RUnlock()
@@ -569,7 +569,7 @@ func (kb *KnowledgeBase) FindClosestVersion(family core.BrowserType, cipherSuite
 	return bestVersion
 }
 
-// jaccardSimilarity 计算两个 uint16 集合的 Jaccard 相似度
+// jaccardSimilarity calculate Jaccard similarity of two uint16 sets
 func jaccardSimilarity(a, b []uint16) float64 {
 	setA := make(map[uint16]struct{}, len(a))
 	for _, v := range a {
@@ -600,7 +600,7 @@ func jaccardSimilarity(a, b []uint16) float64 {
 	return float64(intersection) / float64(union)
 }
 
-// sortedUint16 返回排序后的副本
+// sortedUint16 return sorted copy
 func sortedUint16(in []uint16) []uint16 {
 	out := make([]uint16, len(in))
 	copy(out, in)
