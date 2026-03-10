@@ -1,4 +1,4 @@
-// Package ml 分类器测试
+// Package ml classifier tests
 package ml
 
 import (
@@ -11,7 +11,7 @@ import (
 func TestSimpleClassifier(t *testing.T) {
 	sc := NewSimpleClassifier(5)
 	
-	// 训练数据
+	// Training data
 	features := [][]float64{
 		{1, 0, 0, 0, 0},
 		{0.9, 0.1, 0, 0, 0},
@@ -25,7 +25,7 @@ func TestSimpleClassifier(t *testing.T) {
 		t.Fatalf("Train failed: %v", err)
 	}
 	
-	// 预测
+	// Predict
 	label, confidence := sc.Predict([]float64{0.95, 0, 0, 0, 0})
 	if label != "class_a" {
 		t.Errorf("Expected class_a, got %s", label)
@@ -51,12 +51,12 @@ func TestSimpleClassifierPredictTopK(t *testing.T) {
 		t.Errorf("Expected 2 predictions, got %d", len(predictions))
 	}
 	
-	// 第一个预测应该是 "a"
+	// First prediction should be "a"
 	if predictions[0].Label != "a" {
 		t.Errorf("Expected 'a' as top prediction, got %s", predictions[0].Label)
 	}
 	
-	// 置信度应该按降序排列
+	// Confidence should be in descending order
 	if len(predictions) == 2 && predictions[0].Confidence < predictions[1].Confidence {
 		t.Error("Predictions should be sorted by confidence (descending)")
 	}
@@ -76,7 +76,7 @@ func TestProtocolClassifier(t *testing.T) {
 		t.Fatalf("Train failed: %v", err)
 	}
 	
-	// 预测
+	// Predict
 	protocol, conf := pc.Predict([]float64{0x0303, 8, 10, 65536, 10, 15})
 	if protocol != core.ProtocolTLS {
 		t.Errorf("Expected TLS, got %s", protocol)
@@ -90,8 +90,8 @@ func TestHierarchicalClassifierInitialize(t *testing.T) {
 	hc := NewHierarchicalClassifier()
 	hc.Initialize()
 	
-	// 初始化后应该创建了子分类器
-	// 注意：由于字段是私有的，我们只能测试行为
+	// Should create sub-classifiers after initialization
+	// Note: we can only test behavior since fields are private
 	result := hc.Classify(core.NewFeatureVector())
 	if result == nil {
 		t.Error("Classify should return result")
@@ -106,7 +106,7 @@ func TestHierarchicalClassifierTrain(t *testing.T) {
 	hc := NewHierarchicalClassifier()
 	hc.Initialize()
 	
-	// 创建简单的训练数据
+	// Create simple training data
 	trainingData := &TrainingData{
 		ProtocolFeatures: [][]float64{
 			{0x0303, 8, 10, 65536, 10, 15},
@@ -137,7 +137,7 @@ func TestHierarchicalClassifierTrain(t *testing.T) {
 		t.Fatalf("Train failed: %v", err)
 	}
 	
-	// 训练后应该可以进行分类
+	// Should be able to classify after training
 	fv := core.NewFeatureVector()
 	fv.Set(core.FeatureTLSVersion, 0x0303)
 	fv.Set(core.FeatureCipherSuites, 8)
@@ -214,12 +214,12 @@ func TestGenerateSyntheticDataset(t *testing.T) {
 		t.Errorf("Expected name 'test', got %s", dataset.Name)
 	}
 	
-	// 检查统计信息
+	// Check statistics
 	if dataset.Statistics.TotalSamples != 50 {
 		t.Errorf("Statistics.TotalSamples = %d, want 50", dataset.Statistics.TotalSamples)
 	}
 	
-	// 验证有样本被分配到不同类别
+	// Verify samples are assigned to different categories
 	if len(dataset.Statistics.ProtocolCounts) == 0 {
 		t.Error("Should have protocol counts")
 	}
@@ -243,7 +243,7 @@ func TestDatasetToTrainingData(t *testing.T) {
 func BenchmarkSimpleClassifierPredict(b *testing.B) {
 	sc := NewSimpleClassifier(10)
 	
-	// 预训练
+	// Pre-training
 	features := make([][]float64, 100)
 	labels := make([]string, 100)
 	for i := 0; i < 100; i++ {
@@ -268,7 +268,7 @@ func BenchmarkHierarchicalClassifierClassify(b *testing.B) {
 	hc := NewHierarchicalClassifier()
 	hc.Initialize()
 	
-	// 初始化并训练
+	// Initialize and train
 	dataset := GenerateSyntheticDataset("bench", 100)
 	trainingData := dataset.ToTrainingData()
 	hc.Train(trainingData)
@@ -287,13 +287,13 @@ func TestWeightedDistance(t *testing.T) {
 	sc := NewSimpleClassifier(2)
 	sc.weights = []float64{1.0, 2.0}
 	
-	// 测试不同权重的距离计算
+	// Test distance calculation with different weights
 	a := []float64{0, 0}
 	b := []float64{3, 4}
 	
 	dist := sc.weightedDistance(a, b)
 	
-	// 期望距离: sqrt(1*3^2 + 2*4^2) = sqrt(9 + 32) = sqrt(41) ≈ 6.4
+	// Expected distance: sqrt(1*3^2 + 2*4^2) = sqrt(9 + 32) = sqrt(41) ≈ 6.4
 	expected := math.Sqrt(41)
 	if math.Abs(dist-expected) > 0.001 {
 		t.Errorf("weightedDistance = %v, want %v", dist, expected)
@@ -303,7 +303,7 @@ func TestWeightedDistance(t *testing.T) {
 func TestEmptyClassifier(t *testing.T) {
 	sc := NewSimpleClassifier(5)
 	
-	// 未训练的分类器应该返回空结果
+	// Untrained classifier should return empty result
 	label, conf := sc.Predict([]float64{1, 2, 3, 4, 5})
 	if label != "" {
 		t.Errorf("Expected empty label for untrained classifier, got %s", label)
