@@ -8,24 +8,24 @@ import (
 )
 
 // ============================================================================
-// HTTP 子包错误定义
+// HTTP subpackage error definitions
 // ============================================================================
 
 var (
-	// ErrInvalidUserAgent 表示无效的 User-Agent
+	// ErrInvalidUserAgent indicates an invalid User-Agent
 	ErrInvalidUserAgent = fmt.Errorf("%w: invalid user agent", errs.ErrInvalidUserAgent)
 
-	// ErrHeaderBuildingFailed 表示构建 HTTP 头失败
+	// ErrHeaderBuildingFailed indicates HTTP header building failure
 	ErrHeaderBuildingFailed = fmt.Errorf("%w: failed to build header", errs.ErrInvalidFingerprint)
 
-	// ErrMissingRequiredHeader 表示缺少必需的 HTTP 头
+	// ErrMissingRequiredHeader indicates missing required HTTP header
 	ErrMissingRequiredHeader = fmt.Errorf("%w: missing required header", errs.ErrInvalidFingerprint)
 
-	// ErrInvalidHeaderValue 表示无效的 HTTP 头值
+	// ErrInvalidHeaderValue indicates invalid HTTP header value
 	ErrInvalidHeaderValue = fmt.Errorf("%w: invalid header value", errs.ErrInvalidFingerprint)
 )
 
-// IsInvalidUserAgent 检查错误是否为无效的 User-Agent
+// IsInvalidUserAgent checks if the error is for invalid User-Agent
 func IsInvalidUserAgent(err error) bool {
 	if err == nil {
 		return false
@@ -33,7 +33,7 @@ func IsInvalidUserAgent(err error) bool {
 	return errors.Is(err, ErrInvalidUserAgent)
 }
 
-// IsHeaderBuildingFailed 检查错误是否为头部构建失败
+// IsHeaderBuildingFailed checks if the error is for header building failure
 func IsHeaderBuildingFailed(err error) bool {
 	if err == nil {
 		return false
@@ -41,7 +41,7 @@ func IsHeaderBuildingFailed(err error) bool {
 	return errors.Is(err, ErrHeaderBuildingFailed)
 }
 
-// IsMissingRequiredHeader 检查错误是否为缺少头部
+// IsMissingRequiredHeader checks if the error is for missing header
 func IsMissingRequiredHeader(err error) bool {
 	if err == nil {
 		return false
