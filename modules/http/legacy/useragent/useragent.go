@@ -1,15 +1,15 @@
 package useragent
 
-// Phase 3: 本模块已完成基础迁移，待深度优化（详见 docs/5-process/modularization/PHASE_3_PLAN.md）
+// Phase 3: This module has completed basic migration, awaiting deep optimization (see docs/5-process/modularization/PHASE_3_PLAN.md)
 import (
 	"fmt"
 	"strings"
 
-	"github.com/vistone/fingerprint/modules/kit"
 	"github.com/vistone/fingerprint/modules/core/types"
+	utils "github.com/vistone/fingerprint/modules/kit"
 )
 
-// UserAgentGenerator User-Agent 生成器
+// UserAgentGenerator User-Agent generator
 type UserAgentGenerator struct {
 	templates map[string]types.UserAgentTemplate
 }
@@ -22,7 +22,7 @@ func init() {
 	defaultGenerator = NewUserAgentGenerator()
 }
 
-// NewUserAgentGenerator 创建新的 User-Agent 生成器
+// NewUserAgentGenerator creates a new User-Agent generator
 func NewUserAgentGenerator() *UserAgentGenerator {
 	gen := &UserAgentGenerator{
 		templates: make(map[string]types.UserAgentTemplate),
@@ -31,9 +31,9 @@ func NewUserAgentGenerator() *UserAgentGenerator {
 	return gen
 }
 
-// initTemplates 初始化 User-Agent 模板
+// initTemplates initializes User-Agent templates
 func (g *UserAgentGenerator) initTemplates() {
-	// Chrome User-Agent 模板
+	// Chrome User-Agent templates
 	chromeTemplates := map[string]string{
 		"103": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
 		"104": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36",
@@ -63,7 +63,7 @@ func (g *UserAgentGenerator) initTemplates() {
 		}
 	}
 
-	// Firefox User-Agent 模板
+	// Firefox User-Agent templates
 	firefoxTemplates := map[string]string{
 		"102": "Mozilla/5.0 (%s; rv:102.0) Gecko/20100101 Firefox/102.0",
 		"104": "Mozilla/5.0 (%s; rv:104.0) Gecko/20100101 Firefox/104.0",
@@ -88,7 +88,7 @@ func (g *UserAgentGenerator) initTemplates() {
 		}
 	}
 
-	// Safari User-Agent 模板
+	// Safari User-Agent templates
 	safariTemplates := map[string]string{
 		"15_6_1":    "Mozilla/5.0 (%s) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
 		"16_0":      "Mozilla/5.0 (%s) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15",
@@ -108,11 +108,11 @@ func (g *UserAgentGenerator) initTemplates() {
 			Version:    key,
 			Template:   template,
 			Mobile:     mobile,
-			OSRequired: !mobile, // 移动端不需要操作系统信息
+			OSRequired: !mobile, // Mobile devices don't need OS information
 		}
 	}
 
-	// Opera User-Agent 模板
+	// Opera User-Agent templates
 	operaTemplates := map[string]string{
 		"89": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36 OPR/89.0.0.0",
 		"90": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36 OPR/90.0.0.0",
@@ -128,7 +128,7 @@ func (g *UserAgentGenerator) initTemplates() {
 		}
 	}
 
-	// Edge User-Agent 模板（基于 Chromium 内核）
+	// Edge User-Agent templates (based on Chromium)
 	edgeTemplates := map[string]string{
 		"99":  "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36 Edg/99.0.1150.36",
 		"101": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.53",
@@ -146,8 +146,8 @@ func (g *UserAgentGenerator) initTemplates() {
 		}
 	}
 
-	// 移动端和自定义指纹的 User-Agent 模板
-	// iOS 应用指纹 - 使用 iOS Safari User-Agent
+	// Mobile and custom fingerprint User-Agent templates
+	// iOS app fingerprints - using iOS Safari User-Agent
 	iosAppTemplates := map[string]string{
 		"zalando_ios_mobile": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
 		"nike_ios_mobile":    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
@@ -165,11 +165,11 @@ func (g *UserAgentGenerator) initTemplates() {
 			Version:    "ios",
 			Template:   template,
 			Mobile:     true,
-			OSRequired: false, // iOS 移动端不需要操作系统占位符
+			OSRequired: false, // iOS mobile doesn't need OS placeholder
 		}
 	}
 
-	// Android 应用指纹 - 使用 Android Chrome User-Agent
+	// Android app fingerprints - using Android Chrome User-Agent
 	androidAppTemplates := map[string]string{
 		"zalando_android_mobile": "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
 		"nike_android_mobile":    "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
@@ -185,11 +185,11 @@ func (g *UserAgentGenerator) initTemplates() {
 			Version:    "android",
 			Template:   template,
 			Mobile:     true,
-			OSRequired: false, // Android 移动端不需要操作系统占位符
+			OSRequired: false, // Android mobile doesn't need OS placeholder
 		}
 	}
 
-	// OkHttp4 Android 指纹 - 使用 Android Chrome User-Agent（不同 Android 版本）
+	// OkHttp4 Android fingerprints - using Android Chrome User-Agent (different Android versions)
 	okhttpTemplates := map[string]string{
 		"okhttp4_android_7":  "Mozilla/5.0 (Linux; Android 7.0; SM-G930F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
 		"okhttp4_android_8":  "Mozilla/5.0 (Linux; Android 8.0; SM-G950F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
@@ -206,64 +206,64 @@ func (g *UserAgentGenerator) initTemplates() {
 			Version:    "okhttp4",
 			Template:   template,
 			Mobile:     true,
-			OSRequired: false, // Android 移动端不需要操作系统占位符
+			OSRequired: false, // Android mobile doesn't need OS placeholder
 		}
 	}
 
-	// Cloudflare Custom - 使用 Chrome User-Agent（通常用于 cloudscraper）
+	// Cloudflare Custom - using Chrome User-Agent (typically for cloudscraper)
 	g.templates["cloudflare_custom"] = types.UserAgentTemplate{
 		Browser:    types.BrowserChrome,
 		Version:    "custom",
 		Template:   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
 		Mobile:     false,
-		OSRequired: false, // 固定 User-Agent，不需要操作系统占位符
+		OSRequired: false, // Fixed User-Agent, no OS placeholder needed
 	}
 }
 
-// GetUserAgent 根据指纹名称获取 User-Agent
-// 如果指纹需要操作系统信息，会随机选择一个操作系统
+// GetUserAgent gets User-Agent based on fingerprint name
+// If fingerprint requires OS information, randomly selects an OS
 func (g *UserAgentGenerator) GetUserAgent(profileName string) (string, error) {
 	return g.GetUserAgentWithOS(profileName, types.OperatingSystem(""))
 }
 
-// GetUserAgentWithOS 根据指纹名称和指定操作系统获取 User-Agent
-// 如果 os 为空，且需要操作系统信息，会随机选择一个操作系统
+// GetUserAgentWithOS gets User-Agent based on fingerprint name and specified OS
+// If os is empty and OS information is required, randomly selects an OS
 func (g *UserAgentGenerator) GetUserAgentWithOS(profileName string, os types.OperatingSystem) (string, error) {
 	if profileName == "" {
 		return "", fmt.Errorf("profile name cannot be empty")
 	}
 	template, ok := g.templates[profileName]
 	if !ok {
-		// 尝试从 profileName 中提取浏览器类型和版本
+		// Try to extract browser type and version from profileName
 		return g.generateFromProfileName(profileName, os)
 	}
 
-	// 如果不需要操作系统信息，直接返回模板
+	// If OS information is not required, return template directly
 	if !template.OSRequired {
 		return template.Template, nil
 	}
 
-	// 如果需要操作系统信息
+	// If OS information is required
 	if os == "" {
-		// 随机选择操作系统
+		// Randomly select an OS
 		os = RandomOS()
 	}
 
 	return fmt.Sprintf(template.Template, string(os)), nil
 }
 
-// generateFromProfileName 从 profile 名称生成 User-Agent
+// generateFromProfileName generates User-Agent from profile name
 func (g *UserAgentGenerator) generateFromProfileName(profileName string, os types.OperatingSystem) (string, error) {
 	profileName = strings.ToLower(profileName)
 
-	// 解析浏览器类型和版本
+	// Parse browser type and version
 	var browser types.BrowserType
 	var version string
 
 	if strings.HasPrefix(profileName, "chrome_") {
 		browser = types.BrowserChrome
 		version = strings.TrimPrefix(profileName, "chrome_")
-		// 处理特殊版本
+		// Handle special versions
 		if strings.Contains(version, "_psk") {
 			version = strings.Split(version, "_psk")[0]
 		}
@@ -283,11 +283,11 @@ func (g *UserAgentGenerator) generateFromProfileName(profileName string, os type
 		browser = types.BrowserEdge
 		version = strings.TrimPrefix(profileName, "edge_")
 	} else {
-		// 默认使用 Chrome 133
+		// Default to Chrome 133
 		return g.GetUserAgentWithOS("chrome_133", os)
 	}
 
-	// 生成 User-Agent
+	// Generate User-Agent
 	if os == "" {
 		os = RandomOS()
 	}
@@ -308,20 +308,20 @@ func (g *UserAgentGenerator) generateFromProfileName(profileName string, os type
 	}
 }
 
-// RandomOS 随机选择一个操作系统
+// RandomOS randomly selects an operating system
 func RandomOS() types.OperatingSystem {
 	if len(types.OperatingSystems) == 0 {
-		return types.OSWindows10 // 默认返回 Windows 10
+		return types.OSWindows10 // Default to Windows 10
 	}
 	return utils.RandomChoice(types.OperatingSystems)
 }
 
-// GetUserAgentForProfile 为指定的 profiles.ClientProfile 获取 User-Agent
+// GetUserAgentForProfile gets User-Agent for specified profiles.ClientProfile
 func GetUserAgentForProfile(profileName string) (string, error) {
 	return defaultGenerator.GetUserAgent(profileName)
 }
 
-// GetUserAgentForProfileWithOS 为指定的 profiles.ClientProfile 和操作系统获取 User-Agent
+// GetUserAgentForProfileWithOS gets User-Agent for specified profiles.ClientProfile and OS
 func GetUserAgentForProfileWithOS(profileName string, os types.OperatingSystem) (string, error) {
 	return defaultGenerator.GetUserAgentWithOS(profileName, os)
 }
