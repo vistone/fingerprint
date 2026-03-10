@@ -11,7 +11,7 @@ import (
 	"github.com/vistone/fingerprint/modules/core/types"
 )
 
-// BenchmarkGetRandomFingerprint 基准测试：随机获取指纹
+// BenchmarkGetRandomFingerprint 基准测试：随机get指纹
 func BenchmarkGetRandomFingerprint(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -22,7 +22,7 @@ func BenchmarkGetRandomFingerprint(b *testing.B) {
 	}
 }
 
-// BenchmarkGetRandomFingerprintWithOS 基准测试：随机获取指纹（指定 OS）
+// BenchmarkGetRandomFingerprintWithOS 基准测试：随机get指纹（指定 OS）
 func BenchmarkGetRandomFingerprintWithOS(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -33,7 +33,7 @@ func BenchmarkGetRandomFingerprintWithOS(b *testing.B) {
 	}
 }
 
-// BenchmarkGetRandomFingerprintByBrowser 基准测试：按浏览器类型随机获取指纹
+// BenchmarkGetRandomFingerprintByBrowser 基准测试：按浏览器type随机get指纹
 func BenchmarkGetRandomFingerprintByBrowser(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -44,7 +44,7 @@ func BenchmarkGetRandomFingerprintByBrowser(b *testing.B) {
 	}
 }
 
-// BenchmarkGetUserAgentByProfileName 基准测试：根据 profile 名称获取 User-Agent
+// BenchmarkGetUserAgentByProfileName 基准测试：根据 profile 名称get User-Agent
 func BenchmarkGetUserAgentByProfileName(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -55,7 +55,7 @@ func BenchmarkGetUserAgentByProfileName(b *testing.B) {
 	}
 }
 
-// BenchmarkGenerateHeaders 基准测试：生成 HTTP Headers
+// BenchmarkGenerateHeaders 基准测试：generate HTTP Headers
 func BenchmarkGenerateHeaders(b *testing.B) {
 	b.ReportAllocs()
 	ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
@@ -64,7 +64,7 @@ func BenchmarkGenerateHeaders(b *testing.B) {
 	}
 }
 
-// BenchmarkHeadersToMap 基准测试：Headers 转换为 Map
+// BenchmarkHeadersToMap 基准测试：Headers convert为 Map
 func BenchmarkHeadersToMap(b *testing.B) {
 	ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
 	headers := headers.GenerateHeaders(types.BrowserChrome, ua, false)
@@ -106,7 +106,7 @@ func BenchmarkRandomOS(b *testing.B) {
 	}
 }
 
-// BenchmarkGetClientHelloSpec 基准测试：获取 Client Hello Spec
+// BenchmarkGetClientHelloSpec 基准测试：get Client Hello Spec
 func BenchmarkGetClientHelloSpec(b *testing.B) {
 	profile := profiles.DefaultClientProfile
 	b.ResetTimer()
@@ -123,27 +123,27 @@ func BenchmarkGetClientHelloSpec(b *testing.B) {
 func BenchmarkFullWorkflow(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		// 1. 获取随机指纹
+		// 1. get随机指纹
 		result, err := random.GetRandomFingerprint()
 		if err != nil {
 			b.Fatal(err)
 		}
 
-		// 2. 获取 Client Hello Spec
+		// 2. get Client Hello Spec
 		_, err = result.Profile.GetClientHelloSpec()
 		if err != nil && !errors.IsClientHelloSpecNotImplemented(err) {
 			b.Fatal(err)
 		}
 
-		// 3. 设置自定义 Headers
+		// 3. setting自定义 Headers
 		result.Headers.Set("Cookie", "session_id=test")
 
-		// 4. 转换为 Map
+		// 4. convert为 Map
 		_ = result.Headers.ToMap()
 	}
 }
 
-// BenchmarkParallelGetRandomFingerprint 并发基准测试：随机获取指纹
+// BenchmarkParallelGetRandomFingerprint concurrent基准测试：随机get指纹
 func BenchmarkParallelGetRandomFingerprint(b *testing.B) {
 	b.ReportAllocs()
 	b.RunParallel(func(pb *testing.PB) {
@@ -156,7 +156,7 @@ func BenchmarkParallelGetRandomFingerprint(b *testing.B) {
 	})
 }
 
-// BenchmarkParallelRandomLanguage 并发基准测试：随机选择语言
+// BenchmarkParallelRandomLanguage concurrent基准测试：随机选择语言
 func BenchmarkParallelRandomLanguage(b *testing.B) {
 	b.ReportAllocs()
 	b.RunParallel(func(pb *testing.PB) {
@@ -166,7 +166,7 @@ func BenchmarkParallelRandomLanguage(b *testing.B) {
 	})
 }
 
-// BenchmarkParallelRandomOS 并发基准测试：随机选择操作系统
+// BenchmarkParallelRandomOS concurrent基准测试：随机选择操作系统
 func BenchmarkParallelRandomOS(b *testing.B) {
 	b.ReportAllocs()
 	b.RunParallel(func(pb *testing.PB) {

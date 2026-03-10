@@ -25,7 +25,7 @@ func TestMappedTLSClients(t *testing.T) {
 		t.Error("MappedTLSClients 不能为空")
 	}
 
-	// 测试几个关键指纹是否存在
+	// 测试几个关键指纹whether存在
 	keyProfiles := []string{
 		"chrome_133",
 		"chrome_120",
@@ -48,13 +48,13 @@ func TestProfileMethods(t *testing.T) {
 	// 测试 GetClientHelloStr
 	str := profile.GetClientHelloStr()
 	if str == "" {
-		t.Error("GetClientHelloStr 返回空字符串")
+		t.Error("GetClientHelloStr return空字符串")
 	}
 
 	// 测试 GetClientHelloSpec
 	spec, err := profile.GetClientHelloSpec()
 	if err != nil {
-		t.Errorf("GetClientHelloSpec 返回错误: %v", err)
+		t.Errorf("GetClientHelloSpec returnerror: %v", err)
 	}
 	if len(spec.CipherSuites) == 0 {
 		t.Error("CipherSuites 不能为空")
@@ -63,37 +63,37 @@ func TestProfileMethods(t *testing.T) {
 	// 测试 GetSettings
 	settings := profile.GetSettings()
 	if settings == nil {
-		t.Error("GetSettings 返回 nil")
+		t.Error("GetSettings return nil")
 	}
 
 	// 测试 GetSettingsOrder
 	settingsOrder := profile.GetSettingsOrder()
 	if settingsOrder == nil {
-		t.Error("GetSettingsOrder 返回 nil")
+		t.Error("GetSettingsOrder return nil")
 	}
 
 	// 测试 GetPseudoHeaderOrder
 	pseudoOrder := profile.GetPseudoHeaderOrder()
 	if pseudoOrder == nil {
-		t.Error("GetPseudoHeaderOrder 返回 nil")
+		t.Error("GetPseudoHeaderOrder return nil")
 	}
 
 	// 测试 GetConnectionFlow
 	flow := profile.GetConnectionFlow()
 	if flow == 0 {
-		t.Error("GetConnectionFlow 返回 0")
+		t.Error("GetConnectionFlow return 0")
 	}
 
 	// 测试 GetClientHelloId
 	helloId := profile.GetClientHelloId()
 	if helloId.Str() == "" {
-		t.Error("GetClientHelloId 返回无效的 ID")
+		t.Error("GetClientHelloId return无效的 ID")
 	}
 }
 
-// TestAllProfilesValid 测试所有 profiles 是否有效
-// 注意：某些使用预定义 tls.ClientHelloID 的 profiles 可能无法获取 Spec
-// 这是正常的，因为它们依赖于 utls 库的实现
+// TestAllProfilesValid 测试所有 profiles whether有效
+// note:某些使用预定义 tls.ClientHelloID 的 profiles 可能无法get Spec
+// 这是正常的，因为它们依赖于 utls 库的implement
 func TestAllProfilesValid(t *testing.T) {
 	workingCount := 0
 	predefinedCount := 0
@@ -106,25 +106,25 @@ func TestAllProfilesValid(t *testing.T) {
 				t.Errorf("Profile %s 的 ClientHelloStr 为空", name)
 			}
 
-			// 检查是否有 SpecFactory
+			// checkwhether有 SpecFactory
 			helloId := profile.GetClientHelloId()
 			hasSpecFactory := helloId.SpecFactory != nil
 
 			spec, err := profile.GetClientHelloSpec()
 			if err != nil {
-				// 预定义 ID 的正常情况：未实现 ClientHelloSpec
+				// 预定义 ID 的正常情况：未implement ClientHelloSpec
 				if errors.IsClientHelloSpecNotImplemented(err) {
 					predefinedCount++
-					t.Logf("Profile %s 使用预定义 ID，无法获取 Spec（这是正常的）", name)
+					t.Logf("Profile %s 使用预定义 ID，无法get Spec（这是正常的）", name)
 					return
 				}
-				// 如果使用预定义 ID 且没有 SpecFactory，这也是正常的
+				// if使用预定义 ID 且没有 SpecFactory，这也是正常的
 				if !hasSpecFactory {
 					predefinedCount++
-					t.Logf("Profile %s 使用预定义 ID，无法获取 Spec（这是正常的）", name)
+					t.Logf("Profile %s 使用预定义 ID，无法get Spec（这是正常的）", name)
 					return
 				}
-				t.Errorf("Profile %s 的 GetClientHelloSpec 返回错误: %v", name, err)
+				t.Errorf("Profile %s 的 GetClientHelloSpec returnerror: %v", name, err)
 				return
 			}
 
@@ -146,14 +146,14 @@ func TestAllProfilesValid(t *testing.T) {
 	t.Logf("使用预定义 ID 的 profiles: %d", predefinedCount)
 }
 
-// TestProfileCount 测试指纹数量
+// TestProfileCount 测试指纹quantity
 func TestProfileCount(t *testing.T) {
 	expectedMinCount := 70 // 至少应该有70个指纹（含Edge系列）
 	actualCount := len(profiles.MappedTLSClients)
 	if actualCount < expectedMinCount {
-		t.Errorf("指纹数量 %d 少于预期的最小值 %d", actualCount, expectedMinCount)
+		t.Errorf("指纹quantity %d 少于预期的minimum值 %d", actualCount, expectedMinCount)
 	}
-	t.Logf("当前指纹数量: %d", actualCount)
+	t.Logf("当前指纹quantity: %d", actualCount)
 }
 
 // TestChromeProfiles 测试 Chrome 系列指纹
@@ -251,11 +251,11 @@ func TestEdgeProfiles(t *testing.T) {
 	}
 }
 
-// TestGetRandomFingerprintByEdge 测试按 Edge 浏览器获取指纹
+// TestGetRandomFingerprintByEdge 测试按 Edge 浏览器get指纹
 func TestGetRandomFingerprintByEdge(t *testing.T) {
 	result, err := random.GetRandomFingerprintByBrowser("edge")
 	if err != nil {
-		t.Fatalf("获取 Edge 指纹失败: %v", err)
+		t.Fatalf("get Edge 指纹failed: %v", err)
 	}
 	if result.UserAgent == "" {
 		t.Error("UserAgent 不能为空")
@@ -266,24 +266,24 @@ func TestGetRandomFingerprintByEdge(t *testing.T) {
 	t.Logf("Edge 指纹: %s, UA: %s", result.HelloClientID, result.UserAgent)
 }
 
-// containsCI 大小写不敏感的字符串包含检查
+// containsCI size写不敏感的字符串包含check
 func containsCI(s, substr string) bool {
 	return len(s) >= len(substr) && (s == substr ||
 		strings.Contains(strings.ToLower(s), strings.ToLower(substr)))
 }
 
-// TestAnomalyDetector 测试异常检测器（使用真实 User-Agent 数据）
+// TestAnomalyDetector 测试exception检测器（使用真实 User-Agent data）
 func TestAnomalyDetector(t *testing.T) {
 	detector := defense.NewAnomalyDetector()
 
-	// 获取真实 Chrome 133 指纹的 User-Agent
+	// get真实 Chrome 133 指纹的 User-Agent
 	result, err := random.GetRandomFingerprintByBrowser("chrome")
 	if err != nil {
-		t.Fatalf("获取 Chrome 指纹失败: %v", err)
+		t.Fatalf("get Chrome 指纹failed: %v", err)
 	}
 	normalUA := result.UserAgent
 
-	// 测试正常数据（使用真实 UA）
+	// 测试正常data（使用真实 UA）
 	if detector.DetectHeadlessBrowser(normalUA) {
 		t.Error("真实 Chrome UA 不应被检测为无头浏览器")
 	}
@@ -299,26 +299,26 @@ func TestAnomalyDetector(t *testing.T) {
 		}
 	}
 
-	// 测试异常数据检测（使用高熵数据）
+	// 测试exceptiondata检测（使用高熵data）
 	highEntropyData := make([]byte, 1000)
 	for i := range highEntropyData {
 		highEntropyData[i] = byte(i % 256)
 	}
-	// 注意：这里只是测试接口，不保证一定被检测为异常
+	// note:这里只是测试interface，不保证一定被检测为exception
 	detector.DetectAnomalies(highEntropyData)
 }
 
-// TestContradictionDetector 测试矛盾检测器（使用真实指纹数据）
+// TestContradictionDetector 测试矛盾检测器（使用真实指纹data）
 func TestContradictionDetector(t *testing.T) {
 	detector := defense.NewContradictionDetector()
 
-	// 获取真实 Chrome on Windows 指纹
+	// get真实 Chrome on Windows 指纹
 	result, err := random.GetRandomFingerprintByBrowserWithOS("chrome", types.OSWindows10)
 	if err != nil {
-		t.Fatalf("获取指纹失败: %v", err)
+		t.Fatalf("get指纹failed: %v", err)
 	}
 
-	// 测试一致的数据（使用真实指纹的属性）
+	// 测试一致的data（使用真实指纹的attribute）
 	consistentAttrs := map[string]string{
 		"os":            "Windows NT 10.0",
 		"platform":      "Win32",
@@ -328,7 +328,7 @@ func TestContradictionDetector(t *testing.T) {
 		"screen_height": "1080",
 	}
 	if detector.CheckContradictions(consistentAttrs) {
-		t.Error("一致的属性不应被检测到矛盾")
+		t.Error("一致的attribute不应被检测到矛盾")
 	}
 
 	// 测试 OS/Platform 矛盾（Windows OS 配 Mac Platform）
@@ -360,14 +360,14 @@ func TestContradictionDetector(t *testing.T) {
 	}
 }
 
-// TestPassiveRecognizer 测试被动识别器（使用真实指纹数据）
+// TestPassiveRecognizer 测试被动识别器（使用真实指纹data）
 func TestPassiveRecognizer(t *testing.T) {
 	recognizer := defense.NewPassiveRecognizer()
 
-	// 获取真实 Chrome 133 指纹
+	// get真实 Chrome 133 指纹
 	result, err := random.GetRandomFingerprintByBrowser("chrome")
 	if err != nil {
-		t.Fatalf("获取 Chrome 指纹失败: %v", err)
+		t.Fatalf("get Chrome 指纹failed: %v", err)
 	}
 
 	// 使用真实指纹的 Headers 进行识别
@@ -383,14 +383,14 @@ func TestPassiveRecognizer(t *testing.T) {
 	if recognitionResult.Confidence < 0.5 {
 		t.Errorf("置信度应大于 0.5，实际为 %f", recognitionResult.Confidence)
 	}
-	t.Logf("识别结果: 浏览器=%s, 版本=%s, OS=%s, 置信度=%.2f",
+	t.Logf("识别result: 浏览器=%s, 版本=%s, OS=%s, 置信度=%.2f",
 		recognitionResult.Browser, recognitionResult.BrowserVersion,
 		recognitionResult.OS, recognitionResult.Confidence)
 
 	// 测试 Firefox 识别
 	firefoxResult, err := random.GetRandomFingerprintByBrowser("firefox")
 	if err != nil {
-		t.Fatalf("获取 Firefox 指纹失败: %v", err)
+		t.Fatalf("get Firefox 指纹failed: %v", err)
 	}
 
 	firefoxHeaders := firefoxResult.Headers.ToMap()
@@ -398,7 +398,7 @@ func TestPassiveRecognizer(t *testing.T) {
 	if firefoxRecognition.Browser != types.BrowserFirefox {
 		t.Errorf("应识别为 Firefox，实际为 %s", firefoxRecognition.Browser)
 	}
-	t.Logf("Firefox 识别结果: 浏览器=%s", firefoxRecognition.Browser)
+	t.Logf("Firefox 识别result: 浏览器=%s", firefoxRecognition.Browser)
 }
 
 // TestNilHTTPHeadersToMap 测试 nil HTTPHeaders 的 ToMap 安全性
@@ -407,14 +407,14 @@ func TestNilHTTPHeadersToMap(t *testing.T) {
 
 	result := headers.ToMap()
 	if result == nil {
-		t.Fatal("nil HTTPHeaders 调用 ToMap 应返回非 nil map")
+		t.Fatal("nil HTTPHeaders 调用 ToMap 应return非 nil map")
 	}
 	if len(result) != 0 {
-		t.Fatalf("nil HTTPHeaders 的 ToMap 结果应为空，实际长度: %d", len(result))
+		t.Fatalf("nil HTTPHeaders 的 ToMap result应为空，实际length: %d", len(result))
 	}
 }
 
-// TestNilHTTPHeadersToMapWithCustom 测试 nil HTTPHeaders 的 ToMapWithCustom 合并行为
+// TestNilHTTPHeadersToMapWithCustom 测试 nil HTTPHeaders 的 ToMapWithCustom mergebehavior
 func TestNilHTTPHeadersToMapWithCustom(t *testing.T) {
 	var headers *types.HTTPHeaders
 
@@ -425,10 +425,10 @@ func TestNilHTTPHeadersToMapWithCustom(t *testing.T) {
 	})
 
 	if result == nil {
-		t.Fatal("nil HTTPHeaders 调用 ToMapWithCustom 应返回非 nil map")
+		t.Fatal("nil HTTPHeaders 调用 ToMapWithCustom 应return非 nil map")
 	}
 	if len(result) != 2 {
-		t.Fatalf("ToMapWithCustom 结果长度应为 2，实际: %d", len(result))
+		t.Fatalf("ToMapWithCustom resultlength应为 2，实际: %d", len(result))
 	}
 	if result["X-Test"] != "ok" {
 		t.Fatal("应包含 X-Test=ok")
@@ -455,7 +455,7 @@ func TestNoiseInjector(t *testing.T) {
 		t.Fatal("Audio 噪声不能为 nil")
 	}
 	if audioNoise.NoiseLevel < 0 || audioNoise.NoiseLevel > 0.02 {
-		t.Errorf("Audio 噪声级别超出范围: %f", audioNoise.NoiseLevel)
+		t.Errorf("Audio 噪声级别超出range: %f", audioNoise.NoiseLevel)
 	}
 
 	// 测试 WebGL 噪声
@@ -464,13 +464,13 @@ func TestNoiseInjector(t *testing.T) {
 		t.Fatal("WebGL 噪声不能为 nil")
 	}
 
-	// 测试完整配置
+	// 测试完整configuration
 	profile := injector.GenerateFullProfile()
 	if profile == nil {
-		t.Fatal("完整噪声配置不能为 nil")
+		t.Fatal("完整噪声configuration不能为 nil")
 	}
 	if profile.Canvas == nil || profile.Audio == nil || profile.WebGL == nil {
-		t.Error("完整噪声配置的各部分不能为 nil")
+		t.Error("完整噪声configured各部分不能为 nil")
 	}
 
 	t.Logf("Canvas 噪声: R=%d, G=%d, B=%d", canvasNoise.PixelOffsetR, canvasNoise.PixelOffsetG, canvasNoise.PixelOffsetB)
