@@ -1,6 +1,6 @@
 package clienthints
 
-// Phase 3: 本模块已完成基础迁移，待深度优化（详见 docs/5-process/modularization/PHASE_3_PLAN.md）
+// Phase 3: This module has completed basic migration, awaiting deep optimization (see docs/5-process/modularization/PHASE_3_PLAN.md)
 import (
 	"fmt"
 	"time"
@@ -8,77 +8,77 @@ import (
 	"github.com/vistone/fingerprint/modules/http/legacy/policy"
 )
 
-// CHPhase Client Hints 生命周期阶段
+// CHPhase Client Hints lifecycle phase
 type CHPhase int
 
 const (
-	// PHASE_INITIAL_REQUEST 初始请求
+	// PHASE_INITIAL_REQUEST initial request
 	PHASE_INITIAL_REQUEST CHPhase = iota
-	// PHASE_SERVER_RESPONSE 服务器响应
+	// PHASE_SERVER_RESPONSE server response
 	PHASE_SERVER_RESPONSE
-	// PHASE_SUBSEQUENT_REQUESTS 后续请求
+	// PHASE_SUBSEQUENT_REQUESTS subsequent requests
 	PHASE_SUBSEQUENT_REQUESTS
-	// PHASE_CROSS_ORIGIN_SUB_REQUESTS 跨域子资源请求
+	// PHASE_CROSS_ORIGIN_SUB_REQUESTS cross-origin sub-resource requests
 	PHASE_CROSS_ORIGIN_SUB_REQUESTS
-	// PHASE_TERMINATED 生命周期终止
+	// PHASE_TERMINATED lifecycle terminated
 	PHASE_TERMINATED
 )
 
-// CHLifecycleEvent 生命周期事件
+// CHLifecycleEvent lifecycle event
 type CHLifecycleEvent struct {
-	// 时间戳
+	// Timestamp
 	Timestamp time.Time
 
-	// 事件类型
+	// Event type
 	Type CHPhase
 
-	// 源 URL
+	// Origin URL
 	OriginURL string
 
-	// 相关的提示
+	// Related hints
 	Hints []string
 
-	// 事件详情
+	// Event details
 	Details map[string]interface{}
 
-	// 风险指标
+	// Risk indicators
 	RiskIndicators []string
 }
 
-// ClientHintsLifecycle 完整的 Client Hints 生命周期管理
+// ClientHintsLifecycle complete Client Hints lifecycle management
 type ClientHintsLifecycle struct {
-	// 起始时间
+	// Start time
 	StartTime time.Time
 
-	// 当前阶段
+	// Current phase
 	CurrentPhase CHPhase
 
-	// 主页面 URL
+	// Main page URL
 	PrimaryOriginURL string
 
-	// 协商策略
+	// Negotiation policy
 	NegotiationStrategy *NegotiationStrategy
 
-	// 权限策略
+	// Permissions policy
 	PermissionsPolicy *policy.PermissionsPolicy
 
-	// 事件日志
+	// Event log
 	EventLog []CHLifecycleEvent
 
-	// 当前活跃的提示
+	// Currently active hints
 	ActiveHints []string
 
-	// 已探测的源
+	// Discovered origins
 	DiscoveredOrigins []string
 
-	// 生命周期完整性标记
+	// Lifecycle integrity markers
 	IntegrityFlags []string
 
-	// 风险评分
+	// Risk score
 	RiskScore float64
 }
 
-// CHLifecycleManager 生命周期管理器
+// CHLifecycleManager lifecycle manager
 type CHLifecycleManager struct {
 	lifecycles map[string]*ClientHintsLifecycle
 
@@ -86,7 +86,7 @@ type CHLifecycleManager struct {
 	policyAnalyzer      *policy.PermissionsPolicyAnalyzer
 }
 
-// NewCHLifecycleManager 创建生命周期管理器
+// NewCHLifecycleManager creates lifecycle manager
 func NewCHLifecycleManager() *CHLifecycleManager {
 	return &CHLifecycleManager{
 		lifecycles:          make(map[string]*ClientHintsLifecycle),
@@ -95,7 +95,7 @@ func NewCHLifecycleManager() *CHLifecycleManager {
 	}
 }
 
-// StartLifecycle 启动新的 Client Hints 生命周期
+// StartLifecycle starts new Client Hints lifecycle
 func (m *CHLifecycleManager) StartLifecycle(primaryOriginURL string, initialHints []string) *ClientHintsLifecycle {
 	lifecycle := &ClientHintsLifecycle{
 		StartTime:         time.Now(),
@@ -107,7 +107,7 @@ func (m *CHLifecycleManager) StartLifecycle(primaryOriginURL string, initialHint
 		IntegrityFlags:    []string{},
 	}
 
-	// 记录初始事件
+	// Record initial event
 	lifecycle.EventLog = append(lifecycle.EventLog, CHLifecycleEvent{
 		Timestamp: lifecycle.StartTime,
 		Type:      PHASE_INITIAL_REQUEST,
@@ -122,18 +122,18 @@ func (m *CHLifecycleManager) StartLifecycle(primaryOriginURL string, initialHint
 	return lifecycle
 }
 
-// ProcessServerResponse 处理服务器的 Accept-CH 响应
+// ProcessServerResponse processes server Accept-CH response
 func (m *CHLifecycleManager) ProcessServerResponse(primaryOriginURL string, acceptCHValue string, permissionsPolicyValue string) error {
 	lifecycle, exists := m.lifecycles[primaryOriginURL]
 	if !exists {
 		return fmt.Errorf("lifecycle not found for %s", primaryOriginURL)
 	}
 
-	// 处理 Accept-CH
+	// Process Accept-CH
 	strategy := m.negotiationAnalyzer.InitializeFromAcceptCH(acceptCHValue, primaryOriginURL)
 	lifecycle.NegotiationStrategy = strategy
 
-	// 处理 Permissions-Policy
+	// Process Permissions-Policy
 	if permissionsPolicyValue != "" {
 		policy := m.policyAnalyzer.ParsePermissionsPolicy(permissionsPolicyValue)
 		lifecycle.PermissionsPolicy = policy
@@ -141,7 +141,7 @@ func (m *CHLifecycleManager) ProcessServerResponse(primaryOriginURL string, acce
 
 	lifecycle.CurrentPhase = PHASE_SERVER_RESPONSE
 
-	// 记录事件
+	// Record event
 	lifecycle.EventLog = append(lifecycle.EventLog, CHLifecycleEvent{
 		Timestamp: time.Now(),
 		Type:      PHASE_SERVER_RESPONSE,
@@ -158,14 +158,14 @@ func (m *CHLifecycleManager) ProcessServerResponse(primaryOriginURL string, acce
 	return nil
 }
 
-// ProcessSubsequentRequest 处理后续请求中的 Client Hints
+// ProcessSubsequentRequest processes Client Hints in subsequent requests
 func (m *CHLifecycleManager) ProcessSubsequentRequest(primaryOriginURL string, requestOriginURL string, includedHints []string) error {
 	lifecycle, exists := m.lifecycles[primaryOriginURL]
 	if !exists {
 		return fmt.Errorf("lifecycle not found for %s", primaryOriginURL)
 	}
 
-	// 判断是否为跨域请求
+	// Determine if cross-origin request
 	isCrossOrigin := primaryOriginURL != requestOriginURL
 	var phase CHPhase
 	if isCrossOrigin {
@@ -176,7 +176,7 @@ func (m *CHLifecycleManager) ProcessSubsequentRequest(primaryOriginURL string, r
 
 	lifecycle.CurrentPhase = phase
 
-	// 添加到已发现源列表
+	// Add to discovered origins list
 	found := false
 	for _, origin := range lifecycle.DiscoveredOrigins {
 		if origin == requestOriginURL {
@@ -188,10 +188,10 @@ func (m *CHLifecycleManager) ProcessSubsequentRequest(primaryOriginURL string, r
 		lifecycle.DiscoveredOrigins = append(lifecycle.DiscoveredOrigins, requestOriginURL)
 	}
 
-	// 检查提示完整性
+	// Check hints integrity
 	riskIndicators := []string{}
 	if isCrossOrigin {
-		// 验证跨域委托
+		// Validate cross-origin delegation
 		if lifecycle.NegotiationStrategy != nil {
 			err := m.negotiationAnalyzer.HandleCrossOriginDelegation(
 				lifecycle.NegotiationStrategy,
@@ -203,13 +203,13 @@ func (m *CHLifecycleManager) ProcessSubsequentRequest(primaryOriginURL string, r
 			}
 		}
 
-		// 检查是否遵守 Permissions-Policy
+		// Check Permissions-Policy compliance
 		if lifecycle.PermissionsPolicy != nil {
 			riskIndicators = m.checkPermissionsPolicyCompliance(lifecycle.PermissionsPolicy, includedHints)
 		}
 	}
 
-	// 检查提示是否与协商的一致
+	// Check if hints match negotiated ones
 	if lifecycle.NegotiationStrategy != nil {
 		for _, hint := range includedHints {
 			found := false
@@ -225,7 +225,7 @@ func (m *CHLifecycleManager) ProcessSubsequentRequest(primaryOriginURL string, r
 		}
 	}
 
-	// 记录事件
+	// Record event
 	lifecycle.EventLog = append(lifecycle.EventLog, CHLifecycleEvent{
 		Timestamp: time.Now(),
 		Type:      phase,
@@ -241,11 +241,11 @@ func (m *CHLifecycleManager) ProcessSubsequentRequest(primaryOriginURL string, r
 	return nil
 }
 
-// checkPermissionsPolicyCompliance 检查是否遵守 Permissions-Policy
+// checkPermissionsPolicyCompliance checks Permissions-Policy compliance
 func (m *CHLifecycleManager) checkPermissionsPolicyCompliance(pol *policy.PermissionsPolicy, hints []string) []string {
 	riskIndicators := []string{}
 
-	// Client Hints 相关的功能
+	// Client Hints related features
 	chFeatures := map[string]bool{
 		"ch-device-memory":        true,
 		"ch-dpr":                  true,
@@ -263,10 +263,10 @@ func (m *CHLifecycleManager) checkPermissionsPolicyCompliance(pol *policy.Permis
 	}
 
 	for _, hint := range hints {
-		// 检查提示对应的权限指令
+		// Check permission directive for hint
 		featureName := "ch-" + hint
 		if !chFeatures[featureName] {
-			featureName = hint // 可能是非标准提示
+			featureName = hint // Possibly non-standard hint
 		}
 
 		if directive, exists := pol.Directives[featureName]; exists {
@@ -279,7 +279,7 @@ func (m *CHLifecycleManager) checkPermissionsPolicyCompliance(pol *policy.Permis
 	return riskIndicators
 }
 
-// TerminateLifecycle 终止生命周期
+// TerminateLifecycle terminates lifecycle
 func (m *CHLifecycleManager) TerminateLifecycle(primaryOriginURL string) (*ClientHintsLifecycle, error) {
 	lifecycle, exists := m.lifecycles[primaryOriginURL]
 	if !exists {
@@ -288,10 +288,10 @@ func (m *CHLifecycleManager) TerminateLifecycle(primaryOriginURL string) (*Clien
 
 	lifecycle.CurrentPhase = PHASE_TERMINATED
 
-	// 计算最终风险分数
+	// Calculate final risk score
 	m.calculateFinalRiskScore(lifecycle)
 
-	// 记录终止事件
+	// Record termination event
 	lifecycle.EventLog = append(lifecycle.EventLog, CHLifecycleEvent{
 		Timestamp: time.Now(),
 		Type:      PHASE_TERMINATED,
@@ -306,21 +306,21 @@ func (m *CHLifecycleManager) TerminateLifecycle(primaryOriginURL string) (*Clien
 	return lifecycle, nil
 }
 
-// calculateFinalRiskScore 计算最终风险分数
+// calculateFinalRiskScore calculates final risk score
 func (m *CHLifecycleManager) calculateFinalRiskScore(lifecycle *ClientHintsLifecycle) {
 	risk := 0.0
 
-	// 协商策略风险
+	// Negotiation policy risk
 	if lifecycle.NegotiationStrategy != nil {
 		risk += lifecycle.NegotiationStrategy.RiskScore * 0.3
 	}
 
-	// 权限策略风险
+	// Permissions policy risk
 	if lifecycle.PermissionsPolicy != nil {
 		risk += lifecycle.PermissionsPolicy.RiskScore * 0.3
 	}
 
-	// 事件中的风险指标
+	// Risk indicators in events
 	anomalyCount := 0
 	for _, event := range lifecycle.EventLog {
 		anomalyCount += len(event.RiskIndicators)
@@ -330,20 +330,20 @@ func (m *CHLifecycleManager) calculateFinalRiskScore(lifecycle *ClientHintsLifec
 		lifecycle.IntegrityFlags = append(lifecycle.IntegrityFlags, "EXCESSIVE_ANOMALIES_DETECTED")
 	}
 
-	// 跨域发现过多
+	// Too many cross-origin discoveries
 	if len(lifecycle.DiscoveredOrigins) > 10 {
 		risk += 0.15
 		lifecycle.IntegrityFlags = append(lifecycle.IntegrityFlags, "EXCESSIVE_CROSS_ORIGIN_DISCOVERY")
 	}
 
-	// 生命周期过长
+	// Lifecycle too long
 	duration := time.Since(lifecycle.StartTime)
 	if duration < time.Second {
-		// 过于快速可能表示自动化
+		// Too fast may indicate automation
 		risk += 0.1
 		lifecycle.IntegrityFlags = append(lifecycle.IntegrityFlags, "UNUSUALLY_SHORT_LIFECYCLE")
 	} else if duration > 24*time.Hour {
-		// 超过 24 小时的会话可能有问题
+		// Sessions over 24 hours may be problematic
 		risk += 0.05
 		lifecycle.IntegrityFlags = append(lifecycle.IntegrityFlags, "UNUSUALLY_LONG_LIFECYCLE")
 	}
@@ -351,7 +351,7 @@ func (m *CHLifecycleManager) calculateFinalRiskScore(lifecycle *ClientHintsLifec
 	lifecycle.RiskScore = risk
 }
 
-// GetLifecycleReport 获取生命周期报告
+// GetLifecycleReport gets lifecycle report
 func (m *CHLifecycleManager) GetLifecycleReport(primaryOriginURL string) (*ClientHintsLifecycle, error) {
 	lifecycle, exists := m.lifecycles[primaryOriginURL]
 	if !exists {
@@ -361,7 +361,7 @@ func (m *CHLifecycleManager) GetLifecycleReport(primaryOriginURL string) (*Clien
 	return lifecycle, nil
 }
 
-// GetLifecycleMetrics 获取生命周期指标
+// GetLifecycleMetrics gets lifecycle metrics
 func (m *CHLifecycleManager) GetLifecycleMetrics(lifecycle *ClientHintsLifecycle) map[string]interface{} {
 	metrics := make(map[string]interface{})
 
@@ -387,24 +387,24 @@ func (m *CHLifecycleManager) GetLifecycleMetrics(lifecycle *ClientHintsLifecycle
 	return metrics
 }
 
-// GetSummary 获取摘要
+// GetSummary gets summary
 func (m *CHLifecycleManager) GetSummary(lifecycle *ClientHintsLifecycle) string {
 	phaseStr := ""
 	switch lifecycle.CurrentPhase {
 	case PHASE_INITIAL_REQUEST:
-		phaseStr = "初始请求"
+		phaseStr = "Initial Request"
 	case PHASE_SERVER_RESPONSE:
-		phaseStr = "服务器响应"
+		phaseStr = "Server Response"
 	case PHASE_SUBSEQUENT_REQUESTS:
-		phaseStr = "后续请求"
+		phaseStr = "Subsequent Requests"
 	case PHASE_CROSS_ORIGIN_SUB_REQUESTS:
-		phaseStr = "跨域子资源"
+		phaseStr = "Cross-Origin Sub-Resources"
 	case PHASE_TERMINATED:
-		phaseStr = "已终止"
+		phaseStr = "Terminated"
 	}
 
 	return fmt.Sprintf(
-		"源: %s | 阶段: %s | 发现源: %d | 事件: %d | 风险分数: %.2f",
+		"Origin: %s | Phase: %s | Discovered Origins: %d | Events: %d | Risk Score: %.2f",
 		lifecycle.PrimaryOriginURL,
 		phaseStr,
 		len(lifecycle.DiscoveredOrigins),
