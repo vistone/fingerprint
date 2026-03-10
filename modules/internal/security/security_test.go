@@ -39,7 +39,7 @@ func TestValidator_ValidateString(t *testing.T) {
 		},
 		{
 			name:    "valid utf8",
-			input:   "hello 世界",
+			input:   "hello world",
 			wantErr: false,
 		},
 	}

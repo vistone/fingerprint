@@ -1,3 +1,3 @@
 package plugin
 
-// Package plugin 提供插件系统相关模块入口。
+// Package plugin provides entry for plugin-system related modules.

@@ -30,16 +30,16 @@ type PooledConnection struct {
 
 // ConnectionPool manages a pool of reusable connections
 type ConnectionPool struct {
-	mu            sync.RWMutex
-	connections   []*PooledConnection
-	maxSize       int
-	ttl           time.Duration
-	maxIdleTime   time.Duration
-	factory       func() (interface{}, error)
-	healthCheck   func(interface{}) bool
-	running       bool
+	mu              sync.RWMutex
+	connections     []*PooledConnection
+	maxSize         int
+	ttl             time.Duration
+	maxIdleTime     time.Duration
+	factory         func() (interface{}, error)
+	healthCheck     func(interface{}) bool
+	running         bool
 	stopHealthCheck chan struct{}
-	activeCount   int // 当前活跃连接数（已分配但未归还）
+	activeCount     int // Current active connections (allocated but not returned)
 }
 
 // NewConnectionPool creates a new connection pool
@@ -55,10 +55,10 @@ func NewConnectionPool(config Config) *ConnectionPool {
 	}
 
 	return &ConnectionPool{
-		connections:   make([]*PooledConnection, 0, config.MaxSize),
-		maxSize:       config.MaxSize,
-		ttl:           config.TTL,
-		maxIdleTime:   config.MaxIdleTime,
+		connections:     make([]*PooledConnection, 0, config.MaxSize),
+		maxSize:         config.MaxSize,
+		ttl:             config.TTL,
+		maxIdleTime:     config.MaxIdleTime,
 		stopHealthCheck: make(chan struct{}),
 	}
 }
