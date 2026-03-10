@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// TestNewDetector 测试创建检测器
+// TestNewDetector tests creating detector
 func TestNewDetector(t *testing.T) {
 	d := NewDetector()
 	if d == nil {
@@ -26,7 +26,7 @@ func TestNewDetector(t *testing.T) {
 	}
 }
 
-// TestDetector_Detect_ValidRequest 测试有效请求
+// TestDetector_Detect_ValidRequest tests valid request
 func TestDetector_Detect_ValidRequest(t *testing.T) {
 	d := NewDetector()
 
@@ -39,13 +39,13 @@ func TestDetector_Detect_ValidRequest(t *testing.T) {
 		t.Fatal("Detect() returned nil")
 	}
 
-	// 有效请求应该没有异常或只有低级别异常
+	// Valid request should have no anomalies or only low-level anomalies
 	if result.RiskScore > 30 {
 		t.Errorf("Valid request should have low risk score, got %d", result.RiskScore)
 	}
 }
 
-// TestDetector_Detect_InvalidMethod 测试无效方法
+// TestDetector_Detect_InvalidMethod tests invalid method
 func TestDetector_Detect_InvalidMethod(t *testing.T) {
 	d := NewDetector()
 
@@ -70,7 +70,7 @@ func TestDetector_Detect_InvalidMethod(t *testing.T) {
 	}
 }
 
-// TestDetector_Detect_MissingHeaders 测试缺少头部
+// TestDetector_Detect_MissingHeaders tests missing headers
 func TestDetector_Detect_MissingHeaders(t *testing.T) {
 	d := NewDetector()
 
@@ -92,14 +92,14 @@ func TestDetector_Detect_MissingHeaders(t *testing.T) {
 	}
 }
 
-// TestDetector_Detect_LowEntropyKey 测试低熵 Key
+// TestDetector_Detect_LowEntropyKey tests low entropy Key
 func TestDetector_Detect_LowEntropyKey(t *testing.T) {
 	d := NewDetector()
 
 	req := createValidWebSocketRequest()
 	fp := createValidFingerprint()
 
-	// 设置低熵 Key
+	// Set low entropy Key
 	fp.Handshake.SecWebSocketKeyCharacteristics.Entropy = 2.0
 	fp.Handshake.SecWebSocketKeyCharacteristics.HasPattern = true
 	fp.Handshake.SecWebSocketKeyCharacteristics.PatternType = "low_entropy"
@@ -118,7 +118,7 @@ func TestDetector_Detect_LowEntropyKey(t *testing.T) {
 	}
 }
 
-// TestDetector_Detect_KnownBot 测试已知机器人检测
+// TestDetector_Detect_KnownBot tests known bot detection
 func TestDetector_Detect_KnownBot(t *testing.T) {
 	d := NewDetector()
 
@@ -145,11 +145,11 @@ func TestDetector_Detect_KnownBot(t *testing.T) {
 	}
 }
 
-// TestDetector_DetectFrameAnomalies 测试帧异常检测
+// TestDetector_DetectFrameAnomalies tests frame anomaly detection
 func TestDetector_DetectFrameAnomalies(t *testing.T) {
 	d := NewDetector()
 
-	// 测试 RSV 位设置
+	// Test RSV bit setting
 	frame := &Frame{
 		FIN:     true,
 		RSV1:    true,
@@ -171,12 +171,12 @@ func TestDetector_DetectFrameAnomalies(t *testing.T) {
 		t.Error("Should detect RSV bits anomaly")
 	}
 
-	// 测试控制帧过大
+	// Test control frame too large
 	controlFrame := &Frame{
 		FIN:           true,
 		Opcode:        OpCodeClose,
 		MASK:          true,
-		PayloadLength: 200, // 超过 125 字节
+		PayloadLength: 200, // Exceeds 125 bytes
 	}
 
 	result = d.DetectFrameAnomalies(controlFrame)
@@ -193,18 +193,18 @@ func TestDetector_DetectFrameAnomalies(t *testing.T) {
 	}
 }
 
-// TestDetector_CalculateRiskScore 测试风险评分计算
+// TestDetector_CalculateRiskScore tests risk score calculation
 func TestDetector_CalculateRiskScore(t *testing.T) {
 	d := NewDetector()
 
-	// 空结果
+	// Empty result
 	emptyResult := &DetectionResult{Anomalies: []Anomaly{}}
 	score := d.calculateRiskScore(emptyResult)
 	if score != 0 {
 		t.Errorf("Empty result should have score 0, got %d", score)
 	}
 
-	// 多个异常
+	// Multiple anomalies
 	result := &DetectionResult{
 		Anomalies: []Anomaly{
 			{Severity: SeverityLow},    // 15
@@ -218,7 +218,7 @@ func TestDetector_CalculateRiskScore(t *testing.T) {
 		t.Errorf("Expected score %d, got %d", expectedScore, score)
 	}
 
-	// 已知机器人
+	// Known bot
 	result.IsKnownBot = true
 	score = d.calculateRiskScore(result)
 	expectedScore = 95 + 50 // 145 -> capped at 100
@@ -227,7 +227,7 @@ func TestDetector_CalculateRiskScore(t *testing.T) {
 	}
 }
 
-// TestGetSeverityWeight 测试严重程度权重
+// TestGetSeverityWeight tests severity weight
 func TestGetSeverityWeight(t *testing.T) {
 	tests := []struct {
 		severity Severity
@@ -249,7 +249,7 @@ func TestGetSeverityWeight(t *testing.T) {
 	}
 }
 
-// TestIdentifyBrowserFromUA 测试浏览器识别
+// TestIdentifyBrowserFromUA tests browser identification
 func TestIdentifyBrowserFromUA(t *testing.T) {
 	d := NewDetector()
 
@@ -273,7 +273,7 @@ func TestIdentifyBrowserFromUA(t *testing.T) {
 	}
 }
 
-// TestCalculateHeaderOrderMatch 测试头部顺序匹配计算
+// TestCalculateHeaderOrderMatch tests header order match calculation
 func TestCalculateHeaderOrderMatch(t *testing.T) {
 	d := NewDetector()
 
@@ -284,29 +284,29 @@ func TestCalculateHeaderOrderMatch(t *testing.T) {
 		expected float64
 	}{
 		{
-			name:     "完美匹配",
+			name:     "perfect match",
 			actual:   []string{"Host", "Connection", "Upgrade"},
 			normal:   []string{"Host", "Connection", "Upgrade"},
 			expected: 1.0,
 		},
 		{
-			name:     "部分匹配",
+			name:     "partial match",
 			actual:   []string{"Host", "Upgrade", "Connection"},
 			normal:   []string{"Host", "Connection", "Upgrade"},
 			expected: 0.33, // 1/3
 		},
 		{
-			name:     "完全不匹配",
+			name:     "completely no match",
 			actual:   []string{"A", "B", "C"},
 			normal:   []string{"X", "Y", "Z"},
-			expected: 0.0, // 修正: 实际为 0.0，因为没有任何匹配
+			expected: 0.0, // Corrected: actual is 0.0, because no matches
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			score := d.calculateHeaderOrderMatch(tt.actual, tt.normal)
-			// 允许小误差
+			// Allow small error margin
 			if score < tt.expected-0.1 || score > tt.expected+0.1 {
 				t.Errorf("Expected %.2f, got %.2f", tt.expected, score)
 			}
@@ -314,7 +314,7 @@ func TestCalculateHeaderOrderMatch(t *testing.T) {
 	}
 }
 
-// TestMin 测试 min 函数
+// TestMin tests min function
 func TestMin(t *testing.T) {
 	if min() != 0 {
 		t.Error("min() with no args should return 0")
@@ -329,7 +329,7 @@ func TestMin(t *testing.T) {
 	}
 }
 
-// BenchmarkDetector_Detect 基准测试检测
+// BenchmarkDetector_Detect benchmark test for detection
 func BenchmarkDetector_Detect(b *testing.B) {
 	d := NewDetector()
 	req := createValidWebSocketRequest()
@@ -341,7 +341,7 @@ func BenchmarkDetector_Detect(b *testing.B) {
 	}
 }
 
-// BenchmarkIdentifyBrowserFromUA 基准测试浏览器识别
+// BenchmarkIdentifyBrowserFromUA benchmark test for browser identification
 func BenchmarkIdentifyBrowserFromUA(b *testing.B) {
 	d := NewDetector()
 	ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/91.0"
@@ -352,7 +352,7 @@ func BenchmarkIdentifyBrowserFromUA(b *testing.B) {
 	}
 }
 
-// 辅助函数
+// Auxiliary functions
 
 func createValidWebSocketRequest() *http.Request {
 	req := &http.Request{
