@@ -1,5 +1,5 @@
-// Package defense 提供安全防护功能
-// 包括被动检测、主动防护和风险评估
+// Package defense provides security protection features
+// includes passive detection, active protection and risk assessment
 package defense
 
 import (
@@ -11,7 +11,7 @@ import (
 	"github.com/vistone/fingerprint/modules/ml"
 )
 
-// Detector 安全检测器
+// Detector security detector
 type Detector struct {
 	classifier *ml.HierarchicalClassifier
 	extractor  *ml.FeatureExtractor
@@ -19,7 +19,7 @@ type Detector struct {
 	mu         sync.RWMutex
 }
 
-// DetectionRule 检测规则
+// DetectionRule detection rule
 type DetectionRule struct {
 	Name        string
 	Description string
@@ -27,7 +27,7 @@ type DetectionRule struct {
 	RiskScore   float64
 }
 
-// NewDetector 创建新的安全检测器
+// NewDetector creates new security detector
 func NewDetector() *Detector {
 	d := &Detector{
 		classifier: ml.NewHierarchicalClassifier(),
@@ -38,12 +38,12 @@ func NewDetector() *Detector {
 	return d
 }
 
-// initializeRules 初始化检测规则
+// initializeRules initializes detection rules
 func (d *Detector) initializeRules() {
 	d.rules = []DetectionRule{
 		{
 			Name:        "headless_browser",
-			Description: "检测无头浏览器",
+			Description: "detect headless browser",
 			Condition: func(fv *core.FeatureVector) bool {
 				return fv.Get(core.FeatureHeadlessBrowser) > 0.5
 			},
@@ -51,7 +51,7 @@ func (d *Detector) initializeRules() {
 		},
 		{
 			Name:        "high_entropy",
-			Description: "检测异常高熵值",
+			Description: "detect exceptionally high entropy values",
 			Condition: func(fv *core.FeatureVector) bool {
 				return fv.Get(core.FeatureEntropy) > 10.0
 			},
@@ -59,7 +59,7 @@ func (d *Detector) initializeRules() {
 		},
 		{
 			Name:        "automation_tool",
-			Description: "检测自动化工具标记",
+			Description: "detect automation tool markers",
 			Condition: func(fv *core.FeatureVector) bool {
 				return fv.Get(core.FeatureToolMarker) > 0.3
 			},
@@ -67,7 +67,7 @@ func (d *Detector) initializeRules() {
 		},
 		{
 			Name:        "inconsistent_behavior",
-			Description: "检测行为不一致",
+			Description: "detect inconsistent behavior",
 			Condition: func(fv *core.FeatureVector) bool {
 				return fv.Get(core.FeatureBehaviorPattern) < 0.3
 			},
@@ -76,7 +76,7 @@ func (d *Detector) initializeRules() {
 	}
 }
 
-// Detect 执行检测
+// Detect executes detection
 func (d *Detector) Detect(features *core.FeatureVector) *DetectionResult {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
@@ -87,7 +87,7 @@ func (d *Detector) Detect(features *core.FeatureVector) *DetectionResult {
 		Labels:      make(map[string]string),
 	}
 
-	// 运行所有规则
+	// run all rules
 	for _, rule := range d.rules {
 		if rule.Condition(features) {
 			finding := Finding{
@@ -105,7 +105,7 @@ func (d *Detector) Detect(features *core.FeatureVector) *DetectionResult {
 		}
 	}
 
-	// ML 分类检测
+	// ML classification detection
 	if d.classifier != nil {
 		classification := d.classifier.Classify(features)
 		result.Classification = classification
@@ -114,19 +114,19 @@ func (d *Detector) Detect(features *core.FeatureVector) *DetectionResult {
 		result.Labels["version"] = classification.Version
 	}
 
-	// 计算最终风险等级
+	// calculate final risk level
 	result.RiskLevel = d.calculateRiskLevel(result.TotalRisk)
 	result.RiskScore = math.Min(result.TotalRisk, 1.0)
 
 	return result
 }
 
-// calculateRiskLevel 计算风险等级
+// calculateRiskLevel calculates risk level
 func (d *Detector) calculateRiskLevel(score float64) core.RiskLevel {
 	return core.RiskLevelFromScore(score)
 }
 
-// DetectionResult 检测结果
+// DetectionResult detection result
 type DetectionResult struct {
 	Findings       []Finding
 	RiskFactors    []core.RiskFactor
@@ -137,31 +137,31 @@ type DetectionResult struct {
 	Labels         map[string]string
 }
 
-// Finding 检测发现
+// Finding detection finding
 type Finding struct {
 	Rule        string
 	Description string
 	RiskScore   float64
 }
 
-// IsThreat 是否为威胁
+// IsThreat checks if it is a threat
 func (r *DetectionResult) IsThreat() bool {
 	return r.RiskLevel >= core.RiskLevelMedium
 }
 
-// PassiveDetector 被动检测器
+// PassiveDetector passive detector
 type PassiveDetector struct {
 	*Detector
 	database *FingerprintDatabase
 }
 
-// FingerprintDatabase 指纹数据库
+// FingerprintDatabase fingerprint database
 type FingerprintDatabase struct {
 	knownFingerprints map[string]FingerprintRecord
 	mu                sync.RWMutex
 }
 
-// FingerprintRecord 指纹记录
+// FingerprintRecord fingerprint record
 type FingerprintRecord struct {
 	ID        string
 	Features  *core.FeatureVector
@@ -172,7 +172,7 @@ type FingerprintRecord struct {
 	SeenCount int
 }
 
-// NewPassiveDetector 创建新的被动检测器
+// NewPassiveDetector creates new passive detector
 func NewPassiveDetector() *PassiveDetector {
 	return &PassiveDetector{
 		Detector: NewDetector(),
@@ -182,7 +182,7 @@ func NewPassiveDetector() *PassiveDetector {
 	}
 }
 
-// Lookup 查找已知指纹
+// Lookup looks up known fingerprints
 func (pd *PassiveDetector) Lookup(fingerprintHash string) (FingerprintRecord, bool) {
 	pd.database.mu.RLock()
 	defer pd.database.mu.RUnlock()
@@ -191,7 +191,7 @@ func (pd *PassiveDetector) Lookup(fingerprintHash string) (FingerprintRecord, bo
 	return record, ok
 }
 
-// Store 存储指纹
+// Store stores fingerprint
 func (pd *PassiveDetector) Store(record FingerprintRecord) {
 	pd.database.mu.Lock()
 	defer pd.database.mu.Unlock()
@@ -199,25 +199,25 @@ func (pd *PassiveDetector) Store(record FingerprintRecord) {
 	pd.database.knownFingerprints[record.ID] = record
 }
 
-// ActiveProtector 主动防护器
+// ActiveProtector active protector
 type ActiveProtector struct {
 	noiseGenerators map[string]NoiseGenerator
 	mu              sync.RWMutex
 }
 
-// NoiseGenerator 噪声生成器接口
+// NoiseGenerator noise generator interface
 type NoiseGenerator interface {
 	Generate(seed int64) interface{}
 }
 
-// NewActiveProtector 创建新的主动防护器
+// NewActiveProtector creates new active protector
 func NewActiveProtector() *ActiveProtector {
 	return &ActiveProtector{
 		noiseGenerators: make(map[string]NoiseGenerator),
 	}
 }
 
-// RegisterNoiseGenerator 注册噪声生成器
+// RegisterNoiseGenerator registers noise generator
 func (ap *ActiveProtector) RegisterNoiseGenerator(name string, generator NoiseGenerator) {
 	ap.mu.Lock()
 	defer ap.mu.Unlock()
@@ -225,7 +225,7 @@ func (ap *ActiveProtector) RegisterNoiseGenerator(name string, generator NoiseGe
 	ap.noiseGenerators[name] = generator
 }
 
-// GenerateNoise 生成噪声
+// GenerateNoise generates noise
 func (ap *ActiveProtector) GenerateNoise(generatorName string, seed int64) interface{} {
 	ap.mu.RLock()
 	defer ap.mu.RUnlock()
@@ -236,7 +236,7 @@ func (ap *ActiveProtector) GenerateNoise(generatorName string, seed int64) inter
 	return nil
 }
 
-// ProtectionConfig 防护配置
+// ProtectionConfig protection configuration
 type ProtectionConfig struct {
 	EnableCanvasNoise bool
 	EnableAudioNoise  bool
@@ -245,7 +245,7 @@ type ProtectionConfig struct {
 	NoiseLevel        float64
 }
 
-// DefaultProtectionConfig 默认防护配置
+// DefaultProtectionConfig default protection configuration
 var DefaultProtectionConfig = &ProtectionConfig{
 	EnableCanvasNoise: true,
 	EnableAudioNoise:  true,
@@ -254,7 +254,7 @@ var DefaultProtectionConfig = &ProtectionConfig{
 	NoiseLevel:        0.1,
 }
 
-// ApplyProtection 应用防护措施
+// ApplyProtection applies protection measures
 func (ap *ActiveProtector) ApplyProtection(config *ProtectionConfig) *ProtectionResult {
 	result := &ProtectionResult{
 		AppliedMeasures: make([]string, 0),
@@ -288,20 +288,20 @@ func (ap *ActiveProtector) ApplyProtection(config *ProtectionConfig) *Protection
 	return result
 }
 
-// ProtectionResult 防护结果
+// ProtectionResult protection result
 type ProtectionResult struct {
 	AppliedMeasures []string
 	NoiseData       map[string]interface{}
 }
 
-// RiskEngine 风险引擎
+// RiskEngine risk engine
 type RiskEngine struct {
 	passiveDetector *PassiveDetector
 	activeProtector *ActiveProtector
 	weights         RiskWeights
 }
 
-// RiskWeights 风险权重
+// RiskWeights risk weights
 type RiskWeights struct {
 	BehaviorWeight    float64
 	FingerprintWeight float64
@@ -309,7 +309,7 @@ type RiskWeights struct {
 	AnomalyWeight     float64
 }
 
-// DefaultRiskWeights 默认风险权重
+// DefaultRiskWeights default risk weights
 var DefaultRiskWeights = RiskWeights{
 	BehaviorWeight:    0.3,
 	FingerprintWeight: 0.3,
@@ -317,7 +317,7 @@ var DefaultRiskWeights = RiskWeights{
 	AnomalyWeight:     0.2,
 }
 
-// NewRiskEngine 创建新的风险引擎
+// NewRiskEngine creates new risk engine
 func NewRiskEngine() *RiskEngine {
 	return &RiskEngine{
 		passiveDetector: NewPassiveDetector(),
@@ -326,19 +326,19 @@ func NewRiskEngine() *RiskEngine {
 	}
 }
 
-// Evaluate 评估风险
+// Evaluate assesses risk
 func (re *RiskEngine) Evaluate(features *core.FeatureVector, classification *ml.ClassificationResult) *core.RiskAssessment {
-	// 被动检测
+	// passive detection
 	detectionResult := re.passiveDetector.Detect(features)
 
-	// 计算综合风险分数
+	// calculate comprehensive risk score
 	behaviorScore := detectionResult.RiskScore * re.weights.BehaviorWeight
 	fingerprintScore := (1.0 - classification.Confidence) * re.weights.FingerprintWeight
 
-	// 总风险分数
+	// total risk score
 	totalScore := behaviorScore + fingerprintScore
 
-	// 生成建议
+	// generate suggestions
 	suggestions := re.generateSuggestions(detectionResult, classification)
 
 	return &core.RiskAssessment{
@@ -349,44 +349,44 @@ func (re *RiskEngine) Evaluate(features *core.FeatureVector, classification *ml.
 	}
 }
 
-// generateSuggestions 生成防护建议
+// generateSuggestions generates protection suggestions
 func (re *RiskEngine) generateSuggestions(detection *DetectionResult, classification *ml.ClassificationResult) []string {
 	var suggestions []string
 
 	if detection.RiskScore > 0.7 {
-		suggestions = append(suggestions, "启用增强防护模式")
-		suggestions = append(suggestions, "增加噪声注入级别")
+		suggestions = append(suggestions, "enable enhanced protection mode")
+		suggestions = append(suggestions, "increase noise injection level")
 	}
 
 	if classification.Confidence < 0.5 {
-		suggestions = append(suggestions, "请求额外验证")
+		suggestions = append(suggestions, "require additional verification")
 	}
 
 	for _, finding := range detection.Findings {
 		if strings.Contains(finding.Rule, "headless") {
-			suggestions = append(suggestions, "检测无头浏览器特征")
+			suggestions = append(suggestions, "detect headless browser features")
 		}
 		if strings.Contains(finding.Rule, "automation") {
-			suggestions = append(suggestions, "验证非人类行为")
+			suggestions = append(suggestions, "verify non-human behavior")
 		}
 	}
 
 	return suggestions
 }
 
-// calculateRiskLevel 计算风险等级
+// calculateRiskLevel calculates risk level
 func (re *RiskEngine) calculateRiskLevel(score float64) core.RiskLevel {
 	return core.RiskLevelFromScore(score)
 }
 
-// DefenseSystem 综合防护系统
+// DefenseSystem comprehensive defense system
 type DefenseSystem struct {
 	Detector   *Detector
 	Protector  *ActiveProtector
 	RiskEngine *RiskEngine
 }
 
-// NewDefenseSystem 创建新的防护系统
+// NewDefenseSystem creates new defense system
 func NewDefenseSystem() *DefenseSystem {
 	return &DefenseSystem{
 		Detector:   NewDetector(),
@@ -395,18 +395,18 @@ func NewDefenseSystem() *DefenseSystem {
 	}
 }
 
-// Analyze 分析并返回防护建议
+// Analyze analyzes and returns protection suggestions
 func (ds *DefenseSystem) Analyze(features *core.FeatureVector, classification *ml.ClassificationResult) *DefenseAdvice {
-	// 检测
+	// detection
 	detection := ds.Detector.Detect(features)
 
-	// 风险评估
+	// risk assessment
 	risk := ds.RiskEngine.Evaluate(features, classification)
 
-	// 生成防护配置
+	// generate protection configuration
 	protectionConfig := ds.generateProtectionConfig(risk)
 
-	// 应用防护
+	// apply protection
 	protection := ds.Protector.ApplyProtection(protectionConfig)
 
 	return &DefenseAdvice{
@@ -417,7 +417,7 @@ func (ds *DefenseSystem) Analyze(features *core.FeatureVector, classification *m
 	}
 }
 
-// generateProtectionConfig 根据风险生成防护配置
+// generateProtectionConfig generates protection configuration based on risk
 func (ds *DefenseSystem) generateProtectionConfig(risk *core.RiskAssessment) *ProtectionConfig {
 	config := &ProtectionConfig{
 		EnableCanvasNoise: true,
@@ -427,7 +427,7 @@ func (ds *DefenseSystem) generateProtectionConfig(risk *core.RiskAssessment) *Pr
 		NoiseLevel:        0.1,
 	}
 
-	// 根据风险等级调整配置
+	// adjust configuration based on risk level
 	switch risk.Level {
 	case core.RiskLevelCritical:
 		config.NoiseLevel = 0.5
@@ -448,7 +448,7 @@ func (ds *DefenseSystem) generateProtectionConfig(risk *core.RiskAssessment) *Pr
 	return config
 }
 
-// DefenseAdvice 防护建议
+// DefenseAdvice defense advice
 type DefenseAdvice struct {
 	Detection   *DetectionResult
 	Risk        *core.RiskAssessment
