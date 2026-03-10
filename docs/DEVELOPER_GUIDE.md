@@ -145,6 +145,37 @@ go work sync
 
 ## Coding Standards
 
+### Comments Must Be English ⚠️
+
+**MANDATORY RULE**: All code comments, documentation, and commit messages **MUST be written in English**. Do NOT mix Chinese and English.
+
+```go
+// ✅ CORRECT: English only
+// Calculate the checksum of the profile
+func calculateChecksum(data []byte) string {
+    // ...
+}
+
+// ❌ WRONG: Never use Chinese comments
+// 计算profile的校验和  // FORBIDDEN!
+func calculateChecksum(data []byte) string {
+    // ...
+}
+
+// ❌ WRONG: Never mix languages
+// 获取 profile，返回 error // FORBIDDEN!
+func getProfile(id string) error {
+    // ...
+}
+```
+
+**Consequences**:
+- Code review will reject mixed-language comments
+- Pull requests must pass English-only comment check
+- CI will fail on Chinese comments in code files
+
+**Exception**: Chinese comments are allowed ONLY in Chinese documentation files (`*_zh-cn.md`)
+
 ### Error Handling
 
 ```go
