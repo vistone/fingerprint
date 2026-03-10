@@ -182,34 +182,35 @@ func (a *Agent) Start() {
 	go a.strategyEvolutionLoop()
 }
 
-// Stop 优雅停止智能体
+// Stop gracefully stops the agent and waits for background goroutines to finish.
 func (a *Agent) Stop() {
 	close(a.stopCh)
 	a.wg.Wait()
 }
 
-// Process 处理一次观测事件并返回决策——OADA 主循环
+// Process handles an observation event and returns a decision - main OADA loop.
 //
-// 这是 Gateway.Analyze() 调用的入口，同步执行，延迟通常 < 1ms。
+// This is the entry point called by Gateway.Analyze(), executes synchronously,
+// typical latency < 1ms.
 func (a *Agent) Process(ctx context.Context, obs *Observation) *Decision {
 	start := time.Now()
 
-	// O: 记录观测
+	// O: Record observation
 	a.memory.Record(obs)
 
-	// A1: 行为分析
+	// A1: Behavioral analysis
 	profile := a.behavior.Analyze(obs.ClientID)
 
-	// A2: 知识驱动异常检测——用全球指纹蓝图校验观测一致性
+	// A2: Knowledge-driven anomaly detection - verify observation consistency with global fingerprint blueprint
 	matchResult := a.anomaly.Analyze(obs)
 
-	// D: 策略决策（行为 + 知识双重输入）
+	// D: Strategy decision (behavioral + knowledge dual input)
 	decision := a.strategy.Evaluate(obs, profile)
 
-	// 将知识匹配结果合并到决策
+	// Merge knowledge match result into decision
 	decision.KnowledgeMatch = matchResult
 	if matchResult.SuspicionScore > 0.5 {
-		// 知识校验高度可疑，提升威胁等级
+		// Knowledge check indicates high suspicion, escalate threat level
 		if decision.Action == ActionAllow {
 			decision.Action = ActionMonitor
 		} else if decision.Action == ActionMonitor {
@@ -217,7 +218,7 @@ func (a *Agent) Process(ctx context.Context, obs *Observation) *Decision {
 		}
 		decision.ThreatClass = ThreatFingerprintSpoof
 		decision.Insights = append(decision.Insights,
-			fmt.Sprintf("知识库检测到 %d 处跨层矛盾，可疑度 %.2f",
+			fmt.Sprintf("Knowledge base detected %d cross-layer contradictions, suspicion score %.2f",
 				len(matchResult.Contradictions), matchResult.SuspicionScore))
 	}
 
@@ -225,22 +226,22 @@ func (a *Agent) Process(ctx context.Context, obs *Observation) *Decision {
 	return decision
 }
 
-// GetBehaviorProfile 获取指定客户端的行为画像（供外部查询）
+// GetBehaviorProfile retrieves the behavioral profile for the specified client (for external queries).
 func (a *Agent) GetBehaviorProfile(clientID string) *BehaviorSummary {
 	return a.behavior.Analyze(clientID)
 }
 
-// GetActiveStrategies 返回当前活跃策略列表
+// GetActiveStrategies returns the list of currently active strategies.
 func (a *Agent) GetActiveStrategies() []StrategyInfo {
 	return a.strategy.ListActive()
 }
 
-// Knowledge 返回智能体的全球指纹知识库
+// Knowledge returns the agent's global fingerprint knowledge base.
 func (a *Agent) Knowledge() *KnowledgeBase {
 	return a.knowledge
 }
 
-// Stats 返回智能体运行统计
+// Stats returns the agent's runtime statistics.
 func (a *Agent) Stats() AgentStats {
 	return AgentStats{
 		ActiveSessions:    a.memory.SessionCount(),
@@ -250,7 +251,7 @@ func (a *Agent) Stats() AgentStats {
 	}
 }
 
-// AgentStats 运行统计
+// AgentStats contains runtime statistics.
 type AgentStats struct {
 	ActiveSessions    int `json:"active_sessions"`
 	TotalObservations int `json:"total_observations"`
@@ -258,7 +259,7 @@ type AgentStats struct {
 	LearnedPatterns   int `json:"learned_patterns"`
 }
 
-// cleanupLoop 后台清理过期会话
+// cleanupLoop background goroutine for cleaning up expired sessions.
 func (a *Agent) cleanupLoop() {
 	defer a.wg.Done()
 	ticker := time.NewTicker(a.config.CleanupInterval)
@@ -274,7 +275,7 @@ func (a *Agent) cleanupLoop() {
 	}
 }
 
-// strategyEvolutionLoop 后台策略自动演化
+// strategyEvolutionLoop background goroutine for automatic strategy evolution.
 func (a *Agent) strategyEvolutionLoop() {
 	defer a.wg.Done()
 	ticker := time.NewTicker(a.config.StrategyUpdateInterval)
