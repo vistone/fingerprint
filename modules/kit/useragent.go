@@ -2,13 +2,13 @@ package utils
 
 import "fmt"
 
-// ExtractChromeVersion 从 User-Agent 中提取 Chrome 版本号
+// ExtractChromeVersion extracts the Chrome version from User-Agent.
 func ExtractChromeVersion(ua string) string {
 	start := Index(ua, "Chrome/")
 	if start == -1 {
-		return "120" // 默认版本
+		return "120" // Default version
 	}
-	start += 7 // "Chrome/" 的长度
+	start += 7 // Length of "Chrome/"
 	end := start
 	for end < len(ua) && ua[end] != '.' && ua[end] != ' ' && ua[end] != ';' {
 		end++
@@ -19,7 +19,7 @@ func ExtractChromeVersion(ua string) string {
 	return "120"
 }
 
-// ExtractPlatform 从 User-Agent 中提取平台信息
+// ExtractPlatform extracts platform info from User-Agent.
 func ExtractPlatform(ua string) string {
 	if Contains(ua, "Windows") {
 		return `"Windows"`
@@ -28,10 +28,10 @@ func ExtractPlatform(ua string) string {
 	} else if Contains(ua, "Linux") {
 		return `"Linux"`
 	}
-	return `"Windows"` // 默认
+	return `"Windows"` // Default
 }
 
-// FormatUserAgent 格式化 User-Agent 字符串
+// FormatUserAgent formats the User-Agent string.
 func FormatUserAgent(template string, args ...interface{}) string {
 	return fmt.Sprintf(template, args...)
 }

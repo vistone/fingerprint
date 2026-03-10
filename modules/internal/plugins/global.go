@@ -1,4 +1,4 @@
-// Package plugins 实现全局插件管理
+// Package plugins implements global plugin management.
 package plugins
 
 import (
@@ -10,7 +10,7 @@ var (
 	initOnce       sync.Once
 )
 
-// Init 初始化全局系统
+// Init initializes the global system.
 func Init() error {
 	var err error
 	initOnce.Do(func() {
@@ -19,7 +19,7 @@ func Init() error {
 	return err
 }
 
-// GetRegistry 获取全局注册表
+// GetRegistry gets the global registry.
 func GetRegistry() *Registry {
 	if globalRegistry == nil {
 		Init()
@@ -27,17 +27,17 @@ func GetRegistry() *Registry {
 	return globalRegistry
 }
 
-// RegisterPlugin 注册插件
+// RegisterPlugin registers a plugin.
 func RegisterPlugin(id string, plugin Plugin, source PluginSource) error {
 	return GetRegistry().Register(id, plugin, source)
 }
 
-// GetPlugin 获取插件
+// GetPlugin gets a plugin.
 func GetPlugin(id string) (Plugin, error) {
 	return GetRegistry().Get(id)
 }
 
-// Reset 重置系统（用于测试）
+// Reset resets the system (for testing).
 func Reset() {
 	globalRegistry = nil
 	initOnce = sync.Once{}
