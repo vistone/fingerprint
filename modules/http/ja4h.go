@@ -4,6 +4,7 @@ package http
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"strings"
 
 	"github.com/vistone/fingerprint/modules/core"
@@ -83,12 +84,9 @@ func extractCookieNames(cookie string) []string {
 	return names
 }
 
-// intToHex converts an integer to a hex string
+// intToHex converts an integer to a two-character zero-padded hex string
 func intToHex(n int) string {
-	if n < 10 {
-		return string('0' + byte(n))
-	}
-	return string('a' + byte(n-10))
+	return fmt.Sprintf("%02x", n)
 }
 
 // HTTP2Fingerprint represents an HTTP/2 fingerprint

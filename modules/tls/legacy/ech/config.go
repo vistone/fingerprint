@@ -11,43 +11,43 @@ import (
 	"io"
 )
 
-// ConfigGenerator ECH 配置生成器
+// ConfigGenerator ECH config generator
 type ConfigGenerator struct {
-	// 配置选项
+	// Config options
 	Options ConfigOptions
 }
 
-// ConfigOptions ECH 配置选项
+// ConfigOptions ECH config options
 type ConfigOptions struct {
-	// ECH 版本
+	// ECH version
 	Version uint16
 
-	// 公钥名称（用于外层 ClientHello 的 SNI）
+	// Public name (used for the outer ClientHello SNI)
 	PublicName string
 
-	// 最大域名长度
+	// Maximum domain name length
 	MaxNameLength uint8
 
-	// 支持的 KEM 算法
+	// Supported KEM algorithms
 	KEMAlgorithms []uint16
 
-	// 支持的 KDF 算法
+	// Supported KDF algorithms
 	KDFAlgorithms []uint16
 
-	// 支持的 AEAD 算法
+	// Supported AEAD algorithms
 	AEADAlgorithms []uint16
 
-	// 扩展列表
+	// Extension list
 	Extensions []ECHConfigExtension
 }
 
-// ECHConfigExtension ECH 配置扩展
+// ECHConfigExtension ECH config extension
 type ECHConfigExtension struct {
 	Type uint16
 	Data []byte
 }
 
-// DefaultConfigOptions 默认配置选项
+// DefaultConfigOptions returns default config options
 func DefaultConfigOptions() ConfigOptions {
 	return ConfigOptions{
 		Version:       ECHVersionDraft13,
@@ -67,7 +67,7 @@ func DefaultConfigOptions() ConfigOptions {
 	}
 }
 
-// NewConfigGenerator 创建配置生成器
+// NewConfigGenerator creates a config generator
 func NewConfigGenerator(opts ConfigOptions) *ConfigGenerator {
 	if opts.Version == 0 {
 		opts.Version = ECHVersionDraft13
@@ -85,9 +85,9 @@ func NewConfigGenerator(opts ConfigOptions) *ConfigGenerator {
 	return &ConfigGenerator{Options: opts}
 }
 
-// GenerateECHConfig 生成 ECH 配置
+// GenerateECHConfig generates an ECH config
 func (g *ConfigGenerator) GenerateECHConfig() (*ECHConfigRecord, error) {
-	// 生成密钥对（简化版本，实际应使用 HPKE）
+	// Generate key pair (simplified version, should use HPKE in practice)
 	privateKey, publicKey, err := g.generateKeyPair()
 	if err != nil {
 		return nil, fmt.Errorf("generate key pair: %w", err)
@@ -100,7 +100,7 @@ func (g *ConfigGenerator) GenerateECHConfig() (*ECHConfigRecord, error) {
 		PublicKey:         publicKey,
 	}
 
-	// 选择算法
+	// Select algorithms
 	if len(g.Options.KEMAlgorithms) > 0 {
 		config.KemID = g.Options.KEMAlgorithms[0]
 	}
@@ -111,7 +111,7 @@ func (g *ConfigGenerator) GenerateECHConfig() (*ECHConfigRecord, error) {
 		config.AeadID = g.Options.AEADAlgorithms[0]
 	}
 
-	// 序列化配置内容
+	// Serialize config contents
 	contents, err := g.serializeConfigContents(config, privateKey)
 	if err != nil {
 		return nil, fmt.Errorf("serialize config: %w", err)
@@ -123,19 +123,19 @@ func (g *ConfigGenerator) GenerateECHConfig() (*ECHConfigRecord, error) {
 	return config, nil
 }
 
-// generateKeyPair 生成密钥对（简化实现）
+// generateKeyPair generates a key pair (simplified implementation)
 func (g *ConfigGenerator) generateKeyPair() (privateKey, publicKey []byte, err error) {
-	// 实际实现应使用 HPKE
-	// 这里使用 RSA 作为占位
+	// Actual implementation should use HPKE
+	// Using RSA as a placeholder here
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	// 序列化私钥
+	// Serialize private key
 	privateKey = x509.MarshalPKCS1PrivateKey(key)
 
-	// 序列化公钥
+	// Serialize public key
 	publicKey, err = x509.MarshalPKIXPublicKey(&key.PublicKey)
 	if err != nil {
 		return nil, nil, err
@@ -144,9 +144,9 @@ func (g *ConfigGenerator) generateKeyPair() (privateKey, publicKey []byte, err e
 	return privateKey, publicKey, nil
 }
 
-// serializeConfigContents 序列化配置内容
+// serializeConfigContents serializes config contents
 func (g *ConfigGenerator) serializeConfigContents(config *ECHConfigRecord, privateKey []byte) ([]byte, error) {
-	// ECH 配置内容格式（Draft 13）：
+	// ECH config contents format (Draft 13):
 	// - KemID (2 bytes)
 	// - PublicKey (length-prefixed)
 	// - CipherSuites (length-prefixed list)
@@ -161,13 +161,13 @@ func (g *ConfigGenerator) serializeConfigContents(config *ECHConfigRecord, priva
 	binary.BigEndian.PutUint16(kemIDBytes, config.KemID)
 	contents = append(contents, kemIDBytes...)
 
-	// PublicKey (长度前缀 2 字节)
+	// PublicKey (2-byte length prefix)
 	pubKeyLen := make([]byte, 2)
 	binary.BigEndian.PutUint16(pubKeyLen, uint16(len(config.PublicKey)))
 	contents = append(contents, pubKeyLen...)
 	contents = append(contents, config.PublicKey...)
 
-	// CipherSuites (KDF + AEAD 对)
+	// CipherSuites (KDF + AEAD pairs)
 	cipherSuites := g.serializeCipherSuites()
 	cipherSuitesLen := make([]byte, 2)
 	binary.BigEndian.PutUint16(cipherSuitesLen, uint16(len(cipherSuites)))
@@ -182,17 +182,17 @@ func (g *ConfigGenerator) serializeConfigContents(config *ECHConfigRecord, priva
 	contents = append(contents, byte(len(publicNameBytes)))
 	contents = append(contents, publicNameBytes...)
 
-	// Extensions（空列表）
-	contents = append(contents, 0, 0) // 长度 = 0
+	// Extensions (empty list)
+	contents = append(contents, 0, 0) // length = 0
 
 	return contents, nil
 }
 
-// serializeCipherSuites 序列化密码套件列表
+// serializeCipherSuites serializes the cipher suite list
 func (g *ConfigGenerator) serializeCipherSuites() []byte {
 	var suites []byte
 
-	// 为每对 KDF/AEAD 创建套件
+	// Create a suite for each KDF/AEAD pair
 	for _, kdf := range g.Options.KDFAlgorithms {
 		for _, aead := range g.Options.AEADAlgorithms {
 			kdfBytes := make([]byte, 2)
@@ -208,7 +208,7 @@ func (g *ConfigGenerator) serializeCipherSuites() []byte {
 	return suites
 }
 
-// GenerateECHConfigList 生成 ECH 配置列表
+// GenerateECHConfigList generates an ECH config list
 func (g *ConfigGenerator) GenerateECHConfigList(configCount int) (*ECHConfigList, error) {
 	list := &ECHConfigList{
 		Configs: make([]ECHConfigRecord, 0, configCount),
@@ -225,26 +225,26 @@ func (g *ConfigGenerator) GenerateECHConfigList(configCount int) (*ECHConfigList
 	return list, nil
 }
 
-// SerializeECHConfigList 序列化 ECH 配置列表
+// SerializeECHConfigList serializes an ECH config list
 func SerializeECHConfigList(list *ECHConfigList) ([]byte, error) {
 	var data []byte
 
 	for _, config := range list.Configs {
-		// 版本
+		// Version
 		versionBytes := make([]byte, 2)
 		binary.BigEndian.PutUint16(versionBytes, config.Version)
 		data = append(data, versionBytes...)
 
-		// 长度
+		// Length
 		lengthBytes := make([]byte, 2)
 		binary.BigEndian.PutUint16(lengthBytes, config.Length)
 		data = append(data, lengthBytes...)
 
-		// 内容
+		// Contents
 		data = append(data, config.Contents...)
 	}
 
-	// 添加总长度前缀
+	// Add total length prefix
 	result := make([]byte, 2)
 	binary.BigEndian.PutUint16(result, uint16(len(data)))
 	result = append(result, data...)
@@ -252,7 +252,7 @@ func SerializeECHConfigList(list *ECHConfigList) ([]byte, error) {
 	return result, nil
 }
 
-// GenerateBase64ECHConfig 生成 Base64 编码的 ECH 配置
+// GenerateBase64ECHConfig generates a Base64-encoded ECH config
 func GenerateBase64ECHConfig(opts ConfigOptions) (string, error) {
 	generator := NewConfigGenerator(opts)
 	config, err := generator.GenerateECHConfig()
@@ -269,34 +269,34 @@ func GenerateBase64ECHConfig(opts ConfigOptions) (string, error) {
 	return base64.StdEncoding.EncodeToString(data), nil
 }
 
-// ECHKeySet ECH 密钥集（包含私钥和公钥配置）
+// ECHKeySet ECH key set (contains private key and public key config)
 type ECHKeySet struct {
-	// 配置 ID
+	// Config ID
 	ConfigID uint8
 
-	// 公钥配置（用于分发给客户端）
+	// Public key config (for distribution to clients)
 	PublicConfig *ECHConfigRecord
 
-	// 私钥（用于解密，服务器端保密）
+	// Private key (for decryption, kept secret on the server side)
 	PrivateKey []byte
 
-	// 创建时间
+	// Creation time
 	CreatedAt int64
 
-	// 过期时间
+	// Expiration time
 	ExpiresAt int64
 }
 
-// ECHKeyManager ECH 密钥管理器
+// ECHKeyManager ECH key manager
 type ECHKeyManager struct {
-	// 当前活跃的密钥
+	// Currently active keys
 	activeKeys map[uint8]*ECHKeySet
 
-	// 历史密钥（用于解密旧请求）
+	// Historical keys (for decrypting old requests)
 	expiredKeys map[uint8]*ECHKeySet
 }
 
-// NewECHKeyManager 创建密钥管理器
+// NewECHKeyManager creates a key manager
 func NewECHKeyManager() *ECHKeyManager {
 	return &ECHKeyManager{
 		activeKeys:  make(map[uint8]*ECHKeySet),
@@ -304,7 +304,7 @@ func NewECHKeyManager() *ECHKeyManager {
 	}
 }
 
-// GenerateNewKey 生成新密钥
+// GenerateNewKey generates a new key
 func (m *ECHKeyManager) GenerateNewKey(configID uint8, opts ConfigOptions) (*ECHKeySet, error) {
 	generator := NewConfigGenerator(opts)
 	config, err := generator.GenerateECHConfig()
@@ -312,7 +312,7 @@ func (m *ECHKeyManager) GenerateNewKey(configID uint8, opts ConfigOptions) (*ECH
 		return nil, err
 	}
 
-	// 生成私钥（简化实现）
+	// Generate private key (simplified implementation)
 	_, privateKey, err := generator.generateKeyPair()
 	if err != nil {
 		return nil, err
@@ -328,7 +328,7 @@ func (m *ECHKeyManager) GenerateNewKey(configID uint8, opts ConfigOptions) (*ECH
 	return keySet, nil
 }
 
-// GetPublicConfig 获取公钥配置（用于 ECH 扩展）
+// GetPublicConfig returns the public key config (for ECH extension)
 func (m *ECHKeyManager) GetPublicConfig(configID uint8) (*ECHConfigRecord, error) {
 	keySet, ok := m.activeKeys[configID]
 	if !ok {
@@ -337,52 +337,52 @@ func (m *ECHKeyManager) GetPublicConfig(configID uint8) (*ECHConfigRecord, error
 	return keySet.PublicConfig, nil
 }
 
-// DecryptECH 解密 ECH 加密数据（简化实现）
+// DecryptECH decrypts ECH encrypted data (simplified implementation)
 func (m *ECHKeyManager) DecryptECH(configID uint8, encryptedData []byte) ([]byte, error) {
 	keySet, ok := m.activeKeys[configID]
 	if !ok {
-		// 尝试历史密钥
+		// Try historical keys
 		keySet, ok = m.expiredKeys[configID]
 		if !ok {
 			return nil, fmt.Errorf("config ID %d not found", configID)
 		}
 	}
 
-	// 实际实现需要使用 HPKE 解密
-	// 这里仅作为占位
+	// Actual implementation needs to use HPKE decryption
+	// This is only a placeholder
 	_ = keySet
 	return nil, fmt.Errorf("ECH decryption not implemented")
 }
 
-// RotateKeys 轮换密钥
+// RotateKeys rotates keys
 func (m *ECHKeyManager) RotateKeys() {
-	// 将当前活跃密钥移到历史密钥
+	// Move currently active keys to historical keys
 	for id, keySet := range m.activeKeys {
 		m.expiredKeys[id] = keySet
 		delete(m.activeKeys, id)
 	}
 }
 
-// GenerateECHPEM 生成 ECH 配置的 PEM 格式
+// GenerateECHPEM generates ECH config in PEM format
 func GenerateECHPEM(config *ECHConfigRecord, privateKey []byte) ([]byte, error) {
-	// 序列化配置列表
+	// Serialize config list
 	list := &ECHConfigList{Configs: []ECHConfigRecord{*config}}
 	configData, err := SerializeECHConfigList(list)
 	if err != nil {
 		return nil, err
 	}
 
-	// 创建 PEM 块
+	// Create PEM blocks
 	var pemBlocks []byte
 
-	// 公钥配置块
+	// Public key config block
 	pubBlock := &pem.Block{
 		Type:  "ECH CONFIG LIST",
 		Bytes: configData,
 	}
 	pemBlocks = append(pemBlocks, pem.EncodeToMemory(pubBlock)...)
 
-	// 私钥块（如果提供）
+	// Private key block (if provided)
 	if privateKey != nil {
 		privBlock := &pem.Block{
 			Type:  "ECH PRIVATE KEY",
@@ -394,7 +394,7 @@ func GenerateECHPEM(config *ECHConfigRecord, privateKey []byte) ([]byte, error) 
 	return pemBlocks, nil
 }
 
-// GenerateRandomConfigID 生成随机配置 ID
+// GenerateRandomConfigID generates a random config ID
 func GenerateRandomConfigID() (uint8, error) {
 	var id [1]byte
 	if _, err := io.ReadFull(rand.Reader, id[:]); err != nil {
@@ -403,7 +403,7 @@ func GenerateRandomConfigID() (uint8, error) {
 	return id[0], nil
 }
 
-// SupportedKEMs 返回支持的 KEM 算法列表
+// SupportedKEMs returns the list of supported KEM algorithms
 func SupportedKEMs() []KEMInfo {
 	return []KEMInfo{
 		{ID: 0x0020, Name: "X25519"},
@@ -413,7 +413,7 @@ func SupportedKEMs() []KEMInfo {
 	}
 }
 
-// SupportedKDFs 返回支持的 KDF 算法列表
+// SupportedKDFs returns the list of supported KDF algorithms
 func SupportedKDFs() []KDFInfo {
 	return []KDFInfo{
 		{ID: 0x0001, Name: "HKDF-SHA256"},
@@ -422,7 +422,7 @@ func SupportedKDFs() []KDFInfo {
 	}
 }
 
-// SupportedAEADs 返回支持的 AEAD 算法列表
+// SupportedAEADs returns the list of supported AEAD algorithms
 func SupportedAEADs() []AEADInfo {
 	return []AEADInfo{
 		{ID: 0x0001, Name: "AES-128-GCM"},
@@ -431,19 +431,19 @@ func SupportedAEADs() []AEADInfo {
 	}
 }
 
-// KEMInfo KEM 算法信息
+// KEMInfo KEM algorithm info
 type KEMInfo struct {
 	ID   uint16
 	Name string
 }
 
-// KDFInfo KDF 算法信息
+// KDFInfo KDF algorithm info
 type KDFInfo struct {
 	ID   uint16
 	Name string
 }
 
-// AEADInfo AEAD 算法信息
+// AEADInfo AEAD algorithm info
 type AEADInfo struct {
 	ID   uint16
 	Name string

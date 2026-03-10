@@ -385,8 +385,8 @@ type QuickAnalyzeResult struct {
 
 // MatchProfile matches a fingerprint profile
 func MatchProfile(headers *HTTPHeaders) (*profiles.ClientProfile, float64) {
-	profiles := profiles.GetAll()
-	if len(profiles) == 0 {
+	allProfiles := profiles.GetAll()
+	if len(allProfiles) == 0 {
 		return nil, 0
 	}
 
@@ -396,14 +396,14 @@ func MatchProfile(headers *HTTPHeaders) (*profiles.ClientProfile, float64) {
 		return nil, 0
 	}
 
-	for _, p := range profiles {
+	for _, p := range allProfiles {
 		if p.Headers != nil && p.Headers.UserAgent == ua {
 			return &p, 1.0
 		}
 	}
 
 	// Return the first one as the default
-	return &profiles[0], 0.1
+	return &allProfiles[0], 0.1
 }
 
 // GenerateUserAgent generates a User-Agent string
