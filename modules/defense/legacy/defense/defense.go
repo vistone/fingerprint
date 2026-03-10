@@ -1,6 +1,6 @@
 package defense
 
-// Phase 3: 本模块已完成基础迁移，待深度优化（详见 docs/5-process/modularization/PHASE_3_PLAN.md）
+// Phase 3: This module has completed basic migration, pending deep optimization (see docs/5-process/modularization/PHASE_3_PLAN.md)
 import (
 	"math"
 	"strings"
@@ -8,34 +8,34 @@ import (
 	"github.com/vistone/fingerprint/modules/core/types"
 )
 
-// AnomalyDetector 异常指纹检测器
-// 用于分析指纹数据中的可疑模式，判断是否为机器人或伪造指纹
+// AnomalyDetector is anomaly fingerprint detector
+// Used to analyze suspicious patterns in fingerprint data and determine whether it's a bot or forged fingerprint
 type AnomalyDetector struct{}
 
-// NewAnomalyDetector 创建新的异常检测器
+// NewAnomalyDetector creates a new anomaly detector
 func NewAnomalyDetector() *AnomalyDetector {
 	return &AnomalyDetector{}
 }
 
-// DetectAnomalies 检测指纹数据中的异常
-// data: 指纹原始字节数据
-// 返回 true 表示检测到异常
+// DetectAnomalies detects anomalies in fingerprint data
+// data: fingerprint raw byte data
+// return true indicates anomaly detected
 func (d *AnomalyDetector) DetectAnomalies(data []byte) bool {
 	if len(data) == 0 {
 		return false
 	}
 
-	// 检查1：熵值过低（重复模式）
+	// check1: entropy too low (repetitive pattern)
 	if d.hasLowEntropy(data) {
 		return true
 	}
 
-	// 检查2：熵值过高（完全随机）
+	// check2: entropy too high (completely random)
 	if d.hasExcessiveEntropy(data) {
 		return true
 	}
 
-	// 检查3：已知自动化工具特征
+	// check3: known automation tool features
 	if d.containsSpoofingMarkers(data) {
 		return true
 	}
@@ -43,7 +43,7 @@ func (d *AnomalyDetector) DetectAnomalies(data []byte) bool {
 	return false
 }
 
-// DetectHeadlessBrowser 检测 User-Agent 是否为无头浏览器
+// DetectHeadlessBrowser detects whether User-Agent is headless browser
 func (d *AnomalyDetector) DetectHeadlessBrowser(userAgent string) bool {
 	uaLower := strings.ToLower(userAgent)
 	headlessMarkers := []string{
@@ -66,7 +66,7 @@ func (d *AnomalyDetector) DetectHeadlessBrowser(userAgent string) bool {
 	return false
 }
 
-// hasLowEntropy 检查数据熵值是否过低（可疑的统一数据）
+// hasLowEntropy checks whether data entropy is too low (suspicious uniform data)
 func (d *AnomalyDetector) hasLowEntropy(data []byte) bool {
 	if len(data) < 10 {
 		return false
@@ -81,11 +81,11 @@ func (d *AnomalyDetector) hasLowEntropy(data []byte) bool {
 			uniqueBytes++
 		}
 	}
-	// 少于 26/256 ≈ 10% 的不同字节值，视为可疑
+	// Less than 26/256 ≈ 10% different byte values is considered suspicious
 	return uniqueBytes < 26
 }
 
-// hasExcessiveEntropy 检查数据熵值是否过高（过于随机）
+// hasExcessiveEntropy checks whether data entropy is too high (too random)
 func (d *AnomalyDetector) hasExcessiveEntropy(data []byte) bool {
 	if len(data) < 20 {
 		return false
@@ -94,7 +94,7 @@ func (d *AnomalyDetector) hasExcessiveEntropy(data []byte) bool {
 	for _, b := range data {
 		byteCounts[b]++
 	}
-	// 计算 Shannon 熵
+	// Calculate Shannon entropy
 	n := float64(len(data))
 	entropy := 0.0
 	for _, count := range byteCounts {
@@ -103,11 +103,11 @@ func (d *AnomalyDetector) hasExcessiveEntropy(data []byte) bool {
 			entropy -= p * math.Log2(p)
 		}
 	}
-	// 超过 7.5 bits 则视为过于随机
+	// Over 7.5 bits is considered too random
 	return entropy > 7.5
 }
 
-// containsSpoofingMarkers 检查是否包含已知自动化工具特征
+// containsSpoofingMarkers checks whether it contains known automation tool features
 func (d *AnomalyDetector) containsSpoofingMarkers(data []byte) bool {
 	patterns := [][]byte{
 		[]byte("HeadlessChrome"),
@@ -135,24 +135,24 @@ func (d *AnomalyDetector) containsSpoofingMarkers(data []byte) bool {
 	return false
 }
 
-// ContradictionDetector 矛盾指纹检测器
-// 检测指纹属性之间的逻辑不一致性
+// ContradictionDetector is contradiction fingerprint detector
+// Detects logical inconsistencies between fingerprint attributes
 type ContradictionDetector struct{}
 
-// NewContradictionDetector 创建新的矛盾检测器
+// NewContradictionDetector creates a new contradiction detector
 func NewContradictionDetector() *ContradictionDetector {
 	return &ContradictionDetector{}
 }
 
-// CheckContradictions 检查指纹属性是否存在矛盾
-// attributes: 属性键值对列表，如 [("os", "Windows"), ("platform", "Linux")]
-// 返回 true 表示发现矛盾
+// CheckContradictions checks whether fingerprint attributes have contradictions
+// attributes: attribute key-value pair list, e.g. [("os", "Windows"), ("platform", "Linux")]
+// return true indicates contradiction found
 func (c *ContradictionDetector) CheckContradictions(attributes map[string]string) bool {
 	if len(attributes) == 0 {
 		return false
 	}
 
-	// 检查操作系统与平台矛盾
+	// Check OS and platform contradiction
 	if os, ok := attributes["os"]; ok {
 		if platform, ok := attributes["platform"]; ok {
 			if c.hasOSPlatformContradiction(os, platform) {
@@ -161,7 +161,7 @@ func (c *ContradictionDetector) CheckContradictions(attributes map[string]string
 		}
 	}
 
-	// 检查 User-Agent 与特性矛盾
+	// Check User-Agent and feature contradiction
 	if ua, ok := attributes["user_agent"]; ok {
 		if features, ok := attributes["features"]; ok {
 			if c.hasUserAgentFeatureContradiction(ua, features) {
@@ -170,7 +170,7 @@ func (c *ContradictionDetector) CheckContradictions(attributes map[string]string
 		}
 	}
 
-	// 检查移动设备与屏幕分辨率矛盾
+	// Check mobile device and screen resolution contradiction
 	if isMobile, ok := attributes["is_mobile"]; ok {
 		if screenWidth, ok := attributes["screen_width"]; ok {
 			if c.hasMobileScreenContradiction(isMobile, screenWidth) {
@@ -179,7 +179,7 @@ func (c *ContradictionDetector) CheckContradictions(attributes map[string]string
 		}
 	}
 
-	// 检查 User-Agent 与操作系统矛盾
+	// Check User-Agent and OS contradiction
 	if ua, ok := attributes["user_agent"]; ok {
 		if os, ok := attributes["os"]; ok {
 			if c.hasUAOSContradiction(ua, os) {
@@ -191,7 +191,7 @@ func (c *ContradictionDetector) CheckContradictions(attributes map[string]string
 	return false
 }
 
-// hasOSPlatformContradiction 检查操作系统与平台的矛盾
+// hasOSPlatformContradiction checks OS and platform contradiction
 func (c *ContradictionDetector) hasOSPlatformContradiction(os, platform string) bool {
 	if strings.Contains(os, "Windows") && !strings.Contains(platform, "Win") {
 		return true
@@ -205,58 +205,58 @@ func (c *ContradictionDetector) hasOSPlatformContradiction(os, platform string) 
 	return false
 }
 
-// hasUserAgentFeatureContradiction 检查 User-Agent 与特性的矛盾
+// hasUserAgentFeatureContradiction checks User-Agent and feature contradiction
 func (c *ContradictionDetector) hasUserAgentFeatureContradiction(userAgent, features string) bool {
-	// 旧版浏览器不应支持现代特性
+	// Old browsers should not support modern features
 	if strings.Contains(userAgent, "Chrome/60") && strings.Contains(features, "WebGL2") {
 		return true
 	}
-	// 移动版浏览器不应声明桌面特性
+	// Mobile browsers should not declare desktop features
 	if strings.Contains(userAgent, "Mobile") && strings.Contains(features, "desktop") {
 		return true
 	}
 	return false
 }
 
-// hasMobileScreenContradiction 检查移动设备与屏幕尺寸的矛盾
+// hasMobileScreenContradiction checks mobile device and screen size contradiction
 func (c *ContradictionDetector) hasMobileScreenContradiction(isMobile, screenWidth string) bool {
 	width := 0
 	_, err := parseIntFallback(screenWidth, &width)
 	if err != nil {
 		return false
 	}
-	// 移动设备使用桌面分辨率可疑
+	// Mobile device using desktop resolution is suspicious
 	if isMobile == "true" && width > 1920 {
 		return true
 	}
-	// 桌面设备使用极小分辨率可疑
+	// Desktop device using extremely small resolution is suspicious
 	if isMobile == "false" && width < 800 {
 		return true
 	}
 	return false
 }
 
-// hasUAOSContradiction 检查 User-Agent 与操作系统的矛盾
+// hasUAOSContradiction checks User-Agent and OS contradiction
 func (c *ContradictionDetector) hasUAOSContradiction(userAgent, os string) bool {
 	uaLower := strings.ToLower(userAgent)
 	osLower := strings.ToLower(os)
 
-	// Windows UA 声称 Mac 系统
+	// Windows UA claims Mac system
 	if strings.Contains(uaLower, "windows") && strings.Contains(osLower, "mac") {
 		return true
 	}
-	// Mac UA 声称 Windows 系统
+	// Mac UA claims Windows system
 	if strings.Contains(uaLower, "macintosh") && strings.Contains(osLower, "windows") {
 		return true
 	}
-	// Linux UA 声称 Windows 系统
+	// Linux UA claims Windows system
 	if strings.Contains(uaLower, "x11; linux") && strings.Contains(osLower, "windows") {
 		return true
 	}
 	return false
 }
 
-// parseIntFallback 简单整数解析，不依赖 strconv
+// parseIntFallback simple integer parsing without strconv dependency
 func parseIntFallback(s string, result *int) (int, error) {
 	s = strings.TrimSpace(s)
 	if len(s) == 0 {
@@ -277,32 +277,32 @@ type parseError struct{ s string }
 
 func (e *parseError) Error() string { return "parse error: " + e.s }
 
-// PassiveRecognizer 被动指纹识别器
-// 通过分析 HTTP 请求头推断浏览器和操作系统
+// PassiveRecognizer is passive fingerprint recognizer
+// Infers browser and operating system by analyzing HTTP request headers
 type PassiveRecognizer struct{}
 
-// NewPassiveRecognizer 创建新的被动识别器
+// NewPassiveRecognizer creates a new passive recognizer
 func NewPassiveRecognizer() *PassiveRecognizer {
 	return &PassiveRecognizer{}
 }
 
-// RecognitionResult 被动识别结果
+// RecognitionResult represents passive recognition result
 type RecognitionResult struct {
-	// 检测到的浏览器类型
+	// Detected browser type
 	Browser types.BrowserType
-	// 检测到的操作系统
+	// Detected operating system
 	OS types.OperatingSystem
-	// 检测到的浏览器版本
+	// Detected browser version
 	BrowserVersion string
-	// 置信度（0.0-1.0）
+	// Confidence (0.0-1.0)
 	Confidence float64
-	// 是否为移动设备
+	// Whether it's a mobile device
 	IsMobile bool
-	// 是否疑似机器人
+	// Whether it's suspected to be a bot
 	IsBot bool
 }
 
-// RecognizeFromHeaders 从 HTTP 请求头识别浏览器指纹
+// RecognizeFromHeaders recognizes browser fingerprint from HTTP request headers
 func (r *PassiveRecognizer) RecognizeFromHeaders(headers map[string]string) *RecognitionResult {
 	result := &RecognitionResult{}
 
@@ -312,7 +312,7 @@ func (r *PassiveRecognizer) RecognizeFromHeaders(headers map[string]string) *Rec
 		return result
 	}
 
-	// 检测机器人
+	// Detect bot
 	anomalyDetector := NewAnomalyDetector()
 	if anomalyDetector.DetectHeadlessBrowser(ua) {
 		result.IsBot = true
@@ -322,29 +322,29 @@ func (r *PassiveRecognizer) RecognizeFromHeaders(headers map[string]string) *Rec
 
 	uaLower := strings.ToLower(ua)
 
-	// 检测移动设备
+	// Detect mobile device
 	result.IsMobile = strings.Contains(uaLower, "mobile") ||
 		strings.Contains(uaLower, "android") ||
 		strings.Contains(uaLower, "iphone") ||
 		strings.Contains(uaLower, "ipad")
 
-	// 识别浏览器
+	// Recognize browser
 	result.Browser, result.BrowserVersion = detectBrowserFromUA(ua)
 
-	// 识别操作系统
+	// Recognize operating system
 	result.OS = detectOSFromUA(ua)
 
-	// 计算置信度
+	// Calculate confidence
 	result.Confidence = calculateConfidence(headers, result)
 
 	return result
 }
 
-// detectBrowserFromUA 从 User-Agent 检测浏览器类型和版本
+// detectBrowserFromUA detects browser type and version from User-Agent
 func detectBrowserFromUA(ua string) (types.BrowserType, string) {
 	uaLower := strings.ToLower(ua)
 
-	// Edge 必须在 Chrome 之前检测（Edge UA 也包含 Chrome）
+	// Edge must be detected before Chrome (Edge UA also contains Chrome)
 	if strings.Contains(uaLower, "edg/") || strings.Contains(uaLower, "edge/") {
 		version := extractVersionFromUA(ua, "Edg/")
 		if version == "" {
@@ -353,7 +353,7 @@ func detectBrowserFromUA(ua string) (types.BrowserType, string) {
 		return types.BrowserEdge, version
 	}
 
-	// Opera 必须在 Chrome 之前检测
+	// Opera must be detected before Chrome
 	if strings.Contains(uaLower, "opr/") {
 		version := extractVersionFromUA(ua, "OPR/")
 		return types.BrowserOpera, version
@@ -380,7 +380,7 @@ func detectBrowserFromUA(ua string) (types.BrowserType, string) {
 	return types.BrowserChrome, ""
 }
 
-// extractVersionFromUA 从 User-Agent 提取特定标识符后的版本号
+// extractVersionFromUA extracts version number after specific identifier from User-Agent
 func extractVersionFromUA(ua, prefix string) string {
 	idx := strings.Index(ua, prefix)
 	if idx == -1 {
@@ -397,7 +397,7 @@ func extractVersionFromUA(ua, prefix string) string {
 	return ""
 }
 
-// detectOSFromUA 从 User-Agent 检测操作系统
+// detectOSFromUA detects operating system from User-Agent
 func detectOSFromUA(ua string) types.OperatingSystem {
 	if strings.Contains(ua, "Windows NT 10.0") {
 		return types.OSWindows10
@@ -414,29 +414,29 @@ func detectOSFromUA(ua string) types.OperatingSystem {
 	if strings.Contains(ua, "X11; Linux") {
 		return types.OSLinux
 	}
-	return types.OSWindows10 // 默认
+	return types.OSWindows10 // Default
 }
 
-// calculateConfidence 计算识别置信度
+// calculateConfidence calculates recognition confidence
 func calculateConfidence(headers map[string]string, result *RecognitionResult) float64 {
 	score := 0.5
 
-	// 有 User-Agent 加分
+	// Has User-Agent, add score
 	if headers["User-Agent"] != "" {
 		score += 0.2
 	}
 
-	// 有 Accept 头加分
+	// Has Accept header, add score
 	if headers["Accept"] != "" {
 		score += 0.1
 	}
 
-	// 有 Accept-Language 加分
+	// Has Accept-Language, add score
 	if headers["Accept-Language"] != "" {
 		score += 0.1
 	}
 
-	// Chrome 类浏览器有 Sec-CH-UA 加分
+	// Chrome-like browsers have Sec-CH-UA, add score
 	if headers["Sec-CH-UA"] != "" {
 		score += 0.1
 	}
@@ -444,7 +444,7 @@ func calculateConfidence(headers map[string]string, result *RecognitionResult) f
 	return math.Min(score, 1.0)
 }
 
-// RecognizeFromUserAgent 仅从 User-Agent 字符串识别浏览器指纹
+// RecognizeFromUserAgent recognizes browser fingerprint only from User-Agent string
 func RecognizeFromUserAgent(userAgent string) *RecognitionResult {
 	recognizer := NewPassiveRecognizer()
 	return recognizer.RecognizeFromHeaders(map[string]string{

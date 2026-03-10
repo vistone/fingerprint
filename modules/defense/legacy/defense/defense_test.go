@@ -6,7 +6,7 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles/legacy"
 )
 
-// TestNewAnomalyDetector 测试异常检测器创建
+// TestNewAnomalyDetector tests anomaly detector creation
 func TestNewAnomalyDetector(t *testing.T) {
 	detector := NewAnomalyDetector()
 	if detector == nil {
@@ -14,7 +14,7 @@ func TestNewAnomalyDetector(t *testing.T) {
 	}
 }
 
-// TestAnomalyDetector_DetectAnomalies 测试异常检测
+// TestAnomalyDetector_DetectAnomalies tests anomaly detection
 func TestAnomalyDetector_DetectAnomalies(t *testing.T) {
 	detector := NewAnomalyDetector()
 
@@ -75,11 +75,11 @@ func TestAnomalyDetector_DetectAnomalies(t *testing.T) {
 	}
 }
 
-// TestAnomalyDetector_DetectHeadlessBrowser 测试无头浏览器检测
+// TestAnomalyDetector_DetectHeadlessBrowser tests headless browser detection
 func TestAnomalyDetector_DetectHeadlessBrowser(t *testing.T) {
 	detector := NewAnomalyDetector()
 
-	// 首先获取真实指纹数据
+	// First get real fingerprint data
 	chromeProfile, ok := profiles.MappedTLSClients["chrome_133"]
 	if !ok {
 		t.Skip("chrome_133 profile not found")
@@ -172,7 +172,7 @@ func TestAnomalyDetector_DetectHeadlessBrowser(t *testing.T) {
 	}
 }
 
-// TestNewContradictionDetector 测试矛盾检测器创建
+// TestNewContradictionDetector tests contradiction detector creation
 func TestNewContradictionDetector(t *testing.T) {
 	detector := NewContradictionDetector()
 	if detector == nil {
@@ -180,7 +180,7 @@ func TestNewContradictionDetector(t *testing.T) {
 	}
 }
 
-// TestContradictionDetector_CheckContradictions 测试矛盾检测
+// TestContradictionDetector_CheckContradictions tests contradiction detection
 func TestContradictionDetector_CheckContradictions(t *testing.T) {
 	detector := NewContradictionDetector()
 
@@ -350,7 +350,7 @@ func TestContradictionDetector_CheckContradictions(t *testing.T) {
 	}
 }
 
-// TestNewPassiveRecognizer 测试被动识别器创建
+// TestNewPassiveRecognizer tests passive recognizer creation
 func TestNewPassiveRecognizer(t *testing.T) {
 	recognizer := NewPassiveRecognizer()
 	if recognizer == nil {
@@ -358,7 +358,7 @@ func TestNewPassiveRecognizer(t *testing.T) {
 	}
 }
 
-// TestPassiveRecognizer_RecognizeFromHeaders 测试从 Headers 识别
+// TestPassiveRecognizer_RecognizeFromHeaders tests recognition from Headers
 func TestPassiveRecognizer_RecognizeFromHeaders(t *testing.T) {
 	recognizer := NewPassiveRecognizer()
 
@@ -476,7 +476,7 @@ func TestPassiveRecognizer_RecognizeFromHeaders(t *testing.T) {
 	}
 }
 
-// TestRecognizeFromUserAgent 测试从 User-Agent 识别
+// TestRecognizeFromUserAgent tests recognition from User-Agent
 func TestRecognizeFromUserAgent(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -535,7 +535,7 @@ func TestRecognizeFromUserAgent(t *testing.T) {
 		{
 			name:         "empty ua",
 			ua:           "",
-			wantBrowser:  "", // 空UA返回空
+			wantBrowser:  "", // Empty UA returns empty
 			wantIsMobile: false,
 		},
 	}
@@ -555,7 +555,7 @@ func TestRecognizeFromUserAgent(t *testing.T) {
 	}
 }
 
-// TestDetectOSFromUA 测试从 UA 检测操作系统
+// TestDetectOSFromUA tests OS detection from UA
 func TestDetectOSFromUA(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -604,7 +604,7 @@ func TestDetectOSFromUA(t *testing.T) {
 	}
 }
 
-// TestExtractVersionFromUA 测试从 UA 提取版本
+// TestExtractVersionFromUA tests version extraction from UA
 func TestExtractVersionFromUA(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -666,7 +666,7 @@ func TestExtractVersionFromUA(t *testing.T) {
 	}
 }
 
-// TestCalculateConfidence 测试置信度计算
+// TestCalculateConfidence tests confidence calculation
 func TestCalculateConfidence(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -697,14 +697,14 @@ func TestCalculateConfidence(t *testing.T) {
 				"Sec-CH-UA":       `"Chrome";v="133"`,
 			},
 			result:         &RecognitionResult{},
-			wantConfidence: 0.99, // 使用 >= 比较而不是 ==
+			wantConfidence: 0.99, // Use >= comparison instead of ==
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := calculateConfidence(tt.headers, tt.result)
-			// 使用范围比较处理浮点数精度问题
+			// Use range comparison to handle floating point precision issues
 			if got < tt.wantConfidence - 0.01 || got > tt.wantConfidence + 0.01 {
 				t.Errorf("calculateConfidence() = %v, want ~%v", got, tt.wantConfidence)
 			}
@@ -712,7 +712,7 @@ func TestCalculateConfidence(t *testing.T) {
 	}
 }
 
-// TestParseIntFallback 测试整数解析回退
+// TestParseIntFallback tests integer parsing fallback
 func TestParseIntFallback(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -741,7 +741,7 @@ func TestParseIntFallback(t *testing.T) {
 		{
 			name:    "with spaces",
 			s:       "  1920  ",
-			want:    1920, // 实际会解析成功
+			want:    1920, // Will actually parse successfully
 			wantErr: false,
 		},
 		{
@@ -773,7 +773,7 @@ func TestParseIntFallback(t *testing.T) {
 	}
 }
 
-// BenchmarkDetectHeadlessBrowser 基准测试无头浏览器检测
+// BenchmarkDetectHeadlessBrowser benchmark: headless browser detection
 func BenchmarkDetectHeadlessBrowser(b *testing.B) {
 	detector := NewAnomalyDetector()
 	ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
@@ -784,7 +784,7 @@ func BenchmarkDetectHeadlessBrowser(b *testing.B) {
 	}
 }
 
-// BenchmarkCheckContradictions 基准测试矛盾检测
+// BenchmarkCheckContradictions benchmark: contradiction detection
 func BenchmarkCheckContradictions(b *testing.B) {
 	detector := NewContradictionDetector()
 	attrs := map[string]string{
@@ -801,7 +801,7 @@ func BenchmarkCheckContradictions(b *testing.B) {
 	}
 }
 
-// BenchmarkRecognizeFromHeaders 基准测试 Headers 识别
+// BenchmarkRecognizeFromHeaders benchmark: Headers recognition
 func BenchmarkRecognizeFromHeaders(b *testing.B) {
 	recognizer := NewPassiveRecognizer()
 	headers := map[string]string{
