@@ -3,13 +3,13 @@ module github.com/vistone/fingerprint/modules/defense
 go 1.25.7
 
 require (
-	github.com/vistone/fingerprint/modules/core v1.0.7
-	github.com/vistone/fingerprint/modules/http v1.0.7
-	github.com/vistone/fingerprint/modules/internal v1.0.7
-	github.com/vistone/fingerprint/modules/ml v1.0.7
-	github.com/vistone/fingerprint/modules/network v1.0.7
-	github.com/vistone/fingerprint/modules/profiles v1.0.7
-	github.com/vistone/fingerprint/modules/tls v1.0.7
+	github.com/vistone/fingerprint/modules/core v1.0.8
+	github.com/vistone/fingerprint/modules/http v1.0.8
+	github.com/vistone/fingerprint/modules/internal v1.0.8
+	github.com/vistone/fingerprint/modules/ml v1.0.8
+	github.com/vistone/fingerprint/modules/network v1.0.8
+	github.com/vistone/fingerprint/modules/profiles v1.0.8
+	github.com/vistone/fingerprint/modules/tls v1.0.8
 	go.opentelemetry.io/otel v1.39.0
 	go.opentelemetry.io/otel/trace v1.39.0
 	go.uber.org/zap v1.27.1
@@ -29,7 +29,7 @@ require (
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.66.1 // indirect
 	github.com/prometheus/procfs v0.16.1 // indirect
-	github.com/vistone/fingerprint/modules/errors v1.0.7 // indirect
+	github.com/vistone/fingerprint/modules/errors v1.0.8 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel/metric v1.39.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
