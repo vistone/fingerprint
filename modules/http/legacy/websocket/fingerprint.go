@@ -11,54 +11,54 @@ import (
 	"strings"
 )
 
-// WebSocketFingerprint WebSocket 指纹
+// WebSocketFingerprint WebSocket fingerprint
 type WebSocketFingerprint struct {
-	// 协议版本
+	// Protocol version
 	Version string
 
-	// 握手特征
+	// Handshake characteristics
 	Handshake WebSocketHandshake
 
-	// 帧特征
+	// Frame characteristics
 	FrameCharacteristics FrameCharacteristics
 
-	// 扩展支持
+	// Extension support
 	Extensions []string
 
-	// 子协议
+	// Sub-protocols
 	SubProtocols []string
 
-	// 原始指纹字符串
+	// Raw fingerprint string
 	Raw string
 
-	// 哈希值
+	// Hash value
 	Hash string
 }
 
-// WebSocketHandshake 握手特征
+// WebSocketHandshake handshake characteristics
 type WebSocketHandshake struct {
-	// HTTP 版本
+	// HTTP version
 	HTTPVersion string
 
-	// 方法（应为 GET）
+	// Method (should be GET)
 	Method string
 
-	// 头部顺序
+	// Header order
 	HeaderOrder []string
 
-	// 特定头部值
+	// Specific header values
 	Headers map[string]string
 
 	// User-Agent
 	UserAgent string
 
-	//  Origin
+	// Origin
 	Origin string
 
 	// Sec-WebSocket-Version
 	SecWebSocketVersion string
 
-	// Sec-WebSocket-Key 特征
+	// Sec-WebSocket-Key characteristics
 	SecWebSocketKeyCharacteristics KeyCharacteristics
 
 	// Sec-WebSocket-Extensions
@@ -68,49 +68,49 @@ type WebSocketHandshake struct {
 	SecWebSocketProtocol string
 }
 
-// KeyCharacteristics WebSocket Key 特征
+// KeyCharacteristics WebSocket Key characteristics
 type KeyCharacteristics struct {
-	// Key 长度
+	// Key length
 	Length int
 
-	// 是否为标准 Base64（16字节随机数据）
+	// Whether standard Base64 (16-byte random data)
 	IsStandardBase64 bool
 
-	// 是否包含特定模式
+	// Whether contains specific pattern
 	HasPattern bool
 
-	// 模式类型
+	// Pattern type
 	PatternType string
 
-	// 熵值估计
+	// Entropy estimate
 	Entropy float64
 }
 
-// FrameCharacteristics 帧特征
+// FrameCharacteristics frame characteristics
 type FrameCharacteristics struct {
-	// 掩码行为
+	// Masking behavior
 	MaskingBehavior string
 
-	// 最大帧大小
+	// Maximum frame size
 	MaxFrameSize int
 
-	// 支持的 opcode
+	// Supported opcodes
 	SupportedOpcodes []uint8
 
-	// 扩展标志使用
+	// Extension flag usage
 	ExtensionFlags []string
 
-	// 控制帧行为
+	// Control frame behavior
 	ControlFrameBehavior string
 }
 
-// Analyzer WebSocket 指纹分析器
+// Analyzer WebSocket fingerprint analyzer
 type Analyzer struct {
-	// 浏览器特征数据库
+	// Browser pattern database
 	browserPatterns map[string]BrowserPattern
 }
 
-// BrowserPattern 浏览器特征模式
+// BrowserPattern browser pattern signature
 type BrowserPattern struct {
 	Name           string
 	Version        string
@@ -120,14 +120,14 @@ type BrowserPattern struct {
 	UserAgentMatch *regexp.Regexp
 }
 
-// NewAnalyzer 创建分析器
+// NewAnalyzer creates analyzer
 func NewAnalyzer() *Analyzer {
 	return &Analyzer{
 		browserPatterns: initBrowserPatterns(),
 	}
 }
 
-// AnalyzeRequest 分析 WebSocket 握手请求
+// AnalyzeRequest analyzes WebSocket handshake request
 func (a *Analyzer) AnalyzeRequest(req *http.Request) (*WebSocketFingerprint, error) {
 	if req.Method != "GET" {
 		return nil, fmt.Errorf("invalid method: %s", req.Method)
@@ -142,33 +142,33 @@ func (a *Analyzer) AnalyzeRequest(req *http.Request) (*WebSocketFingerprint, err
 		},
 	}
 
-	// 分析头部
+	// Analyze headers
 	a.analyzeHeaders(req, fp)
 
-	// 分析 Sec-WebSocket-Key
+	// Analyze Sec-WebSocket-Key
 	a.analyzeSecWebSocketKey(req, fp)
 
-	// 分析扩展
+	// Analyze extensions
 	a.analyzeExtensions(req, fp)
 
-	// 分析子协议
+	// Analyze sub-protocols
 	a.analyzeSubProtocols(req, fp)
 
-	// 生成指纹字符串和哈希
+	// Generate fingerprint string and hash
 	fp.Raw = a.generateFingerprintString(fp)
 	fp.Hash = a.generateFingerprintHash(fp.Raw)
 
 	return fp, nil
 }
 
-// analyzeHeaders 分析 HTTP 头部
+// analyzeHeaders analyzes HTTP headers
 func (a *Analyzer) analyzeHeaders(req *http.Request, fp *WebSocketFingerprint) {
-	// 记录头部顺序
+	// Record header order
 	for name := range req.Header {
 		fp.Handshake.HeaderOrder = append(fp.Handshake.HeaderOrder, name)
 	}
 
-	// 记录特定头部
+	// Record specific headers
 	if ua := req.Header.Get("User-Agent"); ua != "" {
 		fp.Handshake.UserAgent = ua
 	}
@@ -189,7 +189,7 @@ func (a *Analyzer) analyzeHeaders(req *http.Request, fp *WebSocketFingerprint) {
 		fp.Handshake.SecWebSocketProtocol = proto
 	}
 
-	// 记录所有 Sec-WebSocket-* 头部
+	// Record all Sec-WebSocket-* headers
 	for name, values := range req.Header {
 		if strings.HasPrefix(name, "Sec-Websocket-") || strings.HasPrefix(name, "Sec-WebSocket-") {
 			fp.Handshake.Headers[name] = strings.Join(values, ", ")
@@ -197,7 +197,7 @@ func (a *Analyzer) analyzeHeaders(req *http.Request, fp *WebSocketFingerprint) {
 	}
 }
 
-// analyzeSecWebSocketKey 分析 Sec-WebSocket-Key
+// analyzeSecWebSocketKey analyzes Sec-WebSocket-Key
 func (a *Analyzer) analyzeSecWebSocketKey(req *http.Request, fp *WebSocketFingerprint) {
 	key := req.Header.Get("Sec-Websocket-Key")
 	if key == "" {
@@ -208,31 +208,31 @@ func (a *Analyzer) analyzeSecWebSocketKey(req *http.Request, fp *WebSocketFinger
 		Length: len(key),
 	}
 
-	// 解码 Base64
+	// Decode Base64
 	decoded, err := base64.StdEncoding.DecodeString(key)
 	if err != nil {
 		fp.Handshake.SecWebSocketKeyCharacteristics.IsStandardBase64 = false
 		return
 	}
 
-	// 标准应该是 16 字节随机数据
+	// Standard should be 16-byte random data
 	fp.Handshake.SecWebSocketKeyCharacteristics.IsStandardBase64 = len(decoded) == 16
 
-	// 分析熵值（简化）
+	// Analyze entropy (simplified)
 	fp.Handshake.SecWebSocketKeyCharacteristics.Entropy = calculateEntropy(decoded)
 
-	// 检测模式
+	// Detect pattern
 	a.detectKeyPattern(decoded, fp)
 }
 
-// detectKeyPattern 检测 Key 生成模式
+// detectKeyPattern detects Key generation pattern
 func (a *Analyzer) detectKeyPattern(key []byte, fp *WebSocketFingerprint) {
-	// 检测常见的随机数生成器模式
+	// Detect common random number generator patterns
 	if len(key) != 16 {
 		return
 	}
 
-	// 检测是否全为零（测试客户端）
+	// Detect if all zeros (test client)
 	allZero := true
 	for _, b := range key {
 		if b != 0 {
@@ -246,7 +246,7 @@ func (a *Analyzer) detectKeyPattern(key []byte, fp *WebSocketFingerprint) {
 		return
 	}
 
-	// 检测递增模式（简单 RNG）
+	// Detect incremental pattern (simple RNG)
 	incremental := true
 	for i := 1; i < len(key); i++ {
 		if key[i] != key[i-1]+1 {
@@ -260,26 +260,26 @@ func (a *Analyzer) detectKeyPattern(key []byte, fp *WebSocketFingerprint) {
 		return
 	}
 
-	// 检测低熵（某些嵌入式设备）
+	// Detect low entropy (some embedded devices)
 	if fp.Handshake.SecWebSocketKeyCharacteristics.Entropy < 3.0 {
 		fp.Handshake.SecWebSocketKeyCharacteristics.HasPattern = true
 		fp.Handshake.SecWebSocketKeyCharacteristics.PatternType = "low_entropy"
 	}
 }
 
-// analyzeExtensions 分析扩展
+// analyzeExtensions analyzes extensions
 func (a *Analyzer) analyzeExtensions(req *http.Request, fp *WebSocketFingerprint) {
 	extHeader := req.Header.Get("Sec-Websocket-Extensions")
 	if extHeader == "" {
 		return
 	}
 
-	// 解析扩展列表
-	// 格式: extension1; param1=value1, extension2; param2=value2
+	// Parse extension list
+	// Format: extension1; param1=value1, extension2; param2=value2
 	extensions := parseExtensionHeader(extHeader)
 	fp.Extensions = extensions
 
-	// 记录帧特征
+	// Record frame characteristics
 	for _, ext := range extensions {
 		switch ext {
 		case "permessage-deflate":
@@ -292,39 +292,39 @@ func (a *Analyzer) analyzeExtensions(req *http.Request, fp *WebSocketFingerprint
 	}
 }
 
-// analyzeSubProtocols 分析子协议
+// analyzeSubProtocols analyzes sub-protocols
 func (a *Analyzer) analyzeSubProtocols(req *http.Request, fp *WebSocketFingerprint) {
 	protoHeader := req.Header.Get("Sec-Websocket-Protocol")
 	if protoHeader == "" {
 		return
 	}
 
-	// 解析协议列表
+	// Parse protocol list
 	protocols := splitAndTrim(protoHeader, ",")
 	fp.SubProtocols = protocols
 }
 
-// generateFingerprintString 生成指纹字符串
+// generateFingerprintString generates fingerprint string
 func (a *Analyzer) generateFingerprintString(fp *WebSocketFingerprint) string {
 	var parts []string
 
-	// HTTP 版本
+	// HTTP version
 	parts = append(parts, fmt.Sprintf("http=%s", fp.Handshake.HTTPVersion))
 
-	// 头部顺序（排序后）
+	// Header order (sorted)
 	sortedHeaders := make([]string, len(fp.Handshake.HeaderOrder))
 	copy(sortedHeaders, fp.Handshake.HeaderOrder)
 	sort.Strings(sortedHeaders)
 	parts = append(parts, fmt.Sprintf("headers=%s", strings.Join(sortedHeaders, "|")))
 
-	// WebSocket 版本
+	// WebSocket version
 	parts = append(parts, fmt.Sprintf("ws_version=%s", fp.Handshake.SecWebSocketVersion))
 
-	// Key 特征
+	// Key characteristics
 	keyChar := fp.Handshake.SecWebSocketKeyCharacteristics
 	parts = append(parts, fmt.Sprintf("key_std=%v", keyChar.IsStandardBase64))
 
-	// 扩展
+	// Extensions
 	if len(fp.Extensions) > 0 {
 		sort.Strings(fp.Extensions)
 		parts = append(parts, fmt.Sprintf("ext=%s", strings.Join(fp.Extensions, ",")))
@@ -333,14 +333,14 @@ func (a *Analyzer) generateFingerprintString(fp *WebSocketFingerprint) string {
 	return strings.Join(parts, ";")
 }
 
-// generateFingerprintHash 生成指纹哈希
+// generateFingerprintHash generates fingerprint hash
 func (a *Analyzer) generateFingerprintHash(raw string) string {
 	h := sha1.New()
 	h.Write([]byte(raw))
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
-// IdentifyBrowser 识别浏览器类型
+// IdentifyBrowser identifies browser type
 func (a *Analyzer) IdentifyBrowser(fp *WebSocketFingerprint) (string, float64) {
 	if fp.Handshake.UserAgent == "" {
 		return "unknown", 0.0
@@ -348,7 +348,7 @@ func (a *Analyzer) IdentifyBrowser(fp *WebSocketFingerprint) (string, float64) {
 
 	for name, pattern := range a.browserPatterns {
 		if pattern.UserAgentMatch.MatchString(fp.Handshake.UserAgent) {
-			// 进一步验证头部顺序
+			// Further validate header order
 			if a.matchHeaderOrder(fp, pattern) {
 				return name, 0.8
 			}
@@ -359,13 +359,13 @@ func (a *Analyzer) IdentifyBrowser(fp *WebSocketFingerprint) (string, float64) {
 	return "unknown", 0.0
 }
 
-// matchHeaderOrder 验证头部顺序是否匹配
+// matchHeaderOrder validates whether header order matches
 func (a *Analyzer) matchHeaderOrder(fp *WebSocketFingerprint, pattern BrowserPattern) bool {
 	if len(pattern.HeaderOrder) == 0 {
 		return true
 	}
 
-	// 简化匹配：检查前几个关键头部是否匹配
+	// Simplified matching: check if first few key headers match
 	matchCount := 0
 	for i, header := range pattern.HeaderOrder {
 		if i < len(fp.Handshake.HeaderOrder) &&
@@ -377,13 +377,13 @@ func (a *Analyzer) matchHeaderOrder(fp *WebSocketFingerprint, pattern BrowserPat
 	return float64(matchCount)/float64(len(pattern.HeaderOrder)) > 0.7
 }
 
-// parseExtensionHeader 解析扩展头部
+// parseExtensionHeader parses extension header
 func parseExtensionHeader(header string) []string {
 	var extensions []string
 
 	parts := splitAndTrim(header, ",")
 	for _, part := range parts {
-		// 提取扩展名（去掉参数）
+		// Extract extension name (remove parameters)
 		if idx := strings.Index(part, ";"); idx != -1 {
 			extensions = append(extensions, strings.TrimSpace(part[:idx]))
 		} else {
@@ -394,7 +394,7 @@ func parseExtensionHeader(header string) []string {
 	return extensions
 }
 
-// splitAndTrim 分割字符串并修剪空白
+// splitAndTrim splits string and trims whitespace
 func splitAndTrim(s, sep string) []string {
 	parts := strings.Split(s, sep)
 	var result []string
@@ -407,24 +407,24 @@ func splitAndTrim(s, sep string) []string {
 	return result
 }
 
-// equalIgnoreCase 忽略大小写比较
+// equalIgnoreCase compares ignoring case
 func equalIgnoreCase(a, b string) bool {
 	return strings.EqualFold(a, b)
 }
 
-// calculateEntropy 计算字节数组的熵值
+// calculateEntropy calculates entropy of byte array
 func calculateEntropy(data []byte) float64 {
 	if len(data) == 0 {
 		return 0.0
 	}
 
-	// 统计字节频率
+	// Count byte frequency
 	freq := make(map[byte]int)
 	for _, b := range data {
 		freq[b]++
 	}
 
-	// 计算熵
+	// Calculate entropy
 	var entropy float64
 	length := float64(len(data))
 	for _, count := range freq {
@@ -437,33 +437,33 @@ func calculateEntropy(data []byte) float64 {
 	return entropy
 }
 
-// mathLog2 计算 log2
+// mathLog2 calculates log2
 func mathLog2(x float64) float64 {
-	// 简化实现，使用自然对数转换
+	// Simplified implementation, use natural logarithm conversion
 	const ln2 = 0.6931471805599453
 	if x <= 0 {
 		return 0
 	}
-	// 使用 math 包
+	// Use math package
 	return log2(x)
 }
 
-// log2 计算 log2 (简化实现)
+// log2 calculates log2 (simplified implementation)
 func log2(x float64) float64 {
-	// 使用换底公式: log2(x) = log(x) / log(2)
-	// 这里使用近似算法
+	// Use change of base formula: log2(x) = log(x) / log(2)
+	// Use approximation algorithm here
 	result := 0.0
 	for x >= 2.0 {
 		x /= 2.0
 		result++
 	}
 	if x > 1.0 {
-		result += x - 1.0 // 近似
+		result += x - 1.0 // Approximation
 	}
 	return result
 }
 
-// initBrowserPatterns 初始化浏览器模式
+// initBrowserPatterns initializes browser patterns
 func initBrowserPatterns() map[string]BrowserPattern {
 	return map[string]BrowserPattern{
 		"chrome": {
@@ -512,7 +512,7 @@ func initBrowserPatterns() map[string]BrowserPattern {
 	}
 }
 
-// CompareFingerprints 比较两个指纹的相似度
+// CompareFingerprints compares similarity of two fingerprints
 func CompareFingerprints(fp1, fp2 *WebSocketFingerprint) float64 {
 	if fp1 == nil || fp2 == nil {
 		return 0.0
@@ -521,21 +521,21 @@ func CompareFingerprints(fp1, fp2 *WebSocketFingerprint) float64 {
 	score := 0.0
 	weight := 0.0
 
-	// 比较 HTTP 版本
+	// Compare HTTP version
 	weight++
 	if fp1.Handshake.HTTPVersion == fp2.Handshake.HTTPVersion {
 		score++
 	}
 
-	// 比较头部顺序（Jaccard 相似度）
+	// Compare header order (Jaccard similarity)
 	weight++
 	score += jaccardSimilarity(fp1.Handshake.HeaderOrder, fp2.Handshake.HeaderOrder)
 
-	// 比较扩展
+	// Compare extensions
 	weight++
 	score += jaccardSimilarity(fp1.Extensions, fp2.Extensions)
 
-	// 比较 Key 标准性
+	// Compare Key standardness
 	weight++
 	if fp1.Handshake.SecWebSocketKeyCharacteristics.IsStandardBase64 ==
 		fp2.Handshake.SecWebSocketKeyCharacteristics.IsStandardBase64 {
@@ -545,7 +545,7 @@ func CompareFingerprints(fp1, fp2 *WebSocketFingerprint) float64 {
 	return score / weight
 }
 
-// jaccardSimilarity 计算 Jaccard 相似度
+// jaccardSimilarity calculates Jaccard similarity
 func jaccardSimilarity(a, b []string) float64 {
 	if len(a) == 0 && len(b) == 0 {
 		return 1.0
@@ -554,7 +554,7 @@ func jaccardSimilarity(a, b []string) float64 {
 		return 0.0
 	}
 
-	// 创建集合
+	// Create sets
 	setA := make(map[string]bool)
 	for _, s := range a {
 		setA[strings.ToLower(s)] = true
@@ -565,7 +565,7 @@ func jaccardSimilarity(a, b []string) float64 {
 		setB[strings.ToLower(s)] = true
 	}
 
-	// 计算交集和并集
+	// Calculate intersection and union
 	intersection := 0
 	for k := range setA {
 		if setB[k] {
@@ -578,7 +578,7 @@ func jaccardSimilarity(a, b []string) float64 {
 	return float64(intersection) / float64(union)
 }
 
-// GenerateAcceptKey 生成 Sec-WebSocket-Accept 响应
+// GenerateAcceptKey generates Sec-WebSocket-Accept response
 func GenerateAcceptKey(key string) (string, error) {
 	const magicGUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
@@ -588,9 +588,9 @@ func GenerateAcceptKey(key string) (string, error) {
 	return base64.StdEncoding.EncodeToString(h.Sum(nil)), nil
 }
 
-// IsValidWebSocketRequest 验证是否为有效的 WebSocket 请求
+// IsValidWebSocketRequest validates whether valid WebSocket request
 func IsValidWebSocketRequest(req *http.Request) bool {
-	// 检查必需头部
+	// Check required headers
 	if req.Method != "GET" {
 		return false
 	}
@@ -614,31 +614,31 @@ func IsValidWebSocketRequest(req *http.Request) bool {
 	return true
 }
 
-// Frame WebSocket 帧结构
+// Frame WebSocket frame structure
 type Frame struct {
-	// FIN 标志
+	// FIN flag
 	FIN bool
 
-	// RSV 标志
+	// RSV flags
 	RSV1, RSV2, RSV3 bool
 
 	// Opcode
 	Opcode uint8
 
-	// MASK 标志
+	// MASK flag
 	MASK bool
 
-	// Payload 长度
+	// Payload length
 	PayloadLength uint64
 
-	// 掩码密钥（客户端发送的帧）
+	// Masking key (client-sent frame)
 	MaskingKey [4]byte
 
-	// Payload 数据
+	// Payload data
 	Payload []byte
 }
 
-// ParseFrame 解析 WebSocket 帧
+// ParseFrame parses WebSocket frame
 func ParseFrame(data []byte) (*Frame, error) {
 	if len(data) < 2 {
 		return nil, fmt.Errorf("frame too short")
@@ -646,20 +646,20 @@ func ParseFrame(data []byte) (*Frame, error) {
 
 	frame := &Frame{}
 
-	// 第一个字节：FIN, RSV, Opcode
+	// First byte: FIN, RSV, Opcode
 	frame.FIN = data[0]&0x80 != 0
 	frame.RSV1 = data[0]&0x40 != 0
 	frame.RSV2 = data[0]&0x20 != 0
 	frame.RSV3 = data[0]&0x10 != 0
 	frame.Opcode = data[0] & 0x0f
 
-	// 第二个字节：MASK, Payload length
+	// Second byte: MASK, Payload length
 	frame.MASK = data[1]&0x80 != 0
 	length := uint64(data[1] & 0x7f)
 
 	offset := 2
 
-	// 扩展长度
+	// Extensions length
 	if length == 126 {
 		if len(data) < 4 {
 			return nil, fmt.Errorf("frame truncated at extended length")
@@ -676,7 +676,7 @@ func ParseFrame(data []byte) (*Frame, error) {
 
 	frame.PayloadLength = length
 
-	// 掩码密钥
+	// Masking key
 	if frame.MASK {
 		if len(data) < offset+4 {
 			return nil, fmt.Errorf("frame truncated at masking key")
@@ -692,7 +692,7 @@ func ParseFrame(data []byte) (*Frame, error) {
 
 	frame.Payload = data[offset : offset+int(length)]
 
-	// 解掩码
+	// Unmask
 	if frame.MASK {
 		frame.Payload = unmaskPayload(frame.Payload, frame.MaskingKey)
 	}
@@ -700,7 +700,7 @@ func ParseFrame(data []byte) (*Frame, error) {
 	return frame, nil
 }
 
-// unmaskPayload 解掩码 payload
+// unmaskPayload unmasks payload
 func unmaskPayload(payload []byte, key [4]byte) []byte {
 	result := make([]byte, len(payload))
 	for i, b := range payload {
@@ -709,7 +709,7 @@ func unmaskPayload(payload []byte, key [4]byte) []byte {
 	return result
 }
 
-// FrameOpCode 帧操作码常量
+// FrameOpCode frame opcode constants
 const (
 	OpCodeContinuation uint8 = 0x0
 	OpCodeText         uint8 = 0x1
@@ -719,7 +719,7 @@ const (
 	OpCodePong         uint8 = 0xa
 )
 
-// AnalyzeFrame 分析单个帧的特征
+// AnalyzeFrame analyzes single frame characteristics
 func AnalyzeFrame(frame *Frame) map[string]interface{} {
 	features := make(map[string]interface{})
 
@@ -729,7 +729,7 @@ func AnalyzeFrame(frame *Frame) map[string]interface{} {
 	features["payload_length"] = frame.PayloadLength
 	features["has_rsv"] = frame.RSV1 || frame.RSV2 || frame.RSV3
 
-	// 帧类型
+	// Frame type
 	switch frame.Opcode {
 	case OpCodeText:
 		features["frame_type"] = "text"
@@ -750,7 +750,7 @@ func AnalyzeFrame(frame *Frame) map[string]interface{} {
 	return features
 }
 
-// AnalyzeFrameStream 分析帧流特征
+// AnalyzeFrameStream analyzes frame stream characteristics
 func AnalyzeFrameStream(frames []*Frame) map[string]interface{} {
 	features := make(map[string]interface{})
 
@@ -758,7 +758,7 @@ func AnalyzeFrameStream(frames []*Frame) map[string]interface{} {
 		return features
 	}
 
-	// 统计
+	// Statistics
 	var (
 		maskedCount   int
 		unmaskedCount int
