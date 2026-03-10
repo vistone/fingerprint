@@ -9,149 +9,149 @@ import (
 	"github.com/vistone/fingerprint/modules/internal/metrics"
 )
 
-// BehaviorSignal 行为信号分析
+// BehaviorSignal represents behavior signal analysis
 type BehaviorSignal struct {
-	// 信号类型
+	// Signal type
 	SignalType string
 
-	// 信号值 (0-1 之间)
+	// Signal value (between 0-1)
 	Score float64
 
-	// 信号描述
+	// Signal description
 	Description string
 
-	// 检测时间
+	// Detection time
 	Timestamp time.Time
 
-	// 风险等级
+	// Risk level
 	RiskLevel string // "safe", "low", "medium", "high", "critical"
 }
 
-// TemporalPattern 时序模式
+// TemporalPattern represents temporal pattern
 type TemporalPattern struct {
-	// 请求间隔（毫秒）
+	// Request intervals (milliseconds)
 	Intervals []int64
 
-	// 平均间隔
+	// Average interval
 	MeanInterval float64
 
-	// 标准差
+	// Standard deviation
 	StdDev float64
 
-	// 最小/最大间隔
+	// Minimum/maximum interval
 	MinInterval int64
 	MaxInterval int64
 
-	// 规律性指数 (0-1，越高越规律)
+	// Regularity index (0-1, higher means more regular)
 	RegularityIndex float64
 
-	// 异常间隔数
+	// Anomalous interval count
 	AnomalousIntervals int
 }
 
-// ProtocolProportion 协议比例
+// ProtocolProportion represents protocol proportions
 type ProtocolProportion struct {
-	// TLS 版本分布
+	// TLS version distribution
 	TLSVersions map[string]float64 // "1.2" -> 0.6, "1.3" -> 0.4
 
-	// Cipher Suite 分布 (top 5)
+	// Cipher Suite distribution (top 5)
 	TopCipherSuites map[string]float64
 
-	// Extension 分布 (top 10)
+	// Extension distribution (top 10)
 	TopExtensions map[string]float64
 
-	// HTTP 版本分布
+	// HTTP version distribution
 	HTTPVersions map[string]float64 // "1.1" -> 0.3, "2" -> 0.7
 
-	// ALPN 协议分布
+	// ALPN protocol distribution
 	ALPNProtocols map[string]float64
 
-	// 熵值 (用于检测不自然的分布)
+	// Entropy value (used to detect unnatural distributions)
 	EntropyScore float64
 
-	// 是否存在异常分布
+	// Whether anomalous distribution exists
 	IsAnomalous bool
 }
 
-// RequestBehavior 单个请求行为
+// RequestBehavior represents single request behavior
 type RequestBehavior struct {
-	// 时间戳
+	// Timestamp
 	Timestamp time.Time
 
-	// TLS 版本
+	// TLS version
 	TLSVersion string
 
 	// Cipher Suite
 	CipherSuite string
 
-	// 使用的 Extensions
+	// Extensions used
 	Extensions []string
 
-	// HTTP 版本
+	// HTTP version
 	HTTPVersion string
 
-	// 请求大小
+	// requestsize
 	RequestSize int
 
-	// 响应大小
+	// responsesize
 	ResponseSize int
 
-	// 延迟
+	// delay
 	Latency time.Duration
 
-	// 是否使用了连接复用
+	// Whether connection reuse was used
 	ReusingConnection bool
 
-	// 源地址
+	// Source address
 	SourceIP string
 
-	// 目标地址
+	// Destination address
 	DestinationIP string
 
-	// 目标端口
+	// Destination port
 	DestinationPort int
 
 	// SNI
 	SNI string
 }
 
-// BehaviorAnalyzer 行为信号分析器
+// BehaviorAnalyzer is behavior signal analyzer
 type BehaviorAnalyzer struct {
-	// 请求历史
+	// Request history
 	requestHistory []RequestBehavior
 
-	// 时序模式
+	// Temporal pattern
 	temporalPatterns map[string]*TemporalPattern
 
-	// 协议比例
+	// Protocol proportion
 	protocolProportions map[string]*ProtocolProportion
 
-	// 检测到的信号
+	// Detected signals
 	signals []BehaviorSignal
 
-	// 分析参数
+	// analyzeparameter
 	config *BehaviorAnalysisConfig
 }
 
-// BehaviorAnalysisConfig 分析配置
+// BehaviorAnalysisConfig analyzeconfiguration
 type BehaviorAnalysisConfig struct {
-	// 时间窗口大小 (秒)
+	// Time window size (seconds)
 	TimeWindowSize int
 
-	// 最小请求数
+	// Minimum request count
 	MinRequestsForAnalysis int
 
-	// 规律性阈值 (异常检测)
+	// Regularity threshold (anomaly detection)
 	RegularityThreshold float64
 
-	// 熵值阈值
+	// Entropy threshold
 	EntropyThreshold float64
 
-	// 异常间隔率阈值
+	// Anomalous interval rate threshold
 	AnomalousIntervalRateThreshold float64
 }
 
-// NewBehaviorAnalyzer 创建行为分析器
+// NewBehaviorAnalyzer creates a behavior analyzer
 func NewBehaviorAnalyzer(config *BehaviorAnalysisConfig) *BehaviorAnalyzer {
 	if config == nil {
 		config = &BehaviorAnalysisConfig{
@@ -164,28 +164,28 @@ func NewBehaviorAnalyzer(config *BehaviorAnalysisConfig) *BehaviorAnalyzer {
 	}
 
 	return &BehaviorAnalyzer{
-		requestHistory:      make([]RequestBehavior, 0, 100), // 预分配容量
+		requestHistory:      make([]RequestBehavior, 0, 100), // Pre-allocated capacity
 		temporalPatterns:    make(map[string]*TemporalPattern),
 		protocolProportions: make(map[string]*ProtocolProportion),
-		signals:             make([]BehaviorSignal, 0, 50), // 预分配容量
+		signals:             make([]BehaviorSignal, 0, 50), // Pre-allocated capacity
 		config:              config,
 	}
 }
 
-// AddRequest 添加请求
+// AddRequest adds a request
 func (ba *BehaviorAnalyzer) AddRequest(req RequestBehavior) {
 	ba.requestHistory = append(ba.requestHistory, req)
 }
 
-// AnalyzeTemporalPattern 分析时序模式
+// AnalyzeTemporalPattern analyzes temporal pattern
 func (ba *BehaviorAnalyzer) AnalyzeTemporalPattern(origin string) *TemporalPattern {
-	// 筛选该源的请求并计算间隔（单次遍历，减少内存分配）
+	// Filter requests from this source and calculate intervals (single pass, reduce memory allocation)
 	intervals := make([]int64, 0, len(ba.requestHistory))
 	var lastReq *RequestBehavior
 
 	for i := range ba.requestHistory {
 		req := &ba.requestHistory[i]
-		// 使用 SNI 或目标地址作为源识别
+		// Use SNI or destination address as source identifier
 		if req.SNI == origin || req.DestinationIP == origin {
 			if lastReq != nil {
 				interval := req.Timestamp.Sub(lastReq.Timestamp).Milliseconds()
@@ -199,13 +199,13 @@ func (ba *BehaviorAnalyzer) AnalyzeTemporalPattern(origin string) *TemporalPatte
 		return nil
 	}
 
-	// 计算统计特性（零分配计算）
+	// Calculate statistical features (zero-allocation calculation)
 	pattern := ba.calculateTemporalStatsZeroAlloc(intervals)
 
-	// 计算规律性指数
+	// Calculate regularity index
 	ba.calculateRegularityIndex(pattern)
 
-	// 检测异常间隔
+	// Detect anomalous intervals
 	ba.detectAnomalousIntervals(pattern)
 
 	ba.temporalPatterns[origin] = pattern
@@ -213,13 +213,13 @@ func (ba *BehaviorAnalyzer) AnalyzeTemporalPattern(origin string) *TemporalPatte
 	return pattern
 }
 
-// calculateTemporalStats 计算时序统计
+// calculateTemporalStats calculates temporal statistics
 func (ba *BehaviorAnalyzer) calculateTemporalStats(pattern *TemporalPattern) {
 	if len(pattern.Intervals) == 0 {
 		return
 	}
 
-	// 计算平均值
+	// Calculate average value
 	var sum int64
 	pattern.MinInterval = pattern.Intervals[0]
 	pattern.MaxInterval = pattern.Intervals[0]
@@ -236,7 +236,7 @@ func (ba *BehaviorAnalyzer) calculateTemporalStats(pattern *TemporalPattern) {
 
 	pattern.MeanInterval = float64(sum) / float64(len(pattern.Intervals))
 
-	// 计算标准差
+	// Calculate standard deviation
 	var variance float64
 	for _, interval := range pattern.Intervals {
 		diff := float64(interval) - pattern.MeanInterval
@@ -245,7 +245,7 @@ func (ba *BehaviorAnalyzer) calculateTemporalStats(pattern *TemporalPattern) {
 	pattern.StdDev = math.Sqrt(variance / float64(len(pattern.Intervals)))
 }
 
-// calculateTemporalStatsZeroAlloc 计算时序统计（零分配版本）
+// calculateTemporalStatsZeroAlloc calculates temporal statistics (zero-allocation version)
 func (ba *BehaviorAnalyzer) calculateTemporalStatsZeroAlloc(intervals []int64) *TemporalPattern {
 	pattern := &TemporalPattern{
 		Intervals: intervals,
@@ -255,7 +255,7 @@ func (ba *BehaviorAnalyzer) calculateTemporalStatsZeroAlloc(intervals []int64) *
 		return pattern
 	}
 
-	// 计算平均值、最小值、最大值（单次遍历）
+	// Calculate average value, minimum value, maximum value (single pass)
 	var sum int64
 	pattern.MinInterval = intervals[0]
 	pattern.MaxInterval = intervals[0]
@@ -272,7 +272,7 @@ func (ba *BehaviorAnalyzer) calculateTemporalStatsZeroAlloc(intervals []int64) *
 
 	pattern.MeanInterval = float64(sum) / float64(len(intervals))
 
-	// 计算标准差
+	// Calculate standard deviation
 	var variance float64
 	for _, interval := range intervals {
 		diff := float64(interval) - pattern.MeanInterval
@@ -283,19 +283,19 @@ func (ba *BehaviorAnalyzer) calculateTemporalStatsZeroAlloc(intervals []int64) *
 	return pattern
 }
 
-// calculateRegularityIndex 计算规律性指数
-// 规律性高 (接近 1) 说明请求间隔很规则，可能是机器人
-// 规律性低 (接近 0) 说明请求间隔随机，可能是真实用户
+// calculateRegularityIndex calculates regularity index
+// High regularity (close to 1) indicates very regular request intervals, possibly a bot
+// Low regularity (close to 0) indicates random request intervals, possibly a real user
 func (ba *BehaviorAnalyzer) calculateRegularityIndex(pattern *TemporalPattern) {
 	if pattern.MeanInterval == 0 || pattern.StdDev == 0 {
 		pattern.RegularityIndex = 0
 		return
 	}
 
-	// 变异系数 (CV) = 标准差 / 平均值
+	// Coefficient of variation (CV) = standard deviation / average value
 	cv := pattern.StdDev / pattern.MeanInterval
 
-	// 规律性指数 = 1 - CV，限制在 [0, 1]
+	// Regularity index = 1 - CV, limited to [0, 1]
 	pattern.RegularityIndex = 1.0 - cv
 	if pattern.RegularityIndex < 0 {
 		pattern.RegularityIndex = 0
@@ -305,13 +305,13 @@ func (ba *BehaviorAnalyzer) calculateRegularityIndex(pattern *TemporalPattern) {
 	}
 }
 
-// detectAnomalousIntervals 检测异常间隔
+// detectAnomalousIntervals detects anomalous intervals
 func (ba *BehaviorAnalyzer) detectAnomalousIntervals(pattern *TemporalPattern) {
 	if pattern.StdDev == 0 {
 		return
 	}
 
-	// 使用 3-sigma 规则检测异常值
+	// Use 3-sigma rule to detect anomalous values
 	threshold := pattern.MeanInterval + 3*pattern.StdDev
 
 	for _, interval := range pattern.Intervals {
@@ -321,7 +321,7 @@ func (ba *BehaviorAnalyzer) detectAnomalousIntervals(pattern *TemporalPattern) {
 	}
 }
 
-// AnalyzeProtocolProportion 分析协议比例
+// AnalyzeProtocolProportion analyzes protocol proportions
 func (ba *BehaviorAnalyzer) AnalyzeProtocolProportion(origin string) *ProtocolProportion {
 	var originRequests []RequestBehavior
 	for _, req := range ba.requestHistory {
@@ -342,14 +342,14 @@ func (ba *BehaviorAnalyzer) AnalyzeProtocolProportion(origin string) *ProtocolPr
 		ALPNProtocols:   make(map[string]float64),
 	}
 
-	// 统计 TLS 版本
+	// Count TLS versions
 	for _, req := range originRequests {
 		prop.TLSVersions[req.TLSVersion]++
 		prop.HTTPVersions[req.HTTPVersion]++
 		prop.TopCipherSuites[req.CipherSuite]++
 	}
 
-	// 转换为比例
+	// Convert to proportions
 	for ver := range prop.TLSVersions {
 		prop.TLSVersions[ver] /= float64(len(originRequests))
 	}
@@ -360,10 +360,10 @@ func (ba *BehaviorAnalyzer) AnalyzeProtocolProportion(origin string) *ProtocolPr
 		prop.TopCipherSuites[cs] /= float64(len(originRequests))
 	}
 
-	// 仅保留 top 5 cipher suites
+	// Keep only top 5 cipher suites
 	ba.keepTopN(prop.TopCipherSuites, 5)
 
-	// 统计 extensions
+	// statistics extensions
 	extensionCount := make(map[string]int)
 	for _, req := range originRequests {
 		for _, ext := range req.Extensions {
@@ -371,13 +371,13 @@ func (ba *BehaviorAnalyzer) AnalyzeProtocolProportion(origin string) *ProtocolPr
 		}
 	}
 
-	// 转换为比例并保留 top 10
+	// Convert to proportions and keep top 10
 	for ext, count := range extensionCount {
 		prop.TopExtensions[ext] = float64(count) / float64(len(originRequests))
 	}
 	ba.keepTopN(prop.TopExtensions, 10)
 
-	// 计算熵值和异常检测
+	// Calculate entropy and anomaly detection
 	ba.calculateProtocolEntropy(prop)
 
 	ba.protocolProportions[origin] = prop
@@ -385,13 +385,13 @@ func (ba *BehaviorAnalyzer) AnalyzeProtocolProportion(origin string) *ProtocolPr
 	return prop
 }
 
-// keepTopN 仅保留前 N 个最高的条目
+// keepTopN keeps only the top N highest entries
 func (ba *BehaviorAnalyzer) keepTopN(m map[string]float64, n int) {
 	if len(m) <= n {
 		return
 	}
 
-	// 创建排序的列表
+	// Create sorted list
 	type kv struct {
 		Key   string
 		Value float64
@@ -405,7 +405,7 @@ func (ba *BehaviorAnalyzer) keepTopN(m map[string]float64, n int) {
 		return items[i].Value > items[j].Value
 	})
 
-	// 清空并仅保留前 N 个
+	// Clear and keep only top N
 	for k := range m {
 		delete(m, k)
 	}
@@ -414,9 +414,9 @@ func (ba *BehaviorAnalyzer) keepTopN(m map[string]float64, n int) {
 	}
 }
 
-// calculateProtocolEntropy 计算协议分布的熵值
+// calculateProtocolEntropy calculates entropy of protocol distribution
 func (ba *BehaviorAnalyzer) calculateProtocolEntropy(prop *ProtocolProportion) {
-	// 计算 TLS 版本分布的熵
+	// Calculate entropy of TLS version distribution
 	var entropy float64
 	for _, prob := range prop.TLSVersions {
 		if prob > 0 {
@@ -425,23 +425,23 @@ func (ba *BehaviorAnalyzer) calculateProtocolEntropy(prop *ProtocolProportion) {
 	}
 	prop.EntropyScore = entropy
 
-	// 检测异常：如果所有请求都使用相同的 TLS 版本或 Cipher Suite，则为异常
+	// Detect anomaly: if all requests use the same TLS version or Cipher Suite, it's anomalous
 	if len(prop.TLSVersions) == 1 || len(prop.TopCipherSuites) == 1 {
 		prop.IsAnomalous = true
 	}
 
-	// 检测熵值异常
-	// 正常的真实用户会有多样化的协议版本
+	// Detect entropy anomaly
+	// Normal real users will have diversified protocol versions
 	if entropy < ba.config.EntropyThreshold && len(prop.TLSVersions) > 1 {
 		prop.IsAnomalous = true
 	}
 }
 
-// GenerateBehaviorSignals 生成行为信号
+// GenerateBehaviorSignals generates behavior signals
 func (ba *BehaviorAnalyzer) GenerateBehaviorSignals(origin string) []BehaviorSignal {
 	signals := []BehaviorSignal{}
 
-	// 分析时序模式
+	// Analyze temporal pattern
 	if pattern := ba.AnalyzeTemporalPattern(origin); pattern != nil {
 		sig, shouldAdd := ba.evaluateTemporalPattern(pattern)
 		if shouldAdd {
@@ -449,7 +449,7 @@ func (ba *BehaviorAnalyzer) GenerateBehaviorSignals(origin string) []BehaviorSig
 		}
 	}
 
-	// 分析协议比例
+	// Analyze protocol proportions
 	if proportion := ba.AnalyzeProtocolProportion(origin); proportion != nil {
 		sig, shouldAdd := ba.evaluateProtocolProportion(proportion)
 		if shouldAdd {
@@ -457,12 +457,12 @@ func (ba *BehaviorAnalyzer) GenerateBehaviorSignals(origin string) []BehaviorSig
 		}
 	}
 
-	// 检测连接复用行为
+	// Detect connection reuse behavior
 	if sig, shouldAdd := ba.detectConnectionReuse(origin); shouldAdd {
 		signals = append(signals, sig)
 	}
 
-	// 记录指标
+	// Log metrics
 	for _, sig := range signals {
 		metrics.RecordBehaviorSignal(sig.RiskLevel)
 	}
@@ -471,7 +471,7 @@ func (ba *BehaviorAnalyzer) GenerateBehaviorSignals(origin string) []BehaviorSig
 	return signals
 }
 
-// evaluateTemporalPattern 评估时序模式
+// evaluateTemporalPattern evaluates temporal pattern
 func (ba *BehaviorAnalyzer) evaluateTemporalPattern(pattern *TemporalPattern) (BehaviorSignal, bool) {
 	var sig BehaviorSignal
 	sig.SignalType = "TEMPORAL_PATTERN"
@@ -480,18 +480,18 @@ func (ba *BehaviorAnalyzer) evaluateTemporalPattern(pattern *TemporalPattern) (B
 	anomalousRate := float64(pattern.AnomalousIntervals) / float64(len(pattern.Intervals))
 
 	if pattern.RegularityIndex > 0.8 {
-		// 高规律性：可能是机器人或自动化脚本
+		// High regularity: possibly a bot or automated script
 		sig.Score = pattern.RegularityIndex
-		sig.Description = fmt.Sprintf("高度规律的请求间隔: 规律性指数=%.2f, 平均间隔=%.0fms",
+		sig.Description = fmt.Sprintf("Highly regular request intervals: regularity index=%.2f, average interval=%.0fms",
 			pattern.RegularityIndex, pattern.MeanInterval)
 		sig.RiskLevel = "high"
 		return sig, true
 	}
 
 	if anomalousRate > ba.config.AnomalousIntervalRateThreshold {
-		// 高比例的异常间隔：不稳定的连接或异常行为
+		// High proportion of anomalous intervals: unstable connection or anomalous behavior
 		sig.Score = anomalousRate
-		sig.Description = fmt.Sprintf("异常请求间隔率: %.1f%%, 可能的网络问题或异常行为",
+		sig.Description = fmt.Sprintf("Anomalous request interval rate: %.1f%%, possible network issues or anomalous behavior",
 			anomalousRate*100)
 		sig.RiskLevel = "medium"
 		return sig, true
@@ -500,7 +500,7 @@ func (ba *BehaviorAnalyzer) evaluateTemporalPattern(pattern *TemporalPattern) (B
 	return sig, false
 }
 
-// evaluateProtocolProportion 评估协议比例
+// evaluateProtocolProportion evaluates protocol proportions
 func (ba *BehaviorAnalyzer) evaluateProtocolProportion(prop *ProtocolProportion) (BehaviorSignal, bool) {
 	var sig BehaviorSignal
 	sig.SignalType = "PROTOCOL_PROPORTION"
@@ -508,7 +508,7 @@ func (ba *BehaviorAnalyzer) evaluateProtocolProportion(prop *ProtocolProportion)
 
 	if prop.IsAnomalous {
 		sig.Score = prop.EntropyScore
-		sig.Description = fmt.Sprintf("异常的协议分布: 熵值=%.2f, TLS版本数=%d, CipherSuite数=%d",
+		sig.Description = fmt.Sprintf("Anomalous protocol distribution: entropy=%.2f, TLS versions=%d, CipherSuites=%d",
 			prop.EntropyScore, len(prop.TLSVersions), len(prop.TopCipherSuites))
 		sig.RiskLevel = "high"
 		return sig, true
@@ -517,7 +517,7 @@ func (ba *BehaviorAnalyzer) evaluateProtocolProportion(prop *ProtocolProportion)
 	return sig, false
 }
 
-// detectConnectionReuse 检测连接复用行为
+// detectConnectionReuse detects connection reuse behavior
 func (ba *BehaviorAnalyzer) detectConnectionReuse(origin string) (BehaviorSignal, bool) {
 	var reusingCount, totalCount int
 
@@ -536,13 +536,13 @@ func (ba *BehaviorAnalyzer) detectConnectionReuse(origin string) (BehaviorSignal
 
 	reuseRate := float64(reusingCount) / float64(totalCount)
 
-	// 如果连接复用率过高（接近 100%），可能是自动化脚本
-	// 真实用户通常会有一些新连接
+	// If connection reuse rate is too high (close to 100%), possibly an automated script
+	// Real users typically have some new connections
 	if reuseRate > 0.9 {
 		return BehaviorSignal{
 			SignalType:  "CONNECTION_REUSE",
 			Score:       reuseRate,
-			Description: fmt.Sprintf("极高的连接复用率: %.1f%%", reuseRate*100),
+			Description: fmt.Sprintf("Extremely high connection reuse rate: %.1f%%", reuseRate*100),
 			Timestamp:   time.Now(),
 			RiskLevel:   "high",
 		}, true
@@ -551,12 +551,12 @@ func (ba *BehaviorAnalyzer) detectConnectionReuse(origin string) (BehaviorSignal
 	return BehaviorSignal{}, false
 }
 
-// GetAllSignals 获取所有信号
+// GetAllSignals gets all signals
 func (ba *BehaviorAnalyzer) GetAllSignals() []BehaviorSignal {
 	return ba.signals
 }
 
-// GetRiskScore 计算综合风险分数
+// GetRiskScore calculates overall risk score
 func (ba *BehaviorAnalyzer) GetRiskScore() float64 {
 	if len(ba.signals) == 0 {
 		return 0
@@ -588,26 +588,26 @@ func (ba *BehaviorAnalyzer) GetRiskScore() float64 {
 	return totalScore / weight
 }
 
-// GetAnalysisSummary 获取分析总结
+// GetAnalysisSummary gets analysis summary
 func (ba *BehaviorAnalyzer) GetAnalysisSummary() string {
 	if len(ba.requestHistory) == 0 {
-		return "未收集到请求数据"
+		return "No request data collected"
 	}
 
-	summary := fmt.Sprintf("行为分析报告\n")
-	summary += fmt.Sprintf("=== 基础信息 ===\n")
-	summary += fmt.Sprintf("总请求数: %d\n", len(ba.requestHistory))
-	summary += fmt.Sprintf("检测到的信号: %d\n", len(ba.signals))
-	summary += fmt.Sprintf("综合风险分数: %.2f\n\n", ba.GetRiskScore())
+	summary := fmt.Sprintf("Behavior analysis report\n")
+	summary += fmt.Sprintf("=== Basic Info ===\n")
+	summary += fmt.Sprintf("Total requests: %d\n", len(ba.requestHistory))
+	summary += fmt.Sprintf("Detected signals: %d\n", len(ba.signals))
+	summary += fmt.Sprintf("Overall risk score: %.2f\n\n", ba.GetRiskScore())
 
 	if len(ba.signals) == 0 {
-		summary += "未检测到异常信号\n"
+		summary += "No anomalous signals detected\n"
 		return summary
 	}
 
-	summary += fmt.Sprintf("=== 检测到的信号 ===\n")
+	summary += fmt.Sprintf("=== Detected Signals ===\n")
 	for i, sig := range ba.signals {
-		summary += fmt.Sprintf("%d. [%s] %s (风险级别: %s, 评分: %.2f)\n",
+		summary += fmt.Sprintf("%d. [%s] %s (Risk level: %s, Score: %.2f)\n",
 			i+1, sig.SignalType, sig.Description, sig.RiskLevel, sig.Score)
 	}
 

@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// InstrumentedBehaviorAnalyzer 为 BehaviorAnalyzer 添加可观测能力
+// InstrumentedBehaviorAnalyzer adds observability to BehaviorAnalyzer
 type InstrumentedBehaviorAnalyzer struct {
 	inner   *BehaviorAnalyzer
 	tracer  trace.Tracer
@@ -21,7 +21,7 @@ type InstrumentedBehaviorAnalyzer struct {
 	metrics *BehaviorAnalysisMetrics
 }
 
-// BehaviorAnalysisMetrics 行为分析指标
+// BehaviorAnalysisMetrics represents behavior analysis metrics
 type BehaviorAnalysisMetrics struct {
 	AddRequestCount       int64
 	AnalysisCount         int64
@@ -31,7 +31,7 @@ type BehaviorAnalysisMetrics struct {
 	TotalAnalysisDuration time.Duration
 }
 
-// NewInstrumentedBehaviorAnalyzer 创建可观测的行为分析器
+// NewInstrumentedBehaviorAnalyzer creates observable behavior analyzer
 func NewInstrumentedBehaviorAnalyzer(
 	analyzer *BehaviorAnalyzer,
 	tracer trace.Tracer,
@@ -49,7 +49,7 @@ func NewInstrumentedBehaviorAnalyzer(
 	}
 }
 
-// AddRequest 添加请求行为
+// AddRequest adds a requestbehavior
 func (iba *InstrumentedBehaviorAnalyzer) AddRequest(ctx context.Context, req RequestBehavior) {
 	_, span := iba.tracer.Start(ctx, "BehaviorAnalyzer.AddRequest")
 	defer span.End()
@@ -74,7 +74,7 @@ func (iba *InstrumentedBehaviorAnalyzer) AddRequest(ctx context.Context, req Req
 	}
 }
 
-// AnalyzeTemporalPattern 分析时序模式
+// AnalyzeTemporalPattern analyzes temporal pattern
 func (iba *InstrumentedBehaviorAnalyzer) AnalyzeTemporalPattern(ctx context.Context, origin string) *TemporalPattern {
 	ctx, span := iba.tracer.Start(ctx, "BehaviorAnalyzer.AnalyzeTemporalPattern")
 	defer span.End()
@@ -107,7 +107,7 @@ func (iba *InstrumentedBehaviorAnalyzer) AnalyzeTemporalPattern(ctx context.Cont
 	return pattern
 }
 
-// AnalyzeProtocolProportion 分析协议比例
+// AnalyzeProtocolProportion analyzes protocol proportions
 func (iba *InstrumentedBehaviorAnalyzer) AnalyzeProtocolProportion(ctx context.Context, origin string) *ProtocolProportion {
 	ctx, span := iba.tracer.Start(ctx, "BehaviorAnalyzer.AnalyzeProtocolProportion")
 	defer span.End()
@@ -139,7 +139,7 @@ func (iba *InstrumentedBehaviorAnalyzer) AnalyzeProtocolProportion(ctx context.C
 	return prop
 }
 
-// GenerateBehaviorSignals 生成行为信号
+// GenerateBehaviorSignals generates behavior signals
 func (iba *InstrumentedBehaviorAnalyzer) GenerateBehaviorSignals(ctx context.Context, origin string) []BehaviorSignal {
 	ctx, span := iba.tracer.Start(ctx, "BehaviorAnalyzer.GenerateBehaviorSignals")
 	defer span.End()
@@ -155,7 +155,7 @@ func (iba *InstrumentedBehaviorAnalyzer) GenerateBehaviorSignals(ctx context.Con
 		iba.metrics.AnomalyDetectionCount++
 	}
 
-	// 统计高风险信号
+	// Count high risk signals
 	var criticalCount, highCount int
 	for _, sig := range signals {
 		if sig.RiskLevel == "critical" {
@@ -184,7 +184,7 @@ func (iba *InstrumentedBehaviorAnalyzer) GenerateBehaviorSignals(ctx context.Con
 	return signals
 }
 
-// GetAllSignals 获取所有信号
+// GetAllSignals gets all signals
 func (iba *InstrumentedBehaviorAnalyzer) GetAllSignals(ctx context.Context) []BehaviorSignal {
 	_, span := iba.tracer.Start(ctx, "BehaviorAnalyzer.GetAllSignals")
 	defer span.End()
@@ -195,7 +195,7 @@ func (iba *InstrumentedBehaviorAnalyzer) GetAllSignals(ctx context.Context) []Be
 	return signals
 }
 
-// GetRiskScore 获取风险评分
+// GetRiskScore gets risk score
 func (iba *InstrumentedBehaviorAnalyzer) GetRiskScore(ctx context.Context) float64 {
 	_, span := iba.tracer.Start(ctx, "BehaviorAnalyzer.GetRiskScore")
 	defer span.End()
@@ -206,7 +206,7 @@ func (iba *InstrumentedBehaviorAnalyzer) GetRiskScore(ctx context.Context) float
 	return score
 }
 
-// GetAnalysisSummary 获取分析摘要
+// GetAnalysisSummary gets analysis summary
 func (iba *InstrumentedBehaviorAnalyzer) GetAnalysisSummary(ctx context.Context) string {
 	_, span := iba.tracer.Start(ctx, "BehaviorAnalyzer.GetAnalysisSummary")
 	defer span.End()
@@ -221,27 +221,27 @@ func (iba *InstrumentedBehaviorAnalyzer) GetAnalysisSummary(ctx context.Context)
 	return summary
 }
 
-// PassthroughToInner 获取底层分析器以访问原始接口
+// PassthroughToInner gets underlying analyzer to access original interface
 func (iba *InstrumentedBehaviorAnalyzer) PassthroughToInner() *BehaviorAnalyzer {
 	return iba.inner
 }
 
-// GetMetrics 获取指标快照
+// GetMetrics gets metrics snapshot
 func (iba *InstrumentedBehaviorAnalyzer) GetMetrics() *BehaviorAnalysisMetrics {
 	return iba.metrics
 }
 
-// SetLogger 设置日志记录器
+// SetLogger sets logger
 func (iba *InstrumentedBehaviorAnalyzer) SetLogger(logger *zap.SugaredLogger) {
 	iba.logger = logger
 }
 
-// SetTracer 设置追踪器
+// SetTracer sets tracer
 func (iba *InstrumentedBehaviorAnalyzer) SetTracer(tracer trace.Tracer) {
 	iba.tracer = tracer
 }
 
-// recordAnalysisDuration 记录分析耗时
+// recordAnalysisDuration logs analysis duration
 func (iba *InstrumentedBehaviorAnalyzer) recordAnalysisDuration(d time.Duration) {
 	iba.metrics.AnalysisCount++
 	iba.metrics.LastAnalysisDuration = d

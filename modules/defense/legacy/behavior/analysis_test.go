@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// TestNewBehaviorAnalyzer 测试创建分析器
+// TestNewBehaviorAnalyzer tests creating analyzer
 func TestNewBehaviorAnalyzer(t *testing.T) {
 	config := &BehaviorAnalysisConfig{
 		MinRequestsForAnalysis:         5,
@@ -24,7 +24,7 @@ func TestNewBehaviorAnalyzer(t *testing.T) {
 	}
 }
 
-// TestNewBehaviorAnalyzerNilConfig 测试使用 nil 配置创建分析器
+// TestNewBehaviorAnalyzerNilConfig tests creating analyzer with nil config
 func TestNewBehaviorAnalyzerNilConfig(t *testing.T) {
 	analyzer := NewBehaviorAnalyzer(nil)
 	if analyzer == nil {
@@ -40,7 +40,7 @@ func TestNewBehaviorAnalyzerNilConfig(t *testing.T) {
 	}
 }
 
-// TestBehaviorAnalyzerAddRequest 测试添加请求
+// TestBehaviorAnalyzerAddRequest tests adding request
 func TestBehaviorAnalyzerAddRequest(t *testing.T) {
 	analyzer := NewBehaviorAnalyzer(nil)
 
@@ -60,21 +60,21 @@ func TestBehaviorAnalyzerAddRequest(t *testing.T) {
 		SNI:               "example.com",
 	}
 
-	// 添加请求不应该 panic
+	// Adding request should not panic
 	analyzer.AddRequest(req)
 
-	// 验证请求已添加
+	// Verify request is added
 	if len(analyzer.requestHistory) != 1 {
 		t.Errorf("Expected 1 request, got %d", len(analyzer.requestHistory))
 	}
 }
 
-// TestAnalyzeTemporalPattern 测试时序模式分析
+// TestAnalyzeTemporalPattern tests temporal pattern analysis
 func TestAnalyzeTemporalPattern(t *testing.T) {
 	analyzer := NewBehaviorAnalyzer(nil)
 	origin := "example.com"
 
-	// 添加足够的请求
+	// Add enough requests
 	baseTime := time.Now()
 	for i := 0; i < 10; i++ {
 		req := RequestBehavior{
@@ -99,12 +99,12 @@ func TestAnalyzeTemporalPattern(t *testing.T) {
 	}
 }
 
-// TestAnalyzeTemporalPatternInsufficientData 测试数据不足的情况
+// TestAnalyzeTemporalPatternInsufficientData tests insufficient data case
 func TestAnalyzeTemporalPatternInsufficientData(t *testing.T) {
 	analyzer := NewBehaviorAnalyzer(nil)
 	origin := "example.com"
 
-	// 只添加 2 个请求（少于 MinRequestsForAnalysis=5）
+	// Only add 2 requests (less than MinRequestsForAnalysis=5)
 	for i := 0; i < 2; i++ {
 		req := RequestBehavior{
 			Timestamp:     time.Now(),
@@ -120,7 +120,7 @@ func TestAnalyzeTemporalPatternInsufficientData(t *testing.T) {
 	}
 }
 
-// TestEvaluateTemporalPattern 测试时序模式评估
+// TestEvaluateTemporalPattern tests temporal pattern evaluation
 func TestEvaluateTemporalPattern(t *testing.T) {
 	analyzer := NewBehaviorAnalyzer(nil)
 
@@ -170,16 +170,16 @@ func TestEvaluateTemporalPattern(t *testing.T) {
 	}
 }
 
-// TestGenerateBehaviorSignals 测试生成行为信号
+// TestGenerateBehaviorSignals tests generating behavior signals
 func TestGenerateBehaviorSignals(t *testing.T) {
 	analyzer := NewBehaviorAnalyzer(nil)
 	origin := "example.com"
 
-	// 添加高规律性请求（模拟机器人）
+	// Add highly regular requests (simulate bot)
 	baseTime := time.Now()
 	for i := 0; i < 10; i++ {
 		req := RequestBehavior{
-			Timestamp:     baseTime.Add(time.Duration(i) * 1000 * time.Millisecond), // 精确 1s 间隔
+			Timestamp:     baseTime.Add(time.Duration(i) * 1000 * time.Millisecond), // Precise 1s interval
 			SNI:           origin,
 			DestinationIP: "10.0.0.1",
 			TLSVersion:    "1.3",
@@ -189,22 +189,22 @@ func TestGenerateBehaviorSignals(t *testing.T) {
 	}
 
 	signals := analyzer.GenerateBehaviorSignals(origin)
-	// 高规律性应该产生信号
+	// High regularity should generate signal
 	if len(signals) == 0 {
 		t.Log("No signals generated for high regularity pattern")
 	}
 }
 
-// TestGetRiskScore 测试风险分数计算
+// TestGetRiskScore tests risk score calculation
 func TestGetRiskScore(t *testing.T) {
 	analyzer := NewBehaviorAnalyzer(nil)
 
-	// 空信号应该返回 0
+	// Empty signals should return 0
 	if score := analyzer.GetRiskScore(); score != 0 {
 		t.Errorf("Expected risk score 0 for empty signals, got %f", score)
 	}
 
-	// 添加一些信号
+	// Add some signals
 	analyzer.signals = []BehaviorSignal{
 		{Score: 0.9, RiskLevel: "high"},
 		{Score: 0.5, RiskLevel: "medium"},
@@ -216,17 +216,17 @@ func TestGetRiskScore(t *testing.T) {
 	}
 }
 
-// TestGetAllSignals 测试获取所有信号
+// TestGetAllSignals tests getting all signals
 func TestGetAllSignals(t *testing.T) {
 	analyzer := NewBehaviorAnalyzer(nil)
 
-	// 初始为空
+	// Initially empty
 	signals := analyzer.GetAllSignals()
 	if len(signals) != 0 {
 		t.Errorf("Expected 0 signals, got %d", len(signals))
 	}
 
-	// 添加信号
+	// Add signals
 	analyzer.signals = []BehaviorSignal{
 		{SignalType: "TEST", RiskLevel: "low"},
 	}
@@ -237,17 +237,17 @@ func TestGetAllSignals(t *testing.T) {
 	}
 }
 
-// TestGetAnalysisSummary 测试分析摘要
+// TestGetAnalysisSummary tests analysis summary
 func TestGetAnalysisSummary(t *testing.T) {
 	analyzer := NewBehaviorAnalyzer(nil)
 
-	// 空分析器
+	// Empty analyzer
 	summary := analyzer.GetAnalysisSummary()
 	if summary == "" {
 		t.Error("GetAnalysisSummary returned empty string")
 	}
 
-	// 添加一些数据
+	// Add some data
 	analyzer.AddRequest(RequestBehavior{
 		Timestamp:     time.Now(),
 		SNI:           "example.com",
@@ -263,7 +263,7 @@ func TestGetAnalysisSummary(t *testing.T) {
 	}
 }
 
-// BenchmarkAddRequest 基准测试：添加请求
+// BenchmarkAddRequest benchmark: add request
 func BenchmarkAddRequest(b *testing.B) {
 	analyzer := NewBehaviorAnalyzer(nil)
 	req := RequestBehavior{
@@ -278,12 +278,12 @@ func BenchmarkAddRequest(b *testing.B) {
 	}
 }
 
-// BenchmarkAnalyzeTemporalPattern 基准测试：时序模式分析
+// BenchmarkAnalyzeTemporalPattern benchmark: temporal pattern analysis
 func BenchmarkAnalyzeTemporalPattern(b *testing.B) {
 	analyzer := NewBehaviorAnalyzer(nil)
 	origin := "example.com"
 
-	// 预填充数据
+	// Pre-populate data
 	baseTime := time.Now()
 	for i := 0; i < 100; i++ {
 		req := RequestBehavior{
