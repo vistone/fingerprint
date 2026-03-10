@@ -1,8 +1,8 @@
-// Package core 提供指纹库的核心类型和基础定义
-// 这是所有模块的基础依赖，不依赖任何其他内部包
+// Package core provides core types and fundamental definitions for the fingerprint library
+// This is the base dependency for all modules, does not depend on any other internal packages
 package core
 
-// BrowserType 浏览器类型
+// BrowserType browser type
 type BrowserType string
 
 const (
@@ -15,18 +15,18 @@ const (
 	BrowserSamsung BrowserType = "samsung"
 )
 
-// OperatingSystem 操作系统类型
+// OperatingSystem operating system type
 type OperatingSystem string
 
 const (
 	OSWindows10 OperatingSystem = "Windows NT 10.0; Win64; x64"
-	// OSWindows11 UA 与 Win10 相同（浏览器真实行为），通过 Sec-CH-UA-Platform-Version 区分
+	// OSWindows11 UA is same as Win10 (actual browser behavior), distinguished by Sec-CH-UA-Platform-Version
 	OSWindows11 OperatingSystem = "Windows NT 10.0; Win64; x64"
 	OSMacOS13   OperatingSystem = "Macintosh; Intel Mac OS X 13_0_0"
 	OSMacOS14   OperatingSystem = "Macintosh; Intel Mac OS X 14_0_0"
 	OSMacOS15   OperatingSystem = "Macintosh; Intel Mac OS X 15_0_0"
 	OSLinux     OperatingSystem = "X11; Linux x86_64"
-	// 以下 Linux 发行版 UA 相同（浏览器真实行为），保留别名用于语义区分
+	// Following Linux distributions have same UA (actual browser behavior), aliases kept for semantic distinction
 	OSLinuxUbuntu OperatingSystem = "X11; Linux x86_64"
 	OSLinuxDebian OperatingSystem = "X11; Linux x86_64"
 	OSLinuxFedora OperatingSystem = "X11; Linux x86_64"
@@ -35,7 +35,7 @@ const (
 	OSAndroid     OperatingSystem = "Linux; Android 14"
 )
 
-// OperatingSystems 操作系统列表（用于随机选择，已去重避免概率偏移）
+// OperatingSystems operating system list (for random selection, deduplicated to avoid probability bias)
 var OperatingSystems = []OperatingSystem{
 	OSWindows10,
 	OSMacOS13,
@@ -47,33 +47,33 @@ var OperatingSystems = []OperatingSystem{
 	OSAndroid,
 }
 
-// HTTPHeaders 标准的 HTTP 请求头
+// HTTPHeaders standard HTTP request headers
 type HTTPHeaders struct {
-	Accept                  string            // Accept 头
-	AcceptLanguage          string            // Accept-Language 头（支持全球语言）
-	AcceptEncoding          string            // Accept-Encoding 头
-	UserAgent               string            // User-Agent 头
-	SecFetchSite            string            // Sec-Fetch-Site 头
-	SecFetchMode            string            // Sec-Fetch-Mode 头
-	SecFetchUser            string            // Sec-Fetch-User 头
-	SecFetchDest            string            // Sec-Fetch-Dest 头
-	SecCHUA                 string            // Sec-CH-UA 头
-	SecCHUAMobile           string            // Sec-CH-UA-Mobile 头
-	SecCHUAPlatform         string            // Sec-CH-UA-Platform 头
-	UpgradeInsecureRequests string            // Upgrade-Insecure-Requests 头
-	Custom                  map[string]string // 用户自定义的 headers
+	Accept                  string            // Accept header
+	AcceptLanguage          string            // Accept-Language header (supports global languages)
+	AcceptEncoding          string            // Accept-Encoding header
+	UserAgent               string            // User-Agent header
+	SecFetchSite            string            // Sec-Fetch-Site header
+	SecFetchMode            string            // Sec-Fetch-Mode header
+	SecFetchUser            string            // Sec-Fetch-User header
+	SecFetchDest            string            // Sec-Fetch-Dest header
+	SecCHUA                 string            // Sec-CH-UA header
+	SecCHUAMobile           string            // Sec-CH-UA-Mobile header
+	SecCHUAPlatform         string            // Sec-CH-UA-Platform header
+	UpgradeInsecureRequests string            // Upgrade-Insecure-Requests header
+	Custom                  map[string]string // user-defined headers
 }
 
-// UserAgentTemplate User-Agent 模板
+// UserAgentTemplate User-Agent template
 type UserAgentTemplate struct {
 	Browser    BrowserType
 	Version    string
-	Template   string // 模板字符串，使用 %s 占位符表示操作系统
-	Mobile     bool   // 是否为移动端
-	OSRequired bool   // 是否需要操作系统信息
+	Template   string // template string, use %s placeholder for operating system
+	Mobile     bool   // whether it is mobile
+	OSRequired bool   // whether operating system info is required
 }
 
-// Clone 克隆 HTTPHeaders 对象，返回一个新的副本
+// Clone clones HTTPHeaders object, returns a new copy
 func (h *HTTPHeaders) Clone() *HTTPHeaders {
 	if h == nil {
 		return nil
@@ -92,7 +92,7 @@ func (h *HTTPHeaders) Clone() *HTTPHeaders {
 	return &cloned
 }
 
-// Set 设置用户自定义的 header
+// Set sets user-defined header
 func (h *HTTPHeaders) Set(key, value string) {
 	if h == nil {
 		return
@@ -107,7 +107,7 @@ func (h *HTTPHeaders) Set(key, value string) {
 	}
 }
 
-// SetHeaders 批量设置用户自定义的 headers
+// SetHeaders batch sets user-defined headers
 func (h *HTTPHeaders) SetHeaders(customHeaders map[string]string) {
 	if h == nil {
 		return
@@ -124,7 +124,7 @@ func (h *HTTPHeaders) SetHeaders(customHeaders map[string]string) {
 	}
 }
 
-// Merge 合并用户自定义的 headers
+// Merge merges user-defined headers
 func (h *HTTPHeaders) Merge(customHeaders map[string]string) *HTTPHeaders {
 	if h == nil {
 		return nil
@@ -178,12 +178,12 @@ func (h *HTTPHeaders) Merge(customHeaders map[string]string) *HTTPHeaders {
 	return merged
 }
 
-// ToMap 将 HTTPHeaders 转换为 map[string]string
+// ToMap converts HTTPHeaders to map[string]string
 func (h *HTTPHeaders) ToMap() map[string]string {
 	return h.ToMapWithCustom(nil)
 }
 
-// ToMapWithCustom 将 HTTPHeaders 转换为 map[string]string，并合并用户自定义的 headers
+// ToMapWithCustom converts HTTPHeaders to map[string]string and merges user-defined headers
 func (h *HTTPHeaders) ToMapWithCustom(customHeaders map[string]string) map[string]string {
 	capacity := 12
 	if h != nil && len(h.Custom) > 0 {
