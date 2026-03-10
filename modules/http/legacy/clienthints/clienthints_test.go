@@ -1058,19 +1058,19 @@ func TestCHLifecycleManager_GetSummary(t *testing.T) {
 		t.Error("summary should contain origin URL")
 	}
 
-	if !strings.Contains(summary, "初始请求") {
-		t.Error("summary should contain phase name in Chinese")
+	if !strings.Contains(summary, "Initial Request") {
+		t.Error("summary should contain phase name")
 	}
 
-	if !strings.Contains(summary, "发现源") {
+	if !strings.Contains(summary, "Discovered Origins") {
 		t.Error("summary should contain discovered origins info")
 	}
 
-	if !strings.Contains(summary, "事件") {
+	if !strings.Contains(summary, "Events") {
 		t.Error("summary should contain events info")
 	}
 
-	if !strings.Contains(summary, "风险分数") {
+	if !strings.Contains(summary, "Risk Score") {
 		t.Error("summary should contain risk score info")
 	}
 }
@@ -1565,7 +1565,7 @@ func TestCHNegotiationAnalyzer_GetNegotiationSummary(t *testing.T) {
 			rejectedLen:   0,
 			anomalyLen:    0,
 			riskScore:     0.0,
-			wantInSummary: []string{"初始", "0", "0.00"},
+			wantInSummary: []string{"Initial", "0", "0.00"},
 		},
 		{
 			name:          "Accepted state",
@@ -1574,7 +1574,7 @@ func TestCHNegotiationAnalyzer_GetNegotiationSummary(t *testing.T) {
 			rejectedLen:   1,
 			anomalyLen:    0,
 			riskScore:     0.1,
-			wantInSummary: []string{"已接受", "3", "1", "0", "0.10"},
+			wantInSummary: []string{"Accepted", "3", "1", "0", "0.10"},
 		},
 		{
 			name:          "Delegated state",
@@ -1583,7 +1583,7 @@ func TestCHNegotiationAnalyzer_GetNegotiationSummary(t *testing.T) {
 			rejectedLen:   2,
 			anomalyLen:    1,
 			riskScore:     0.25,
-			wantInSummary: []string{"已委托", "5", "2", "1", "0.25"},
+			wantInSummary: []string{"Delegated", "5", "2", "1", "0.25"},
 		},
 	}
 
