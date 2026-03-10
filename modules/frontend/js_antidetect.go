@@ -1,4 +1,4 @@
-// Package frontend - JavaScript 反检测对抗点代码生成
+// Package frontend - JavaScript anti-detection countermeasure code generation
 package frontend
 
 import (
@@ -9,19 +9,19 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles"
 )
 
-// JSAntiDetectCodeGenerator JavaScript 反检测代码生成器
+// JSAntiDetectCodeGenerator JavaScript anti-detection code generator
 type JSAntiDetectCodeGenerator struct {
 	profile *profiles.ClientProfile
 }
 
-// NewJSAntiDetectCodeGenerator 创建新的反检测代码生成器
+// NewJSAntiDetectCodeGenerator creates a new anti-detection code generator
 func NewJSAntiDetectCodeGenerator(profile *profiles.ClientProfile) *JSAntiDetectCodeGenerator {
 	return &JSAntiDetectCodeGenerator{
 		profile: profile,
 	}
 }
 
-// GenerateWebGPUCode 生成 WebGPU 对抗代码
+// GenerateWebGPUCode generates WebGPU countermeasure code
 func (g *JSAntiDetectCodeGenerator) GenerateWebGPUCode() string {
 	if g.profile.JSAntiDetection == nil || g.profile.JSAntiDetection.WebGPU == nil {
 		return ""
@@ -29,10 +29,10 @@ func (g *JSAntiDetectCodeGenerator) GenerateWebGPUCode() string {
 
 	gpu := g.profile.JSAntiDetection.WebGPU
 
-	// 如果不支持 WebGPU，返回隐藏代码
+	// If WebGPU not supported, return hiding code
 	if !gpu.Available {
 		return `
-		// 隐藏 WebGPU 支持
+		// Hide WebGPU support
 		if (typeof navigator !== 'undefined') {
 			Object.defineProperty(navigator, 'gpu', {
 				value: undefined,
@@ -42,7 +42,7 @@ func (g *JSAntiDetectCodeGenerator) GenerateWebGPUCode() string {
 		`
 	}
 
-	// 构建 WebGPU 适配器和设备信息
+	// Build WebGPU adapter and device info
 	featureFlags := []string{}
 	if gpu.FeatureFlags != nil {
 		featureFlags = gpu.FeatureFlags
@@ -51,7 +51,7 @@ func (g *JSAntiDetectCodeGenerator) GenerateWebGPUCode() string {
 	limitsJSON, _ := json.Marshal(gpu.LimitValues)
 
 	code := fmt.Sprintf(`
-		// WebGPU 对抗点 - GPU 设备欺骗
+		// WebGPU countermeasure - GPU device spoofing
 		(function() {
 			const mockGPU = {
 				requestAdapter: async function(options) {
@@ -114,7 +114,7 @@ func (g *JSAntiDetectCodeGenerator) GenerateWebGPUCode() string {
 	return code
 }
 
-// GenerateMediaDevicesCode 生成 MediaDevices 对抗代码
+// GenerateMediaDevicesCode generates MediaDevices countermeasure code
 func (g *JSAntiDetectCodeGenerator) GenerateMediaDevicesCode() string {
 	if g.profile.JSAntiDetection == nil || g.profile.JSAntiDetection.MediaDevices == nil {
 		return ""
@@ -122,7 +122,7 @@ func (g *JSAntiDetectCodeGenerator) GenerateMediaDevicesCode() string {
 
 	md := g.profile.JSAntiDetection.MediaDevices
 
-	// 构建设备列表
+	// Build device list
 	const (
 		videoInput  = "videoinput"
 		audioInput  = "audioinput"
@@ -158,7 +158,7 @@ func (g *JSAntiDetectCodeGenerator) GenerateMediaDevicesCode() string {
 	devicesJSON, _ := json.Marshal(allDevices)
 
 	code := fmt.Sprintf(`
-		// MediaDevices 对抗点 - 设备列表欺骗
+		// MediaDevices countermeasure - device list spoofing
 		(function() {
 			const mockDevices = %s;
 
@@ -174,13 +174,13 @@ func (g *JSAntiDetectCodeGenerator) GenerateMediaDevicesCode() string {
 					}));
 				};
 
-				// 确保 getUserMedia 返回有效的流
+				// Ensure getUserMedia returns valid stream
 				const origGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
 				navigator.mediaDevices.getUserMedia = async function(constraints) {
 					try {
 						return await origGetUserMedia(constraints);
 					} catch (e) {
-						// 如果设备不可用，返回虚拟流
+						// If device unavailable, return virtual stream
 						const canvas = document.createElement('canvas');
 						canvas.width = 1280;
 						canvas.height = 720;
@@ -200,7 +200,7 @@ func (g *JSAntiDetectCodeGenerator) GenerateMediaDevicesCode() string {
 	return code
 }
 
-// GeneratePermissionsCode 生成 Permissions API 对抗代码
+// GeneratePermissionsCode generates Permissions API countermeasure code
 func (g *JSAntiDetectCodeGenerator) GeneratePermissionsCode() string {
 	if g.profile.JSAntiDetection == nil || g.profile.JSAntiDetection.Permissions == nil {
 		return ""
@@ -208,13 +208,13 @@ func (g *JSAntiDetectCodeGenerator) GeneratePermissionsCode() string {
 
 	perms := g.profile.JSAntiDetection.Permissions
 
-	// 构建权限状态映射
+	// Build permission state mapping
 	permMap := perms.PermissionState
 	if permMap == nil {
 		permMap = make(map[string]string)
 	}
 
-	// 设置默认权限状态
+	// Set default permission states
 	if _, ok := permMap["camera"]; !ok && perms.AccessCamera {
 		permMap["camera"] = "granted"
 	}
@@ -231,7 +231,7 @@ func (g *JSAntiDetectCodeGenerator) GeneratePermissionsCode() string {
 	permJSON, _ := json.Marshal(permMap)
 
 	code := fmt.Sprintf(`
-		// Permissions API 对抗点 - 权限状态欺骗
+		// Permissions API countermeasure - permission state spoofing
 		(function() {
 			const permissionMap = %s;
 
@@ -255,7 +255,7 @@ func (g *JSAntiDetectCodeGenerator) GeneratePermissionsCode() string {
 	return code
 }
 
-// GenerateAutomationCode 生成 Automation 对抗代码
+// GenerateAutomationCode generates Automation countermeasure code
 func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 	if g.profile.JSAntiDetection == nil || g.profile.JSAntiDetection.Automation == nil {
 		return ""
@@ -263,13 +263,13 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 
 	auto := g.profile.JSAntiDetection.Automation
 
-	// 构建对抗代码
+	// Build countermeasure code
 	code := ""
 
-	// 1. 隐藏 webdriver 标记
+	// 1. Hide webdriver marker
 	if !auto.WebDriver {
 		code += `
-		// 隐藏 webdriver 标记
+		// Hide webdriver marker
 		Object.defineProperty(navigator, 'webdriver', {
 			get: () => undefined,
 			configurable: true
@@ -277,10 +277,10 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`
 	}
 
-	// 2. 隐藏 headless 特征
+	// 2. Hide headless feature
 	if auto.Headless {
 		code += `
-		// 隐藏 headless 浏览器特征
+		// Hide headless browser features
 		Object.defineProperty(navigator, 'vendor', {
 			get: () => 'Google Inc.' || navigator.vendor,
 			configurable: true
@@ -288,10 +288,10 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`
 	}
 
-	// 3. 隐藏 phantomjs
+	// 3. Hide phantomjs
 	if auto.Phantom {
 		code += `
-		// 隐藏 phantomjs 特征
+		// Hide phantomjs features
 		Object.defineProperty(window, 'callPhantom', {
 			get: () => undefined,
 			configurable: true
@@ -299,10 +299,10 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`
 	}
 
-	// 4. 隐藏 selenium
+	// 4. Hide selenium
 	if auto.Selenium {
 		code += `
-		// 隐藏 selenium 驱动特征
+		// Hide selenium driver features
 		Object.defineProperty(navigator, 'driverName', {
 			get: () => undefined,
 			configurable: true
@@ -310,19 +310,19 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`
 	}
 
-	// 5. 隐藏 puppeteer 和 playwright
+	// 5. Hide puppeteer and playwright
 	if auto.Puppeteer || auto.Playwright {
 		code += `
-		// 隐藏自动化工具特征
+		// Hide automation tool features
 		window.__puppeteer_eval = undefined;
 		window.CDP = undefined;
 		`
 	}
 
-	// 6. 覆盖 plugins
+	// 6. Override plugins
 	if auto.PluginsOverride {
 		code += `
-		// 覆盖 plugins 数组
+		// Override plugins array
 		Object.defineProperty(navigator, 'plugins', {
 			get: () => [
 				{ name: 'Native Client Plugin', description: 'Native Client Executable', version: '', filename: 'internal-nacl-plugin' },
@@ -332,7 +332,7 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 			configurable: true
 		});
 
-		// 覆盖 mimeTypes
+		// Override mimeTypes
 		Object.defineProperty(navigator, 'mimeTypes', {
 			get: () => [
 				{ type: 'application/x-nacl', description: 'Native Client Executable', suffixes: 'nexe' },
@@ -344,9 +344,9 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`
 	}
 
-	// 7. 覆盖 language
+	// 7. Override language
 	if auto.LanguageOverride && g.profile.Headers != nil {
-		// 从 UA 或 Accept-Language 中推断语言
+		// Infer language from UA or Accept-Language
 		lang := "en-US"
 		if g.profile.Headers.AcceptLanguage != "" {
 			parts := strings.Split(g.profile.Headers.AcceptLanguage, ",")
@@ -355,7 +355,7 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 			}
 		}
 		code += fmt.Sprintf(`
-		// 覆盖 language 属性
+		// Override language attribute
 		Object.defineProperty(navigator, 'language', {
 			get: () => '%s',
 			configurable: true
@@ -367,10 +367,10 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`, lang, lang)
 	}
 
-	// 8. 覆盖 product
+	// 8. Override product
 	if auto.ProductOverride {
 		code += `
-		// 覆盖 product 属性
+		// Override product attribute
 		Object.defineProperty(navigator, 'product', {
 			get: () => 'Gecko',
 			configurable: true
@@ -378,10 +378,10 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`
 	}
 
-	// 9. 覆盖 vendor
+	// 9. Override vendor
 	if auto.VendorOverride {
 		code += `
-		// 覆盖 vendor 属性
+		// Override vendor attribute
 		Object.defineProperty(navigator, 'vendor', {
 			get: () => 'Google Inc.',
 			configurable: true
@@ -389,10 +389,10 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`
 	}
 
-	// 10. 隐藏运行时检测特征
+	// 10. Hide runtime detection features
 	if auto.RuntimeOverride {
 		code += `
-		// 隐藏运行时检测特征
+		// Hide runtime detection features
 		const OriginalFunction = Function;
 		const OriginalGeneratorFunction = (function*(){}).constructor;
 		const OriginalAsyncFunction = (async function(){}).constructor;
@@ -409,7 +409,7 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 	}
 
 	return fmt.Sprintf(`
-		// Automation 对抗点 - 自动化工具检测隐藏
+		// Automation countermeasure - hide automation tool detection
 		(function() {
 			'use strict';
 			%s
@@ -417,13 +417,13 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`, code)
 }
 
-// GenerateCrossLayerConsistencyCode 生成跨层一致性校验代码
+// GenerateCrossLayerConsistencyCode generates cross-layer consistency validation code
 func (g *JSAntiDetectCodeGenerator) GenerateCrossLayerConsistencyCode() string {
 	if g.profile.JSAntiDetection == nil {
 		return ""
 	}
 
-	// 从配置文件中提取各层信息
+	// Extract layer info from configuration file
 	ua := ""
 	secChUA := ""
 
@@ -433,20 +433,20 @@ func (g *JSAntiDetectCodeGenerator) GenerateCrossLayerConsistencyCode() string {
 	}
 
 	code := fmt.Sprintf(`
-		// 跨层一致性校验 - 确保 UA/CH/JS/TCP-IP 一致
+		// Cross-layer consistency validation - ensure UA/CH/JS/TCP-IP consistency
 		(function() {
 			const expectedUA = '%s';
 			const expectedSecChUA = '%s';
 
-			// 1. UA 一致性检查
+			// 1. UA consistency check
 			if (navigator.userAgent !== expectedUA) {
-				console.warn('[Fingerprint] UA 层不一致');
+				console.warn('[Fingerprint] UA layer inconsistency');
 			}
 
-			// 2. Client Hints 一致性检查
+			// 2. Client Hints consistency check
 			if (typeof navigator.userAgentData !== 'undefined') {
 				const uaData = navigator.userAgentData;
-				// 验证浏览器品牌、版本等信息一致
+				// Verify browser brand, version and other info consistency
 				const brands = uaData.brands || [];
 				const expectedBrands = %s;
 
@@ -454,21 +454,21 @@ func (g *JSAntiDetectCodeGenerator) GenerateCrossLayerConsistencyCode() string {
 					brands.every((b, i) => b.brand === expectedBrands[i].brand && b.version === expectedBrands[i].version);
 
 				if (!brandsMatch) {
-					console.warn('[Fingerprint] CH 层品牌不一致');
+					console.warn('[Fingerprint] CH layer brand inconsistency');
 				}
 			}
 
-			// 3. JavaScript 层一致性检查
+			// 3. JavaScript layer consistency check
 			const jsUA = navigator.userAgent;
 			const jsProduct = navigator.product;
 			const jsVendor = navigator.vendor;
 			const jsPlatform = navigator.platform;
 
 			if (jsUA !== expectedUA) {
-				console.warn('[Fingerprint] JS 层 UA 不一致');
+				console.warn('[Fingerprint] JS layer UA inconsistency');
 			}
 
-			// 4. 硬件信息一致性
+			// 4. Hardware info consistency
 			const hardwareCells = {
 				cores: navigator.hardwareConcurrency,
 				memory: navigator.deviceMemory,
@@ -476,7 +476,7 @@ func (g *JSAntiDetectCodeGenerator) GenerateCrossLayerConsistencyCode() string {
 				platform: navigator.platform
 			};
 
-			// 5. 总体一致性报告
+			// 5. Overall consistency report
 			const consistencyReport = {
 				ua: { expected: expectedUA, actual: jsUA, match: expectedUA === jsUA },
 				layers: {
@@ -486,7 +486,7 @@ func (g *JSAntiDetectCodeGenerator) GenerateCrossLayerConsistencyCode() string {
 				}
 			};
 
-			// 将一致性报告附加到窗口对象，供后续上报
+			// Attach consistency report to window object for later reporting
 			window.__fingerprintConsistency = consistencyReport;
 		})();
 		`, escapeQuotes(ua), escapeQuotes(secChUA), g.generateBrandsList())
@@ -494,7 +494,7 @@ func (g *JSAntiDetectCodeGenerator) GenerateCrossLayerConsistencyCode() string {
 	return code
 }
 
-// GenerateFullAntiDetectionCode 生成完整的反检测代码
+// GenerateFullAntiDetectionCode generates complete anti-detection code
 func (g *JSAntiDetectCodeGenerator) GenerateFullAntiDetectionCode() string {
 	var parts []string
 
@@ -521,7 +521,7 @@ func (g *JSAntiDetectCodeGenerator) GenerateFullAntiDetectionCode() string {
 	return strings.Join(parts, "\n")
 }
 
-// 辅助函数
+// Auxiliary functions
 
 func stringifyList(items []string) string {
 	if len(items) == 0 {
@@ -544,7 +544,7 @@ func escapeQuotes(s string) string {
 }
 
 func (g *JSAntiDetectCodeGenerator) generateBrandsList() string {
-	// 从 SecCHUA 中解析 brands 列表
-	// 用户可以根据需要实现更复杂的解析逻辑
+	// Parse brands list from SecCHUA
+	// Users can implement more complex parsing logic as needed
 	return "[]"
 }
