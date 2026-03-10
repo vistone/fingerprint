@@ -383,7 +383,7 @@ func (ia *IntegratedFingerprinter) calculateOverallConfidence(result *Integrated
 	
 	result.OverallConfidence = confidence
 	
-	// 计算风险分数
+	// Calculate risk score
 	result.RiskScore = ia.calculateRiskScore(result)
 }
 

@@ -223,21 +223,21 @@ func ExtractTCPOptions(packet []byte) string {
 			break
 		}
 
-		// Kind 1 (NOP) - No-Operation (单字节选项)
+		// Kind 1 (NOP) - No-Operation (single-byte option)
 		if kind == 1 {
 			options = append(options, "NOP")
 			i++
 			continue
 		}
 
-		// 其他选项至少需要 2 字节 (Kind + Length)
+		// Other options require at least 2 bytes (Kind + Length)
 		if i+1 >= len(optionsData) {
 			break
 		}
 
 		length := int(optionsData[i+1])
 
-		// 验证长度
+		// Validate length
 		if length < 2 || i+length > len(optionsData) {
 			break
 		}
