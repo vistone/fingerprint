@@ -8,8 +8,8 @@ import (
 	"github.com/vistone/fingerprint/modules/core/types"
 )
 
-// GetUserAgentByProfileName 根据 profile 名称获取 User-Agent
-// 这是最推荐的方式，因为可以直接匹配指纹名称
+// GetUserAgentByProfileName get User-Agent by profile name
+// This is the recommended approach as it directly matches the fingerprint name
 func GetUserAgentByProfileName(profileName string) (string, error) {
 	if profileName == "" {
 		return "", fmt.Errorf("profile name cannot be empty")
@@ -17,7 +17,7 @@ func GetUserAgentByProfileName(profileName string) (string, error) {
 	return GetUserAgentForProfile(profileName)
 }
 
-// GetUserAgentByProfileNameWithOS 根据 profile 名称和指定操作系统获取 User-Agent
+// GetUserAgentByProfileNameWithOS get User-Agent by profile name with specified operating system
 func GetUserAgentByProfileNameWithOS(profileName string, os types.OperatingSystem) (string, error) {
 	if profileName == "" {
 		return "", fmt.Errorf("profile name cannot be empty")
@@ -25,20 +25,20 @@ func GetUserAgentByProfileNameWithOS(profileName string, os types.OperatingSyste
 	return GetUserAgentForProfileWithOS(profileName, os)
 }
 
-// GetUserAgentFromProfile 从 profiles.ClientProfile 对象获取 User-Agent
-// 通过查找 profiles.MappedTLSClients 来匹配对应的 profile 名称
+// GetUserAgentFromProfile get User-Agent from profiles.ClientProfile object
+// Match corresponding profile name by searching profiles.MappedTLSClients
 func GetUserAgentFromProfile(profile profiles.ClientProfile) (string, error) {
-	// 通过 ClientHelloStr 查找对应的 profile 名称
+	// Find corresponding profile name through ClientHelloStr
 	helloStr := profile.GetClientHelloStr()
 
-	// 遍历 profiles.MappedTLSClients 查找匹配的 profile
+	// Iterate through profiles.MappedTLSClients to find matching profile
 	for name, p := range profiles.MappedTLSClients {
 		if p.GetClientHelloStr() == helloStr {
 			return GetUserAgentForProfile(name)
 		}
 	}
 
-	// 如果找不到，尝试从 helloStr 中推断浏览器类型
+	// If not found, try to infer browser type from helloStr
 	helloStrLower := strings.ToLower(helloStr)
 	if strings.Contains(helloStrLower, "chrome") {
 		return GetUserAgentForProfile("chrome_133")
@@ -53,7 +53,7 @@ func GetUserAgentFromProfile(profile profiles.ClientProfile) (string, error) {
 	return "", fmt.Errorf("unable to infer User-Agent from profiles.ClientProfile")
 }
 
-// GetUserAgentFromProfileWithOS 从 profiles.ClientProfile 对象获取 User-Agent，并指定操作系统
+// GetUserAgentFromProfileWithOS get User-Agent from profiles.ClientProfile object with specified operating system
 func GetUserAgentFromProfileWithOS(profile profiles.ClientProfile, os types.OperatingSystem) (string, error) {
 	helloStr := profile.GetClientHelloStr()
 
@@ -77,13 +77,13 @@ func GetUserAgentFromProfileWithOS(profile profiles.ClientProfile, os types.Oper
 	return "", fmt.Errorf("unable to infer User-Agent from profiles.ClientProfile")
 }
 
-// inferBrowserFromProfileName 从 profile 名称推断浏览器类型
+// inferBrowserFromProfileName infer browser type from profile name
 func inferBrowserFromProfileName(profileName string) (string, string) {
 	profileName = strings.ToLower(profileName)
 
 	if strings.HasPrefix(profileName, "chrome_") {
 		version := strings.TrimPrefix(profileName, "chrome_")
-		// 移除特殊后缀
+		// Remove special suffix
 		version = strings.Split(version, "_")[0]
 		return string(types.BrowserChrome), version
 	} else if strings.HasPrefix(profileName, "firefox_") {
@@ -100,5 +100,5 @@ func inferBrowserFromProfileName(profileName string) (string, string) {
 		return string(types.BrowserEdge), version
 	}
 
-	return string(types.BrowserChrome), "" // 默认返回 Chrome
+	return string(types.BrowserChrome), "" // Default to Chrome
 }
