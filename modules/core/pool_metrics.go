@@ -1,4 +1,4 @@
-// Package core 提供内存池监控指标
+// Package core provides memory pool monitoring metrics
 package core
 
 import (
@@ -7,21 +7,21 @@ import (
 	"sync/atomic"
 )
 
-// PoolStats 内存池统计信息
+// PoolStats memory pool statistics info
 type PoolStats struct {
 	Name          string  `json:"name"`
-	HitRate       float64 `json:"hit_rate"`        // 缓存命中率
-	ObjectsInUse  int64   `json:"objects_in_use"`  // 正在使用的对象数
-	TotalGets     int64   `json:"total_gets"`      // 总获取次数
-	TotalPuts     int64   `json:"total_puts"`      // 总归还次数
-	CacheHits     int64   `json:"cache_hits"`      // 缓存命中次数
-	CacheMisses   int64   `json:"cache_misses"`    // 缓存未命中次数
-	ActiveObjects int64   `json:"active_objects"`  // 当前活跃对象数（估算）
+	HitRate       float64 `json:"hit_rate"`        // cache hit rate
+	ObjectsInUse  int64   `json:"objects_in_use"`  // number of objects in use
+	TotalGets     int64   `json:"total_gets"`      // total get count
+	TotalPuts     int64   `json:"total_puts"`      // total put count
+	CacheHits     int64   `json:"cache_hits"`      // cache hit count
+	CacheMisses   int64   `json:"cache_misses"`    // cache miss count
+	ActiveObjects int64   `json:"active_objects"`  // current active object count (estimated)
 }
 
-// GlobalPoolMetrics 全局池监控（原子操作）
+// GlobalPoolMetrics global pool metrics (atomic operations)
 var GlobalPoolMetrics = struct {
-	// 各池统计
+	// individual pool statistics
 	FeatureVectorGets     int64
 	FeatureVectorPuts     int64
 	FeatureVectorHits     int64
@@ -35,12 +35,12 @@ var GlobalPoolMetrics = struct {
 	SlicePoolGets         int64
 	SlicePoolPuts         int64
 
-	// 总计
+	// summaries
 	TotalAllocations int64
 	TotalReleases    int64
 }{}
 
-// poolMetrics 内部监控结构
+// poolMetrics internal metrics structure
 type poolMetrics struct {
 	name        string
 	gets        int64
@@ -55,12 +55,12 @@ type poolMetrics struct {
 	onMiss      func()
 }
 
-// newPoolMetrics 创建池监控
+// newPoolMetrics creates pool metrics
 func newPoolMetrics(name string) *poolMetrics {
 	return &poolMetrics{name: name}
 }
 
-// recordGet 记录 Get 操作
+// recordGet records Get operation
 func (m *poolMetrics) recordGet(hit bool) {
 	atomic.AddInt64(&m.gets, 1)
 	if hit {
@@ -72,13 +72,13 @@ func (m *poolMetrics) recordGet(hit bool) {
 	}
 }
 
-// recordPut 记录 Put 操作
+// recordPut records Put operation
 func (m *poolMetrics) recordPut() {
 	atomic.AddInt64(&m.puts, 1)
 	atomic.AddInt64(&m.inUse, -1)
 }
 
-// Stats 获取当前统计
+// Stats gets current statistics
 func (m *poolMetrics) Stats() PoolStats {
 	gets := atomic.LoadInt64(&m.gets)
 	hits := atomic.LoadInt64(&m.hits)
@@ -103,7 +103,7 @@ func (m *poolMetrics) Stats() PoolStats {
 	}
 }
 
-// Reset 重置统计
+// Reset resets statistics
 func (m *poolMetrics) Reset() {
 	atomic.StoreInt64(&m.gets, 0)
 	atomic.StoreInt64(&m.puts, 0)
@@ -113,26 +113,26 @@ func (m *poolMetrics) Reset() {
 }
 
 // ============================================================================
-// 全局池监控管理器
+// global pool monitoring manager
 // ============================================================================
 
-// PoolMonitor 池监控管理器
+// PoolMonitor pool monitoring manager
 type PoolMonitor struct {
 	metrics map[string]*poolMetrics
 	mu      sync.RWMutex
 }
 
-// GlobalMonitor 全局监控实例
+// GlobalMonitor global monitor instance
 var GlobalMonitor = NewPoolMonitor()
 
-// NewPoolMonitor 创建新的池监控器
+// NewPoolMonitor creates new pool monitor
 func NewPoolMonitor() *PoolMonitor {
 	return &PoolMonitor{
 		metrics: make(map[string]*poolMetrics),
 	}
 }
 
-// Register 注册池监控
+// Register registers pool metrics
 func (pm *PoolMonitor) Register(name string) *poolMetrics {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
@@ -146,7 +146,7 @@ func (pm *PoolMonitor) Register(name string) *poolMetrics {
 	return m
 }
 
-// Get 获取池监控
+// Get gets pool metrics
 func (pm *PoolMonitor) Get(name string) (*poolMetrics, bool) {
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
@@ -154,7 +154,7 @@ func (pm *PoolMonitor) Get(name string) (*poolMetrics, bool) {
 	return m, ok
 }
 
-// AllStats 获取所有池统计
+// AllStats gets all pool statistics
 func (pm *PoolMonitor) AllStats() map[string]PoolStats {
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
@@ -166,7 +166,7 @@ func (pm *PoolMonitor) AllStats() map[string]PoolStats {
 	return stats
 }
 
-// Summary 获取汇总统计
+// Summary gets summary statistics
 func (pm *PoolMonitor) Summary() PoolSummary {
 	allStats := pm.AllStats()
 
@@ -196,7 +196,7 @@ func (pm *PoolMonitor) Summary() PoolSummary {
 	}
 }
 
-// ResetAll 重置所有统计
+// ResetAll resets all statistics
 func (pm *PoolMonitor) ResetAll() {
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
@@ -206,7 +206,7 @@ func (pm *PoolMonitor) ResetAll() {
 	}
 }
 
-// PoolSummary 池汇总统计
+// PoolSummary pool summary statistics
 type PoolSummary struct {
 	PoolCount      int                 `json:"pool_count"`
 	TotalGets      int64               `json:"total_gets"`
@@ -219,10 +219,10 @@ type PoolSummary struct {
 }
 
 // ============================================================================
-// 实用函数
+// utility functions
 // ============================================================================
 
-// GetPoolStats 获取指定池的统计
+// GetPoolStats gets statistics for specified pool
 func GetPoolStats(name string) (PoolStats, bool) {
 	if m, ok := GlobalMonitor.Get(name); ok {
 		return m.Stats(), true
@@ -230,22 +230,22 @@ func GetPoolStats(name string) (PoolStats, bool) {
 	return PoolStats{}, false
 }
 
-// GetAllPoolStats 获取所有池统计
+// GetAllPoolStats gets all pool statistics
 func GetAllPoolStats() map[string]PoolStats {
 	return GlobalMonitor.AllStats()
 }
 
-// GetPoolSummary 获取池汇总统计
+// GetPoolSummary gets pool summary statistics
 func GetPoolSummary() PoolSummary {
 	return GlobalMonitor.Summary()
 }
 
-// ResetPoolMetrics 重置所有池监控
+// ResetPoolMetrics resets all pool metrics
 func ResetPoolMetrics() {
 	GlobalMonitor.ResetAll()
 }
 
-// ForceGC 强制垃圾回收并返回统计
+// ForceGC forces garbage collection and returns statistics
 func ForceGC() runtime.MemStats {
 	var m runtime.MemStats
 	runtime.GC()
@@ -253,7 +253,7 @@ func ForceGC() runtime.MemStats {
 	return m
 }
 
-// GetMemoryStats 获取内存统计
+// GetMemoryStats gets memory statistics
 func GetMemoryStats() runtime.MemStats {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
