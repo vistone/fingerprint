@@ -1,6 +1,6 @@
-// generate_specs.go - 基于现有 profiles 生成 YAML spec 模板
+// generate_specs.go - generate YAML spec templates based on existing profiles
 //
-// 用法: go run cmd/profilegen/generate_specs.go
+// Usage: go run cmd/profilegen/generate_specs.go
 package main
 
 import (
@@ -14,7 +14,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// SpecTemplate YAML 配置模板
+// SpecTemplate YAML configurationtemplate
 type SpecTemplate struct {
 	Name                 string            `yaml:"name"`
 	VarName              string            `yaml:"var_name"`
@@ -39,31 +39,31 @@ type ExtensionDef struct {
 func main() {
 	specsDir := "profiles/specs"
 	if err := os.MkdirAll(specsDir, 0755); err != nil {
-		fmt.Fprintf(os.Stderr, "创建目录失败: %v\n", err)
+		fmt.Fprintf(os.Stderr, "createdirectoryfailed: %v\n", err)
 		os.Exit(1)
 	}
 
-	// 为每个 profile 生成 YAML 模板
+	// generate YAML template for each profile
 	generated := 0
 	for name, profile := range profiles.MappedTLSClients {
 		if err := generateSpec(name, profile, specsDir); err != nil {
-			fmt.Fprintf(os.Stderr, "生成 %s 失败: %v\n", name, err)
+			fmt.Fprintf(os.Stderr, "generate %s failed: %v\n", name, err)
 			continue
 		}
 		generated++
 	}
 
-	fmt.Printf("✓ 生成了 %d 个 YAML 配置文件到 %s/\n", generated, specsDir)
-	fmt.Println("\n提示:")
-	fmt.Println("1. 这些文件是模板，需要手动填写 cipher_suites, extensions 等详细信息")
-	fmt.Println("2. 参考 chrome_133.yaml 完成其他配置")
-	fmt.Println("3. 完成后运行: go run ./cmd/profilegen -input profiles/specs -output profiles/generated.go")
+	fmt.Printf("✓ generated %d YAML configuration files to %s/\n", generated, specsDir)
+	fmt.Println("\nTips:")
+	fmt.Println("1. These files are templates, need to manually fill in cipher_suites, extensions and other detailed info")
+	fmt.Println("2. Refer to chrome_133.yaml to complete other configurations")
+	fmt.Println("3. After completion, run: go run ./cmd/profilegen -input profiles/specs -output profiles/generated.go")
 }
 
 func generateSpec(name string, profile profiles.ClientProfile, outputDir string) error {
 	helloID := profile.GetClientHelloId()
 
-	// 从 profile 名称推断版本
+	// infer version from profile name
 	version := extractVersion(name)
 
 	spec := SpecTemplate{
@@ -82,21 +82,21 @@ func generateSpec(name string, profile profiles.ClientProfile, outputDir string)
 		ConnectionFlow:       profile.GetConnectionFlow(),
 	}
 
-	// 序列化为 YAML
+	// serialize to YAML
 	data, err := yaml.Marshal(spec)
 	if err != nil {
 		return err
 	}
 
-	// 添加头部注释
+	// add header comments
 	header := fmt.Sprintf("# %s fingerprint configuration\n# Generated from profiles.MappedTLSClients[%q]\n#\n# TODO: Fill in cipher_suites, extensions, compression_methods\n# Reference: profiles/specs/chrome_133.yaml\n\n", spec.DisplayName, name)
 
 	outputPath := filepath.Join(outputDir, name+".yaml")
 	content := header + string(data)
 
-	// 如果文件已存在，不要覆盖（避免丢失手动填写的内容）
+	// if file already exists, don't overwrite (avoid losing manually filled content)
 	if _, err := os.Stat(outputPath); err == nil {
-		fmt.Printf("  ⚠ %s 已存在，跳过\n", outputPath)
+		fmt.Printf("  ⚠ %s already exists, skipping\n", outputPath)
 		return nil
 	}
 
@@ -104,7 +104,7 @@ func generateSpec(name string, profile profiles.ClientProfile, outputDir string)
 }
 
 func extractVersion(name string) string {
-	// 尝试从名称中提取版本号
+	// try to extract version number from name
 	// chrome_133 -> 133
 	// firefox_120 -> 120
 	parts := strings.Split(name, "_")
@@ -117,7 +117,7 @@ func extractVersion(name string) string {
 }
 
 func isVersion(s string) bool {
-	// 简单判断是否为版本号（包含数字）
+	// simple check whether it is a version number (contains digits)
 	for _, r := range s {
 		if r >= '0' && r <= '9' {
 			return true
@@ -146,8 +146,8 @@ func convertSettings(settings map[http2.SettingID]uint32) map[string]uint32 {
 }
 
 func toSettingNames(order []http2.SettingID) []string {
-	// 将 uint32 设置 ID 转换为名称
-	// 简化实现，实际需要映射表
+	// convert uint32 setting ID to names
+	// simplified implementation, actual needs mapping table
 	names := []string{
 		"SettingHeaderTableSize",
 		"SettingEnablePush",
