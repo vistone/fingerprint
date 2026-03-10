@@ -1,5 +1,5 @@
-// Package client 提供完整的浏览器指纹模拟传输层
-// 统一使用 fhttp 类型，支持 HTTP/2 → HTTP/1.1 自动回退
+// Package client provides complete browser fingerprint simulationtransport layer
+// uses unified fhttp type，supports automatic HTTP/2 → HTTP/1.1 fallback
 package client
 
 import (
@@ -25,11 +25,11 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-// SmartTransport 智能传输层，统一使用 fhttp 类型
+// SmartTransport smart transport layer，uses unified fhttp type
 type SmartTransport struct {
 	profile profiles.ClientProfile
 	dialer  *net.Dialer
-	// strictFingerprint 禁止标准 TLS 兼容回退，确保走指纹链路。
+	// strictFingerprint disallow standard TLS compatibility fallback，ensure fingerprint chain path。
 	strictFingerprint bool
 
 	mu                sync.RWMutex
@@ -38,12 +38,12 @@ type SmartTransport struct {
 	http2Transport *http2.Transport
 }
 
-// SetStrictFingerprint 设置严格指纹模式。
+// SetStrictFingerprint set strict fingerprint mode。
 func (st *SmartTransport) SetStrictFingerprint(strict bool) {
 	st.strictFingerprint = strict
 }
 
-// NewSmartTransport 创建智能传输层
+// NewSmartTransport create smart transport layer
 func NewSmartTransport(profile profiles.ClientProfile) (*SmartTransport, error) {
 	st := &SmartTransport{
 		profile:           profile,
@@ -59,7 +59,7 @@ func NewSmartTransport(profile profiles.ClientProfile) (*SmartTransport, error) 
 	return st, nil
 }
 
-// configureTCP 配置 TCP/IP
+// configureTCP configure TCP/IP
 func (st *SmartTransport) configureTCP() error {
 	tcpip := st.profile.TCPIP
 	if tcpip == nil {
@@ -80,7 +80,7 @@ func (st *SmartTransport) configureTCP() error {
 		Control: func(network, address string, c syscall.RawConn) error {
 			var sockErr error
 			err := c.Control(func(fd uintptr) {
-				// 优先应用核心 TCP/IP 参数，不支持的平台选项将被安全忽略。
+				// prioritize applying core TCP/IP parameters，unsupported platform options will be safely ignored。
 				if tcpip.TTL > 0 {
 					sockErr = unix.SetsockoptInt(int(fd), unix.IPPROTO_IP, unix.IP_TTL, int(tcpip.TTL))
 					if sockErr != nil {
@@ -112,7 +112,7 @@ func (st *SmartTransport) configureTCP() error {
 				_ = unix.SetsockoptInt(int(fd), unix.IPPROTO_TCP, unix.TCP_QUICKACK, 1)
 				_ = unix.SetsockoptInt(int(fd), unix.IPPROTO_TCP, unix.TCP_KEEPIDLE, 7200)
 
-				// JA4T 当前用于 profile 一致性校验，保留字段以便后续 wire-level 对齐。
+				// JA4T current field used for profile consistency verification, reserved for subsequent wire-level alignment.
 				_ = tcpip.JA4T
 			})
 			if err != nil {
@@ -125,28 +125,28 @@ func (st *SmartTransport) configureTCP() error {
 	return nil
 }
 
-// initHTTP2 初始化 HTTP/2
+// initHTTP2 initialize HTTP/2
 func (st *SmartTransport) initHTTP2() {
 	st.http2Transport = &http2.Transport{
 		DialTLS: st.dialTLS,
 	}
 }
 
-// dialTLS 建立 TLS 连接 (供 HTTP/2 使用)
+// dialTLS establish TLS connection (for HTTP/2 use)
 func (st *SmartTransport) dialTLS(network, addr string, cfg *tls.Config) (net.Conn, error) {
-	// 建立 TCP 连接
+	// establish TCP connection
 	tcpConn, err := st.dialer.Dial(network, addr)
 	if err != nil {
 		return nil, fmt.Errorf("dial TCP failed: %w", err)
 	}
 
-	// 创建 uTLS 配置
+	// create uTLS configuration
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true,
 		NextProtos:         []string{"h2", "http/1.1"},
 	}
 
-	// 应用指纹 TLS 配置
+	// apply fingerprint TLS configuration
 	if st.profile.TLSVersion != 0 {
 		tlsConfig.MinVersion = convertTLSVersion(st.profile.TLSVersion)
 		tlsConfig.MaxVersion = convertTLSVersion(st.profile.TLSVersion)
@@ -155,12 +155,12 @@ func (st *SmartTransport) dialTLS(network, addr string, cfg *tls.Config) (net.Co
 		tlsConfig.CipherSuites = convertCipherSuites(st.profile.CipherSuites)
 	}
 
-	// 合并外部配置
+	// merge external configuration
 	if cfg != nil && cfg.ServerName != "" {
 		tlsConfig.ServerName = cfg.ServerName
 	}
 
-	// 设置 ServerName
+	// set ServerName
 	if tlsConfig.ServerName == "" {
 		host, _, _ := net.SplitHostPort(addr)
 		if host != "" {
@@ -168,7 +168,7 @@ func (st *SmartTransport) dialTLS(network, addr string, cfg *tls.Config) (net.Co
 		}
 	}
 
-	// 使用指纹 ClientHello
+	// use fingerprint ClientHello
 	spec, err := st.getProfileClientHelloSpec()
 	if err != nil {
 		tcpConn.Close()
@@ -187,7 +187,7 @@ func (st *SmartTransport) dialTLS(network, addr string, cfg *tls.Config) (net.Co
 		}
 	}
 
-	// 执行握手
+	// perform handshake
 	if err := tlsConn.Handshake(); err != nil {
 		tcpConn.Close()
 		return nil, fmt.Errorf("TLS handshake failed: %w", err)
@@ -196,7 +196,7 @@ func (st *SmartTransport) dialTLS(network, addr string, cfg *tls.Config) (net.Co
 	return tlsConn, nil
 }
 
-// RoundTrip 执行请求 (统一返回 *fhttp.Response)
+// RoundTrip execute request (unified return *fhttp.Response)
 func (st *SmartTransport) RoundTrip(req *fhttp.Request) (*fhttp.Response, error) {
 	ctx := req.Context()
 	host := req.Host
@@ -204,12 +204,12 @@ func (st *SmartTransport) RoundTrip(req *fhttp.Request) (*fhttp.Response, error)
 		host = req.URL.Host
 	}
 
-	// 检查缓存的协议偏好
+	// check cached protocol preference
 	st.mu.RLock()
 	cachedProto := st.hostProtocolCache[host]
 	st.mu.RUnlock()
 
-	// 优先使用缓存的协议
+	// prefer cached protocol
 	if cachedProto == "http/1.1" {
 		resp, err := st.roundTripHTTP1(ctx, req)
 		if err == nil && !shouldRetryWithHTTP1(resp) {
@@ -224,10 +224,10 @@ func (st *SmartTransport) RoundTrip(req *fhttp.Request) (*fhttp.Response, error)
 		return st.roundTripHTTP1Compat(ctx, req)
 	}
 
-	// 1. 尝试 HTTP/2
+	// 1. attempt HTTP/2
 	resp, err := st.roundTripHTTP2(ctx, req)
 	if err == nil {
-		// 某些站点/CDN 对当前 H2 指纹会直接返回 400/421，回退到 HTTP/1.1 可恢复。
+		// some sites/CDN may directly return 400/421 for current H2 fingerprint, fallback to HTTP/1.1 can recover.
 		if shouldRetryWithHTTP1(resp) {
 			h1Resp, h1Err := st.roundTripHTTP1(ctx, req)
 			if h1Err == nil && !shouldRetryWithHTTP1(h1Resp) {
@@ -240,7 +240,7 @@ func (st *SmartTransport) RoundTrip(req *fhttp.Request) (*fhttp.Response, error)
 				return h1Resp, nil
 			}
 
-			// 最后一层兼容回退：使用标准 TLS 的 HTTP/1.1。
+			// final compatibility fallback: use standard TLS HTTP/1.1.
 			if !st.strictFingerprint {
 				compatResp, compatErr := st.roundTripHTTP1Compat(ctx, req)
 				if compatErr == nil {
@@ -264,17 +264,17 @@ func (st *SmartTransport) RoundTrip(req *fhttp.Request) (*fhttp.Response, error)
 		return resp, nil
 	}
 
-	// 分类错误信息
+	// classify error information
 	errType := classifyError(err)
 
-	// 对于协议错误、TLS错误、或网络连接错误，回退到 HTTP/1.1
-	// 但对于上下文错误或其他明确的错误，直接返回
+	// for protocol error, TLS error, or network connection error, fallback to HTTP/1.1
+	// but for context error or other clear errors, directly return
 	if errType == ErrorTypeTimeout || errType == ErrorTypeCanceled {
-		// 超时或取消错误不回退
+		// timeout or cancellation error do not fallback
 		return nil, err
 	}
 
-	// 2. 回退到 HTTP/1.1
+	// 2. fallback to HTTP/1.1
 	resp, err = st.roundTripHTTP1(ctx, req)
 	if err == nil {
 		st.mu.Lock()
@@ -283,7 +283,7 @@ func (st *SmartTransport) RoundTrip(req *fhttp.Request) (*fhttp.Response, error)
 		return resp, err
 	}
 
-	// 3. 最终兼容回退：处理 ALPN 协商/HTTP2 帧误判为 HTTP/1.1 等问题。
+	// 3. final compatibility fallback: handle ALPN negotiation/HTTP2 frame misidentification as HTTP/1.1 etc.
 	if !st.strictFingerprint && shouldFallbackToHTTP1Compat(err) {
 		compatResp, compatErr := st.roundTripHTTP1Compat(ctx, req)
 		if compatErr == nil {
@@ -294,23 +294,23 @@ func (st *SmartTransport) RoundTrip(req *fhttp.Request) (*fhttp.Response, error)
 		}
 	}
 
-	// 如果两个协议都失败，返回第一个错误（HTTP/2错误）
+	// if both protocols fail, return first error (HTTP/2 error)
 	return nil, err
 }
 
-// roundTripHTTP2 使用 HTTP/2
+// roundTripHTTP2 uses HTTP/2
 func (st *SmartTransport) roundTripHTTP2(ctx context.Context, req *fhttp.Request) (*fhttp.Response, error) {
 	return st.http2Transport.RoundTrip(req)
 }
 
-// roundTripHTTP1 使用 HTTP/1.1
+// roundTripHTTP1 uses HTTP/1.1
 func (st *SmartTransport) roundTripHTTP1(ctx context.Context, req *fhttp.Request) (*fhttp.Response, error) {
 	host := req.Host
 	if host == "" {
 		host = req.URL.Host
 	}
 
-	// 创建自定义的 HTTP/1.1 客户端
+	// create custom HTTP/1.1 client
 	client := &http.Client{
 		Transport: &http.Transport{
 			Dial:              st.dialer.Dial,
@@ -325,24 +325,24 @@ func (st *SmartTransport) roundTripHTTP1(ctx context.Context, req *fhttp.Request
 		},
 	}
 
-	// 转换为标准库请求
+	// convert to standard library request
 	stdReq, err := fhttpToStdRequest(req)
 	if err != nil {
 		return nil, err
 	}
 	stdReq = stdReq.WithContext(ctx)
 
-	// 执行请求
+	// execute request
 	stdResp, err := client.Do(stdReq)
 	if err != nil {
 		return nil, err
 	}
 
-	// 转换回 fhttp 响应
+	// convert back to fhttp response
 	return stdResponseToFhttp(stdResp, req), nil
 }
 
-// roundTripHTTP1Compat 使用标准 TLS 执行 HTTP/1.1，作为最终兼容回退路径。
+// roundTripHTTP1Compat uses standard TLS to execute HTTP/1.1 as final compatibility fallback path.
 func (st *SmartTransport) roundTripHTTP1Compat(ctx context.Context, req *fhttp.Request) (*fhttp.Response, error) {
 	stdReq, err := fhttpToStdRequest(req)
 	if err != nil {
@@ -375,9 +375,9 @@ func (st *SmartTransport) roundTripHTTP1Compat(ctx context.Context, req *fhttp.R
 	return stdResponseToFhttp(resp, req), nil
 }
 
-// fhttpToStdRequest 转换 fhttp.Request 到标准 http.Request
+// fhttpToStdRequest convert fhttp.Request to standard http.Request
 func fhttpToStdRequest(req *fhttp.Request) (*http.Request, error) {
-	// 读取 body
+	// read body
 	var body []byte
 	if req.Body != nil {
 		var err error
@@ -387,7 +387,7 @@ func fhttpToStdRequest(req *fhttp.Request) (*http.Request, error) {
 		}
 	}
 
-	// 创建新请求
+	// create new request
 	method := req.Method
 	if method == "" {
 		method = "GET"
@@ -408,20 +408,20 @@ func fhttpToStdRequest(req *fhttp.Request) (*http.Request, error) {
 		return nil, err
 	}
 
-	// 复制 headers
+	// copy headers
 	for key, values := range req.Header {
 		for _, v := range values {
 			stdReq.Header.Add(key, v)
 		}
 	}
 
-	// 设置 Host
+	// set Host
 	stdReq.Host = req.Host
 
 	return stdReq, nil
 }
 
-// stdResponseToFhttp 转换标准 http.Response 到 fhttp.Response
+// stdResponseToFhttp convert standard http.Response to fhttp.Response
 func stdResponseToFhttp(resp *http.Response, req *fhttp.Request) *fhttp.Response {
 	fresp := &fhttp.Response{
 		Status:        resp.Status,
@@ -435,7 +435,7 @@ func stdResponseToFhttp(resp *http.Response, req *fhttp.Request) *fhttp.Response
 		Request:       req,
 	}
 
-	// 复制 headers
+	// copy headers
 	for key, values := range resp.Header {
 		for _, v := range values {
 			fresp.Header.Add(key, v)
@@ -445,14 +445,14 @@ func stdResponseToFhttp(resp *http.Response, req *fhttp.Request) *fhttp.Response
 	return fresp
 }
 
-// dialTLSForHTTP1 为 HTTP/1.1 建立 TLS 连接
+// dialTLSForHTTP1 establish TLS connection for HTTP/1.1
 func (st *SmartTransport) dialTLSForHTTP1(addr, host string) (net.Conn, error) {
 	tcpConn, err := st.dialer.Dial("tcp", addr)
 	if err != nil {
 		return nil, err
 	}
 
-	// 强制 HTTP/1.1 的 TLS 配置
+	// enforce HTTP/1.1 TLS configuration
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true,
 		ServerName:         host,
@@ -492,12 +492,12 @@ func (st *SmartTransport) dialTLSForHTTP1(addr, host string) (net.Conn, error) {
 	return tlsConn, nil
 }
 
-// Close 关闭传输层
+// Close closetransport layer
 func (st *SmartTransport) Close() error {
 	return nil
 }
 
-// shouldFallbackToHTTP1Compat 判断是否应尝试标准 TLS 的 HTTP/1.1 兼容路径。
+// shouldFallbackToHTTP1Compat determine whether to attempt HTTP/1.1 compatibility path with standard TLS.
 func shouldFallbackToHTTP1Compat(err error) bool {
 	if err == nil {
 		return false
@@ -523,7 +523,7 @@ func shouldFallbackToHTTP1Compat(err error) bool {
 	return false
 }
 
-// ErrorType 错误类型
+// ErrorType errortype
 type ErrorType int
 
 const (
@@ -536,7 +536,7 @@ const (
 	ErrorTypeDNS
 )
 
-// classifyError 分类错误
+// classifyError classify error
 func classifyError(err error) ErrorType {
 	if err == nil {
 		return ErrorTypeUnknown
@@ -544,7 +544,7 @@ func classifyError(err error) ErrorType {
 
 	errStr := err.Error()
 
-	// 根据上下文错误判断
+	// determine based on context error
 	if errors.Is(err, context.DeadlineExceeded) {
 		return ErrorTypeTimeout
 	}
@@ -552,7 +552,7 @@ func classifyError(err error) ErrorType {
 		return ErrorTypeCanceled
 	}
 
-	// 根据错误信息判断
+	// determine based on error information
 	timeoutPatterns := []string{"timeout", "i/o timeout", "deadline exceeded"}
 	for _, pattern := range timeoutPatterns {
 		if strings.Contains(strings.ToLower(errStr), pattern) {
@@ -604,7 +604,7 @@ func classifyError(err error) ErrorType {
 	return ErrorTypeUnknown
 }
 
-// isProtocolError 检查是否为协议错误（已废弃，使用 classifyError）
+// isProtocolError check if it is protocol error (deprecated, use classifyError)
 func isProtocolError(err error) bool {
 	if err == nil {
 		return false
@@ -619,8 +619,8 @@ func shouldRetryWithHTTP1(resp *fhttp.Response) bool {
 	return resp.StatusCode == http.StatusBadRequest || resp.StatusCode == http.StatusMisdirectedRequest
 }
 
-// getProfileClientHelloSpec 基于 profile 解析可复用的细粒度 ClientHello 规范。
-// 当不存在 legacy 映射时返回 nil，调用方将回落到现有 Auto ClientHello 行为。
+// getProfileClientHelloSpec fine-grained ClientHello specification based on profile resolution that can be reused.
+// when legacy map does not exist return nil, caller will fall back to current Auto ClientHello behavior.
 func (st *SmartTransport) getProfileClientHelloSpec() (*tls.ClientHelloSpec, error) {
 	legacyProfileID := resolveLegacyProfileID(st.profile)
 	if legacyProfileID == "" {
@@ -634,15 +634,15 @@ func (st *SmartTransport) getProfileClientHelloSpec() (*tls.ClientHelloSpec, err
 
 	spec, err := legacyProfile.GetClientHelloSpec()
 	if err != nil {
-		// 某些 legacy profile 尚未实现 ToSpec，遇到时保持兼容回退到 Auto ClientHello。
+		// some legacy profiles have not yet implemented ToSpec, when encountered maintain compatibility fallback to Auto ClientHello.
 		return nil, nil
 	}
 
 	return &spec, nil
 }
 
-// resolveLegacyProfileID 返回可用于 uTLS ApplyPreset 的 legacy profile ID。
-// 规则：优先精确 ID，其次按浏览器类型和主版本号就近匹配，最后退到该浏览器最新可用版本。
+// resolveLegacyProfileID return legacy profile ID usable for uTLS ApplyPreset.
+// rule: prioritize precise ID, then match nearby by browser type and major version number, finally fall back to latest available version for that browser.
 func resolveLegacyProfileID(profile profiles.ClientProfile) string {
 	if profile.ID != "" {
 		if _, ok := legacyprofiles.GetClientProfile(profile.ID); ok {
@@ -729,7 +729,7 @@ func parseLeadingMajor(value string) (int, bool) {
 	return major, true
 }
 
-// getClientHelloID 获取浏览器 ClientHello ID
+// getClientHelloID getbrowser ClientHello ID
 func getClientHelloID(browserType string) tls.ClientHelloID {
 	switch browserType {
 	case "chrome":
