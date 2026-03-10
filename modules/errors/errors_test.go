@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// TestSentinelErrors 测试哨兵错误
+// TestSentinelErrors tests sentinel errors
 func TestSentinelErrors(t *testing.T) {
 	tests := []struct {
 		name string
@@ -29,7 +29,7 @@ func TestSentinelErrors(t *testing.T) {
 	}
 }
 
-// TestWrap 测试错误包装
+// TestWrap tests error wrapping
 func TestWrap(t *testing.T) {
 	baseErr := errors.New("base error")
 	wrapped := Wrap(baseErr, "context")
@@ -43,13 +43,13 @@ func TestWrap(t *testing.T) {
 		t.Errorf("Expected '%s', got '%s'", expectedMsg, wrapped.Error())
 	}
 
-	// 测试 Unwrap
+	// test Unwrap
 	if !errors.Is(wrapped, baseErr) {
 		t.Error("Wrapped error should unwrap to base error")
 	}
 }
 
-// TestWrapf 测试格式化错误包装
+// TestWrapf tests formatted error wrapping
 func TestWrapf(t *testing.T) {
 	baseErr := errors.New("base error")
 	wrapped := Wrapf(baseErr, "context %d", 42)
@@ -60,7 +60,7 @@ func TestWrapf(t *testing.T) {
 	}
 }
 
-// TestWrapNil 测试包装 nil 错误
+// TestWrapNil tests wrapping nil error
 func TestWrapNil(t *testing.T) {
 	result := Wrap(nil, "context")
 	if result != nil {
@@ -73,7 +73,7 @@ func TestWrapNil(t *testing.T) {
 	}
 }
 
-// TestCategorizedError 测试分类错误
+// TestCategorizedError tests categorized error
 func TestCategorizedError(t *testing.T) {
 	err := NewCategorizedError(CategoryConfig, ErrConfigNotLoaded, "test details")
 
@@ -82,13 +82,13 @@ func TestCategorizedError(t *testing.T) {
 		t.Errorf("Expected '%s', got '%s'", expectedMsg, err.Error())
 	}
 
-	// 测试 Unwrap
+	// test Unwrap
 	if !errors.Is(err, ErrConfigNotLoaded) {
 		t.Error("Should unwrap to ErrConfigNotLoaded")
 	}
 }
 
-// TestCategorizedErrorNoDetails 测试无详细信息的分类错误
+// TestCategorizedErrorNoDetails tests categorized error without details
 func TestCategorizedErrorNoDetails(t *testing.T) {
 	err := NewCategorizedError(CategoryInput, ErrInvalidInput, "")
 
@@ -98,37 +98,37 @@ func TestCategorizedErrorNoDetails(t *testing.T) {
 	}
 }
 
-// TestIsClientHelloSpecNotImplemented 测试 ClientHelloSpec 未实现检查
+// TestIsClientHelloSpecNotImplemented tests ClientHelloSpec not implemented check
 func TestIsClientHelloSpecNotImplemented(t *testing.T) {
-	// 测试哨兵错误
+	// test sentinel error
 	if !IsClientHelloSpecNotImplemented(ErrClientHelloSpecNotImplemented) {
 		t.Error("Should detect sentinel error")
 	}
 
-	// 测试包装后的错误
+	// test wrapped error
 	wrapped := Wrap(ErrClientHelloSpecNotImplemented, "context")
 	if !IsClientHelloSpecNotImplemented(wrapped) {
 		t.Error("Should detect wrapped sentinel error")
 	}
 
-	// 测试消息匹配
+	// test message match
 	msgErr := errors.New("please implement this method")
 	if !IsClientHelloSpecNotImplemented(msgErr) {
 		t.Error("Should detect by message")
 	}
 
-	// 测试不匹配的错误
+	// test non-matching error
 	if IsClientHelloSpecNotImplemented(errors.New("other error")) {
 		t.Error("Should not match other errors")
 	}
 
-	// 测试 nil
+	// test nil
 	if IsClientHelloSpecNotImplemented(nil) {
 		t.Error("Should not match nil")
 	}
 }
 
-// TestIsNotFound 测试未找到错误检查
+// TestIsNotFound tests not found error check
 func TestIsNotFound(t *testing.T) {
 	if !IsNotFound(ErrProfileNotFound) {
 		t.Error("Should detect ErrProfileNotFound")
@@ -151,7 +151,7 @@ func TestIsNotFound(t *testing.T) {
 	}
 }
 
-// TestIsInvalidInput 测试无效输入错误检查
+// TestIsInvalidInput tests invalid input error check
 func TestIsInvalidInput(t *testing.T) {
 	if !IsInvalidInput(ErrInvalidInput) {
 		t.Error("Should detect ErrInvalidInput")
@@ -174,7 +174,7 @@ func TestIsInvalidInput(t *testing.T) {
 	}
 }
 
-// TestIsConfigError 测试配置错误检查
+// TestIsConfigError tests configuration error check
 func TestIsConfigError(t *testing.T) {
 	if !IsConfigError(ErrConfigNotLoaded) {
 		t.Error("Should detect ErrConfigNotLoaded")
@@ -197,7 +197,7 @@ func TestIsConfigError(t *testing.T) {
 	}
 }
 
-// TestNewConfigError 测试配置错误创建
+// TestNewConfigError tests configuration error creation
 func TestNewConfigError(t *testing.T) {
 	baseErr := errors.New("connection failed")
 	err := NewConfigError("load", baseErr)
@@ -208,7 +208,7 @@ func TestNewConfigError(t *testing.T) {
 	}
 }
 
-// TestNewValidationError 测试验证错误创建
+// TestNewValidationError tests validation error creation
 func TestNewValidationError(t *testing.T) {
 	err := NewValidationError("username", "cannot be empty")
 
@@ -218,7 +218,7 @@ func TestNewValidationError(t *testing.T) {
 	}
 }
 
-// TestNewNotFoundError 测试未找到错误创建
+// TestNewNotFoundError tests not found error creation
 func TestNewNotFoundError(t *testing.T) {
 	err := NewNotFoundError("profile", "chrome_999")
 
@@ -228,7 +228,7 @@ func TestNewNotFoundError(t *testing.T) {
 	}
 }
 
-// TestNewProtocolError 测试协议错误创建
+// TestNewProtocolError tests protocol error creation
 func TestNewProtocolError(t *testing.T) {
 	baseErr := errors.New("handshake failed")
 	err := NewProtocolError("tls", baseErr)
@@ -239,7 +239,7 @@ func TestNewProtocolError(t *testing.T) {
 	}
 }
 
-// TestNewNetworkError 测试网络错误创建
+// TestNewNetworkError tests network error creation
 func TestNewNetworkError(t *testing.T) {
 	baseErr := errors.New("timeout")
 	err := NewNetworkError("connect", baseErr)
@@ -250,7 +250,7 @@ func TestNewNetworkError(t *testing.T) {
 	}
 }
 
-// TestNewf 测试格式化错误创建
+// TestNewf tests formatted error creation
 func TestNewf(t *testing.T) {
 	err := Newf("error code: %d", 500)
 
@@ -260,14 +260,14 @@ func TestNewf(t *testing.T) {
 	}
 }
 
-// TestCompatibilityWithStandardErrors 测试与标准错误库的兼容性
+// TestCompatibilityWithStandardErrors tests compatibility with standard error library
 func TestCompatibilityWithStandardErrors(t *testing.T) {
-	// 测试 Is
+	// test Is
 	if !Is(ErrProfileNotFound, ErrProfileNotFound) {
 		t.Error("Is should work with sentinel errors")
 	}
 
-	// 测试 As
+	// test As
 	var catErr *CategorizedError
 	wrapped := NewCategorizedError(CategoryConfig, ErrConfigNotLoaded, "test")
 	if !As(wrapped, &catErr) {
@@ -278,7 +278,7 @@ func TestCompatibilityWithStandardErrors(t *testing.T) {
 	}
 }
 
-// BenchmarkWrap 基准测试错误包装
+// BenchmarkWrap benchmarks error wrapping
 func BenchmarkWrap(b *testing.B) {
 	baseErr := errors.New("base error")
 	for i := 0; i < b.N; i++ {
@@ -286,7 +286,7 @@ func BenchmarkWrap(b *testing.B) {
 	}
 }
 
-// BenchmarkIs 基准测试错误检查
+// BenchmarkIs benchmarks error check
 func BenchmarkIs(b *testing.B) {
 	wrapped := Wrap(ErrProfileNotFound, "context")
 	for i := 0; i < b.N; i++ {
@@ -294,7 +294,7 @@ func BenchmarkIs(b *testing.B) {
 	}
 }
 
-// BenchmarkCategorizedError 基准测试分类错误
+// BenchmarkCategorizedError benchmarks categorized error
 func BenchmarkCategorizedError(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		err := NewCategorizedError(CategoryInput, ErrInvalidInput, "benchmark")
@@ -302,7 +302,7 @@ func BenchmarkCategorizedError(b *testing.B) {
 	}
 }
 
-// ExampleWrap 示例：错误包装
+// ExampleWrap example: error wrapping
 func ExampleWrap() {
 	baseErr := errors.New("file not found")
 	wrapped := Wrap(baseErr, "loading config")
@@ -310,7 +310,7 @@ func ExampleWrap() {
 	// Output: loading config: file not found
 }
 
-// ExampleNewCategorizedError 示例：分类错误
+// ExampleNewCategorizedError example:classifyerror
 func ExampleNewCategorizedError() {
 	err := NewCategorizedError(CategoryConfig, ErrConfigNotLoaded, "missing file")
 	fmt.Println(err)
