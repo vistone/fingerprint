@@ -13,10 +13,10 @@ import (
 )
 
 // ============================================================================
-// 错误类型判断函数测试
+// Error type checker function tests
 // ============================================================================
 
-// TestErrorTypes 测试所有 JA3 错误类型判断函数
+// TestErrorTypes tests all JA3 error type checkers
 func TestErrorTypes(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -146,10 +146,10 @@ func TestErrorTypes(t *testing.T) {
 }
 
 // ============================================================================
-// InitMappedTLSClients 测试
+// InitMappedTLSClients tests
 // ============================================================================
 
-// TestInitMappedTLSClients 测试初始化 MappedTLSClients
+// TestInitMappedTLSClients tests initialization of MappedTLSClients
 func TestInitMappedTLSClients(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -187,16 +187,16 @@ func TestInitMappedTLSClients(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// 保存原始状态
+			// Save original state
 			originalMapped := MappedTLSClients
 			defer func() {
 				MappedTLSClients = originalMapped
 			}()
 
-			// 初始化
+			// Initialize
 			InitMappedTLSClients(tt.clients)
 
-			// 验证
+			// Verify
 			if len(MappedTLSClients) != tt.expectedLen {
 				t.Errorf("Expected %d profiles, got %d", tt.expectedLen, len(MappedTLSClients))
 			}
@@ -210,15 +210,15 @@ func TestInitMappedTLSClients(t *testing.T) {
 	}
 }
 
-// TestInitMappedTLSClients_Idempotent 测试多次初始化（幂等性）
+// TestInitMappedTLSClients_Idempotent tests repeated initialization (idempotency)
 func TestInitMappedTLSClients_Idempotent(t *testing.T) {
-	// 保存原始状态
+	// Save original state
 	originalMapped := MappedTLSClients
 	defer func() {
 		MappedTLSClients = originalMapped
 	}()
 
-	// 第一次初始化
+	// First initialization
 	firstMap := map[string]ClientProfile{
 		"profile_a": &mockClientProfile{},
 	}
@@ -228,7 +228,7 @@ func TestInitMappedTLSClients_Idempotent(t *testing.T) {
 		t.Fatalf("Expected 1 profile after first init, got %d", len(MappedTLSClients))
 	}
 
-	// 第二次初始化（覆盖）
+	// Second initialization (overwrite)
 	secondMap := map[string]ClientProfile{
 		"profile_b": &mockClientProfile{},
 		"profile_c": &mockClientProfile{},
@@ -239,7 +239,7 @@ func TestInitMappedTLSClients_Idempotent(t *testing.T) {
 		t.Errorf("Expected 2 profiles after second init, got %d", len(MappedTLSClients))
 	}
 
-	// 验证第一次的 profile 被覆盖
+	// Verify profiles from first initialization are overwritten
 	if _, ok := MappedTLSClients["profile_a"]; ok {
 		t.Error("Old profile should be removed after re-initialization")
 	}
@@ -250,10 +250,10 @@ func TestInitMappedTLSClients_Idempotent(t *testing.T) {
 }
 
 // ============================================================================
-// InitMappedTLSClientsRaw 测试
+// InitMappedTLSClientsRaw tests
 // ============================================================================
 
-// TestInitMappedTLSClientsRaw 测试使用原始字节初始化
+// TestInitMappedTLSClientsRaw tests initialization using raw input
 func TestInitMappedTLSClientsRaw(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -286,16 +286,16 @@ func TestInitMappedTLSClientsRaw(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// 保存原始状态
+			// Save original state
 			originalMapped := MappedTLSClients
 			defer func() {
 				MappedTLSClients = originalMapped
 			}()
 
-			// 初始化
+			// Initialize
 			InitMappedTLSClientsRaw(tt.clients)
 
-			// 验证
+			// Verify
 			if len(MappedTLSClients) != tt.expectedLen {
 				t.Errorf("Expected %d profiles, got %d", tt.expectedLen, len(MappedTLSClients))
 			}
@@ -309,15 +309,15 @@ func TestInitMappedTLSClientsRaw(t *testing.T) {
 	}
 }
 
-// TestInitMappedTLSClientsRaw_WithMethod 测试带有方法的类型
+// TestInitMappedTLSClientsRaw_WithMethod tests type with method
 func TestInitMappedTLSClientsRaw_WithMethod(t *testing.T) {
-	// 保存原始状态
+	// Save original state
 	originalMapped := MappedTLSClients
 	defer func() {
 		MappedTLSClients = originalMapped
 	}()
 
-	// 使用带有 GetClientHelloSpec 方法的类型
+	// Use type that has GetClientHelloSpec method
 	clients := map[string]*mockClientProfileWithMethod{
 		"method_profile": {
 			spec: tls.ClientHelloSpec{
@@ -333,7 +333,7 @@ func TestInitMappedTLSClientsRaw_WithMethod(t *testing.T) {
 		t.Fatalf("Expected 1 profile, got %d", len(MappedTLSClients))
 	}
 
-	// 验证可以通过 ClientProfile 接口调用 GetClientHelloSpec
+	// Verify GetClientHelloSpec can be called through ClientProfile interface
 	profile, ok := MappedTLSClients["method_profile"]
 	if !ok {
 		t.Fatal("method_profile not found")
@@ -350,10 +350,10 @@ func TestInitMappedTLSClientsRaw_WithMethod(t *testing.T) {
 }
 
 // ============================================================================
-// GetClientHelloSpec 测试
+// GetClientHelloSpec tests
 // ============================================================================
 
-// mockClientProfile 实现了 ClientProfile 接口的 mock
+// mockClientProfile is a mock implementing ClientProfile interface
 func (m *mockClientProfile) GetClientHelloSpec() (tls.ClientHelloSpec, error) {
 	if m.err != nil {
 		return tls.ClientHelloSpec{}, m.err
@@ -361,7 +361,7 @@ func (m *mockClientProfile) GetClientHelloSpec() (tls.ClientHelloSpec, error) {
 	return m.spec, nil
 }
 
-// mockClientProfileWithMethod 带有 GetClientHelloSpec 方法的 mock 类型
+// mockClientProfileWithMethod is a mock type with GetClientHelloSpec method
 type mockClientProfileWithMethod struct {
 	spec tls.ClientHelloSpec
 	err  error
@@ -376,7 +376,7 @@ type mockClientProfile struct {
 	err  error
 }
 
-// TestGetClientHelloSpec 测试通过配置获取 spec
+// TestGetClientHelloSpec tests obtaining spec via profile
 func TestGetClientHelloSpec(t *testing.T) {
 	validSpec := tls.ClientHelloSpec{
 		CipherSuites: []uint16{0x1301, 0x1302},
@@ -441,10 +441,10 @@ func TestGetClientHelloSpec(t *testing.T) {
 }
 
 // ============================================================================
-// ComputeJA3FromProfile 测试
+// ComputeJA3FromProfile tests
 // ============================================================================
 
-// TestComputeJA3FromProfile 测试从 Profile 计算 JA3
+// TestComputeJA3FromProfile tests computing JA3 from profile
 func TestComputeJA3FromProfile(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -517,7 +517,7 @@ func TestComputeJA3FromProfile(t *testing.T) {
 				return
 			}
 
-			// 验证结果是有效的 MD5 哈希
+			// Verify result is a valid MD5 hash
 			if len(result.Hash) != 32 {
 				t.Errorf("Expected MD5 hash length 32, got %d", len(result.Hash))
 			}
@@ -530,18 +530,18 @@ func TestComputeJA3FromProfile(t *testing.T) {
 }
 
 // ============================================================================
-// ComputeJA3ByProfileName 测试
+// ComputeJA3ByProfileName tests
 // ============================================================================
 
-// TestComputeJA3ByProfileName 测试通过 Profile 名称计算 JA3
+// TestComputeJA3ByProfileName tests computing JA3 via profile name
 func TestComputeJA3ByProfileName(t *testing.T) {
-	// 保存原始状态
+	// Save original state
 	originalMapped := MappedTLSClients
 	defer func() {
 		MappedTLSClients = originalMapped
 	}()
 
-	// 设置测试用的 MappedTLSClients
+	// Set MappedTLSClients for testing
 	validSpec := tls.ClientHelloSpec{
 		CipherSuites: []uint16{0x1301, 0x1302},
 		Extensions:   []tls.TLSExtension{&tls.SNIExtension{}},
@@ -609,7 +609,7 @@ func TestComputeJA3ByProfileName(t *testing.T) {
 				return
 			}
 
-			// 验证结果是有效的 MD5 哈希
+			// Verify result is a valid MD5 hash
 			if len(result.Hash) != 32 {
 				t.Errorf("Expected MD5 hash length 32, got %d", len(result.Hash))
 			}
@@ -618,12 +618,12 @@ func TestComputeJA3ByProfileName(t *testing.T) {
 }
 
 // ============================================================================
-// FindProfileByJA3_Extended 测试
+// FindProfileByJA3_Extended tests
 // ============================================================================
 
-// TestFindProfileByJA3_Extended 扩展现有测试到 100% 覆盖
+// TestFindProfileByJA3_Extended extends existing tests to 100% coverage
 func TestFindProfileByJA3_Extended(t *testing.T) {
-	// 保存原始状态并在测试后恢复
+	// Save original state and restore after test
 	originalMapped := MappedTLSClients
 	originalIndex := ja3ProfileIndex
 	defer func() {
@@ -632,7 +632,7 @@ func TestFindProfileByJA3_Extended(t *testing.T) {
 		ja3ProfileIndex = originalIndex
 	}()
 
-	// 创建有效的 spec 用于计算 JA3
+	// Create valid spec for JA3 computation
 	validSpec := tls.ClientHelloSpec{
 		CipherSuites: []uint16{0x1301, 0x1302},
 		Extensions: []tls.TLSExtension{
@@ -642,7 +642,7 @@ func TestFindProfileByJA3_Extended(t *testing.T) {
 		},
 	}
 
-	// 计算预期的 JA3 hash
+	// Compute expected JA3 hash
 	result, err := ComputeJA3FromSpec(validSpec)
 	if err != nil {
 		t.Fatalf("Failed to compute JA3: %v", err)
@@ -659,7 +659,7 @@ func TestFindProfileByJA3_Extended(t *testing.T) {
 		{
 			name: "normal lookup",
 			setup: func() {
-				// 重置 once 和 index
+				// Reset once and index
 				ja3ProfileIndexOnce = sync.Once{}
 				ja3ProfileIndex = nil
 				MappedTLSClients = map[string]ClientProfile{
@@ -668,7 +668,7 @@ func TestFindProfileByJA3_Extended(t *testing.T) {
 			},
 			ja3Hash:        expectedHash,
 			expectedResult: []string{"test_chrome"},
-			description:    "应该找到匹配的 profile",
+			description:    "should find matching profile",
 		},
 		{
 			name: "uninitialized MappedTLSClients",
@@ -679,7 +679,7 @@ func TestFindProfileByJA3_Extended(t *testing.T) {
 			},
 			ja3Hash:        expectedHash,
 			expectedResult: nil,
-			description:    "未初始化时应该返回 nil",
+			description:    "should return nil when uninitialized",
 		},
 		{
 			name: "invalid hash length - too short",
@@ -692,7 +692,7 @@ func TestFindProfileByJA3_Extended(t *testing.T) {
 			},
 			ja3Hash:        "12345678",
 			expectedResult: nil,
-			description:    "短哈希不应该匹配",
+			description:    "short hash should not match",
 		},
 		{
 			name: "invalid hash length - too long",
@@ -705,7 +705,7 @@ func TestFindProfileByJA3_Extended(t *testing.T) {
 			},
 			ja3Hash:        "1234567890123456789012345678901234567890",
 			expectedResult: nil,
-			description:    "长哈希不应该匹配",
+			description:    "long hash should not match",
 		},
 		{
 			name: "no matching profile",
@@ -731,7 +731,7 @@ func TestFindProfileByJA3_Extended(t *testing.T) {
 			},
 			ja3Hash:        strings.ToUpper(expectedHash),
 			expectedResult: []string{"test_chrome"},
-			description:    "大写哈希应该匹配",
+			description:    "uppercase hash should match",
 		},
 		{
 			name: "case insensitive match - mixed case",
@@ -744,7 +744,7 @@ func TestFindProfileByJA3_Extended(t *testing.T) {
 			},
 			ja3Hash:        strings.ToUpper(expectedHash[:16]) + strings.ToLower(expectedHash[16:]),
 			expectedResult: []string{"test_chrome"},
-			description:    "混合大小写哈希应该匹配",
+			description:    "mixed-case hash should match",
 		},
 		{
 			name: "multiple profiles with same JA3",
@@ -758,7 +758,7 @@ func TestFindProfileByJA3_Extended(t *testing.T) {
 			},
 			ja3Hash:        expectedHash,
 			expectedResult: []string{"test_chrome_a", "test_chrome_b"},
-			description:    "相同 JA3 的多个 profile 应该都被返回",
+			description:    "multiple profiles with same JA3 should all be returned",
 		},
 		{
 			name: "empty hash",
@@ -771,7 +771,7 @@ func TestFindProfileByJA3_Extended(t *testing.T) {
 			},
 			ja3Hash:        "",
 			expectedResult: nil,
-			description:    "空哈希应该返回 nil",
+			description:    "empty hash should return nil",
 		},
 	}
 
@@ -793,7 +793,7 @@ func TestFindProfileByJA3_Extended(t *testing.T) {
 				return
 			}
 
-			// 验证所有期望的结果都在返回的结果中
+			// Verify all expected results are present in returned results
 			for _, expected := range tt.expectedResult {
 				found := false
 				for _, r := range result {
@@ -810,9 +810,9 @@ func TestFindProfileByJA3_Extended(t *testing.T) {
 	}
 }
 
-// TestFindProfileByJA3_WithRealProfiles 使用真实 profile 进行测试
+// TestFindProfileByJA3_WithRealProfiles tests with real profiles
 func TestFindProfileByJA3_WithRealProfiles(t *testing.T) {
-	// 保存原始状态
+	// Save original state
 	originalMapped := MappedTLSClients
 	originalIndex := ja3ProfileIndex
 	defer func() {
@@ -821,13 +821,13 @@ func TestFindProfileByJA3_WithRealProfiles(t *testing.T) {
 		ja3ProfileIndex = originalIndex
 	}()
 
-	// 使用真实 profile 初始化
+	// Initialize with real profiles
 	InitMappedTLSClients(profiles.MappedTLSClients)
-	// 重置索引
+	// Reset index
 	ja3ProfileIndexOnce = sync.Once{}
 	ja3ProfileIndex = nil
 
-	// 计算一个真实 profile 的 JA3
+	// Compute JA3 for a real profile
 	profile, ok := MappedTLSClients["chrome_133"]
 	if !ok {
 		t.Skip("chrome_133 profile not available")
@@ -838,10 +838,10 @@ func TestFindProfileByJA3_WithRealProfiles(t *testing.T) {
 		t.Skipf("chrome_133 does not support spec export: %v", err)
 	}
 
-	// 使用计算出的 hash 查找 profile
+	// Lookup profile using computed hash
 	foundProfiles := FindProfileByJA3(result.Hash)
 
-	// 至少应该找到 chrome_133
+	// Should find at least chrome_133
 	foundChrome133 := false
 	for _, name := range foundProfiles {
 		if name == "chrome_133" {
@@ -856,10 +856,10 @@ func TestFindProfileByJA3_WithRealProfiles(t *testing.T) {
 }
 
 // ============================================================================
-// 边界情况和集成测试
+// Edge cases and integration tests
 // ============================================================================
 
-// TestErrorWrapping 测试错误包装和解包
+// TestErrorWrapping tests error wrapping and unwrapping
 func TestErrorWrapping(t *testing.T) {
 	tests := []struct {
 		name          string
