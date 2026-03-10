@@ -8,33 +8,14 @@
 
 ### Changed
 
-- **docs/CONTRIBUTING.md** - 精简为标准格式，去除冗余信息
-  - 核心部分保留，直接链接到 DEVELOPER_GUIDE.md
-  - 代码规范、测试、模块开发保持实用导向
-
-- **docs/SECURITY.md** - 精简为标准格式，去除重复说明
-  - 简化漏洞报告流程
-  - 更新当前版本参考 (v1.0.7)
-  - 保留核心安全信息和最佳实践
+- Simplify CONTRIBUTING.md and SECURITY.md documentation
 
 ## [v1.0.7] - 2026-03-10
 
 ### Added
 
-- **CONTRIBUTING.md** - 完整的贡献指南和工作流
-  - Fork/Clone 和分支设置
-  - 开发和测试要求
-  - 7 步强制版本控制工作流
-  - 代码文数和最佳实践
-  - Pull Request 流程
-
-- **SECURITY.md** - 安全政策和漏洞报告流程
-  - 安全漏洞报告指南
-  - 响应时间预期
-  - 用户和贡献者最佳实践
-  - 依赖安全指导
-  - TLS/密码学相关安全说明
-  - 版本支持矩阵
+- CONTRIBUTING.md - 完整的贡献指南和工作流
+- SECURITY.md - 安全政策和漏洞报告流程
 
 ## [v1.0.6] - 2026-03-10
 
@@ -42,22 +23,17 @@
 
 - **完整的版本控制开发规则** - 确保 Git 规范遵守
   - 新增 `docs/DEVELOPER_GUIDE.md` 版本控制规则部分：强制性的 7 步发布工作流
-  - 新增 `COMMIT_CHECKLIST.md`：快速参考卡片供开发者提交前检查
   - 明确定义"不能乱来"的规则：顺序为 CHANGELOG → 版本号增加 → Tag → Push
-  - 列出所有 18 个模块的 tag 创建清单
+  - 列出所有模块的版本管理要求
   - 定义严禁的行为及其后果（提交拒绝/回滚）
 
 ### Changed
 
-- **README.md 文档链接**：添加版本控制规则快速链接
-- **DEVELOPER_GUIDE.md 发布流程**：扩展详细步骤、快速参考脚本、故障排查
+- Updated DEVELOPER_GUIDE.md with detailed release process
 
 ### Fixed
 
-- 之前 v1.0.5 版本控制问题已在上一版本完全修正
-  - 解决 2 个未标记提交（已纳入 v1.0.5）
-  - CHANGELOG 已更新为 [v1.0.5] - 2026-03-10
-  - 所有 go.mod 版本已统一为 v1.0.5
+- Version control consistency across all modules
 
 ## [v1.0.5] - 2026-03-10
 
