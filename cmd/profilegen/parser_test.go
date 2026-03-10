@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-// TestParseYAMLFile_PathTraversal 测试路径遍历防护
+// TestParseYAMLFile_PathTraversal tests path traversal protection
 func TestParseYAMLFile_PathTraversal(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -22,25 +22,25 @@ func TestParseYAMLFile_PathTraversal(t *testing.T) {
 			name:    "path traversal with ..",
 			path:    "../../../etc/passwd",
 			wantErr: true,
-			errMsg:  "路径包含非法字符",
+		errMsg:  "path contains illegal characters",
 		},
 		{
 			name:    "path traversal attempt 2",
 			path:    "profiles/../../../etc/passwd",
 			wantErr: true,
-			errMsg:  "路径包含非法字符",
+		errMsg:  "path contains illegal characters",
 		},
 		{
 			name:    "absolute path outside allowed dirs",
 			path:    "/etc/passwd",
 			wantErr: true,
-			errMsg:  "路径不在允许范围内",
+		errMsg:  "path not in allowed range",
 		},
 		{
 			name:    "path in non-allowed directory",
 			path:    "tmp/malicious.yaml",
 			wantErr: true,
-			errMsg:  "路径不在允许范围内",
+		errMsg:  "path not in allowed range",
 		},
 	}
 
@@ -57,7 +57,7 @@ func TestParseYAMLFile_PathTraversal(t *testing.T) {
 	}
 }
 
-// TestParseAllProfiles_DirectoryValidation 测试目录验证
+// TestParseAllProfiles_DirectoryValidation tests directory verification
 func TestParseAllProfiles_DirectoryValidation(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -69,19 +69,19 @@ func TestParseAllProfiles_DirectoryValidation(t *testing.T) {
 			name:    "directory with path traversal",
 			dir:     "../../../etc",
 			wantErr: true,
-			errMsg:  "目录不在允许范围内",
+		errMsg:  "directory not in allowed range",
 		},
 		{
 			name:    "non-allowed directory",
 			dir:     "tmp",
 			wantErr: true,
-			errMsg:  "目录不在允许范围内",
+		errMsg:  "directory not in allowed range",
 		},
 		{
 			name:    "absolute path outside",
 			dir:     "/tmp",
 			wantErr: true,
-			errMsg:  "目录不在允许范围内",
+		errMsg:  "directory not in allowed range",
 		},
 	}
 
@@ -98,65 +98,65 @@ func TestParseAllProfiles_DirectoryValidation(t *testing.T) {
 	}
 }
 
-// TestParseYAMLFile_FileSizeLimit 测试文件大小限制
+// TestParseYAMLFile_FileSizeLimit tests file size limit
 func TestParseYAMLFile_FileSizeLimit(t *testing.T) {
-	// 创建一个临时大文件
+	// create a temporary large file
 	tmpDir := t.TempDir()
 	largeFilePath := filepath.Join(tmpDir, "large.yaml")
 	
-	// 创建一个超过 10MB 的文件（这里创建一个小文件用于测试逻辑）
-	const testMaxSize = 1024 // 测试用 1KB 限制
+	// create a file exceeding 10MB (here create a small file for testing logic)
+	const testMaxSize = 1024 // test with 1KB limit
 	largeData := make([]byte, testMaxSize+100)
 	if err := os.WriteFile(largeFilePath, largeData, 0644); err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
 	
-	// 临时修改 allowedDirs 以包含 tmpDir（仅用于测试）
+	// temporarily modify allowedDirs to include tmpDir (for testing only)
 	oldAllowedDirs := []string{"profiles/specs", "cmd/profilegen/extract"}
-	// 注意：实际测试中需要动态调整 allowedDirs，这里简化处理
+	// note: in actual tests need to dynamically adjust allowedDirs, here simplified process
 	
 	_, err := parseYAMLFile(largeFilePath)
 	if err == nil {
 		t.Error("Expected error for oversized file")
 	}
 	
-	// 恢复原始设置
+	// restore original settings
 	_ = oldAllowedDirs
 }
 
-// TestParseAllProfiles_SymlinkSkip 测试符号链接跳过
+// TestParseAllProfiles_SymlinkSkip tests symbolic link skipping
 func TestParseAllProfiles_SymlinkSkip(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping symlink test in short mode")
 	}
 	
-	// 直接在允许的目录中创建临时文件
+	// create temporary file directly in allowed directory
 	tmpDir := "profiles/specs/test_tmp"
 	if err := os.MkdirAll(tmpDir, 0755); err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
 	defer os.RemoveAll(tmpDir)
 	
-	// 创建一个真实文件
+	// create a real file
 	realFile := filepath.Join(tmpDir, "real.yaml")
 	if err := os.WriteFile(realFile, []byte("name: test"), 0644); err != nil {
 		t.Fatalf("Failed to create real file: %v", err)
 	}
 	
-	// 创建符号链接（在某些系统上可能失败）
+	// create symbolic link (may fail on some systems)
 	symlinkPath := filepath.Join(tmpDir, "link.yaml")
 	if err := os.Symlink(realFile, symlinkPath); err != nil {
 		t.Logf("Cannot create symlink (expected on some systems): %v", err)
 		return
 	}
 	
-	// 解析目录应该跳过符号链接
+	// parsing directory should skip symbolic links
 	profiles, files, err := parseAllProfiles(tmpDir)
 	if err != nil {
 		t.Fatalf("parseAllProfiles failed: %v", err)
 	}
 	
-	// 应该只包含真实文件，不包含符号链接
+	// should only contain real file, not symbolic links
 	if len(profiles) != 1 {
 		t.Errorf("Expected 1 profile, got %d", len(profiles))
 	}
@@ -165,14 +165,14 @@ func TestParseAllProfiles_SymlinkSkip(t *testing.T) {
 	}
 }
 
-// TestParseYAMLFile_InvalidYAML 测试无效 YAML 处理
+// TestParseYAMLFile_InvalidYAML tests invalid YAML processing
 func TestParseYAMLFile_InvalidYAML(t *testing.T) {
-	// 在允许的目录中创建临时文件
+	// create temporary file in allowed directory
 	tmpDir := "profiles/specs"
 	
 	invalidFile := filepath.Join(tmpDir, "test_invalid.yaml")
 	
-	// 写入无效 YAML
+	// write invalid YAML
 	invalidContent := []byte(`
 name: test
   invalid_indentation: value
@@ -189,17 +189,17 @@ extensions:
 	if err == nil {
 		t.Error("Expected error for invalid YAML")
 	}
-	if !strings.Contains(err.Error(), "解析 YAML 失败") {
+	if !strings.Contains(err.Error(), "parse YAML failed") {
 		t.Errorf("Expected YAML parsing error, got: %v", err)
 	}
 }
 
-// TestParseYAMLFile_EmptyFile 测试空文件处理
+// TestParseYAMLFile_EmptyFile tests empty file processing
 func TestParseYAMLFile_EmptyFile(t *testing.T) {
 	tmpDir := t.TempDir()
 	emptyFile := filepath.Join(tmpDir, "empty.yaml")
 	
-	// 创建空文件
+	// create empty file
 	if err := os.WriteFile(emptyFile, []byte(""), 0644); err != nil {
 		t.Fatalf("Failed to create empty file: %v", err)
 	}
@@ -210,9 +210,9 @@ func TestParseYAMLFile_EmptyFile(t *testing.T) {
 	}
 }
 
-// BenchmarkParseYAMLFile 基准测试：YAML 解析性能
+// BenchmarkParseYAMLFile benchmark test: YAML parsing performance
 func BenchmarkParseYAMLFile(b *testing.B) {
-	// 使用真实的配置文件
+	// use real configuration file
 	testFile := "profiles/specs/chrome_133.yaml"
 	
 	b.ResetTimer()
