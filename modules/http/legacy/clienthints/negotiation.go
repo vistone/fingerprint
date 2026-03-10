@@ -1,133 +1,133 @@
 package clienthints
 
-// Phase 3: 本模块已完成基础迁移，待深度优化（详见 docs/5-process/modularization/PHASE_3_PLAN.md）
+// Phase 3: This module has completed basic migration, awaiting deep optimization (see docs/5-process/modularization/PHASE_3_PLAN.md)
 import (
 	"fmt"
 	"strings"
 )
 
-// NegotiationState Client Hints 协商状态
+// NegotiationState Client Hints negotiation state
 type NegotiationState int
 
 const (
-	// NEGOTIATION_INIT 初始状态（未进行协商）
+	// NEGOTIATION_INIT initial state (no negotiation)
 	NEGOTIATION_INIT NegotiationState = iota
-	// NEGOTIATION_REQUESTED 服务器请求提示
+	// NEGOTIATION_REQUESTED server requested hints
 	NEGOTIATION_REQUESTED
-	// NEGOTIATION_ACCEPTED 客户端已接受
+	// NEGOTIATION_ACCEPTED client accepted
 	NEGOTIATION_ACCEPTED
-	// NEGOTIATION_REJECTED 客户端拒绝
+	// NEGOTIATION_REJECTED client rejected
 	NEGOTIATION_REJECTED
-	// NEGOTIATION_DELEGATED 已委托到其他源
+	// NEGOTIATION_DELEGATED delegated to other origins
 	NEGOTIATION_DELEGATED
 )
 
-// ServerPreferences 服务器对 Client Hints 的偏好
+// ServerPreferences server preferences for Client Hints
 type ServerPreferences struct {
-	// 请求的低熵提示
+	// Requested low-entropy hints
 	LowEntropyHints []string
 
-	// 请求的高熵提示
+	// Requested high-entropy hints
 	HighEntropyHints []string
 
-	// 优先级（0-100，越高优先级越高）
+	// Priority (0-100, higher is more priority)
 	Priority int
 
-	// 保留时长（秒），-1 表示持久
+	// Retention duration (seconds), -1 means persistent
 	CacheDuration int
 
-	// 跨域委托配置
+	// Cross-origin delegation configuration
 	DelegateToOrigins []string
 
-	// 是否允许不安全连接
+	// Whether to allow insecure connections
 	AllowInsecure bool
 
-	// 附加说明
+	// Additional description
 	Description string
 }
 
-// ClientCapabilities 客户端 Client Hints 能力声明
+// ClientCapabilities client Client Hints capability declaration
 type ClientCapabilities struct {
-	// 支持的低熵提示
+	// Supported low-entropy hints
 	SupportedLowEntropy []string
 
-	// 支持的高熵提示
+	// Supported high-entropy hints
 	SupportedHighEntropy []string
 
-	// 浏览器特定的限制
+	// Browser-specific limitations
 	BrowserLimitations []string
 
-	// 隐私保护等级 (0-100)
+	// Privacy protection level (0-100)
 	PrivacyLevel int
 
-	// 用户同意状态
+	// User consent status
 	UserConsent bool
 
-	// 设备类型
+	// Device type
 	DeviceType string
 }
 
-// NegotiationStrategy Client Hints 协商策略
+// NegotiationStrategy Client Hints negotiation strategy
 type NegotiationStrategy struct {
-	// 协商状态
+	// Negotiation state
 	State NegotiationState
 
-	// 服务器偏好
+	// Server preferences
 	ServerPrefs *ServerPreferences
 
-	// 客户端能力
+	// Client capabilities
 	ClientCaps *ClientCapabilities
 
-	// 已协商的提示集合
+	// Negotiated hints set
 	NegotiatedHints []string
 
-	// 被拒绝的提示
+	// Rejected hints
 	RejectedHints []string
 
-	// 下一次协商的时间（Unix 秒）
+	// Next negotiation time (Unix seconds)
 	NextNegotiationTime int64
 
-	// 协商历史
+	// Negotiation history
 	NegotiationHistory []NegotiationRecord
 
-	// 风险评分
+	// Risk score
 	RiskScore float64
 
-	// 异常标记
+	// Anomaly flags
 	AnomalyFlags []string
 }
 
-// NegotiationRecord 单次协商记录
+// NegotiationRecord single negotiation record
 type NegotiationRecord struct {
-	// 时间戳
+	// Timestamp
 	Timestamp int64
 
-	// 请求的提示
+	// Requested hints
 	RequestedHints []string
 
-	// 提供的提示
+	// Provided hints
 	ProvidedHints []string
 
-	// 决策原因
+	// Decision reason
 	Decision string
 
-	// 风险指标
+	// Risk indicators
 	RiskIndicators []string
 }
 
-// CHNegotiationAnalyzer Client Hints 协商分析器
+// CHNegotiationAnalyzer Client Hints negotiation analyzer
 type CHNegotiationAnalyzer struct {
 	strategies map[string]*NegotiationStrategy
 }
 
-// NewCHNegotiationAnalyzer 创建协商分析器
+// NewCHNegotiationAnalyzer creates negotiation analyzer
 func NewCHNegotiationAnalyzer() *CHNegotiationAnalyzer {
 	return &CHNegotiationAnalyzer{
 		strategies: make(map[string]*NegotiationStrategy),
 	}
 }
 
-// InitializeFromAcceptCH 从 Accept-CH 响应头初始化协商
+// InitializeFromAcceptCH initializes negotiation from Accept-CH response header
 func (a *CHNegotiationAnalyzer) InitializeFromAcceptCH(acceptCHValue string, origin string) *NegotiationStrategy {
 	prefs := a.parseAcceptCH(acceptCHValue)
 
@@ -143,7 +143,7 @@ func (a *CHNegotiationAnalyzer) InitializeFromAcceptCH(acceptCHValue string, ori
 
 	a.strategies[origin] = strategy
 
-	// 评估异常标记
+	// Evaluate anomaly flags
 	if len(prefs.HighEntropyHints) > 5 {
 		strategy.AnomalyFlags = append(strategy.AnomalyFlags, "EXCESSIVE_HIGH_ENTROPY_HINTS")
 	}
@@ -153,7 +153,7 @@ func (a *CHNegotiationAnalyzer) InitializeFromAcceptCH(acceptCHValue string, ori
 	return strategy
 }
 
-// parseAcceptCH 解析 Accept-CH 头
+// parseAcceptCH parses Accept-CH header
 func (a *CHNegotiationAnalyzer) parseAcceptCH(acceptCHValue string) *ServerPreferences {
 	prefs := &ServerPreferences{
 		LowEntropyHints:   []string{},
@@ -167,7 +167,7 @@ func (a *CHNegotiationAnalyzer) parseAcceptCH(acceptCHValue string) *ServerPrefe
 		return prefs
 	}
 
-	// 标准 Client Hints
+	// Standard Client Hints
 	lowEntropyStandard := map[string]bool{
 		"sec-ch-ua":          true,
 		"sec-ch-ua-mobile":   true,
@@ -190,7 +190,7 @@ func (a *CHNegotiationAnalyzer) parseAcceptCH(acceptCHValue string) *ServerPrefe
 		"save-data":                  true,
 	}
 
-	// 解析提示列表
+	// Parse hints list
 	parts := strings.Split(acceptCHValue, ",")
 	for _, part := range parts {
 		hint := strings.TrimSpace(part)
@@ -198,7 +198,7 @@ func (a *CHNegotiationAnalyzer) parseAcceptCH(acceptCHValue string) *ServerPrefe
 			continue
 		}
 
-		// 移除引号和额外标记
+		// Remove quotes and extra markers
 		hint = strings.Trim(hint, `"`)
 		hint = strings.ToLower(hint)
 
@@ -209,7 +209,7 @@ func (a *CHNegotiationAnalyzer) parseAcceptCH(acceptCHValue string) *ServerPrefe
 		}
 	}
 
-	// 评估优先级
+	// Evaluate priority
 	if len(prefs.HighEntropyHints) > 5 {
 		prefs.Priority = 80
 	}
@@ -217,7 +217,7 @@ func (a *CHNegotiationAnalyzer) parseAcceptCH(acceptCHValue string) *ServerPrefe
 	return prefs
 }
 
-// getDefaultCapabilities 获取默认客户端能力
+// getDefaultCapabilities gets default client capabilities
 func (a *CHNegotiationAnalyzer) getDefaultCapabilities() *ClientCapabilities {
 	return &ClientCapabilities{
 		SupportedLowEntropy: []string{
@@ -239,11 +239,11 @@ func (a *CHNegotiationAnalyzer) getDefaultCapabilities() *ClientCapabilities {
 	}
 }
 
-// DecideHints 根据服务器请求和客户端能力决定要发送的提示
+// DecideHints decides hints to send based on server request and client capabilities
 func (a *CHNegotiationAnalyzer) DecideHints(strategy *NegotiationStrategy, userPreference string) []string {
 	decided := []string{}
 
-	// 首先处理低熵提示（无条件允许）
+	// First process low-entropy hints (unconditionally allowed)
 	for _, hint := range strategy.ServerPrefs.LowEntropyHints {
 		if a.isSupportedHint(strategy.ClientCaps, hint) {
 			decided = append(decided, hint)
@@ -252,10 +252,10 @@ func (a *CHNegotiationAnalyzer) DecideHints(strategy *NegotiationStrategy, userP
 		}
 	}
 
-	// 处理高熵提示（需要用户同意）
+	// Process high-entropy hints (require user consent)
 	for _, hint := range strategy.ServerPrefs.HighEntropyHints {
 		if a.isSupportedHint(strategy.ClientCaps, hint) {
-			// 检查用户同意
+			// Check user consent
 			if strategy.ClientCaps.UserConsent || userPreference == "allow-all" {
 				decided = append(decided, hint)
 			} else {
@@ -271,7 +271,7 @@ func (a *CHNegotiationAnalyzer) DecideHints(strategy *NegotiationStrategy, userP
 	return decided
 }
 
-// isSupportedHint 检查提示是否被支持
+// isSupportedHint checks if hint is supported
 func (a *CHNegotiationAnalyzer) isSupportedHint(caps *ClientCapabilities, hint string) bool {
 	for _, h := range caps.SupportedLowEntropy {
 		if h == hint {
@@ -286,9 +286,9 @@ func (a *CHNegotiationAnalyzer) isSupportedHint(caps *ClientCapabilities, hint s
 	return false
 }
 
-// HandleCrossOriginDelegation 处理跨域委托
+// HandleCrossOriginDelegation handles cross-origin delegation
 func (a *CHNegotiationAnalyzer) HandleCrossOriginDelegation(strategy *NegotiationStrategy, delegateOrigin string, delegateHints []string) error {
-	// 验证委托源是否被授权
+	// Verify if delegation origin is authorized
 	isAuthorized := false
 	for _, allowed := range strategy.ServerPrefs.DelegateToOrigins {
 		if allowed == delegateOrigin || allowed == "*" {
@@ -304,7 +304,7 @@ func (a *CHNegotiationAnalyzer) HandleCrossOriginDelegation(strategy *Negotiatio
 
 	strategy.State = NEGOTIATION_DELEGATED
 
-	// 验证委托的提示是否在服务器允许的范围内
+	// Verify if delegated hints are within server-allowed scope
 	for _, delegatedHint := range delegateHints {
 		found := false
 		for _, negotiated := range strategy.NegotiatedHints {
@@ -321,59 +321,59 @@ func (a *CHNegotiationAnalyzer) HandleCrossOriginDelegation(strategy *Negotiatio
 	return nil
 }
 
-// evaluateNegotiationRisk 评估协商风险
+// evaluateNegotiationRisk evaluates negotiation risk
 func (a *CHNegotiationAnalyzer) evaluateNegotiationRisk(strategy *NegotiationStrategy) {
 	risk := 0.0
 
-	// 检查异常数量
+	// Check anomaly count
 	if len(strategy.AnomalyFlags) > 2 {
 		risk += 0.2
 	}
 
-	// 检查高熵提示过多（可能是指纹追踪企图）
+	// Check excessive high-entropy hints (possible fingerprinting attempt)
 	if len(strategy.ServerPrefs.HighEntropyHints) > 8 {
 		risk += 0.3
 		strategy.AnomalyFlags = append(strategy.AnomalyFlags, "EXCESSIVE_FINGERPRINTING_ATTEMPT")
 	}
 
-	// 检查委托到过多源
+	// Check delegation to too many origins
 	if len(strategy.ServerPrefs.DelegateToOrigins) > 5 {
 		risk += 0.2
 		strategy.AnomalyFlags = append(strategy.AnomalyFlags, "EXCESSIVE_DOMAIN_DELEGATION")
 	}
 
-	// 检查不安全连接上的高熵提示
+	// Check high-entropy hints on insecure connections
 	if strategy.ServerPrefs.AllowInsecure && len(strategy.ServerPrefs.HighEntropyHints) > 0 {
 		risk += 0.4
 		strategy.AnomalyFlags = append(strategy.AnomalyFlags, "HIGH_ENTROPY_OVER_INSECURE")
 	}
 
-	// 缓存时间过长
-	if strategy.ServerPrefs.CacheDuration > 31536000 { // 超过 1 年
+	// Cache duration too long
+	if strategy.ServerPrefs.CacheDuration > 31536000 { // Over 1 year
 		risk += 0.15
 	}
 
 	strategy.RiskScore = risk
 }
 
-// GetNegotiationSummary 获取协商总结
+// GetNegotiationSummary gets negotiation summary
 func (a *CHNegotiationAnalyzer) GetNegotiationSummary(strategy *NegotiationStrategy) string {
 	stateStr := ""
 	switch strategy.State {
 	case NEGOTIATION_INIT:
-		stateStr = "初始"
+		stateStr = "Initial"
 	case NEGOTIATION_REQUESTED:
-		stateStr = "已请求"
+		stateStr = "Requested"
 	case NEGOTIATION_ACCEPTED:
-		stateStr = "已接受"
+		stateStr = "Accepted"
 	case NEGOTIATION_REJECTED:
-		stateStr = "已拒绝"
+		stateStr = "Rejected"
 	case NEGOTIATION_DELEGATED:
-		stateStr = "已委托"
+		stateStr = "Delegated"
 	}
 
 	return fmt.Sprintf(
-		"状态: %s | 协商提示: %d | 被拒提示: %d | 异常标记: %d | 风险分数: %.2f",
+		"State: %s | Negotiated Hints: %d | Rejected Hints: %d | Anomaly Flags: %d | Risk Score: %.2f",
 		stateStr,
 		len(strategy.NegotiatedHints),
 		len(strategy.RejectedHints),
@@ -382,7 +382,7 @@ func (a *CHNegotiationAnalyzer) GetNegotiationSummary(strategy *NegotiationStrat
 	)
 }
 
-// GetAllStrategies 获取所有源的协商策略
+// GetAllStrategies gets negotiation strategies for all origins
 func (a *CHNegotiationAnalyzer) GetAllStrategies() map[string]*NegotiationStrategy {
 	return a.strategies
 }
