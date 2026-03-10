@@ -1,4 +1,4 @@
-// Package client 提供真实的浏览器指纹模拟和请求追踪
+// Package client provides real browser fingerprint simulation and request tracing
 package client
 
 import (
@@ -10,66 +10,66 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles"
 )
 
-// RequestTrace 请求追踪信息 - 显示实际发送给服务器的指纹
+// RequestTrace contains request tracing information - showing the actual fingerprint sent to server
 type RequestTrace struct {
 	Timestamp time.Time `json:"timestamp"`
 	RequestID string    `json:"requestId"`
 	TargetURL string    `json:"targetUrl"`
 	Method    string    `json:"method"`
 
-	// TCP/IP 层指纹 - 实际使用的 TCP 参数
+	// TCP/IP layer fingerprint - actual TCP parameters used
 	TCPIP *TCPIPFingerprint `json:"tcpip"`
 
-	// TLS 层指纹 - 实际发送的 ClientHello
+	// TLS layer fingerprint - actual ClientHello sent
 	TLS *TLSFingerprint `json:"tls"`
 
-	// HTTP 层指纹 - 实际发送的请求头
+	// HTTP layer fingerprint - actual request headers sent
 	HTTP *HTTPFingerprint `json:"http"`
 
-	// 连接信息
+	// Connection information
 	Connection *ConnectionInfo `json:"connection"`
 }
 
-// TCPIPFingerprint TCP/IP 层指纹详情
+// TCPIPFingerprint contains TCP/IP layer fingerprint details
 type TCPIPFingerprint struct {
 	TTL           uint8  `json:"ttl"`           // Time To Live
 	WindowSize    uint16 `json:"windowSize"`    // TCP Window Size
 	MSS           uint16 `json:"mss"`           // Maximum Segment Size
 	WindowScale   uint8  `json:"windowScale"`   // Window Scale Option
-	DF            bool   `json:"df"`            // Don't Fragment 标志
-	SackPermitted bool   `json:"sackPermitted"` // SACK 允许
+	DF            bool   `json:"df"`            // Don't Fragment flag
+	SackPermitted bool   `json:"sackPermitted"` // SACK permitted
 	Timestamps    bool   `json:"timestamps"`    // TCP Timestamps
-	JA4T          string `json:"ja4t"`          // JA4T 指纹哈希
+	JA4T          string `json:"ja4t"`          // JA4T fingerprint hash
 }
 
-// TLSFingerprint TLS 层指纹详情
+// TLSFingerprint contains TLS layer fingerprint details
 type TLSFingerprint struct {
-	Version         string   `json:"version"`         // TLS 版本
-	JA3             string   `json:"ja3"`             // JA3 指纹
-	JA3Hash         string   `json:"ja3Hash"`         // JA3 哈希
-	CipherSuites    []string `json:"cipherSuites"`    // 加密套件列表
-	Extensions      []string `json:"extensions"`      // 扩展列表
-	SupportedGroups []string `json:"supportedGroups"` // 支持的曲线
-	ECPointFormats  []string `json:"ecPointFormats"`  // EC 点格式
-	ALPNProtocols   []string `json:"alpnProtocols"`   // ALPN 协议
-	ClientHelloID   string   `json:"clientHelloId"`   // ClientHello 标识
+	Version         string   `json:"version"`         // TLS version
+	JA3             string   `json:"ja3"`             // JA3 fingerprint
+	JA3Hash         string   `json:"ja3Hash"`         // JA3 hash
+	CipherSuites    []string `json:"cipherSuites"`    // Cipher suites list
+	Extensions      []string `json:"extensions"`      // Extensions list
+	SupportedGroups []string `json:"supportedGroups"` // Supported curves
+	ECPointFormats  []string `json:"ecPointFormats"`  // EC point formats
+	ALPNProtocols   []string `json:"alpnProtocols"`   // ALPN protocols
+	ClientHelloID   string   `json:"clientHelloId"`   // ClientHello identifier
 }
 
-// HTTPFingerprint HTTP 层指纹详情
+// HTTPFingerprint contains HTTP layer fingerprint details
 type HTTPFingerprint struct {
 	Protocol       string              `json:"protocol"`       // HTTP/1.1, HTTP/2, HTTP/3
-	Headers        map[string]string   `json:"headers"`        // 实际发送的请求头
-	HeaderOrder    []string            `json:"headerOrder"`    // 请求头顺序
-	PseudoHeaders  []string            `json:"pseudoHeaders"`  // HTTP/2 伪头顺序
-	HTTP2Settings  *HTTP2SettingsTrace `json:"http2Settings"`  // HTTP/2 设置帧
-	HTTP3Settings  *HTTP3SettingsTrace `json:"http3Settings"`  // HTTP/3 设置
+	Headers        map[string]string   `json:"headers"`        // Actual request headers sent
+	HeaderOrder    []string            `json:"headerOrder"`    // Request header order
+	PseudoHeaders  []string            `json:"pseudoHeaders"`  // HTTP/2 pseudo header order
+	HTTP2Settings  *HTTP2SettingsTrace `json:"http2Settings"`  // HTTP/2 settings frame
+	HTTP3Settings  *HTTP3SettingsTrace `json:"http3Settings"`  // HTTP/3 settings
 	UserAgent      string              `json:"userAgent"`      // User-Agent
 	Accept         string              `json:"accept"`         // Accept
 	AcceptLanguage string              `json:"acceptLanguage"` // Accept-Language
 	AcceptEncoding string              `json:"acceptEncoding"` // Accept-Encoding
 }
 
-// HTTP3SettingsTrace HTTP/3 设置追踪
+// HTTP3SettingsTrace contains HTTP/3 settings tracing
 type HTTP3SettingsTrace struct {
 	QUICVersion    uint32 `json:"quicVersion"`
 	InitialMaxData uint64 `json:"initialMaxData"`
@@ -79,7 +79,7 @@ type HTTP3SettingsTrace struct {
 	Active         bool   `json:"active"`
 }
 
-// HTTP2SettingsTrace HTTP/2 设置追踪
+// HTTP2SettingsTrace contains HTTP/2 settings tracing
 type HTTP2SettingsTrace struct {
 	HeaderTableSize      uint32 `json:"headerTableSize"`
 	EnablePush           uint32 `json:"enablePush"`
@@ -91,7 +91,7 @@ type HTTP2SettingsTrace struct {
 	PriorityFrames       int    `json:"priorityFrames"`
 }
 
-// ConnectionInfo 连接信息
+// ConnectionInfo contains connection information
 type ConnectionInfo struct {
 	LocalAddr     string        `json:"localAddr"`
 	RemoteAddr    string        `json:"remoteAddr"`
@@ -99,13 +99,13 @@ type ConnectionInfo struct {
 	HandshakeTime time.Duration `json:"handshakeTime"`
 	TotalTime     time.Duration `json:"totalTime"`
 	Protocol      string        `json:"protocol"`     // h2, http/1.1, h3
-	ProtocolUsed  string        `json:"protocolUsed"` // 实际使用的协议
-	ALPN          string        `json:"alpn"`         // 协商的 ALPN
+	ProtocolUsed  string        `json:"protocolUsed"` // Actual protocol used
+	ALPN          string        `json:"alpn"`         // Negotiated ALPN
 	TLSVersion    string        `json:"tlsVersion"`
 	CipherSuite   string        `json:"cipherSuite"`
 }
 
-// ResponseTrace 响应追踪信息
+// ResponseTrace contains response tracing information
 type ResponseTrace struct {
 	StatusCode   int               `json:"statusCode"`
 	Status       string            `json:"status"`
@@ -116,19 +116,19 @@ type ResponseTrace struct {
 	ResponseTime time.Duration     `json:"responseTime"`
 }
 
-// ProxyResult 代理请求完整结果
+// ProxyResult contains complete proxy request result
 type ProxyResult struct {
 	Success       bool                   `json:"success"`
 	Error         string                 `json:"error,omitempty"`
-	ErrorType     string                 `json:"errorType,omitempty"`    // 错误分类：timeout, network, protocol, etc
-	ErrorCode     int                    `json:"errorCode,omitempty"`    // HTTP状态码或错误代码
-	ErrorDetails  map[string]interface{} `json:"errorDetails,omitempty"` // 详细错误信息
+	ErrorType     string                 `json:"errorType,omitempty"`    // Error classification: timeout, network, protocol, etc
+	ErrorCode     int                    `json:"errorCode,omitempty"`    // HTTP status code or error code
+	ErrorDetails  map[string]interface{} `json:"errorDetails,omitempty"` // Detailed error information
 	RequestTrace  *RequestTrace          `json:"requestTrace"`
 	ResponseTrace *ResponseTrace         `json:"responseTrace"`
 	ProfileUsed   *ProfileInfo           `json:"profileUsed"`
 }
 
-// ProfileInfo 使用的配置信息
+// ProfileInfo contains information about the profile used
 type ProfileInfo struct {
 	ID             string `json:"id"`
 	Name           string `json:"name"`
@@ -138,18 +138,18 @@ type ProfileInfo struct {
 	OSVersion      string `json:"osVersion"`
 }
 
-// TracedClient 带追踪的客户端
+// TracedClient is a client with request tracing capability
 type TracedClient struct {
 	profile profiles.ClientProfile
 	tracer  *RequestTracer
 }
 
-// RequestTracer 请求追踪器
+// RequestTracer is the request tracer
 type RequestTracer struct {
 	Trace *RequestTrace
 }
 
-// NewRequestTracer 创建请求追踪器
+// NewRequestTracer creates a new request tracer
 func NewRequestTracer(profile profiles.ClientProfile, url, method string) *RequestTracer {
 	return &RequestTracer{
 		Trace: &RequestTrace{
@@ -164,7 +164,7 @@ func NewRequestTracer(profile profiles.ClientProfile, url, method string) *Reque
 	}
 }
 
-// buildTCPIPFingerprint 构建 TCP/IP 指纹信息
+// buildTCPIPFingerprint builds TCP/IP fingerprint information
 func buildTCPIPFingerprint(profile profiles.ClientProfile) *TCPIPFingerprint {
 	if profile.TCPIP == nil {
 		return &TCPIPFingerprint{
@@ -189,7 +189,7 @@ func buildTCPIPFingerprint(profile profiles.ClientProfile) *TCPIPFingerprint {
 	}
 }
 
-// buildTLSFingerprint 构建 TLS 指纹信息
+// buildTLSFingerprint builds TLS fingerprint information
 func buildTLSFingerprint(profile profiles.ClientProfile) *TLSFingerprint {
 	tls := &TLSFingerprint{
 		Version:       formatTLSVersion(profile.TLSVersion),
@@ -200,28 +200,28 @@ func buildTLSFingerprint(profile profiles.ClientProfile) *TLSFingerprint {
 		ClientHelloID: string(profile.BrowserType),
 	}
 
-	// 格式化加密套件
+	// Format cipher suites
 	for _, cs := range profile.CipherSuites {
 		tls.CipherSuites = append(tls.CipherSuites, formatCipherSuite(cs))
 	}
 
-	// 格式化扩展
+	// Format extensions
 	for _, ext := range profile.Extensions {
 		tls.Extensions = append(tls.Extensions, formatExtension(ext))
 	}
 
-	// 格式化支持的曲线
+	// Format supported curves
 	for _, curve := range profile.SupportedCurves {
 		tls.SupportedGroups = append(tls.SupportedGroups, formatCurve(uint16(curve)))
 	}
 
-	// ALPN 协议
+	// ALPN protocols
 	tls.ALPNProtocols = []string{"h2", "http/1.1"}
 
 	return tls
 }
 
-// buildHTTPFingerprint 构建 HTTP 指纹信息
+// buildHTTPFingerprint builds HTTP fingerprint information
 func buildHTTPFingerprint(profile profiles.ClientProfile) *HTTPFingerprint {
 	http := &HTTPFingerprint{
 		Protocol:    "HTTP/2",
@@ -255,13 +255,13 @@ func buildHTTPFingerprint(profile profiles.ClientProfile) *HTTPFingerprint {
 		}
 	}
 
-	// HTTP/2 伪头顺序
+	// HTTP/2 pseudo header order
 	http.PseudoHeaders = profile.PseudoHeaderOrder
 	if len(http.PseudoHeaders) == 0 {
 		http.PseudoHeaders = []string{":method", ":authority", ":scheme", ":path"}
 	}
 
-	// HTTP/2 设置
+	// HTTP/2 settings
 	http.HTTP2Settings = &HTTP2SettingsTrace{
 		HeaderTableSize:      profile.HTTP2Settings.HeaderTableSize,
 		EnablePush:           profile.HTTP2Settings.EnablePush,
@@ -276,7 +276,7 @@ func buildHTTPFingerprint(profile profiles.ClientProfile) *HTTPFingerprint {
 	return http
 }
 
-// 辅助函数
+// Helper functions
 
 func generateRequestID() string {
 	timestamp := time.Now().UnixNano()
@@ -354,7 +354,7 @@ func formatCurve(curve uint16) string {
 }
 
 func calculateJA3(profile profiles.ClientProfile) string {
-	// JA3 指纹格式: SSLVersion,Cipher,SSLExtension,EllipticCurve,EllipticCurvePointFormat
+	// JA3 fingerprint format: SSLVersion,Cipher,SSLExtension,EllipticCurve,EllipticCurvePointFormat
 	parts := make([]string, 5)
 
 	// SSL Version
@@ -382,7 +382,7 @@ func calculateJA3(profile profiles.ClientProfile) string {
 	parts[3] = strings.Join(curveStrs, "-")
 
 	// EC Point Formats
-	parts[4] = "0" // 默认未压缩
+	parts[4] = "0" // Default uncompressed
 
 	return strings.Join(parts, ",")
 }
@@ -394,7 +394,7 @@ func calculateJA3Hash(profile profiles.ClientProfile) string {
 }
 
 func getHeaderOrder(profile profiles.ClientProfile) []string {
-	// 标准的 Chrome 请求头顺序
+	// Standard Chrome request header order
 	return []string{
 		":method",
 		":authority",
