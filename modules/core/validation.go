@@ -1,4 +1,4 @@
-// Package core 提供输入验证工具
+// Package core provides input validation utilities
 package core
 
 import (
@@ -8,29 +8,29 @@ import (
 	"strings"
 )
 
-// Validator 输入验证器
+// Validator input validator
 type Validator struct {
 	errors []error
 }
 
-// NewValidator 创建新的验证器
+// NewValidator creates new validator
 func NewValidator() *Validator {
 	return &Validator{
 		errors: make([]error, 0),
 	}
 }
 
-// HasErrors 是否有错误
+// HasErrors checks if there are errors
 func (v *Validator) HasErrors() bool {
 	return len(v.errors) > 0
 }
 
-// Errors 获取所有错误
+// Errors gets all errors
 func (v *Validator) Errors() []error {
 	return v.errors
 }
 
-// Error 返回组合错误
+// Error returns combined error
 func (v *Validator) Error() error {
 	if !v.HasErrors() {
 		return nil
@@ -42,19 +42,19 @@ func (v *Validator) Error() error {
 	return NewCodedError(ErrCodeInvalidInput, "Validator", errors.New(strings.Join(msgs, "; ")))
 }
 
-// AddError 添加错误
+// AddError adds error
 func (v *Validator) AddError(err error) {
 	if err != nil {
 		v.errors = append(v.errors, err)
 	}
 }
 
-// AddErrorf 添加格式化错误
+// AddErrorf adds formatted error
 func (v *Validator) AddErrorf(format string, args ...interface{}) {
 	v.errors = append(v.errors, fmt.Errorf(format, args...))
 }
 
-// NotNil 验证非 nil
+// NotNil validates not nil
 func (v *Validator) NotNil(val interface{}, name string) *Validator {
 	if val == nil {
 		v.AddErrorf("%s cannot be nil", name)
@@ -62,7 +62,7 @@ func (v *Validator) NotNil(val interface{}, name string) *Validator {
 	return v
 }
 
-// NotEmpty 验证字符串非空
+// NotEmpty validates string is not empty
 func (v *Validator) NotEmpty(s string, name string) *Validator {
 	if strings.TrimSpace(s) == "" {
 		v.AddErrorf("%s cannot be empty", name)
@@ -70,7 +70,7 @@ func (v *Validator) NotEmpty(s string, name string) *Validator {
 	return v
 }
 
-// NotZero 验证整数非零
+// NotZero validates integer is not zero
 func (v *Validator) NotZero(n int, name string) *Validator {
 	if n == 0 {
 		v.AddErrorf("%s cannot be zero", name)
@@ -78,7 +78,7 @@ func (v *Validator) NotZero(n int, name string) *Validator {
 	return v
 }
 
-// Positive 验证正数
+// Positive validates positive number
 func (v *Validator) Positive(n int, name string) *Validator {
 	if n <= 0 {
 		v.AddErrorf("%s must be positive, got %d", name, n)
@@ -86,7 +86,7 @@ func (v *Validator) Positive(n int, name string) *Validator {
 	return v
 }
 
-// InRange 验证范围
+// InRange verifyrange
 func (v *Validator) InRange(n, min, max int, name string) *Validator {
 	if n < min || n > max {
 		v.AddErrorf("%s must be in range [%d, %d], got %d", name, min, max, n)
@@ -94,7 +94,7 @@ func (v *Validator) InRange(n, min, max int, name string) *Validator {
 	return v
 }
 
-// MinLength 验证最小长度
+// MinLength verifyminimumlength
 func (v *Validator) MinLength(s string, min int, name string) *Validator {
 	if len(s) < min {
 		v.AddErrorf("%s must be at least %d characters, got %d", name, min, len(s))
@@ -102,7 +102,7 @@ func (v *Validator) MinLength(s string, min int, name string) *Validator {
 	return v
 }
 
-// MaxLength 验证最大长度
+// MaxLength verifymaximumlength
 func (v *Validator) MaxLength(s string, max int, name string) *Validator {
 	if len(s) > max {
 		v.AddErrorf("%s must be at most %d characters, got %d", name, max, len(s))
@@ -110,7 +110,7 @@ func (v *Validator) MaxLength(s string, max int, name string) *Validator {
 	return v
 }
 
-// Matches 验证正则匹配
+// Matches validates regex match
 func (v *Validator) Matches(s string, pattern *regexp.Regexp, name string) *Validator {
 	if !pattern.MatchString(s) {
 		v.AddErrorf("%s format is invalid", name)
@@ -118,7 +118,7 @@ func (v *Validator) Matches(s string, pattern *regexp.Regexp, name string) *Vali
 	return v
 }
 
-// ValidBrowserType 验证浏览器类型
+// ValidBrowserType validates browser type
 func (v *Validator) ValidBrowserType(bt BrowserType, name string) *Validator {
 	valid := []BrowserType{
 		BrowserChrome, BrowserFirefox, BrowserSafari,
@@ -133,7 +133,7 @@ func (v *Validator) ValidBrowserType(bt BrowserType, name string) *Validator {
 	return v
 }
 
-// ValidOS 验证操作系统
+// ValidOS validates operating system
 func (v *Validator) ValidOS(os OperatingSystem, name string) *Validator {
 	valid := []OperatingSystem{
 		OSWindows10, OSWindows11, OSMacOS13, OSMacOS14, OSMacOS15,
@@ -149,7 +149,7 @@ func (v *Validator) ValidOS(os OperatingSystem, name string) *Validator {
 	return v
 }
 
-// ValidateTLSVersion 验证 TLS 版本
+// ValidateTLSVersion validates TLS version
 func ValidateTLSVersion(version uint16) error {
 	switch version {
 	case 0x0301, 0x0302, 0x0303, 0x0304:
@@ -160,13 +160,13 @@ func ValidateTLSVersion(version uint16) error {
 	}
 }
 
-// ValidateJA3Hash 验证 JA3 哈希
+// ValidateJA3Hash validates JA3 hash
 func ValidateJA3Hash(hash string) error {
 	if len(hash) != 32 {
 		return NewCodedErrorf(ErrCodeInvalidJA3Hash, "ValidateJA3Hash",
 			"invalid JA3 hash length: %d, expected 32", len(hash))
 	}
-	// JA3 是 MD5，应该是 32 位十六进制
+	// JA3 is MD5, should be 32-character hexadecimal
 	for _, c := range hash {
 		if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
 			return NewCodedError(ErrCodeInvalidJA3Hash, "ValidateJA3Hash",
@@ -176,9 +176,9 @@ func ValidateJA3Hash(hash string) error {
 	return nil
 }
 
-// SanitizeString 清理字符串输入
+// SanitizeString sanitizes string input
 func SanitizeString(s string, maxLen int) string {
-	// 移除控制字符
+	// remove control characters
 	s = strings.Map(func(r rune) rune {
 		if r < 32 && r != '\t' && r != '\n' && r != '\r' {
 			return -1
@@ -186,7 +186,7 @@ func SanitizeString(s string, maxLen int) string {
 		return r
 	}, s)
 	
-	// 截断过长的字符串
+	// truncate overly long strings
 	if len(s) > maxLen {
 		s = s[:maxLen]
 	}
@@ -194,7 +194,7 @@ func SanitizeString(s string, maxLen int) string {
 	return strings.TrimSpace(s)
 }
 
-// SafeDereference 安全解引用指针
+// SafeDereference safely dereferences pointer
 func SafeDereference(ptr *int, defaultVal int) int {
 	if ptr == nil {
 		return defaultVal
@@ -202,7 +202,7 @@ func SafeDereference(ptr *int, defaultVal int) int {
 	return *ptr
 }
 
-// SafeSliceAccess 安全访问切片
+// SafeSliceAccess safely accesses slice
 func SafeSliceAccess(slice []interface{}, index int) (interface{}, bool) {
 	if index < 0 || index >= len(slice) {
 		return nil, false

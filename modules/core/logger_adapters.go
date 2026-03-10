@@ -7,15 +7,15 @@ import (
 )
 
 // ============================================================================
-// StdLoggerAdapter - 标准库 log 适配器
+// StdLoggerAdapter - standard library log adapter
 // ============================================================================
 
-// StdLoggerAdapter 适配标准库 log.Logger
+// StdLoggerAdapter adapts standard library log.Logger
 type StdLoggerAdapter struct {
 	logger *log.Logger
 }
 
-// NewStdLoggerAdapter 创建标准库日志适配器
+// NewStdLoggerAdapter creates standard library log adapter
 func NewStdLoggerAdapter(logger *log.Logger) Logger {
 	if logger == nil {
 		logger = log.New(os.Stderr, "", log.LstdFlags)
@@ -40,15 +40,15 @@ func (a *StdLoggerAdapter) Error(msg string, keysAndValues ...any) {
 }
 
 // ============================================================================
-// SlogAdapter - Go 1.21+ slog 适配器
+// SlogAdapter - Go 1.21+ slog adapter
 // ============================================================================
 
-// SlogAdapter 适配 slog.Logger
+// SlogAdapter adapts slog.Logger
 type SlogAdapter struct {
 	logger *slog.Logger
 }
 
-// NewSlogAdapter 创建 slog 适配器
+// NewSlogAdapter create slog adapter
 func NewSlogAdapter(logger *slog.Logger) Logger {
 	if logger == nil {
 		logger = slog.Default()
@@ -73,10 +73,10 @@ func (a *SlogAdapter) Error(msg string, keysAndValues ...any) {
 }
 
 // ============================================================================
-// ZapLoggerAdapter - Uber Zap 适配器（条件编译）
+// ZapLoggerAdapter - Uber Zap adapter (conditional compilation)
 // ============================================================================
 
-// ZapLogger 接口定义（避免直接依赖 zap）
+// ZapLogger interface definition (avoid direct dependency on zap)
 type ZapLogger interface {
 	Debug(msg string, fields ...any)
 	Info(msg string, fields ...any)
@@ -84,12 +84,12 @@ type ZapLogger interface {
 	Error(msg string, fields ...any)
 }
 
-// ZapAdapter 适配 zap.Logger
+// ZapAdapter adapts zap.Logger
 type ZapAdapter struct {
 	logger ZapLogger
 }
 
-// NewZapAdapter 创建 zap 适配器
+// NewZapAdapter create zap adapter
 func NewZapAdapter(logger ZapLogger) Logger {
 	return &ZapAdapter{logger: logger}
 }
@@ -119,10 +119,10 @@ func (a *ZapAdapter) Error(msg string, keysAndValues ...any) {
 }
 
 // ============================================================================
-// LogrusLoggerAdapter - Logrus 适配器（条件编译）
+// LogrusLoggerAdapter - Logrus adapter (conditional compilation)
 // ============================================================================
 
-// LogrusLogger 接口定义（避免直接依赖 logrus）
+// LogrusLogger interface definition (avoid direct dependency on logrus)
 type LogrusLogger interface {
 	Debug(args ...any)
 	Info(args ...any)
@@ -131,12 +131,12 @@ type LogrusLogger interface {
 	WithFields(fields map[string]any) LogrusLogger
 }
 
-// LogrusAdapter 适配 logrus.Logger
+// LogrusAdapter adapts logrus.Logger
 type LogrusAdapter struct {
 	logger LogrusLogger
 }
 
-// NewLogrusAdapter 创建 logrus 适配器
+// NewLogrusAdapter create logrus adapter
 func NewLogrusAdapter(logger LogrusLogger) Logger {
 	return &LogrusAdapter{logger: logger}
 }
@@ -169,7 +169,7 @@ func (a *LogrusAdapter) Error(msg string, keysAndValues ...any) {
 	}
 }
 
-// keyValuesToMap 将键值对转换为 map
+// keyValuesToMap converts key-value pairs to map
 func keyValuesToMap(keysAndValues []any) map[string]any {
 	fields := make(map[string]any)
 	for i := 0; i < len(keysAndValues)-1; i += 2 {
@@ -181,10 +181,10 @@ func keyValuesToMap(keysAndValues []any) map[string]any {
 }
 
 // ============================================================================
-// 工具函数
+// utility functions
 // ============================================================================
 
-// NewDefaultLogger 创建默认的 slog 日志器
+// NewDefaultLogger creates default slog logger
 func NewDefaultLogger(level string) Logger {
 	var slogLevel slog.Level
 	switch level {
