@@ -16,7 +16,7 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-// ExternalScriptStats 外链脚本statisticsinfo
+// ExternalScriptStats contains external script statistics
 type ExternalScriptStats struct {
 	Count       int            `json:"count"`
 	URLs        []string       `json:"urls"`
@@ -307,7 +307,7 @@ func resolveScriptURL(baseURL, ref string) string {
 	return base.ResolveReference(r).String()
 }
 
-// buildExternalScriptStats 构建外链脚本statisticsinfo（去重+域名group）
+// buildExternalScriptStats builds external script statistics (deduplicated + grouped by domain)
 func buildExternalScriptStats(urls []string) *ExternalScriptStats {
 	if len(urls) == 0 {
 		return &ExternalScriptStats{
