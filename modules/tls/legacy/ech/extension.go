@@ -5,56 +5,56 @@ import (
 	"fmt"
 )
 
-// ECHExtensionType ECH 扩展类型常量
+// translated comment
 const (
-	// ExtensionEncryptedClientHello ECH 扩展类型 (draft-ietf-tls-esni)
+	// translated comment
 	ExtensionEncryptedClientHello uint16 = 0xfe0d
 
 	// ExtensionECHOuterExtensions ECH Outer Extensions
 	ExtensionECHOuterExtensions uint16 = 0xfd00
 
-	// ECHVersionDraft13 ECH Draft 13 版本
+	// translated comment
 	ECHVersionDraft13 uint16 = 0xfe0d
 
-	// ECHVersionDraft14 ECH Draft 14 版本
+	// translated comment
 	ECHVersionDraft14 uint16 = 0xfe0e
 
-	// ECHVersionDraft15 ECH Draft 15 版本
+	// translated comment
 	ECHVersionDraft15 uint16 = 0xfe0f
 )
 
-// ECHClientHelloType ECH ClientHello 类型
+// translated comment
 type ECHClientHelloType uint8
 
 const (
-	// ECHClientHelloTypeOuter 外层 ClientHello（RFC draft-ietf-tls-esni: outer=0）
+	// translated comment
 	ECHClientHelloTypeOuter ECHClientHelloType = 0
 
-	// ECHClientHelloTypeInner 内层 ClientHello（RFC draft-ietf-tls-esni: inner=1）
+	// translated comment
 	ECHClientHelloTypeInner ECHClientHelloType = 1
 )
 
-// ECHExtension ECH 扩展结构
+// translated comment
 type ECHExtension struct {
-	// 扩展类型
+	// translated comment
 	Type uint16
 
-	// ECH 版本
+	// translated comment
 	Version uint16
 
-	// ClientHello 类型（内层/外层）
+	// translated comment
 	ClientHelloType ECHClientHelloType
 
 	// Cipher Suite
 	CipherSuite KEMCipherSuite
 
-	// Encoded CH 长度
+	// translated comment
 	EncodedCHLength uint16
 
-	// Encoded CH 内容（加密或编码的 ClientHello）
+	// translated comment
 	EncodedCH []byte
 
-	// Config ID（外层 ClientHello 使用）
+	// translated comment
 	ConfigID uint8
 
 	// KEM ID
@@ -66,17 +66,17 @@ type ECHExtension struct {
 	// AEAD ID
 	AEADID uint16
 
-	// 原始数据
+	// translated comment
 	Raw []byte
 }
 
-// KEMCipherSuite KEM 算法套件
+// translated comment
 type KEMCipherSuite struct {
 	KDFID  uint16
 	AEADID uint16
 }
 
-// ParseECHExtension 解析 ECH 扩展数据
+// translated comment
 func ParseECHExtension(extType uint16, data []byte) (*ECHExtension, error) {
 	if len(data) < 2 {
 		return nil, fmt.Errorf("ECH extension too short: %d bytes", len(data))
@@ -87,42 +87,42 @@ func ParseECHExtension(extType uint16, data []byte) (*ECHExtension, error) {
 		Raw:  data,
 	}
 
-	// 解析版本
+	// translated comment
 	ech.Version = binary.BigEndian.Uint16(data[0:2])
 
-	// 根据版本解析
+	// translated comment
 	switch ech.Version {
 	case ECHVersionDraft13, ECHVersionDraft14, ECHVersionDraft15:
 		return parseECHDraft13(ech, data)
 	default:
-		// 未知版本，尝试通用解析
+		// translated comment
 		return parseECHGeneric(ech, data)
 	}
 }
 
-// parseECHDraft13 解析 Draft 13+ 格式
+// translated comment
 func parseECHDraft13(ech *ECHExtension, data []byte) (*ECHExtension, error) {
 	if len(data) < 3 {
 		return nil, fmt.Errorf("ECH draft 13 extension too short: %d bytes", len(data))
 	}
 
-	offset := 2 // 跳过版本
+	offset := 2 // translated comment
 
-	// 对于内层 ClientHello
+	// translated comment
 	if ech.Type == ExtensionEncryptedClientHello {
-		// 读取 ClientHello 类型
+		// translated comment
 		if offset >= len(data) {
 			return nil, fmt.Errorf("ECH extension truncated at type")
 		}
 		ech.ClientHelloType = ECHClientHelloType(data[offset])
 		offset++
 
-		// 内层 ClientHello 只包含类型
+		// translated comment
 		if ech.ClientHelloType == ECHClientHelloTypeInner {
 			return ech, nil
 		}
 
-		// 外层 ClientHello 包含更多信息
+		// translated comment
 		if len(data) < offset+7 {
 			return nil, fmt.Errorf("ECH outer hello truncated")
 		}
@@ -139,7 +139,7 @@ func parseECHDraft13(ech *ECHExtension, data []byte) (*ECHExtension, error) {
 		ech.ConfigID = data[offset]
 		offset++
 
-		// Encoded CH 长度和内容
+		// translated comment
 		if len(data) < offset+2 {
 			return nil, fmt.Errorf("ECH extension truncated at length")
 		}
@@ -155,31 +155,31 @@ func parseECHDraft13(ech *ECHExtension, data []byte) (*ECHExtension, error) {
 	return ech, nil
 }
 
-// parseECHGeneric 通用解析（未知版本）
+// translated comment
 func parseECHGeneric(ech *ECHExtension, data []byte) (*ECHExtension, error) {
-	// 对于未知版本，仅保存原始数据
-	// 实际应用中可能需要根据版本特定的逻辑处理
-	ech.EncodedCH = data[2:] // 跳过版本字段
+	// translated comment
+	// translated comment
+	ech.EncodedCH = data[2:] // translated comment
 	return ech, nil
 }
 
-// IsOuterHello 是否为外层 ClientHello
+// translated comment
 func (e *ECHExtension) IsOuterHello() bool {
 	return e.ClientHelloType == ECHClientHelloTypeOuter
 }
 
-// IsInnerHello 是否为内层 ClientHello
+// translated comment
 func (e *ECHExtension) IsInnerHello() bool {
 	return e.ClientHelloType == ECHClientHelloTypeInner
 }
 
-// IsGREASE 是否为 GREASE ECH
+// translated comment
 func (e *ECHExtension) IsGREASE() bool {
-	// GREASE ECH 通常版本号为 0 或特定测试值
+	// translated comment
 	return e.Version == 0x0000 || e.Version == 0x0a0a || e.Version == 0x1a1a
 }
 
-// GetVersionName 获取版本名称
+// translated comment
 func (e *ECHExtension) GetVersionName() string {
 	switch e.Version {
 	case ECHVersionDraft13:
@@ -195,22 +195,22 @@ func (e *ECHExtension) GetVersionName() string {
 	}
 }
 
-// Serialize 序列化 ECH 扩展
+// translated comment
 func (e *ECHExtension) Serialize() ([]byte, error) {
 	if e.IsInnerHello() {
-		// 内层 ClientHello: 版本 + 类型
+		// translated comment
 		data := make([]byte, 3)
 		binary.BigEndian.PutUint16(data[0:2], e.Version)
 		data[2] = byte(ECHClientHelloTypeInner)
 		return data, nil
 	}
 
-	// 外层 ClientHello
+	// translated comment
 	if e.EncodedCH == nil {
 		return nil, fmt.Errorf("encoded CH is required for outer hello")
 	}
 
-	// 计算总长度
+	// translated comment
 	length := 2 + // version
 		1 + // client_hello_type
 		4 + // cipher_suite (kdf + aead)
@@ -251,20 +251,20 @@ func (e *ECHExtension) Serialize() ([]byte, error) {
 	return data, nil
 }
 
-// Validate 验证 ECH 扩展
+// translated comment
 func (e *ECHExtension) Validate() error {
-	// 验证版本
+	// translated comment
 	if e.Version == 0 {
 		return fmt.Errorf("ECH version cannot be 0 (except GREASE)")
 	}
 
-	// 验证 ClientHello 类型
+	// translated comment
 	if e.ClientHelloType != ECHClientHelloTypeInner &&
 		e.ClientHelloType != ECHClientHelloTypeOuter {
 		return fmt.Errorf("invalid ECH client hello type: %d", e.ClientHelloType)
 	}
 
-	// 外层 ClientHello 需要 encoded CH
+	// translated comment
 	if e.IsOuterHello() && len(e.EncodedCH) == 0 {
 		return fmt.Errorf("outer hello requires encoded CH")
 	}
@@ -272,7 +272,7 @@ func (e *ECHExtension) Validate() error {
 	return nil
 }
 
-// String 返回 ECH 扩展的描述
+// translated comment
 func (e *ECHExtension) String() string {
 	return fmt.Sprintf("ECH{type=%s, version=%s, hello_type=%s, encoded_ch_len=%d}",
 		hexType(e.Type),
@@ -297,12 +297,12 @@ func clientHelloTypeName(t ECHClientHelloType) string {
 	}
 }
 
-// ECHConfigList ECH 配置列表（用于 ECH 配置扩展）
+// translated comment
 type ECHConfigList struct {
 	Configs []ECHConfigRecord
 }
 
-// ECHConfigRecord 单个 ECH 配置记录
+// translated comment
 type ECHConfigRecord struct {
 	Version           uint16
 	Length            uint16
@@ -315,7 +315,7 @@ type ECHConfigRecord struct {
 	MaximumNameLength uint8
 }
 
-// ParseECHConfigList 解析 ECH 配置列表
+// translated comment
 func ParseECHConfigList(data []byte) (*ECHConfigList, error) {
 	if len(data) < 2 {
 		return nil, fmt.Errorf("ECH config list too short")
@@ -323,20 +323,20 @@ func ParseECHConfigList(data []byte) (*ECHConfigList, error) {
 
 	list := &ECHConfigList{}
 
-	// 读取总长度
+	// translated comment
 	totalLength := binary.BigEndian.Uint16(data[0:2])
 
-	// 如果总长度为 0，返回空列表
+	// translated comment
 	if totalLength == 0 {
 		return list, nil
 	}
 
-	// 验证数据长度
+	// translated comment
 	if len(data) < 2+int(totalLength) {
 		return nil, fmt.Errorf("ECH config list truncated: expected %d, got %d", totalLength, len(data)-2)
 	}
 
-	// 实际配置数据（跳过长度前缀）
+	// translated comment
 	configData := data[2:]
 	offset := 0
 
@@ -347,25 +347,25 @@ func ParseECHConfigList(data []byte) (*ECHConfigList, error) {
 
 		config := ECHConfigRecord{}
 
-		// 版本
+		// translated comment
 		config.Version = binary.BigEndian.Uint16(configData[offset : offset+2])
 		offset += 2
 
-		// 长度
+		// translated comment
 		config.Length = binary.BigEndian.Uint16(configData[offset : offset+2])
 		offset += 2
 
-		// 内容
+		// translated comment
 		if len(configData) < offset+int(config.Length) {
 			return nil, fmt.Errorf("ECH config content truncated")
 		}
 		config.Contents = configData[offset : offset+int(config.Length)]
 		offset += int(config.Length)
 
-		// 解析内容（简化版本）
+		// translated comment
 		if err := parseECHConfigContents(&config); err != nil {
-			// 解析失败也继续，记录配置但不解析内容
-			// 实际应用可能需要更严格的处理
+			// translated comment
+			// translated comment
 			_ = err
 		}
 
@@ -375,7 +375,7 @@ func ParseECHConfigList(data []byte) (*ECHConfigList, error) {
 	return list, nil
 }
 
-// parseECHConfigContents 解析 ECH 配置内容
+// translated comment
 func parseECHConfigContents(config *ECHConfigRecord) error {
 	if len(config.Contents) < 8 {
 		return fmt.Errorf("ECH config contents too short")
@@ -384,7 +384,7 @@ func parseECHConfigContents(config *ECHConfigRecord) error {
 	data := config.Contents
 	offset := 0
 
-	// Public Name 长度
+	// translated comment
 	publicNameLen := data[offset]
 	offset++
 
@@ -395,8 +395,8 @@ func parseECHConfigContents(config *ECHConfigRecord) error {
 	config.PublicName = string(data[offset : offset+int(publicNameLen)])
 	offset += int(publicNameLen)
 
-	// Public Key（简化解析）
-	// 实际解析需要完整的 HPKE 公钥解析
+	// translated comment
+	// translated comment
 
 	return nil
 }

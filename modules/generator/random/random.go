@@ -1,6 +1,6 @@
 package random
 
-// Phase 3: 本模块已完成基础迁移，待深度优化（详见 docs/5-process/modularization/PHASE_3_PLAN.md）
+// translated comment
 import (
 	"fmt"
 	"strings"
@@ -15,13 +15,13 @@ import (
 	"github.com/vistone/fingerprint/modules/core/types"
 )
 
-// browserProfileIndex 浏览器类型索引（预计算，避免每次遍历）
+// translated comment
 var (
 	browserIndex     map[string][]string
 	browserIndexOnce sync.Once
 )
 
-// initBrowserIndex 初始化浏览器索引（延迟加载，线程安全）
+// translated comment
 func initBrowserIndex() {
 	browserIndexOnce.Do(func() {
 		browserIndex = make(map[string][]string)
@@ -45,17 +45,17 @@ func initBrowserIndex() {
 	})
 }
 
-// GetRandomFingerprint 从所有可用指纹中随机选择一个完整的浏览器指纹
+// translated comment
 //
-// 该函数会从 profiles.MappedTLSClients 中随机选择一个浏览器指纹配置，
-// 并为该指纹生成对应的 User-Agent 和 HTTP Headers。
-// 操作系统会从所有支持的系统中随机选择。
+// translated comment
+// translated comment
+// translated comment
 //
-// 返回值:
-//   - *types.FingerprintResult: 包含完整指纹、User-Agent 和 HTTP Headers 的结果
-//   - error: 如果指纹库为空或配置无效则返回错误
+// translated comment
+// translated comment
+// translated comment
 //
-// 示例:
+// translated comment
 //
 //	result, err := GetRandomFingerprint()
 //	if err != nil {
@@ -64,54 +64,54 @@ func initBrowserIndex() {
 //	println(result.UserAgent)
 //	println(result.ClientProfile.GetClientHelloStr())
 //
-// 线程安全性: 是
-// 性能: 平均耗时 7.4 微秒，分配 1.8 KB 内存
+// translated comment
+// translated comment
 func GetRandomFingerprint() (*types.FingerprintResult, error) {
 	return GetRandomFingerprintWithOS(types.OperatingSystem(""))
 }
 
-// GetRandomFingerprintWithOS 从所有可用指纹中随机选择一个，并指定操作系统
+// translated comment
 //
-// 该函数类似于 GetRandomFingerprint，但允许指定特定的操作系统。
-// 如果 os 参数为空字符串，则会随机选择操作系统。
+// translated comment
+// translated comment
 //
-// 参数:
-//   - os: 目标操作系统，如 "Windows NT 10.0; Win64; x64"，为空时随机选择
+// translated comment
+// translated comment
 //
-// 返回值:
-//   - *types.FingerprintResult: 完整的指纹结果
-//   - error: 操作系统无效或指纹库为空时返回错误
+// translated comment
+// translated comment
+// translated comment
 //
-// 示例:
+// translated comment
 //
-//	// 指定 Windows 操作系统
+// translated comment
 //	result, err := GetRandomFingerprintWithOS("Windows NT 10.0; Win64; x64")
-//	// 随机选择操作系统
+// translated comment
 //	result, err := GetRandomFingerprintWithOS("")
 //
-// 线程安全性: 是
+// translated comment
 func GetRandomFingerprintWithOS(os types.OperatingSystem) (*types.FingerprintResult, error) {
 	start := time.Now()
 
-	// 检查 profiles.MappedTLSClients 是否为空
+	// translated comment
 	if len(profiles.MappedTLSClients) == 0 {
 		return nil, fmt.Errorf("no TLS client profiles available")
 	}
 
-	// 获取所有可用的指纹名称
+	// translated comment
 	names := make([]string, 0, len(profiles.MappedTLSClients))
 	for name := range profiles.MappedTLSClients {
 		names = append(names, name)
 	}
 
-	// 随机选择一个（线程安全）
+	// translated comment
 	randomName := utils.RandomChoiceString(names)
 	profile := profiles.MappedTLSClients[randomName]
 	if profile.GetClientHelloStr() == "" {
 		return nil, fmt.Errorf("profile %s is invalid (empty ClientHelloStr)", randomName)
 	}
 
-	// 获取对应的 User-Agent
+	// translated comment
 	var ua string
 	var err error
 	if os == "" {
@@ -123,12 +123,12 @@ func GetRandomFingerprintWithOS(os types.OperatingSystem) (*types.FingerprintRes
 		return nil, err
 	}
 
-	// 生成标准 HTTP Headers
+	// translated comment
 	browserTypeStr, _ := inferBrowserFromProfileName(randomName)
 	isMobile := isMobileProfile(randomName)
 	headers := headers.GenerateHeaders(types.BrowserType(browserTypeStr), ua, isMobile)
 
-	// 记录指标
+	// translated comment
 	durationMs := float64(time.Since(start).Nanoseconds()) / 1e6
 	osStr := string(os)
 	if osStr == "" {
@@ -144,13 +144,13 @@ func GetRandomFingerprintWithOS(os types.OperatingSystem) (*types.FingerprintRes
 	}, nil
 }
 
-// GetRandomFingerprintByBrowser 根据浏览器类型随机获取指纹和 User-Agent
-// browserType: "chrome", "firefox", "safari", "opera" 等
+// translated comment
+// translated comment
 func GetRandomFingerprintByBrowser(browserType string) (*types.FingerprintResult, error) {
 	return GetRandomFingerprintByBrowserWithOS(browserType, types.OperatingSystem(""))
 }
 
-// GetRandomFingerprintByBrowserWithOS 根据浏览器类型随机获取指纹和 User-Agent，并指定操作系统
+// translated comment
 func GetRandomFingerprintByBrowserWithOS(browserType string, os types.OperatingSystem) (*types.FingerprintResult, error) {
 	if browserType == "" {
 		return nil, fmt.Errorf("browser type cannot be empty")
@@ -161,23 +161,23 @@ func GetRandomFingerprintByBrowserWithOS(browserType string, os types.OperatingS
 
 	browserType = strings.ToLower(browserType)
 
-	// 使用预计算的索引（线程安全，延迟初始化）
+	// translated comment
 	initBrowserIndex()
 
-	// 从索引中获取候选列表（零分配）
+	// translated comment
 	candidates, exists := browserIndex[browserType]
 	if !exists || len(candidates) == 0 {
 		return nil, &ErrBrowserNotFound{Browser: browserType}
 	}
 
-	// 随机选择一个（线程安全）
+	// translated comment
 	randomName := utils.RandomChoiceString(candidates)
 	profile := profiles.MappedTLSClients[randomName]
 	if profile.GetClientHelloStr() == "" {
 		return nil, fmt.Errorf("profile %s is invalid (empty ClientHelloStr)", randomName)
 	}
 
-	// 获取对应的 User-Agent
+	// translated comment
 	var ua string
 	var err error
 	if os == "" {
@@ -189,7 +189,7 @@ func GetRandomFingerprintByBrowserWithOS(browserType string, os types.OperatingS
 		return nil, err
 	}
 
-	// 生成标准 HTTP Headers
+	// translated comment
 	browserTypeStr, _ := inferBrowserFromProfileName(randomName)
 	isMobile := isMobileProfile(randomName)
 	headers := headers.GenerateHeaders(types.BrowserType(browserTypeStr), ua, isMobile)
@@ -202,7 +202,7 @@ func GetRandomFingerprintByBrowserWithOS(browserType string, os types.OperatingS
 	}, nil
 }
 
-// ErrBrowserNotFound 浏览器类型未找到错误
+// translated comment
 type ErrBrowserNotFound struct {
 	Browser string
 }
@@ -211,7 +211,7 @@ func (e *ErrBrowserNotFound) Error() string {
 	return "browser type not found: " + e.Browser
 }
 
-// isMobileProfile 判断是否为移动端 profile
+// translated comment
 func isMobileProfile(profileName string) bool {
 	name := strings.ToLower(profileName)
 	return strings.Contains(name, "ios") ||
@@ -220,7 +220,7 @@ func isMobileProfile(profileName string) bool {
 		strings.Contains(name, "mobile")
 }
 
-// inferBrowserFromProfileName 从 profile 名称推断浏览器类型
+// translated comment
 func inferBrowserFromProfileName(profileName string) (string, string) {
 	profileName = strings.ToLower(profileName)
 

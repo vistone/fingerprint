@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// JSDetectionResult 表示JavaScript扫描的检测结果
+// translated comment
 type JSDetectionResult struct {
 	Detected             []DetectedAPI `json:"detected"`
 	NotDetected          []string      `json:"notDetected"`
@@ -18,7 +18,7 @@ type JSDetectionResult struct {
 	DynamicFeaturesFound bool          `json:"dynamicFeaturesFound"`
 }
 
-// DetectedAPI 表示检测到的API调用
+// translated comment
 type DetectedAPI struct {
 	Name        string   `json:"name"`
 	Severity    string   `json:"severity"`
@@ -27,7 +27,7 @@ type DetectedAPI struct {
 	Samples     []string `json:"samples"`
 }
 
-// detectionPattern 检测模式定义
+// translated comment
 type detectionPattern struct {
 	Name        string
 	Severity    string
@@ -244,25 +244,25 @@ var detectionPatterns = []detectionPattern{
 	},
 }
 
-// ScanJavaScriptWithV8 使用高级静态分析扫描JavaScript代码中的指纹检测
+// translated comment
 func ScanJavaScriptWithV8(ctx context.Context, htmlContent string) (*JSDetectionResult, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	// 规范化内容（移除注释、压缩等）
+	// translated comment
 	normalizedCode := normalizeJavaScript(htmlContent)
 
-	// 初始化结果
+	// translated comment
 	result := &JSDetectionResult{
 		Detected:         []DetectedAPI{},
 		NotDetected:      []string{},
 		ExecutionDetails: "使用高级静态代码分析\n",
 	}
 
-	// 追踪的检测API集合
+	// translated comment
 	detectedSet := make(map[string]*DetectedAPI)
 
-	// 对每个检测模式进行扫描
+	// translated comment
 	for _, pattern := range detectionPatterns {
 		select {
 		case <-ctx.Done():
@@ -276,7 +276,7 @@ func ScanJavaScriptWithV8(ctx context.Context, htmlContent string) (*JSDetection
 		for _, regexPattern := range pattern.Patterns {
 			foundMatches := regexPattern.FindAllString(normalizedCode, -1)
 			if len(foundMatches) > 0 {
-				// 对匹配值去重，避免同一特征在压缩脚本中重复放大。
+				// translated comment
 				for _, match := range foundMatches {
 					uniqueMatches[match] = true
 					if len(samples) < 3 {
@@ -289,7 +289,7 @@ func ScanJavaScriptWithV8(ctx context.Context, htmlContent string) (*JSDetection
 		matches := len(uniqueMatches)
 
 		if matches > 0 {
-			// 发现了检测代码
+			// translated comment
 			detected := DetectedAPI{
 				Name:        pattern.Name,
 				Severity:    pattern.Severity,
@@ -300,13 +300,13 @@ func ScanJavaScriptWithV8(ctx context.Context, htmlContent string) (*JSDetection
 			detectedSet[pattern.Name] = &detected
 			result.ExecutionDetails += fmt.Sprintf("✓ %s: 检测到 %d 个匹配\n", pattern.Name, matches)
 		} else {
-			// 未检测到
+			// translated comment
 			result.NotDetected = append(result.NotDetected, pattern.Name)
 			result.ExecutionDetails += fmt.Sprintf("✗ %s: 未检测到\n", pattern.Name)
 		}
 	}
 
-	// 构建最终检测列表
+	// translated comment
 	for _, pattern := range detectionPatterns {
 		if detected, found := detectedSet[pattern.Name]; found {
 			result.Detected = append(result.Detected, *detected)
@@ -320,37 +320,37 @@ func ScanJavaScriptWithV8(ctx context.Context, htmlContent string) (*JSDetection
 	return result, nil
 }
 
-// normalizeJavaScript 规范化JavaScript代码
+// translated comment
 func normalizeJavaScript(htmlContent string) string {
-	// 提取脚本标签内容
+	// translated comment
 	scripts := extractScriptTags(htmlContent)
 	scriptSrcs := extractScriptSrcs(htmlContent)
 	capturedScriptSrcs := extractCapturedScriptSrcs(htmlContent)
 	inlineCode := strings.Join(scripts, "\n")
 
-	// 仅清洗内联脚本，避免把 https:// 这类URL误识别为注释并截断。
-	// 移除单行注释（多行模式）
+	// translated comment
+	// translated comment
 	re := regexp.MustCompile(`(?m)//.*$`)
 	inlineCode = re.ReplaceAllString(inlineCode, "")
 
-	// 移除多行注释
+	// translated comment
 	re = regexp.MustCompile(`(?s)/\*.*?\*/`)
 	inlineCode = re.ReplaceAllString(inlineCode, "")
 
 	combinedCode := inlineCode + "\n" + strings.Join(scriptSrcs, "\n") + "\n" + strings.Join(capturedScriptSrcs, "\n")
 
-	// 规范化空格（将多个空格/换行替换为单个空格）
+	// translated comment
 	re = regexp.MustCompile(`\s+`)
 	combinedCode = re.ReplaceAllString(combinedCode, " ")
 
 	return combinedCode
 }
 
-// extractScriptTags 从HTML中提取脚本内容
+// translated comment
 func extractScriptTags(htmlContent string) []string {
 	var scripts []string
 
-	// 匹配 <script> 标签
+	// translated comment
 	re := regexp.MustCompile(`(?i)<script[^>]*>([\s\S]*?)</script>`)
 	matches := re.FindAllStringSubmatch(htmlContent, -1)
 
@@ -358,7 +358,7 @@ func extractScriptTags(htmlContent string) []string {
 		if len(match) > 1 {
 			scriptContent := strings.TrimSpace(match[1])
 			if scriptContent != "" {
-				// 过滤外部脚本引用
+				// translated comment
 				if !strings.Contains(scriptContent, "src=") {
 					scripts = append(scripts, scriptContent)
 				}
@@ -369,11 +369,11 @@ func extractScriptTags(htmlContent string) []string {
 	return scripts
 }
 
-// extractScriptSrcs 从HTML中提取外链 script src
+// translated comment
 func extractScriptSrcs(htmlContent string) []string {
 	var srcs []string
 
-	// 匹配 <script ... src="..."> 标签
+	// translated comment
 	re := regexp.MustCompile(`(?is)<script[^>]*\bsrc\s*=\s*['"]([^'"]+)['"][^>]*>`)
 	matches := re.FindAllStringSubmatch(htmlContent, -1)
 
@@ -390,7 +390,7 @@ func extractScriptSrcs(htmlContent string) []string {
 	return srcs
 }
 
-// extractCapturedScriptSrcs 从headless注入的 data-captured-src 中提取外链URL
+// translated comment
 func extractCapturedScriptSrcs(htmlContent string) []string {
 	var srcs []string
 

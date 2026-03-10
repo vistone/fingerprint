@@ -81,7 +81,7 @@ func (d *AnomalyDetector) hasLowEntropy(data []byte) bool {
 			uniqueBytes++
 		}
 	}
-	// Less than 26/256 ≈ 10% different byte values is considered suspicious
+	// translated comment
 	return uniqueBytes < 26
 }
 

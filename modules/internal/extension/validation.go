@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-// DefaultValidator 默认输入验证器
+// translated comment
 //
-// 使用示例：
+// translated comment
 //
 //	validator := extension.NewDefaultValidator()
 //	validator.MaxDataSize = 8192  // 8KB
@@ -21,32 +21,32 @@ import (
 //	    return err
 //	}
 //
-// 验证项：
-//   - 数据非空且不超过 MaxDataSize
-//   - 元数据必填字段（Type、Name）
-//   - 元数据字段大小限制（Name ≤256B, Description ≤1KB）
-//   - 配置项大小限制（最多 1000 个键）
+// translated comment
+// translated comment
+// translated comment
+// translated comment
+// translated comment
 type DefaultValidator struct {
-	// 最大数据大小（字节）
+	// translated comment
 	MaxDataSize int
 
-	// 最大扩展数
+	// translated comment
 	MaxExtensions int
 
-	// 启用严格模式
+	// translated comment
 	StrictMode bool
 }
 
-// NewDefaultValidator 创建默认验证器
+// translated comment
 func NewDefaultValidator() *DefaultValidator {
 	return &DefaultValidator{
 		MaxDataSize:   65536, // 64KB
-		MaxExtensions: 10000, // 10K 扩展
+		MaxExtensions: 10000, // translated comment
 		StrictMode:    true,
 	}
 }
 
-// ValidateData 验证扩展数据
+// translated comment
 func (v *DefaultValidator) ValidateData(data []byte) error {
 	if data == nil {
 		return NewError(ErrCodeInvalidInput, "data cannot be nil")
@@ -66,13 +66,13 @@ func (v *DefaultValidator) ValidateData(data []byte) error {
 	return nil
 }
 
-// ValidateMetadata 验证元数据
+// translated comment
 func (v *DefaultValidator) ValidateMetadata(metadata *ExtensionMetadata) error {
 	if metadata == nil {
 		return NewError(ErrCodeInvalidMetadata, "metadata cannot be nil")
 	}
 
-	// 检查必填字段
+	// translated comment
 	if metadata.Type == 0 {
 		return NewError(ErrCodeMissingField, "extension type cannot be 0")
 	}
@@ -92,7 +92,7 @@ func (v *DefaultValidator) ValidateMetadata(metadata *ExtensionMetadata) error {
 			"extension description too long")
 	}
 
-	// 检查 TLS 版本
+	// translated comment
 	if len(metadata.CompatibleTLSVersions) == 0 && !v.StrictMode {
 		return NewWarning("no compatible TLS versions specified")
 	}
@@ -100,19 +100,19 @@ func (v *DefaultValidator) ValidateMetadata(metadata *ExtensionMetadata) error {
 	return nil
 }
 
-// ValidateConfig 验证配置
+// translated comment
 func (v *DefaultValidator) ValidateConfig(config map[string]interface{}) error {
 	if config == nil {
-		return nil // 配置可以为空
+		return nil // translated comment
 	}
 
-	// 检查配置大小
+	// translated comment
 	if len(config) > 1000 {
 		return NewError(ErrCodeFieldSizeMismatch,
 			"too many configuration keys")
 	}
 
-	// 验证每个配置项
+	// translated comment
 	for key, value := range config {
 		if key == "" {
 			return NewError(ErrCodeInvalidConfig,
@@ -124,10 +124,10 @@ func (v *DefaultValidator) ValidateConfig(config map[string]interface{}) error {
 				"configuration key too long")
 		}
 
-		// 检查值的类型
+		// translated comment
 		switch value.(type) {
 		case nil, bool, int, int32, int64, uint, uint32, uint64, float32, float64, string:
-			// 允许的基本类型
+			// translated comment
 		case []byte:
 			b := value.([]byte)
 			if len(b) > v.MaxDataSize {
@@ -145,67 +145,67 @@ func (v *DefaultValidator) ValidateConfig(config map[string]interface{}) error {
 	return nil
 }
 
-// Logger 日志接口
+// translated comment
 type Logger interface {
-	// 记录信息
+	// translated comment
 	Info(msg string, args ...interface{})
 
-	// 记录警告
+	// translated comment
 	Warn(msg string, args ...interface{})
 
-	// 记录错误
+	// translated comment
 	Error(msg string, err error, args ...interface{})
 
-	// 记录调试信息
+	// translated comment
 	Debug(msg string, args ...interface{})
 
-	// 记录 panic
+	// translated comment
 	Fatal(msg string, args ...interface{})
 }
 
-// SimpleLogger 简单的日志实现
+// translated comment
 type SimpleLogger struct {
 	name  string
 	level int // 0=debug, 1=info, 2=warn, 3=error, 4=fatal
 }
 
-// NewSimpleLogger 创建简单日志
+// translated comment
 func NewSimpleLogger(name string) *SimpleLogger {
 	return &SimpleLogger{
 		name:  name,
-		level: 1, // 默认 info 级别
+		level: 1, // translated comment
 	}
 }
 
-// SetLevel 设置日志级别
+// translated comment
 func (sl *SimpleLogger) SetLevel(level int) {
 	if level >= 0 && level <= 4 {
 		sl.level = level
 	}
 }
 
-// Debug 记录调试信息
+// translated comment
 func (sl *SimpleLogger) Debug(msg string, args ...interface{}) {
 	if sl.level <= 0 {
 		sl.log("DEBUG", msg, args...)
 	}
 }
 
-// Info 记录信息
+// translated comment
 func (sl *SimpleLogger) Info(msg string, args ...interface{}) {
 	if sl.level <= 1 {
 		sl.log("INFO", msg, args...)
 	}
 }
 
-// Warn 记录警告
+// translated comment
 func (sl *SimpleLogger) Warn(msg string, args ...interface{}) {
 	if sl.level <= 2 {
 		sl.log("WARN", msg, args...)
 	}
 }
 
-// Error 记录错误
+// translated comment
 func (sl *SimpleLogger) Error(msg string, err error, args ...interface{}) {
 	if sl.level <= 3 {
 		args = append([]interface{}{err}, args...)
@@ -213,7 +213,7 @@ func (sl *SimpleLogger) Error(msg string, err error, args ...interface{}) {
 	}
 }
 
-// Fatal 记录致命错误
+// translated comment
 func (sl *SimpleLogger) Fatal(msg string, args ...interface{}) {
 	sl.log("FATAL", msg, args...)
 }
@@ -228,13 +228,13 @@ func (sl *SimpleLogger) log(level, msg string, args ...interface{}) {
 	}
 }
 
-// InputSanitizer 输入清理器
+// translated comment
 type InputSanitizer struct {
 	maxFieldSize int
 	allowedChars map[rune]bool
 }
 
-// NewInputSanitizer 创建输入清理器
+// translated comment
 func NewInputSanitizer() *InputSanitizer {
 	return &InputSanitizer{
 		maxFieldSize: 1024,
@@ -242,16 +242,16 @@ func NewInputSanitizer() *InputSanitizer {
 	}
 }
 
-// SanitizeString 清理字符串
+// translated comment
 func (is *InputSanitizer) SanitizeString(s string) (string, error) {
 	if len(s) > is.maxFieldSize {
 		return "", NewError(ErrCodeFieldSizeMismatch,
 			fmt.Sprintf("string exceeds max size: %d > %d", len(s), is.maxFieldSize))
 	}
 
-	// 检查非法字符
+	// translated comment
 	for _, r := range s {
-		// 允许基本的可打印 ASCII 字符和 UTF-8
+		// translated comment
 		if r < 32 && r != '\n' && r != '\r' && r != '\t' {
 			return "", NewError(ErrCodeEncodingError,
 				fmt.Sprintf("invalid character: %d", r)).
@@ -262,17 +262,17 @@ func (is *InputSanitizer) SanitizeString(s string) (string, error) {
 	return s, nil
 }
 
-// SanitizeBytes 清理字节数组
+// translated comment
 func (is *InputSanitizer) SanitizeBytes(b []byte, maxLen int) ([]byte, error) {
 	if len(b) > maxLen {
 		return nil, NewError(ErrCodeFieldSizeMismatch,
 			fmt.Sprintf("bytes exceed max size: %d > %d", len(b), maxLen))
 	}
 
-	// 检查是否包含非法的控制字符
+	// translated comment
 	for i, b := range b {
 		if b < 32 && b != 0x00 {
-			// 不允许除空字节外的控制字符
+			// translated comment
 			return nil, NewError(ErrCodeEncodingError,
 				fmt.Sprintf("illegal control byte at position %d: 0x%02x", i, b))
 		}
@@ -281,14 +281,14 @@ func (is *InputSanitizer) SanitizeBytes(b []byte, maxLen int) ([]byte, error) {
 	return b, nil
 }
 
-// SafeParseInt 安全解析整数
+// translated comment
 func SafeParseInt(s string, base, bitSize int) (int64, error) {
-	if len(s) > 20 { // int64 最多 20 位数字
+	if len(s) > 20 { // translated comment
 		return 0, NewError(ErrCodeInvalidFormat,
 			"integer string too long")
 	}
 
-	// 使用基本的验证，避免 panic
+	// translated comment
 	for _, c := range s {
 		if !((c >= '0' && c <= '9') || c == '-' || c == '+') {
 			return 0, NewError(ErrCodeEncodingError,
@@ -296,16 +296,16 @@ func SafeParseInt(s string, base, bitSize int) (int64, error) {
 		}
 	}
 
-	return 0, nil // 实际的解析由调用方处理
+	return 0, nil // translated comment
 }
 
-// RecoveryManager 恢复管理器
+// translated comment
 type RecoveryManager struct {
 	handlers []ErrorHandler
 	logger   Logger
 }
 
-// NewRecoveryManager 创建恢复管理器
+// translated comment
 func NewRecoveryManager(logger Logger) *RecoveryManager {
 	return &RecoveryManager{
 		handlers: make([]ErrorHandler, 0),
@@ -313,7 +313,7 @@ func NewRecoveryManager(logger Logger) *RecoveryManager {
 	}
 }
 
-// RegisterHandler 注册错误处理器
+// translated comment
 func (rm *RecoveryManager) RegisterHandler(handler ErrorHandler) error {
 	if handler == nil {
 		return NewError(ErrCodeInvalidInput, "handler cannot be nil")
@@ -322,7 +322,7 @@ func (rm *RecoveryManager) RegisterHandler(handler ErrorHandler) error {
 	return nil
 }
 
-// Handle 处理错误
+// translated comment
 func (rm *RecoveryManager) Handle(err error) error {
 	if err == nil {
 		return nil
@@ -330,13 +330,13 @@ func (rm *RecoveryManager) Handle(err error) error {
 
 	extErr, ok := err.(*Error)
 	if !ok {
-		// 转换标准错误
+		// translated comment
 		extErr = NewErrorWithCause(ErrCodeSystemError, "unexpected error", err)
 	}
 
 	rm.logger.Error("error occurred", extErr)
 
-	// 尝试用处理器处理
+	// translated comment
 	for _, handler := range rm.handlers {
 		if handler.CanHandle(extErr) {
 			return handler.Handle(extErr)
@@ -346,7 +346,7 @@ func (rm *RecoveryManager) Handle(err error) error {
 	return extErr
 }
 
-// IsRecoverable 判断错误是否可恢复
+// translated comment
 func (rm *RecoveryManager) IsRecoverable(err error) bool {
 	if extErr, ok := err.(*Error); ok {
 		return extErr.IsRecoverable()

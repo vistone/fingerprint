@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// mockAnalyzeResponse create模拟的 AnalyzeResponse
+// translated comment
 func mockAnalyzeResponse(id string) *AnalyzeResponse {
 	return &AnalyzeResponse{
 		FingerprintHash:  id,
@@ -24,7 +24,7 @@ func mockAnalyzeResponse(id string) *AnalyzeResponse {
 	}
 }
 
-// BenchmarkLRUCacheGet 测试cache读取性能
+// translated comment
 func BenchmarkLRUCacheGet(b *testing.B) {
 	sizes := []int{100, 1000, 10000}
 
@@ -32,7 +32,7 @@ func BenchmarkLRUCacheGet(b *testing.B) {
 		b.Run(fmt.Sprintf("size_%d", size), func(b *testing.B) {
 			cache := NewLRUCache(size, 5*time.Minute)
 
-			// 预填充cache
+			// translated comment
 			for i := 0; i < size; i++ {
 				key := fmt.Sprintf("key_%d", i)
 				cache.Set(key, mockAnalyzeResponse(key), 0)
@@ -51,7 +51,7 @@ func BenchmarkLRUCacheGet(b *testing.B) {
 	}
 }
 
-// BenchmarkLRUCacheSet 测试cache写入性能
+// translated comment
 func BenchmarkLRUCacheSet(b *testing.B) {
 	sizes := []int{100, 1000, 10000}
 
@@ -68,11 +68,11 @@ func BenchmarkLRUCacheSet(b *testing.B) {
 	}
 }
 
-// BenchmarkLRUCacheMixed 测试混合读写性能
+// translated comment
 func BenchmarkLRUCacheMixed(b *testing.B) {
 	cache := NewLRUCache(10000, 5*time.Minute)
 
-	// 预填充 50% cache
+	// translated comment
 	for i := 0; i < 5000; i++ {
 		key := fmt.Sprintf("key_%d", i)
 		cache.Set(key, mockAnalyzeResponse(key), 0)
@@ -82,13 +82,13 @@ func BenchmarkLRUCacheMixed(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		i := 0
 		for pb.Next() {
-			// 80% 读，20% 写
+			// translated comment
 			if i%5 == 0 {
-				// 写操作
+				// translated comment
 				key := fmt.Sprintf("key_%d", rand.Intn(10000))
 				cache.Set(key, mockAnalyzeResponse(key), 0)
 			} else {
-				// 读操作
+				// translated comment
 				key := fmt.Sprintf("key_%d", rand.Intn(10000))
 				cache.Get(key)
 			}
@@ -97,7 +97,7 @@ func BenchmarkLRUCacheMixed(b *testing.B) {
 	})
 }
 
-// BenchmarkFingerprintCache 对比新旧cacheimplement
+// translated comment
 func BenchmarkFingerprintCache(b *testing.B) {
 	b.Run("LRUCache", func(b *testing.B) {
 		cache := NewFingerprintCache(10000, 5*time.Minute)
@@ -113,17 +113,17 @@ func BenchmarkFingerprintCache(b *testing.B) {
 	})
 }
 
-// TestCacheHitRate 测试cache命中率
+// translated comment
 func TestCacheHitRate(t *testing.T) {
 	cache := NewLRUCache(1000, 5*time.Minute)
 
-	// 填充cache
+	// translated comment
 	for i := 0; i < 1000; i++ {
 		key := fmt.Sprintf("key_%d", i)
 		cache.Set(key, mockAnalyzeResponse(key), 0)
 	}
 
-	// 测试 1000 次visit，期望命中率接近 100%
+	// translated comment
 	hits := 0
 	misses := 0
 	for i := 0; i < 1000; i++ {
@@ -143,61 +143,61 @@ func TestCacheHitRate(t *testing.T) {
 	t.Logf("Cache hit rate: %.2f%% (hits: %d, misses: %d)", hitRate*100, hits, misses)
 }
 
-// TestCacheEviction 测试cache淘汰
+// translated comment
 func TestCacheEviction(t *testing.T) {
 	cache := NewLRUCache(100, 5*time.Minute)
 
-	// 填充超过容量
+	// translated comment
 	for i := 0; i < 200; i++ {
 		key := fmt.Sprintf("key_%d", i)
 		cache.Set(key, mockAnalyzeResponse(key), 0)
 	}
 
-	// verifycachesize不超过limit
+	// translated comment
 	if cache.Len() > 100 {
 		t.Errorf("Cache size = %d, want <= 100", cache.Len())
 	}
 
-	// verify最旧的项被淘汰（前面插入的应该已经不存在了）
+	// translated comment
 	_, found := cache.Get("key_0")
 	if found {
 		t.Error("Oldest entry should have been evicted")
 	}
 
-	// verify最新的项存在
+	// translated comment
 	_, found = cache.Get("key_199")
 	if !found {
 		t.Error("Newest entry should still exist")
 	}
 }
 
-// TestCacheExpiration 测试cache过期
+// translated comment
 func TestCacheExpiration(t *testing.T) {
 	cache := NewLRUCache(100, 100*time.Millisecond)
 
-	// 添加项
+	// translated comment
 	cache.Set("key1", mockAnalyzeResponse("key1"), 0)
 
-	// 立即get应该存在
+	// translated comment
 	if _, found := cache.Get("key1"); !found {
 		t.Error("Entry should exist immediately after set")
 	}
 
-	// wait过期
+	// translated comment
 	time.Sleep(150 * time.Millisecond)
 
-	// 应该过期
+	// translated comment
 	if _, found := cache.Get("key1"); found {
 		t.Error("Entry should have expired")
 	}
 }
 
-// TestCacheThreadSafety 测试concurrent安全
+// translated comment
 func TestCacheThreadSafety(t *testing.T) {
 	cache := NewLRUCache(1000, 5*time.Minute)
 	done := make(chan bool)
 
-	// start多个 goroutine 同时读写
+	// translated comment
 	for i := 0; i < 10; i++ {
 		go func(id int) {
 			for j := 0; j < 100; j++ {
@@ -209,40 +209,40 @@ func TestCacheThreadSafety(t *testing.T) {
 		}(i)
 	}
 
-	// wait所有 goroutine complete
+	// translated comment
 	for i := 0; i < 10; i++ {
 		<-done
 	}
 
-	// verify没有 panic，cachestate正常
+	// translated comment
 	if cache.Len() == 0 {
 		t.Error("Cache should have some entries")
 	}
 }
 
-// TestCacheStats 测试cachestatistics
+// translated comment
 func TestCacheStats(t *testing.T) {
 	cache := NewLRUCache(100, 5*time.Minute)
 
-	// 初始statistics应为零
+	// translated comment
 	stats := cache.Stats()
 	if stats.Hits != 0 || stats.Misses != 0 {
 		t.Error("Initial stats should be zero")
 	}
 
-	// 添加并get
+	// translated comment
 	for i := 0; i < 10; i++ {
 		key := fmt.Sprintf("key_%d", i)
 		cache.Set(key, mockAnalyzeResponse(key), 0)
 	}
 
-	// get存在的项（命中）
+	// translated comment
 	for i := 0; i < 10; i++ {
 		key := fmt.Sprintf("key_%d", i)
 		cache.Get(key)
 	}
 
-	// get不存在的项（未命中）
+	// translated comment
 	for i := 0; i < 5; i++ {
 		cache.Get("nonexistent_key")
 	}
@@ -264,30 +264,30 @@ func TestCacheStats(t *testing.T) {
 	}
 }
 
-// ExampleLRUCache 使用example
+// translated comment
 func ExampleLRUCache() {
 	cache := NewLRUCache(1000, 5*time.Minute)
 
-	// setting值
+	// translated comment
 	cache.Set("user:123", "user data", 0)
 
-	// get值
+	// translated comment
 	if data, found := cache.Get("user:123"); found {
 		fmt.Printf("Found: %v\n", data)
 	}
 
-	// 输出: Found: user data
+	// translated comment
 }
 
-// TestCacheComparisonWithOldImplementation 对比新旧implement
+// translated comment
 func TestCacheComparisonWithOldImplementation(t *testing.T) {
-	// 这个测试用于log新旧implemented对比
-	// 旧implement：FingerprintCache（简单 map + 线性扫描淘汰）
-	// 新implement：基于 LRUCache（container/list + map）
+	// translated comment
+	// translated comment
+	// translated comment
 
 	t.Run("MemoryEfficiency", func(t *testing.T) {
-		// LRU implement使用更多内存但提供更好的性能feature
-		// 此测试主要作为文档description
+		// translated comment
+		// translated comment
 		t.Log("LRU cache uses container/list which has O(1) eviction")
 		t.Log("Old implementation used linear scan O(n) for eviction")
 	})
@@ -301,12 +301,12 @@ func TestCacheComparisonWithOldImplementation(t *testing.T) {
 	})
 }
 
-// BenchmarkCacheComparison 详细的性能对比
+// translated comment
 func BenchmarkCacheComparison(b *testing.B) {
 	scenarios := []struct {
 		name      string
 		size      int
-		readRatio float64 // 读操作比例
+		readRatio float64 // translated comment
 	}{
 		{"small_read_heavy", 100, 0.9},
 		{"small_write_heavy", 100, 0.1},
@@ -319,7 +319,7 @@ func BenchmarkCacheComparison(b *testing.B) {
 		b.Run(sc.name, func(b *testing.B) {
 			cache := NewLRUCache(sc.size, 5*time.Minute)
 
-			// 预填充 50%
+			// translated comment
 			for i := 0; i < sc.size/2; i++ {
 				key := fmt.Sprintf("key_%d", i)
 				cache.Set(key, mockAnalyzeResponse(key), 0)

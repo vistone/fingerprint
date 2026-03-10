@@ -4,67 +4,67 @@ import (
 	"fmt"
 )
 
-// ECHProfile ECH 配置 Profile
+// translated comment
 type ECHProfile struct {
-	// 是否启用 ECH
+	// translated comment
 	Enabled bool
 
-	// ECH 版本
+	// translated comment
 	Version uint16
 
-	// 公钥名称（用于外层 ClientHello）
+	// translated comment
 	PublicName string
 
-	// 最大域名长度
+	// translated comment
 	MaxNameLength uint8
 
-	// 支持的算法套件
+	// translated comment
 	CipherSuites []KEMCipherSuite
 
-	// 配置 ID
+	// translated comment
 	ConfigID uint8
 
-	// 是否使用 GREASE
+	// translated comment
 	UseGREASE bool
 
-	// GREASE 概率 (0-1)
+	// translated comment
 	GREASEProbability float64
 
-	// 外层 ClientHello 配置
+	// translated comment
 	OuterHello OuterHelloConfig
 
-	// 内层 ClientHello 配置
+	// translated comment
 	InnerHello InnerHelloConfig
 }
 
-// OuterHelloConfig 外层 ClientHello 配置
+// translated comment
 type OuterHelloConfig struct {
-	// TLS 版本
+	// translated comment
 	TLSVersion uint16
 
-	// Cipher Suites（外层使用的密码套件）
+	// translated comment
 	CipherSuites []uint16
 
-	// 扩展列表
+	// translated comment
 	Extensions []uint16
 
-	// 压缩方法
+	// translated comment
 	CompressionMethods []uint8
 }
 
-// InnerHelloConfig 内层 ClientHello 配置
+// translated comment
 type InnerHelloConfig struct {
-	// TLS 版本（通常为 1.3）
+	// translated comment
 	TLSVersion uint16
 
 	// Cipher Suites
 	CipherSuites []uint16
 
-	// 扩展列表
+	// translated comment
 	Extensions []uint16
 }
 
-// DefaultECHProfile 返回默认 ECH Profile
+// translated comment
 func DefaultECHProfile() *ECHProfile {
 	return &ECHProfile{
 		Enabled:           true,
@@ -72,7 +72,7 @@ func DefaultECHProfile() *ECHProfile {
 		PublicName:        "cloudflare-ech.com",
 		MaxNameLength:     128,
 		UseGREASE:         true,
-		GREASEProbability: 0.1, // 10% 概率使用 GREASE
+		GREASEProbability: 0.1, // translated comment
 		CipherSuites: []KEMCipherSuite{
 			{KDFID: 0x0001, AEADID: 0x0001}, // HKDF-SHA256 + AES-128-GCM
 			{KDFID: 0x0001, AEADID: 0x0002}, // HKDF-SHA256 + AES-256-GCM
@@ -95,7 +95,7 @@ func DefaultECHProfile() *ECHProfile {
 	}
 }
 
-// ChromeECHProfile Chrome 浏览器的 ECH 配置
+// translated comment
 func ChromeECHProfile() *ECHProfile {
 	profile := DefaultECHProfile()
 	profile.PublicName = "google-ech.cloudflareresearch.com"
@@ -113,7 +113,7 @@ func ChromeECHProfile() *ECHProfile {
 	return profile
 }
 
-// FirefoxECHProfile Firefox 浏览器的 ECH 配置
+// translated comment
 func FirefoxECHProfile() *ECHProfile {
 	profile := DefaultECHProfile()
 	profile.PublicName = "firefox-ech.cloudflareresearch.com"
@@ -130,35 +130,35 @@ func FirefoxECHProfile() *ECHProfile {
 	return profile
 }
 
-// SafariECHProfile Safari 浏览器的 ECH 配置
-// 注意：Safari 目前实验性支持 ECH
+// translated comment
+// translated comment
 func SafariECHProfile() *ECHProfile {
 	profile := DefaultECHProfile()
-	profile.Enabled = false // Safari 默认未启用
+	profile.Enabled = false // translated comment
 	profile.UseGREASE = true
 	profile.GREASEProbability = 0.05
 	return profile
 }
 
-// Validate 验证 ECH Profile
+// translated comment
 func (p *ECHProfile) Validate() error {
 	if !p.Enabled {
-		return nil // 未启用时无需验证
+		return nil // translated comment
 	}
 
-	// 验证版本
+	// translated comment
 	if p.Version != ECHVersionDraft13 &&
 		p.Version != ECHVersionDraft14 &&
 		p.Version != ECHVersionDraft15 {
 		return fmt.Errorf("unsupported ECH version: 0x%04x", p.Version)
 	}
 
-	// 验证公钥名称
+	// translated comment
 	if len(p.PublicName) == 0 || len(p.PublicName) > 255 {
 		return fmt.Errorf("invalid public name length: %d", len(p.PublicName))
 	}
 
-	// 验证算法套件
+	// translated comment
 	if len(p.CipherSuites) == 0 {
 		return fmt.Errorf("at least one cipher suite required")
 	}
@@ -172,7 +172,7 @@ func (p *ECHProfile) Validate() error {
 	return nil
 }
 
-// GenerateECHExtension 为 Profile 生成 ECH 扩展
+// translated comment
 func (p *ECHProfile) GenerateECHExtension(isInner bool) (*ECHExtension, error) {
 	if !p.Enabled {
 		return nil, fmt.Errorf("ECH not enabled in profile")
@@ -185,14 +185,14 @@ func (p *ECHProfile) GenerateECHExtension(isInner bool) (*ECHExtension, error) {
 
 	if isInner {
 		ech.ClientHelloType = ECHClientHelloTypeInner
-		// 内层 ClientHello 很简单，只需要类型
+		// translated comment
 		return ech, nil
 	}
 
-	// 外层 ClientHello
+	// translated comment
 	ech.ClientHelloType = ECHClientHelloTypeOuter
 
-	// 选择第一个算法套件
+	// translated comment
 	if len(p.CipherSuites) > 0 {
 		ech.CipherSuite = p.CipherSuites[0]
 	}
@@ -200,32 +200,32 @@ func (p *ECHProfile) GenerateECHExtension(isInner bool) (*ECHExtension, error) {
 	// Config ID
 	ech.ConfigID = p.ConfigID
 
-	// Encoded CH 应该是加密的内层 ClientHello
-	// 实际应用中需要加密
+	// translated comment
+	// translated comment
 	ech.EncodedCH = []byte("encrypted_inner_hello_placeholder")
 	ech.EncodedCHLength = uint16(len(ech.EncodedCH))
 
 	return ech, nil
 }
 
-// GenerateGREASEExtension 生成 GREASE ECH 扩展
+// translated comment
 func (p *ECHProfile) GenerateGREASEExtension() (*ECHExtension, error) {
 	return &ECHExtension{
 		Type:    ExtensionEncryptedClientHello,
-		Version: 0x0000, // GREASE 版本
+		Version: 0x0000, // translated comment
 	}, nil
 }
 
-// ShouldUseGREASE 判断是否应使用 GREASE
+// translated comment
 func (p *ECHProfile) ShouldUseGREASE() bool {
 	if !p.UseGREASE {
 		return false
 	}
-	// 实际应用中使用随机数判断
+	// translated comment
 	return true
 }
 
-// ECHProfileFromBrowser 根据浏览器类型获取 ECH Profile
+// translated comment
 func ECHProfileFromBrowser(browser string) *ECHProfile {
 	switch browser {
 	case "chrome", "Chrome":
@@ -239,7 +239,7 @@ func ECHProfileFromBrowser(browser string) *ECHProfile {
 	}
 }
 
-// GetSupportedECHVersions 获取支持的 ECH 版本列表
+// translated comment
 func GetSupportedECHVersions() []uint16 {
 	return []uint16{
 		ECHVersionDraft13,
@@ -248,7 +248,7 @@ func GetSupportedECHVersions() []uint16 {
 	}
 }
 
-// ECHVersionName 获取 ECH 版本名称
+// translated comment
 func ECHVersionName(version uint16) string {
 	switch version {
 	case ECHVersionDraft13:
@@ -262,18 +262,18 @@ func ECHVersionName(version uint16) string {
 	}
 }
 
-// MergeWithBase 将 ECH 配置合并到基础 Profile
+// translated comment
 func (p *ECHProfile) MergeWithBase(baseExtensions []uint16) []uint16 {
 	if !p.Enabled {
 		return baseExtensions
 	}
 
-	// 添加 ECH 扩展到扩展列表
+	// translated comment
 	var merged []uint16
 	echAdded := false
 
 	for _, ext := range baseExtensions {
-		// 避免重复添加 ECH 扩展
+		// translated comment
 		if ext == ExtensionEncryptedClientHello || ext == ExtensionECHOuterExtensions {
 			if !echAdded {
 				merged = append(merged, ExtensionEncryptedClientHello)
@@ -285,7 +285,7 @@ func (p *ECHProfile) MergeWithBase(baseExtensions []uint16) []uint16 {
 	}
 
 	if !echAdded {
-		// 在 SNI 扩展后添加 ECH 扩展（常见位置）
+		// translated comment
 		sniIndex := -1
 		for i, ext := range merged {
 			if ext == 0 { // server_name
@@ -295,10 +295,10 @@ func (p *ECHProfile) MergeWithBase(baseExtensions []uint16) []uint16 {
 		}
 
 		if sniIndex >= 0 {
-			// 在 SNI 后插入
+			// translated comment
 			merged = append(merged[:sniIndex+1], append([]uint16{ExtensionEncryptedClientHello}, merged[sniIndex+1:]...)...)
 		} else {
-			// 添加到末尾
+			// translated comment
 			merged = append(merged, ExtensionEncryptedClientHello)
 		}
 	}
@@ -306,7 +306,7 @@ func (p *ECHProfile) MergeWithBase(baseExtensions []uint16) []uint16 {
 	return merged
 }
 
-// ToYAMLConfig 转换为 YAML 配置格式
+// translated comment
 func (p *ECHProfile) ToYAMLConfig() map[string]interface{} {
 	return map[string]interface{}{
 		"enabled":            p.Enabled,

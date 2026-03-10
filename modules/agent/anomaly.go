@@ -11,7 +11,7 @@ import (
 // AnomalyDetector knowledge-driven anomaly detector
 //
 // Leverages global fingerprint blueprints from KnowledgeBase to perform
-// cross-layer consistency validation on each observation: TLS ↔ HTTP/2 ↔ HTTP headers ↔ TCP/IP ↔ JS features
+// translated comment
 // whether all point to the same real browser identity.
 //
 // Any contradictory signals are marked as Contradiction, accumulated into SuspicionScore.
@@ -219,7 +219,7 @@ func (ad *AnomalyDetector) checkTCPIP(obs *Observation, mr *MatchResult) {
 	if ttlStr, ok := obs.Metadata["tcp_ttl"]; ok {
 		var ttl int
 		if _, err := fmt.Sscanf(ttlStr, "%d", &ttl); err == nil {
-			// TTL decrements with hop count, expected value ± certain range
+			// translated comment
 			expectedTTL := int(expected.TTL)
 			// In hot-path only check if matches OS segment (64 segment vs 128 segment)
 			if (expectedTTL > 100 && ttl <= 100) || (expectedTTL <= 100 && ttl > 100) {

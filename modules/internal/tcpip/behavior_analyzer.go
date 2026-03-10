@@ -5,25 +5,25 @@ import (
 	"time"
 )
 
-// NetworkBehaviorAnalyzer 网络行为分析器
+// translated comment
 type NetworkBehaviorAnalyzer struct {
 	packets         []*TCPPacket
 	rttMeasurements []time.Duration
 	sequenceNumbers []uint32
 	ipIDs           []uint16
 	timestamps      []time.Time
-	maxSamples      int // 最大样本数，防止内存无限增长
+	maxSamples      int // translated comment
 }
 
-// DefaultMaxSamples 默认最大样本数
+// translated comment
 const DefaultMaxSamples = 10000
 
-// NewNetworkBehaviorAnalyzer 创建新的网络行为分析器
+// translated comment
 func NewNetworkBehaviorAnalyzer() *NetworkBehaviorAnalyzer {
 	return NewNetworkBehaviorAnalyzerWithLimit(DefaultMaxSamples)
 }
 
-// NewNetworkBehaviorAnalyzerWithLimit 创建带样本数限制的网络行为分析器
+// translated comment
 func NewNetworkBehaviorAnalyzerWithLimit(maxSamples int) *NetworkBehaviorAnalyzer {
 	if maxSamples <= 0 {
 		maxSamples = DefaultMaxSamples
@@ -38,7 +38,7 @@ func NewNetworkBehaviorAnalyzerWithLimit(maxSamples int) *NetworkBehaviorAnalyze
 	}
 }
 
-// RecordPacket 记录数据包（使用滑动窗口限制样本数）
+// translated comment
 func (nba *NetworkBehaviorAnalyzer) RecordPacket(packet *TCPPacket, rtt time.Duration) {
 	nba.packets = appendWithLimit(nba.packets, packet, nba.maxSamples)
 	nba.rttMeasurements = appendWithLimit(nba.rttMeasurements, rtt, nba.maxSamples)
@@ -49,10 +49,10 @@ func (nba *NetworkBehaviorAnalyzer) RecordPacket(packet *TCPPacket, rtt time.Dur
 	nba.timestamps = appendWithLimit(nba.timestamps, time.Now(), nba.maxSamples)
 }
 
-// appendWithLimit 带限制的切片追加（滑动窗口，使用泛型）
+// translated comment
 func appendWithLimit[T any](slice []T, item T, maxSamples int) []T {
 	if len(slice) >= maxSamples {
-		// 滑动窗口：移除最早的 25% 数据
+		// translated comment
 		removeCount := maxSamples / 4
 		if removeCount < 1 {
 			removeCount = 1
@@ -62,7 +62,7 @@ func appendWithLimit[T any](slice []T, item T, maxSamples int) []T {
 	return append(slice, item)
 }
 
-// AnalyzeBehavior 分析网络行为
+// translated comment
 func (nba *NetworkBehaviorAnalyzer) AnalyzeBehavior() *NetworkBehaviorResult {
 	result := &NetworkBehaviorResult{
 		TotalPackets: len(nba.packets),
@@ -73,31 +73,31 @@ func (nba *NetworkBehaviorAnalyzer) AnalyzeBehavior() *NetworkBehaviorResult {
 		return result
 	}
 
-	// 分析 RTT
+	// translated comment
 	result.RTTAnalysis = nba.analyzeRTT()
 
-	// 分析序列号
+	// translated comment
 	result.SequenceNumberPattern = nba.analyzeSequenceNumbers()
 
-	// 分析 IP ID
+	// translated comment
 	result.IPIDPattern = nba.analyzeIPIDs()
 
-	// 分析数据包大小
+	// translated comment
 	result.PacketSizeVariance = nba.analyzePacketSizes()
 
-	// 分析协议分布
+	// translated comment
 	result.ProtocolDistribution = nba.analyzeProtocolDistribution()
 
-	// 分析时间模式
+	// translated comment
 	result.TimingPattern = nba.analyzeTimingPattern()
 
-	// 计算行为特征
+	// translated comment
 	result.BehaviorCharacteristics = nba.computeBehaviorCharacteristics()
 
 	return result
 }
 
-// analyzeRTT 分析往返时间
+// translated comment
 func (nba *NetworkBehaviorAnalyzer) analyzeRTT() *RTTAnalysis {
 	if len(nba.rttMeasurements) == 0 {
 		return &RTTAnalysis{}
@@ -131,29 +131,29 @@ func (nba *NetworkBehaviorAnalyzer) analyzeRTT() *RTTAnalysis {
 	return analysis
 }
 
-// analyzeSequenceNumbers 分析序列号模式
+// translated comment
 func (nba *NetworkBehaviorAnalyzer) analyzeSequenceNumbers() string {
 	if len(nba.sequenceNumbers) < 2 {
 		return "insufficient_data"
 	}
 
-	// 检查序列号增长模式
+	// translated comment
 	diffs := make([]int64, len(nba.sequenceNumbers)-1)
 	for i := 0; i < len(diffs); i++ {
 		diffs[i] = int64(nba.sequenceNumbers[i+1]) - int64(nba.sequenceNumbers[i])
 	}
 
-	// 检查是否为随机
+	// translated comment
 	if nba.hasHighVariance(diffs) {
 		return "random"
 	}
 
-	// 检查是否为时间相关
+	// translated comment
 	if nba.isTimeRelated(diffs) {
 		return "time_based"
 	}
 
-	// 检查是否为线性/顺序
+	// translated comment
 	if nba.isLinear(diffs) {
 		return "sequential"
 	}
@@ -161,24 +161,24 @@ func (nba *NetworkBehaviorAnalyzer) analyzeSequenceNumbers() string {
 	return "complex_pattern"
 }
 
-// analyzeIPIDs 分析 IP ID 模式
+// translated comment
 func (nba *NetworkBehaviorAnalyzer) analyzeIPIDs() string {
 	if len(nba.ipIDs) < 2 {
 		return "insufficient_data"
 	}
 
-	// 计算 IP ID 的差值
+	// translated comment
 	diffs := make([]int, len(nba.ipIDs)-1)
 	for i := 0; i < len(diffs); i++ {
 		diffs[i] = int(nba.ipIDs[i+1]) - int(nba.ipIDs[i])
 	}
 
-	// 检查线性计数器（NATing 设备的典型行为）
+	// translated comment
 	if nba.isLinearIPID(diffs) {
 		return "linear_counter"
 	}
 
-	// 检查是否随机
+	// translated comment
 	if nba.hasHighVariance(convertToInt64(diffs)) {
 		return "random"
 	}
@@ -186,7 +186,7 @@ func (nba *NetworkBehaviorAnalyzer) analyzeIPIDs() string {
 	return "mixed_pattern"
 }
 
-// analyzePacketSizes 分析数据包大小
+// translated comment
 func (nba *NetworkBehaviorAnalyzer) analyzePacketSizes() float64 {
 	if len(nba.packets) == 0 {
 		return 0
@@ -216,7 +216,7 @@ func (nba *NetworkBehaviorAnalyzer) analyzePacketSizes() float64 {
 	return float64(variance)
 }
 
-// analyzeProtocolDistribution 分析协议分布
+// translated comment
 func (nba *NetworkBehaviorAnalyzer) analyzeProtocolDistribution() map[string]int {
 	distribution := make(map[string]int)
 
@@ -238,7 +238,7 @@ func (nba *NetworkBehaviorAnalyzer) analyzeProtocolDistribution() map[string]int
 	return distribution
 }
 
-// analyzeTimingPattern 分析时间模式
+// translated comment
 func (nba *NetworkBehaviorAnalyzer) analyzeTimingPattern() string {
 	if len(nba.timestamps) < 2 {
 		return "insufficient_data"
@@ -249,12 +249,12 @@ func (nba *NetworkBehaviorAnalyzer) analyzeTimingPattern() string {
 		intervals[i] = nba.timestamps[i+1].Sub(nba.timestamps[i])
 	}
 
-	// 检查是否有规律间隔
+	// translated comment
 	if nba.hasRegularIntervals(intervals) {
 		return "periodic"
 	}
 
-	// 检查是否为突发
+	// translated comment
 	if nba.isBurstPattern(intervals) {
 		return "bursty"
 	}
@@ -262,7 +262,7 @@ func (nba *NetworkBehaviorAnalyzer) analyzeTimingPattern() string {
 	return "irregular"
 }
 
-// computeBehaviorCharacteristics 计算行为特征
+// translated comment
 func (nba *NetworkBehaviorAnalyzer) computeBehaviorCharacteristics() []string {
 	characteristics := make([]string, 0)
 
@@ -270,22 +270,22 @@ func (nba *NetworkBehaviorAnalyzer) computeBehaviorCharacteristics() []string {
 		return characteristics
 	}
 
-	// 检查是否为自动化流量
+	// translated comment
 	if nba.isAutomatedTraffic() {
 		characteristics = append(characteristics, "automated")
 	}
 
-	// 检查是否为交互式流量
+	// translated comment
 	if nba.isInteractiveTraffic() {
 		characteristics = append(characteristics, "interactive")
 	}
 
-	// 检查是否为批量传输
+	// translated comment
 	if nba.isBulkTransfer() {
 		characteristics = append(characteristics, "bulk_transfer")
 	}
 
-	// 检查是否为扫描行为
+	// translated comment
 	if nba.isScanningBehavior() {
 		characteristics = append(characteristics, "scanning")
 	}
@@ -293,7 +293,7 @@ func (nba *NetworkBehaviorAnalyzer) computeBehaviorCharacteristics() []string {
 	return characteristics
 }
 
-// 辅助函数
+// translated comment
 func (nba *NetworkBehaviorAnalyzer) calculateStdDeviation(measurements []time.Duration, avg time.Duration) time.Duration {
 	if len(measurements) == 0 {
 		return 0
@@ -306,7 +306,7 @@ func (nba *NetworkBehaviorAnalyzer) calculateStdDeviation(measurements []time.Du
 	}
 
 	variance := sumSq / time.Duration(len(measurements))
-	// 返回简化的标准差估计
+	// translated comment
 	return time.Duration(int64(variance.Nanoseconds()) / 2)
 }
 
@@ -338,7 +338,7 @@ func (nba *NetworkBehaviorAnalyzer) hasHighVariance(diffs []int64) bool {
 	}
 
 	avg := sum / int64(len(diffs))
-	return avg > 1000 // 高方差阈值
+	return avg > 1000 // translated comment
 }
 
 func (nba *NetworkBehaviorAnalyzer) isTimeRelated(diffs []int64) bool {
@@ -346,7 +346,7 @@ func (nba *NetworkBehaviorAnalyzer) isTimeRelated(diffs []int64) bool {
 		return false
 	}
 
-	// 时间相关的序列号会有一定的递增模式
+	// translated comment
 	increasing := 0
 	for _, d := range diffs {
 		if d > 0 && d < 100000 {
@@ -455,10 +455,10 @@ func (nba *NetworkBehaviorAnalyzer) isScanningBehavior() bool {
 		return false
 	}
 
-	// 扫描行为特征：连接快速失败
+	// translated comment
 	resetCount := 0
 	for _, pkt := range nba.packets {
-		if pkt.Flags&0x04 != 0 { // RST 标志
+		if pkt.Flags&0x04 != 0 { // translated comment
 			resetCount++
 		}
 	}
@@ -474,7 +474,7 @@ func convertToInt64(diffs []int) []int64 {
 	return result
 }
 
-// NetworkBehaviorResult 网络行为分析结果
+// translated comment
 type NetworkBehaviorResult struct {
 	TotalPackets            int
 	RTTAnalysis             *RTTAnalysis
@@ -487,7 +487,7 @@ type NetworkBehaviorResult struct {
 	Timestamp               time.Time
 }
 
-// RTTAnalysis RTT 分析结果
+// translated comment
 type RTTAnalysis struct {
 	Count        int
 	Samples      []time.Duration
@@ -498,7 +498,7 @@ type RTTAnalysis struct {
 	NetworkType  string
 }
 
-// String 返回易读的分析结果
+// translated comment
 func (nbr *NetworkBehaviorResult) String() string {
 	return fmt.Sprintf("NetworkBehavior[packets=%d, avgRTT=%v, seqPattern=%s, timing=%s, characteristics=%v]",
 		nbr.TotalPackets,

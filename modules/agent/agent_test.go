@@ -106,7 +106,7 @@ func TestHighRiskBlockStrategy(t *testing.T) {
 
 	families := []core.BrowserType{core.BrowserChrome, core.BrowserFirefox, core.BrowserSafari, core.BrowserEdge, core.BrowserOpera}
 
-	// Each time different fingerprint + different classification + low ML confidence + high risk → extremely low consistency
+	// translated comment
 	for i := 0; i < 20; i++ {
 		obs := &Observation{
 			ID:              fmt.Sprintf("obs-%d", i),

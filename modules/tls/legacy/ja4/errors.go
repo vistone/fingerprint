@@ -8,27 +8,27 @@ import (
 )
 
 // ============================================================================
-// JA4 子包错误定义
+// translated comment
 // ============================================================================
 
 var (
-	// ErrInvalidClientHelloSpec 表示无效的 ClientHello 规范
+	// translated comment
 	ErrInvalidClientHelloSpec = fmt.Errorf("%w: invalid client hello spec", errs.ErrInvalidFingerprint)
 
-	// ErrProfileNotFound 表示 JA4 指纹配置不存在
+	// translated comment
 	ErrProfileNotFound = fmt.Errorf("%w: ja4 profile", errs.ErrProfileNotFound)
 
-	// ErrEmptyProfile 表示 JA4 指纹为空
+	// translated comment
 	ErrEmptyProfile = fmt.Errorf("%w: empty ja4 profile", errs.ErrInvalidFingerprint)
 
-	// ErrInvalidTLSVersion 表示无效的 TLS 版本
+	// translated comment
 	ErrInvalidTLSVersion = fmt.Errorf("%w: invalid tls version", errs.ErrInvalidFingerprint)
 
-	// ErrMissingRequiredField 表示缺少必需字段
+	// translated comment
 	ErrMissingRequiredField = fmt.Errorf("%w: missing required field", errs.ErrInvalidFingerprint)
 )
 
-// IsInvalidClientHelloSpec 检查错误是否为无效的 ClientHello 规范
+// translated comment
 func IsInvalidClientHelloSpec(err error) bool {
 	if err == nil {
 		return false
@@ -36,7 +36,7 @@ func IsInvalidClientHelloSpec(err error) bool {
 	return errors.Is(err, ErrInvalidClientHelloSpec)
 }
 
-// IsJA4ProfileNotFound 检查错误是否为 JA4 指纹不存在
+// translated comment
 func IsJA4ProfileNotFound(err error) bool {
 	if err == nil {
 		return false
@@ -44,7 +44,7 @@ func IsJA4ProfileNotFound(err error) bool {
 	return errors.Is(err, ErrProfileNotFound)
 }
 
-// IsEmptyProfile 检查错误是否为空指纹
+// translated comment
 func IsEmptyProfile(err error) bool {
 	if err == nil {
 		return false
@@ -52,7 +52,7 @@ func IsEmptyProfile(err error) bool {
 	return errors.Is(err, ErrEmptyProfile)
 }
 
-// IsInvalidTLSVersion 检查错误是否为无效的 TLS 版本
+// translated comment
 func IsInvalidTLSVersion(err error) bool {
 	if err == nil {
 		return false

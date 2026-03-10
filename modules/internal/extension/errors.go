@@ -1,54 +1,54 @@
-// Package extension 提供扩展系统的核心功能：错误处理、验证、防御和日志记录
+// translated comment
 //
-// # 错误处理
+// translated comment
 //
-// 使用 Error 结构体和 ErrorCode 枚举进行统一错误处理：
+// translated comment
 //
-//	err := extension.NewError(extension.ErrCodeInvalidInput, "输入无效")
+// translated comment
 //	err = err.WithContext("user_id", 123).WithContext("field", "email")
 //	if err.IsRecoverable() {
-//	    // 可以重试
+// translated comment
 //	    return retryOperation()
 //	}
 //	if err.IsFatal() {
 //	    return err
 //	}
 //
-// # 错误代码体系
+// translated comment
 //
-// 46 个错误代码分为 8 个类别（1000-8999）：
+// translated comment
 //
-//	注册表错误  (1000-1999): NotFound, AlreadyRegistered, InvalidMetadata
-//	验证错误    (2000-2999): InvalidInput, FieldSizeMismatch, EncodingError
-//	解析错误    (3000-3999): ParseFailed, InvalidFormat, MalformedData
-//	分析错误    (4000-4999): AnalysisFailed, ResourceExhausted
-//	配置错误    (5000-5999): InvalidConfig, MissingConfig
-//	插件错误    (6000-6999): PluginNotFound, PluginLoadFailed
-//	系统错误    (7000-7999): SystemError, MemoryExhausted, Timeout
-//	安全错误    (8000-8999): SecurityViolation, Unauthorized
+// translated comment
+// translated comment
+// translated comment
+// translated comment
+// translated comment
+// translated comment
+// translated comment
+// translated comment
 //
-// # 严重级别
+// translated comment
 //
-// 5 级错误严重程度：
+// translated comment
 //
-//	SeverityInfo      (0) - 信息，可恢复
-//	SeverityWarning   (1) - 警告，可恢复
-//	SeverityError     (2) - 错误，可恢复
-//	SeverityCritical  (3) - 严重，不可恢复
-//	SeverityFatal     (4) - 致命，不可恢复
+// translated comment
+// translated comment
+// translated comment
+// translated comment
+// translated comment
 //
-// # 输入验证
+// translated comment
 //
-// 使用 DefaultValidator 验证数据：
+// translated comment
 //
 //	validator := extension.NewDefaultValidator()
 //	if err := validator.ValidateData(data); err != nil {
 //	    return err
 //	}
 //
-// # 防御系统
+// translated comment
 //
-// 使用 RequestGuard 保护 API 端点：
+// translated comment
 //
 //	policy := extension.DefaultDefensePolicy()
 //	guard := extension.NewRequestGuard(policy)
@@ -56,9 +56,9 @@
 //	    return err
 //	}
 //
-// # 安全执行
+// translated comment
 //
-// 捕获 panic 并恢复：
+// translated comment
 //
 //	extension.SafeExecuteWithRecovery(
 //	    func() error { return unsafeOp() },
@@ -70,11 +70,11 @@ import (
 	"fmt"
 )
 
-// ErrorCode 错误代码（便于系统集成和错误分类）
+// translated comment
 type ErrorCode int
 
 const (
-	// 注册表错误（1000-1999）
+	// translated comment
 	ErrCodeNotFound ErrorCode = 1000 + iota
 	ErrCodeAlreadyRegistered
 	ErrCodeInvalidMetadata
@@ -82,7 +82,7 @@ const (
 )
 
 const (
-	// 验证错误（2000-2999）
+	// translated comment
 	ErrCodeValidationFailed ErrorCode = 2000 + iota
 	ErrCodeInvalidInput
 	ErrCodeMissingField
@@ -92,7 +92,7 @@ const (
 )
 
 const (
-	// 解析错误（3000-3999）
+	// translated comment
 	ErrCodeParseFailed ErrorCode = 3000 + iota
 	ErrCodeInvalidFormat
 	ErrCodeUnexpectedEOF
@@ -101,7 +101,7 @@ const (
 )
 
 const (
-	// 分析错误（4000-4999）
+	// translated comment
 	ErrCodeAnalysisFailed ErrorCode = 4000 + iota
 	ErrCodeAnalysisTimeout
 	ErrCodeResourceExhausted
@@ -109,14 +109,14 @@ const (
 )
 
 const (
-	// 配置错误（5000-5999）
+	// translated comment
 	ErrCodeInvalidConfig ErrorCode = 5000 + iota
 	ErrCodeMissingConfig
 	ErrCodeConfigConflict
 )
 
 const (
-	// 插件错误（6000-6999）
+	// translated comment
 	ErrCodePluginNotFound ErrorCode = 6000 + iota
 	ErrCodePluginInitFailed
 	ErrCodePluginLoadFailed
@@ -124,7 +124,7 @@ const (
 )
 
 const (
-	// 系统错误（7000-7999）
+	// translated comment
 	ErrCodeSystemError ErrorCode = 7000 + iota
 	ErrCodeMemoryExhausted
 	ErrCodeTimeout
@@ -132,62 +132,62 @@ const (
 )
 
 const (
-	// 安全错误（8000-8999）
+	// translated comment
 	ErrCodeSecurityViolation ErrorCode = 8000 + iota
 	ErrCodeUnauthorized
 	ErrCodeForbidden
 )
 
-// Error 扩展系统的标准错误类型
+// translated comment
 //
-// 字段说明：
+// translated comment
 //
-//	Code       - 错误代码，便于分类和集成
-//	Message    - 人类可读的错误描述
-//	Cause      - 原始错误，支持错误链
-//	Context    - 错误上下文键值对（用于调试）
-//	Severity   - 错误严重级别（决定可恢复性）
-//	Timestamp  - 错误发生时间
+// translated comment
+// translated comment
+// translated comment
+// translated comment
+// translated comment
+// translated comment
 //
-// 使用示例：
+// translated comment
 //
-//	// 创建错误
+// translated comment
 //	err := extension.NewError(
 //	    extension.ErrCodeInvalidInput,
-//	    "无效的用户输入",
+// translated comment
 //	)
 //
-//	// 添加上下文信息（用于调试）
+// translated comment
 //	err = err.WithContext("user_id", 12345)
 //	err = err.WithContext("field", "email")
 //	err = err.WithContext("value", userEmail)
 //
-//	// 判断错误类型
+// translated comment
 //	if err.IsRecoverable() {
-//	    // Info, Warning, Error 级别的错误可以恢复
+// translated comment
 //	    return retryOperation()
 //	}
 //
 //	if err.IsFatal() {
-//	    // Fatal 级别的错误无法恢复
+// translated comment
 //	    return err
 //	}
 //
-// 创建变体：
+// translated comment
 //
-//	extension.NewError(code, message)                    // 标准错误
-//	extension.NewErrorWithCause(code, message, cause)   // 带原因的错误
-//	extension.NewFatalError(code, message)              // 致命错误
-//	extension.NewWarning(message)                       // 警告（不需要 code）
+// translated comment
+// translated comment
+// translated comment
+// translated comment
 //
-// 错误链：
+// translated comment
 //
 //	err := processData(data)
 //	if err != nil {
 //	    return extension.NewErrorWithCause(
 //	        extension.ErrCodeAnalysisFailed,
-//	        "分析失败",
-//	        err,  // 原始错误作为链的下一个
+// translated comment
+// translated comment
 //	    )
 //	}
 type Error struct {
@@ -199,7 +199,7 @@ type Error struct {
 	Timestamp int64
 }
 
-// ErrorSeverity 错误严重程度
+// translated comment
 type ErrorSeverity int
 
 const (
@@ -210,7 +210,7 @@ const (
 	SeverityFatal
 )
 
-// String 实现 error 接口
+// translated comment
 func (e *Error) Error() string {
 	msg := fmt.Sprintf("[%s] %s (code: %d)", e.Severity.String(), e.Message, e.Code)
 	if e.Cause != nil {
@@ -219,12 +219,12 @@ func (e *Error) Error() string {
 	return msg
 }
 
-// Unwrap 支持 error wrapping
+// translated comment
 func (e *Error) Unwrap() error {
 	return e.Cause
 }
 
-// WithContext 添加上下文信息
+// translated comment
 func (e *Error) WithContext(key string, value interface{}) *Error {
 	if e.Context == nil {
 		e.Context = make(map[string]interface{})
@@ -233,7 +233,7 @@ func (e *Error) WithContext(key string, value interface{}) *Error {
 	return e
 }
 
-// IsRecoverable 判断错误是否可恢复
+// translated comment
 func (e *Error) IsRecoverable() bool {
 	switch e.Severity {
 	case SeverityFatal, SeverityCritical:
@@ -243,12 +243,12 @@ func (e *Error) IsRecoverable() bool {
 	}
 }
 
-// IsFatal 判断错误是否致命
+// translated comment
 func (e *Error) IsFatal() bool {
 	return e.Severity == SeverityFatal
 }
 
-// String 实现 Stringer 接口
+// translated comment
 func (es ErrorSeverity) String() string {
 	switch es {
 	case SeverityInfo:
@@ -266,7 +266,7 @@ func (es ErrorSeverity) String() string {
 	}
 }
 
-// NewError 创建新错误
+// translated comment
 func NewError(code ErrorCode, message string) *Error {
 	return &Error{
 		Code:     code,
@@ -276,21 +276,21 @@ func NewError(code ErrorCode, message string) *Error {
 	}
 }
 
-// NewErrorWithCause 创建包含原因的错误
+// translated comment
 func NewErrorWithCause(code ErrorCode, message string, cause error) *Error {
 	err := NewError(code, message)
 	err.Cause = cause
 	return err
 }
 
-// NewFatalError 创建致命错误
+// translated comment
 func NewFatalError(code ErrorCode, message string) *Error {
 	err := NewError(code, message)
 	err.Severity = SeverityFatal
 	return err
 }
 
-// NewWarning 创建警告
+// translated comment
 func NewWarning(message string) *Error {
 	err := &Error{
 		Code:     ErrCodeInvalidInput,
@@ -301,7 +301,7 @@ func NewWarning(message string) *Error {
 	return err
 }
 
-// ToError 将标准错误转换为扩展错误
+// translated comment
 func ToError(code ErrorCode, err error) *Error {
 	if extErr, ok := err.(*Error); ok {
 		return extErr
@@ -309,19 +309,19 @@ func ToError(code ErrorCode, err error) *Error {
 	return NewErrorWithCause(code, "operation failed", err)
 }
 
-// ErrorHandler 错误处理器接口
+// translated comment
 type ErrorHandler interface {
-	// 处理错误
+	// translated comment
 	Handle(err *Error) error
 
-	// 判断是否能处理此错误
+	// translated comment
 	CanHandle(err *Error) bool
 
-	// 获取处理器名称
+	// translated comment
 	GetName() string
 }
 
-// PanicHandler panic 恢复处理器
+// translated comment
 type PanicHandler struct {
 	name string
 }
@@ -332,26 +332,26 @@ func NewPanicHandler() *PanicHandler {
 
 func (ph *PanicHandler) Handle(err *Error) error {
 	if err.Severity == SeverityFatal {
-		// 记录致命错误，但不 panic
+		// translated comment
 		return fmt.Errorf("fatal error occurred: %w", err)
 	}
 	return err
 }
 
 func (ph *PanicHandler) CanHandle(err *Error) bool {
-	return true // 可以处理任何错误
+	return true // translated comment
 }
 
 func (ph *PanicHandler) GetName() string {
 	return ph.name
 }
 
-// SafeExecute 安全执行函数，捕获 panic
-// 如果发生 panic，会返回一个包含 panic 信息的错误
+// translated comment
+// translated comment
 func SafeExecute(fn func() error) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			// panic 已被捕获，将 panic 转换为错误返回
+			// translated comment
 			err = NewErrorWithCause(ErrCodeSystemError,
 				fmt.Sprintf("panic recovered: %v", r), nil)
 		}
@@ -360,7 +360,7 @@ func SafeExecute(fn func() error) (err error) {
 	return fn()
 }
 
-// SafeExecuteWithRecovery 安全执行函数，带恢复逻辑
+// translated comment
 func SafeExecuteWithRecovery(fn func() error, handler func(interface{})) error {
 	defer func() {
 		if r := recover(); r != nil {

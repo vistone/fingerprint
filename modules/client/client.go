@@ -72,7 +72,7 @@ func NewBrowserClient(profile profiles.ClientProfile, opts ...*ClientOptions) (*
 		profile: profile,
 	}
 
-	// Create smart transport layer (supports HTTP/2 → HTTP/1.1 fallback)
+	// translated comment
 	transport, err := NewSmartTransport(profile)
 	if err != nil {
 		return nil, fmt.Errorf("create transport failed: %w", err)

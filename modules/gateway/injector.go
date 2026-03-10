@@ -1,5 +1,5 @@
 // Package gateway - HTML Response Injector with P3 Anti-Detection Code
-// 自动拦截HTML响应并注入P3反检测代码
+// translated comment
 package gateway
 
 import (
@@ -18,7 +18,7 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles"
 )
 
-// 预编译 HTML 注入点匹配正则
+// translated comment
 var (
 	injectorHeadPattern = regexp.MustCompile(`(?i)<head[^>]*>`)
 	injectorHTMLPattern = regexp.MustCompile(`(?i)<html[^>]*>`)
@@ -57,34 +57,34 @@ func buildInjectionCode(cfg *InjectorConfig, generator *frontend.JSAntiDetectCod
 	return buf.String()
 }
 
-// InjectorConfig 注入器配置
+// translated comment
 type InjectorConfig struct {
-	// 是否启用自动注入
+	// translated comment
 	Enabled bool
 
-	// 目标后端服务 URL（如果为空，则只拦截当前服务的响应）
+	// translated comment
 	TargetURL string
 
-	// 使用的 ClientProfile ID（用于生成反检测代码）
+	// translated comment
 	ProfileID string
 
-	// ClientProfile（如果提供，直接使用，否则从 ProfileID 加载）
+	// translated comment
 	Profile *profiles.ClientProfile
 
-	// 是否注入一致性校验代码
+	// translated comment
 	InjectConsistency bool
 
-	// 是否只在 <head> 标签存在时注入（否则注入到 <html> 后）
+	// translated comment
 	RequireHeadTag bool
 
-	// 是否添加注入标记注释
+	// translated comment
 	AddInjectionMarker bool
 
-	// 自定义注入位置（如果为空，默认在 <head> 后）
-	CustomInjectionPoint string // 例如 "</title>" 表示在 title 标签后注入
+	// translated comment
+	CustomInjectionPoint string // translated comment
 }
 
-// DefaultInjectorConfig 默认注入器配置
+// translated comment
 var DefaultInjectorConfig = &InjectorConfig{
 	Enabled:              true,
 	InjectConsistency:    true,
@@ -93,7 +93,7 @@ var DefaultInjectorConfig = &InjectorConfig{
 	CustomInjectionPoint: "",
 }
 
-// HTMLInjector HTML 响应注入器
+// translated comment
 type HTMLInjector struct {
 	config     *InjectorConfig
 	profile    *profiles.ClientProfile
@@ -101,11 +101,11 @@ type HTMLInjector struct {
 	validator  *utils.ConsistencyValidator
 	proxy      *httputil.ReverseProxy
 	mu         sync.RWMutex
-	codeCache  string // 缓存生成的代码
+	codeCache  string // translated comment
 	cacheValid bool
 }
 
-// NewHTMLInjector 创建新的 HTML 注入器
+// translated comment
 func NewHTMLInjector(config *InjectorConfig) (*HTMLInjector, error) {
 	if config == nil {
 		config = DefaultInjectorConfig
@@ -115,25 +115,25 @@ func NewHTMLInjector(config *InjectorConfig) (*HTMLInjector, error) {
 		config: config,
 	}
 
-	// 加载或使用提供的 Profile
+	// translated comment
 	if config.Profile != nil {
 		injector.profile = config.Profile
 	} else if config.ProfileID != "" {
-		// TODO: 从配置文件或数据库加载 profile
-		// 这里暂时返回错误，需要用户提供 Profile
+		// translated comment
+		// translated comment
 		return nil, fmt.Errorf("profile loading not implemented, please provide Profile directly")
 	} else {
-		// 使用默认空配置（不注入任何代码）
+		// translated comment
 		injector.profile = &profiles.ClientProfile{}
 	}
 
-	// 初始化生成器
+	// translated comment
 	if injector.profile.JSAntiDetection != nil {
 		injector.generator = frontend.NewJSAntiDetectCodeGenerator(injector.profile)
 		injector.validator = utils.NewConsistencyValidator(injector.profile)
 	}
 
-	// 如果提供了目标 URL，设置反向代理
+	// translated comment
 	if config.TargetURL != "" {
 		targetURL, err := url.Parse(config.TargetURL)
 		if err != nil {
@@ -146,7 +146,7 @@ func NewHTMLInjector(config *InjectorConfig) (*HTMLInjector, error) {
 	return injector, nil
 }
 
-// SetProfile 动态更新 Profile（会清空代码缓存）
+// translated comment
 func (inj *HTMLInjector) SetProfile(profile *profiles.ClientProfile) {
 	inj.mu.Lock()
 	defer inj.mu.Unlock()
@@ -163,7 +163,7 @@ func (inj *HTMLInjector) SetProfile(profile *profiles.ClientProfile) {
 	}
 }
 
-// GenerateInjectionCode 生成要注入的完整代码
+// translated comment
 func (inj *HTMLInjector) GenerateInjectionCode() string {
 	inj.mu.RLock()
 	if inj.cacheValid {
@@ -176,7 +176,7 @@ func (inj *HTMLInjector) GenerateInjectionCode() string {
 	inj.mu.Lock()
 	defer inj.mu.Unlock()
 
-	// 再次检查（双重检查锁定）
+	// translated comment
 	if inj.cacheValid {
 		return inj.codeCache
 	}
@@ -187,7 +187,7 @@ func (inj *HTMLInjector) GenerateInjectionCode() string {
 	return inj.codeCache
 }
 
-// GenerateInjectionCodeForProfile 生成指定 profile 的注入代码，不修改全局注入器状态。
+// translated comment
 func (inj *HTMLInjector) GenerateInjectionCodeForProfile(profile *profiles.ClientProfile) string {
 	if profile == nil || profile.JSAntiDetection == nil {
 		return ""
@@ -199,14 +199,14 @@ func (inj *HTMLInjector) GenerateInjectionCodeForProfile(profile *profiles.Clien
 	return buildInjectionCode(&cfg, gen)
 }
 
-// InjectIntoHTML 将代码注入到 HTML 响应中
+// translated comment
 func (inj *HTMLInjector) InjectIntoHTML(htmlContent []byte) []byte {
 	if !inj.config.Enabled {
 		return htmlContent
 	}
 
 	if inj.generator == nil {
-		// 没有配置反检测，直接返回原内容
+		// translated comment
 		return htmlContent
 	}
 
@@ -215,23 +215,23 @@ func (inj *HTMLInjector) InjectIntoHTML(htmlContent []byte) []byte {
 
 	var injectedContent string
 
-	// 尝试自定义注入点
+	// translated comment
 	if inj.config.CustomInjectionPoint != "" {
 		pattern := regexp.MustCompile(regexp.QuoteMeta(inj.config.CustomInjectionPoint))
 		if loc := pattern.FindStringIndex(content); loc != nil {
-			// 在自定义位置注入
+			// translated comment
 			injectedContent = content[:loc[1]] + "\n" + injectionCode + content[loc[1]:]
 			return []byte(injectedContent)
 		}
 	}
 
-	// 尝试在 <head> 标签后注入（最推荐）
+	// translated comment
 	if loc := injectorHeadPattern.FindStringIndex(content); loc != nil {
 		injectedContent = content[:loc[1]] + "\n" + injectionCode + content[loc[1]:]
 		return []byte(injectedContent)
 	}
 
-	// 如果 RequireHeadTag = false，尝试在 <html> 后注入
+	// translated comment
 	if !inj.config.RequireHeadTag {
 		if loc := injectorHTMLPattern.FindStringIndex(content); loc != nil {
 			injectedContent = content[:loc[1]] + "\n" + injectionCode + content[loc[1]:]
@@ -239,47 +239,47 @@ func (inj *HTMLInjector) InjectIntoHTML(htmlContent []byte) []byte {
 		}
 	}
 
-	// 如果都没找到，在文档最开始注入（作为最后的备选）
+	// translated comment
 	if !inj.config.RequireHeadTag {
 		return []byte(injectionCode + content)
 	}
 
-	// 不符合注入条件，返回原内容
+	// translated comment
 	return htmlContent
 }
 
-// maxInjectableBodySize 可注入的 HTML 响应体最大大小（10MB）
+// translated comment
 const maxInjectableBodySize = 10 * 1024 * 1024
 
-// modifyResponse 修改反向代理的响应（用于代理模式）
+// translated comment
 func (inj *HTMLInjector) modifyResponse(resp *http.Response) error {
-	// 只处理 HTML 响应
+	// translated comment
 	contentType := resp.Header.Get("Content-Type")
 	if !strings.Contains(strings.ToLower(contentType), "text/html") {
 		return nil
 	}
 
-	// 限制读取大小，防止超大响应导致 OOM
+	// translated comment
 	bodyBytes, err := io.ReadAll(io.LimitReader(resp.Body, maxInjectableBodySize))
 	if err != nil {
 		return err
 	}
 	resp.Body.Close()
 
-	// 注入代码
+	// translated comment
 	injectedBody := inj.InjectIntoHTML(bodyBytes)
 
-	// 创建新的响应体
+	// translated comment
 	resp.Body = io.NopCloser(bytes.NewReader(injectedBody))
 	resp.Header.Set("Content-Length", fmt.Sprintf("%d", len(injectedBody)))
 
-	// 移除可能的 Content-Encoding（因为我们已经解压并修改了内容）
+	// translated comment
 	resp.Header.Del("Content-Encoding")
 
 	return nil
 }
 
-// ServeHTTP 实现 http.Handler 接口（代理模式）
+// translated comment
 func (inj *HTMLInjector) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if inj.proxy == nil {
 		http.Error(w, "proxy not configured", http.StatusInternalServerError)
@@ -289,61 +289,61 @@ func (inj *HTMLInjector) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	inj.proxy.ServeHTTP(w, r)
 }
 
-// WrapHandler 包装现有的 HTTP handler（中间件模式）
+// translated comment
 func (inj *HTMLInjector) WrapHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// 创建响应拦截器
+		// translated comment
 		recorder := &responseRecorderWithInjection{
 			ResponseWriter: w,
 			injector:       inj,
 			statusCode:     http.StatusOK,
 		}
 
-		// 调用下一个 handler
+		// translated comment
 		next.ServeHTTP(recorder, r)
 
-		// 如果是 HTML 响应，注入代码
+		// translated comment
 		if recorder.shouldInject() {
 			injectedBody := inj.InjectIntoHTML(recorder.body.Bytes())
 			w.Header().Set("Content-Length", fmt.Sprintf("%d", len(injectedBody)))
 			w.WriteHeader(recorder.statusCode)
 			w.Write(injectedBody)
 		} else {
-			// 否则直接写入原响应
+			// translated comment
 			w.WriteHeader(recorder.statusCode)
 			w.Write(recorder.body.Bytes())
 		}
 	})
 }
 
-// WrapHandlerFunc 包装 HandlerFunc（中间件模式）
+// translated comment
 func (inj *HTMLInjector) WrapHandlerFunc(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// 创建响应拦截器
+		// translated comment
 		recorder := &responseRecorderWithInjection{
 			ResponseWriter: w,
 			injector:       inj,
 			statusCode:     http.StatusOK,
 		}
 
-		// 调用下一个 handler
+		// translated comment
 		next(recorder, r)
 
-		// 如果是 HTML 响应，注入代码
+		// translated comment
 		if recorder.shouldInject() {
 			injectedBody := inj.InjectIntoHTML(recorder.body.Bytes())
 			w.Header().Set("Content-Length", fmt.Sprintf("%d", len(injectedBody)))
 			w.WriteHeader(recorder.statusCode)
 			w.Write(injectedBody)
 		} else {
-			// 否则直接写入原响应
+			// translated comment
 			w.WriteHeader(recorder.statusCode)
 			w.Write(recorder.body.Bytes())
 		}
 	}
 }
 
-// responseRecorderWithInjection 响应记录器（用于中间件模式）
+// translated comment
 type responseRecorderWithInjection struct {
 	http.ResponseWriter
 	injector    *HTMLInjector
@@ -368,12 +368,12 @@ func (rec *responseRecorderWithInjection) shouldInject() bool {
 	return strings.Contains(strings.ToLower(contentType), "text/html")
 }
 
-// ProxyHandler 返回一个代理 handler（代理模式）
+// translated comment
 func (inj *HTMLInjector) ProxyHandler() http.Handler {
 	return inj
 }
 
-// InjectorMiddleware 返回中间件函数（中间件模式）
+// translated comment
 func (inj *HTMLInjector) InjectorMiddleware(next http.Handler) http.Handler {
 	return inj.WrapHandler(next)
 }

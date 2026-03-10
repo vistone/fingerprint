@@ -6,12 +6,12 @@ import (
 )
 
 // ========================================================================
-// 集成示例：ProcessWithPipeline 的实用指南
+// translated comment
 // ========================================================================
 
-// 本文件提供关于如何在实际项目中使用 ProcessWithPipeline 和其中间件系统的实际示例和最佳实践。
+// translated comment
 
-// Example1_BasicUsage 展示基础的 ProcessWithPipeline 使用方式
+// translated comment
 func Example1_BasicUsage() {
 	fmt.Println("========== Example 1: 基础使用 ==========")
 	fmt.Println()
@@ -29,10 +29,10 @@ func Example1_BasicUsage() {
 	fmt.Println()
 	fmt.Println("  3. 检查结果:")
 	fmt.Println("    if result.Success {")
-	fmt.Println("      // 处理成功")
+	fmt.Println("      // translated comment
 	fmt.Println("      results := result.AnalysisResults")
 	fmt.Println("    } else {")
-	fmt.Println("      // 处理失败")
+	fmt.Println("      // translated comment
 	fmt.Println("      err := result.Error")
 	fmt.Println("    }")
 	fmt.Println()
@@ -43,7 +43,7 @@ func Example1_BasicUsage() {
 	fmt.Println()
 }
 
-// Example2_LoggingMiddleware 展示如何集成日志中间件
+// translated comment
 func Example2_LoggingMiddleware() {
 	fmt.Println("========== Example 2: 日志中间件 ==========")
 	fmt.Println()
@@ -79,7 +79,7 @@ func Example2_LoggingMiddleware() {
 	fmt.Println()
 }
 
-// Example3_CachingMiddleware 展示如何使用缓存中间件
+// translated comment
 func Example3_CachingMiddleware() {
 	fmt.Println("========== Example 3: 缓存中间件（性能优化）==========")
 	fmt.Println()
@@ -110,7 +110,7 @@ func Example3_CachingMiddleware() {
 	fmt.Println()
 }
 
-// Example4_ABTest 展示如何进行 A/B 测试
+// translated comment
 func Example4_ABTest() {
 	fmt.Println("========== Example 4: A/B 测试框架 ==========")
 	fmt.Println()
@@ -118,20 +118,20 @@ func Example4_ABTest() {
 	fmt.Println()
 	fmt.Println("  request := &ProcessingRequest{...}")
 	fmt.Println()
-	fmt.Println("  // 旧方式")
+	fmt.Println("  // translated comment
 	fmt.Println("  oldStart := time.Now()")
 	fmt.Println("  oldResult := engine.Process(request)")
 	fmt.Println("  oldDuration := time.Since(oldStart)")
 	fmt.Println()
-	fmt.Println("  // 新方式")
+	fmt.Println("  // translated comment
 	fmt.Println("  newStart := time.Now()")
 	fmt.Println("  newResult := engine.ProcessWithPipeline(request)")
 	fmt.Println("  newDuration := time.Since(newStart)")
 	fmt.Println()
-	fmt.Println("  // 对比分析")
+	fmt.Println("  // translated comment
 	fmt.Println("  if oldResult.Success == newResult.Success {")
 	fmt.Println("    ratio := float64(newDuration) / float64(oldDuration)")
-	fmt.Println("    // 输出性能倍率（使用 Printf）")
+	fmt.Println("    // translated comment
 	fmt.Println("  }")
 	fmt.Println()
 	fmt.Println("关键验证点:")
@@ -148,7 +148,7 @@ func Example4_ABTest() {
 	fmt.Println()
 }
 
-// Example5_SelectiveStrategy 展示选择性迁移策略
+// translated comment
 func Example5_SelectiveStrategy() {
 	fmt.Println("========== Example 5: 选择性迁移策略 ==========")
 	fmt.Println()
@@ -189,10 +189,10 @@ func Example5_SelectiveStrategy() {
 }
 
 // ========================================================================
-// 最佳实践指南
+// translated comment
 // ========================================================================
 
-// ShowBestPractices 展示最佳实践
+// translated comment
 func ShowBestPractices() {
 	fmt.Println()
 	fmt.Println("========== 最佳实践 ==========")
@@ -232,10 +232,10 @@ func ShowBestPractices() {
 }
 
 // ========================================================================
-// 迁移时间表模板
+// translated comment
 // ========================================================================
 
-// ShowMigrationTimeline 展示推荐的迁移时间表
+// translated comment
 func ShowMigrationTimeline() {
 	fmt.Println()
 	fmt.Println("========== 推荐的迁移时间表 ==========")
@@ -264,10 +264,10 @@ func ShowMigrationTimeline() {
 }
 
 // ========================================================================
-// 对比函数（辅助）
+// translated comment
 // ========================================================================
 
-// ComparePerformance 性能对比辅助函数
+// translated comment
 func ComparePerformance(oldDuration, newDuration time.Duration) {
 	if oldDuration == 0 {
 		return
@@ -287,10 +287,10 @@ func ComparePerformance(oldDuration, newDuration time.Duration) {
 }
 
 // ========================================================================
-// 场景选择辅助函数
+// translated comment
 // ========================================================================
 
-// ProcessingScenario 描述一个处理场景
+// translated comment
 type ProcessingScenario struct {
 	NeedsDetailedLogging        bool
 	NeedsDistributedTracing     bool
@@ -301,34 +301,34 @@ type ProcessingScenario struct {
 	IsUltraPerformanceSensitive bool
 }
 
-// ShouldUseProcessWithPipeline 决定是否使用新方式
+// translated comment
 func ShouldUseProcessWithPipeline(scenario *ProcessingScenario) bool {
 	if scenario == nil {
 		return false
 	}
 
-	// 需要详细日志、追踪、指标 => 新方式
+	// translated comment
 	if scenario.NeedsDetailedLogging ||
 		scenario.NeedsDistributedTracing ||
 		scenario.NeedsMetrics {
 		return true
 	}
 
-	// 需要缓存优化 => 新方式
+	// translated comment
 	if scenario.NeedsCaching {
 		return true
 	}
 
-	// 高并发且低延迟敏感 => 旧方式
+	// translated comment
 	if scenario.IsHighConcurrencyPath && !scenario.CanTolerateLatency {
 		return false
 	}
 
-	// 极端性能敏感 => 旧方式
+	// translated comment
 	if scenario.IsUltraPerformanceSensitive {
 		return false
 	}
 
-	// 默认: 推荐新方式（更好的可维护性）
+	// translated comment
 	return true
 }

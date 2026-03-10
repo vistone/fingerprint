@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// TestNew 测试创建日志记录器
+// translated comment
 func TestNew(t *testing.T) {
 	l := New()
 	if l == nil {
@@ -23,7 +23,7 @@ func TestNew(t *testing.T) {
 	}
 }
 
-// TestWithLevel 测试设置日志级别
+// translated comment
 func TestWithLevel(t *testing.T) {
 	l := New(WithLevel(DebugLevel))
 	if l.level != DebugLevel {
@@ -31,7 +31,7 @@ func TestWithLevel(t *testing.T) {
 	}
 }
 
-// TestWithFields 测试设置默认字段
+// translated comment
 func TestWithFields(t *testing.T) {
 	fields := map[string]interface{}{
 		"service": "test",
@@ -47,7 +47,7 @@ func TestWithFields(t *testing.T) {
 	}
 }
 
-// TestLogLevels 测试各日志级别
+// translated comment
 func TestLogLevels(t *testing.T) {
 	var buf bytes.Buffer
 	l := New(
@@ -55,7 +55,7 @@ func TestLogLevels(t *testing.T) {
 		WithOutput(&buf),
 	)
 
-	// 测试 Debug
+	// translated comment
 	l.Debug("debug message")
 	if !strings.Contains(buf.String(), "debug message") {
 		t.Error("Debug log not output correctly")
@@ -63,7 +63,7 @@ func TestLogLevels(t *testing.T) {
 
 	buf.Reset()
 
-	// 测试 Info
+	// translated comment
 	l.Info("info message")
 	if !strings.Contains(buf.String(), "info message") {
 		t.Error("Info log not output correctly")
@@ -71,7 +71,7 @@ func TestLogLevels(t *testing.T) {
 
 	buf.Reset()
 
-	// 测试 Warn
+	// translated comment
 	l.Warn("warn message")
 	if !strings.Contains(buf.String(), "warn message") {
 		t.Error("Warn log not output correctly")
@@ -79,14 +79,14 @@ func TestLogLevels(t *testing.T) {
 
 	buf.Reset()
 
-	// 测试 Error
+	// translated comment
 	l.Error("error message")
 	if !strings.Contains(buf.String(), "error message") {
 		t.Error("Error log not output correctly")
 	}
 }
 
-// TestLogf 测试格式化日志
+// translated comment
 func TestLogf(t *testing.T) {
 	var buf bytes.Buffer
 	l := New(
@@ -101,7 +101,7 @@ func TestLogf(t *testing.T) {
 	}
 }
 
-// TestLogw 测试带字段的日志
+// translated comment
 func TestLogw(t *testing.T) {
 	var buf bytes.Buffer
 	l := New(
@@ -122,7 +122,7 @@ func TestLogw(t *testing.T) {
 	}
 }
 
-// TestLevelFiltering 测试日志级别过滤
+// translated comment
 func TestLevelFiltering(t *testing.T) {
 	var buf bytes.Buffer
 	l := New(
@@ -130,14 +130,14 @@ func TestLevelFiltering(t *testing.T) {
 		WithOutput(&buf),
 	)
 
-	// Debug 和 Info 应该被过滤
+	// translated comment
 	l.Debug("debug")
 	l.Info("info")
 	if buf.Len() > 0 {
 		t.Error("Debug and Info should be filtered")
 	}
 
-	// Warn 和 Error 应该输出
+	// translated comment
 	l.Warn("warn")
 	if !strings.Contains(buf.String(), "warn") {
 		t.Error("Warn should be output")
@@ -150,12 +150,12 @@ func TestLevelFiltering(t *testing.T) {
 	}
 }
 
-// TestWith 测试创建子日志记录器
+// translated comment
 func TestWith(t *testing.T) {
 	parent := New(WithFields(map[string]interface{}{"parent": "value"}))
 	child := parent.With(map[string]interface{}{"child": "value"})
 
-	// 子日志应该继承父日志的字段
+	// translated comment
 	if child.fields["parent"] != "value" {
 		t.Error("Child should inherit parent's fields")
 	}
@@ -163,13 +163,13 @@ func TestWith(t *testing.T) {
 		t.Error("Child should have its own fields")
 	}
 
-	// 父日志的字段不应该被修改
+	// translated comment
 	if _, exists := parent.fields["child"]; exists {
 		t.Error("Parent's fields should not be modified")
 	}
 }
 
-// TestSetLevel 测试动态设置日志级别
+// translated comment
 func TestSetLevel(t *testing.T) {
 	var buf bytes.Buffer
 	l := New(
@@ -177,23 +177,23 @@ func TestSetLevel(t *testing.T) {
 		WithOutput(&buf),
 	)
 
-	// Debug 应该被过滤
+	// translated comment
 	l.Debug("debug1")
 	if buf.Len() > 0 {
 		t.Error("Debug should be filtered")
 	}
 
-	// 改变级别
+	// translated comment
 	l.SetLevel(DebugLevel)
 
-	// 现在 Debug 应该输出
+	// translated comment
 	l.Debug("debug2")
 	if !strings.Contains(buf.String(), "debug2") {
 		t.Error("Debug should be output after level change")
 	}
 }
 
-// TestDefaultFormatter 测试默认格式化器
+// translated comment
 func TestDefaultFormatter(t *testing.T) {
 	f := &DefaultFormatter{withTimestamp: true, withLevel: true}
 	output := f.Format(InfoLevel, "test", map[string]interface{}{"key": "value"}, time.Now())
@@ -209,7 +209,7 @@ func TestDefaultFormatter(t *testing.T) {
 	}
 }
 
-// TestJSONFormatter 测试 JSON 格式化器
+// translated comment
 func TestJSONFormatter(t *testing.T) {
 	f := &JSONFormatter{}
 	output := f.Format(InfoLevel, "test", map[string]interface{}{"key": "value"}, time.Now())
@@ -222,7 +222,7 @@ func TestJSONFormatter(t *testing.T) {
 	}
 }
 
-// TestLogLevelString 测试日志级别字符串
+// translated comment
 func TestLogLevelString(t *testing.T) {
 	tests := []struct {
 		level    LogLevel
@@ -243,23 +243,23 @@ func TestLogLevelString(t *testing.T) {
 	}
 }
 
-// TestGlobalFunctions 测试全局便捷函数
+// translated comment
 func TestGlobalFunctions(t *testing.T) {
-	// 注意：全局函数使用 Default() 日志记录器
-	// 由于 sync.Once 的存在，Default() 只会初始化一次
-	// 这个测试只是验证函数调用不会 panic
-	// 实际输出验证在 Logger 的方法测试中已完成
+	// translated comment
+	// translated comment
+	// translated comment
+	// translated comment
 
-	// 这些调用不应 panic
+	// translated comment
 	Info("global info")
 	Warnf("formatted %s", "warn")
 	Errorw("error with fields", "key", "value")
-	// Debug 级别默认被过滤，不测试
+	// translated comment
 }
 
-// TestKvToMap 测试键值对转换
+// translated comment
 func TestKvToMap(t *testing.T) {
-	// 正常情况
+	// translated comment
 	m := kvToMap("key1", "value1", "key2", 42)
 	if m["key1"] != "value1" {
 		t.Error("key1 not converted correctly")
@@ -268,26 +268,26 @@ func TestKvToMap(t *testing.T) {
 		t.Error("key2 not converted correctly")
 	}
 
-	// 奇数个参数
+	// translated comment
 	m2 := kvToMap("key1", "value1", "key2")
 	if len(m2) != 1 {
 		t.Error("Should handle odd number of arguments")
 	}
 
-	// 空参数
+	// translated comment
 	m3 := kvToMap()
 	if len(m3) != 0 {
 		t.Error("Should handle empty arguments")
 	}
 
-	// 非字符串键
+	// translated comment
 	m4 := kvToMap(123, "value")
 	if len(m4) != 0 {
 		t.Error("Should skip non-string keys")
 	}
 }
 
-// BenchmarkInfo 基准测试 Info 日志
+// translated comment
 func BenchmarkInfo(b *testing.B) {
 	var buf bytes.Buffer
 	l := New(WithOutput(&buf))
@@ -298,7 +298,7 @@ func BenchmarkInfo(b *testing.B) {
 	}
 }
 
-// BenchmarkInfow 基准测试带字段的日志
+// translated comment
 func BenchmarkInfow(b *testing.B) {
 	var buf bytes.Buffer
 	l := New(WithOutput(&buf))
@@ -309,7 +309,7 @@ func BenchmarkInfow(b *testing.B) {
 	}
 }
 
-// BenchmarkInfof 基准测试格式化日志
+// translated comment
 func BenchmarkInfof(b *testing.B) {
 	var buf bytes.Buffer
 	l := New(WithOutput(&buf))

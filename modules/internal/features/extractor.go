@@ -9,53 +9,53 @@ import (
 	"strings"
 )
 
-// FeatureType 特征类别枚举
+// translated comment
 type FeatureType string
 
 const (
-	// 熵特征
+	// translated comment
 	FeatureEntropy FeatureType = "entropy"
-	// 工具特征
+	// translated comment
 	FeatureToolMarker FeatureType = "tool_marker"
-	// 操作系统平台矛盾
+	// translated comment
 	FeatureOSPlatformContradiction FeatureType = "os_platform_contradiction"
-	// User-Agent 和操作系统矛盾
+	// translated comment
 	FeatureUAOSContradiction FeatureType = "ua_os_contradiction"
-	// 移动设备屏幕分辨率矛盾
+	// translated comment
 	FeatureMobileScreenContradiction FeatureType = "mobile_screen_contradiction"
-	// User-Agent 特性矛盾
+	// translated comment
 	FeatureUAFeatureContradiction FeatureType = "ua_feature_contradiction"
-	// 无头浏览器特征
+	// translated comment
 	FeatureHeadlessBrowser FeatureType = "headless_browser"
 )
 
-// FeatureExtractor 统一特征提取器接口
+// translated comment
 type FeatureExtractor interface {
-	// ExtractFeature 从数据中提取指定类型的特征
-	// 返回特征值（0.0-1.0）和是否检测到异常
+	// translated comment
+	// translated comment
 	ExtractFeature(featureType FeatureType, data interface{}, config *FeatureConfig) (float64, bool)
 
-	// GetFeatureName 获取特征的人类可读名称
+	// translated comment
 	GetFeatureName(featureType FeatureType) string
 }
 
-// FeatureConfig 特征提取配置
+// translated comment
 type FeatureConfig struct {
-	// 高熵阈值（bits）
+	// translated comment
 	EntropyHighThreshold float64 `json:"entropy_high_threshold"`
-	// 低熵阈值（unique bytes 数量）
+	// translated comment
 	EntropyLowThreshold int `json:"entropy_low_threshold"`
-	// 工具特征匹配列表
+	// translated comment
 	ToolMarkers []string `json:"tool_markers"`
-	// 无头浏览器特征列表
+	// translated comment
 	HeadlessMarkers []string `json:"headless_markers"`
-	// 移动设备屏幕分辨率上限（超过该值可疑）
+	// translated comment
 	MobileScreenWidthMax int `json:"mobile_screen_width_max"`
-	// 桌面设备屏幕分辨率下限（低于该值可疑）
+	// translated comment
 	DesktopScreenWidthMin int `json:"desktop_screen_width_min"`
 }
 
-// DefaultFeatureConfig 默认特征配置
+// translated comment
 func DefaultFeatureConfig() *FeatureConfig {
 	return &FeatureConfig{
 		EntropyHighThreshold:  7.5,
@@ -67,12 +67,12 @@ func DefaultFeatureConfig() *FeatureConfig {
 	}
 }
 
-// BaseFeatureExtractor 基础特征提取器实现
+// translated comment
 type BaseFeatureExtractor struct {
 	config *FeatureConfig
 }
 
-// NewBaseFeatureExtractor 创建新的基础特征提取器
+// translated comment
 func NewBaseFeatureExtractor(config *FeatureConfig) *BaseFeatureExtractor {
 	if config == nil {
 		config = DefaultFeatureConfig()
@@ -80,10 +80,10 @@ func NewBaseFeatureExtractor(config *FeatureConfig) *BaseFeatureExtractor {
 	return &BaseFeatureExtractor{config: config}
 }
 
-// ExtractFeature 实现统一的特征提取接口
-// 注意：此方法并发安全，但 config 参数仅在本次调用中生效，不会修改提取器的默认配置
+// translated comment
+// translated comment
 func (b *BaseFeatureExtractor) ExtractFeature(featureType FeatureType, data interface{}, config *FeatureConfig) (float64, bool) {
-	// 使用传入的 config 或默认 config，不修改提取器的状态
+	// translated comment
 	cfg := b.config
 	if config != nil {
 		cfg = config
@@ -109,7 +109,7 @@ func (b *BaseFeatureExtractor) ExtractFeature(featureType FeatureType, data inte
 	}
 }
 
-// GetFeatureName 获取特征的人类可读名称
+// translated comment
 func (b *BaseFeatureExtractor) GetFeatureName(featureType FeatureType) string {
 	switch featureType {
 	case FeatureEntropy:
@@ -131,11 +131,11 @@ func (b *BaseFeatureExtractor) GetFeatureName(featureType FeatureType) string {
 	}
 }
 
-// extractEntropyFeature 从字节数据提取熵特征
+// translated comment
 func (b *BaseFeatureExtractor) extractEntropyFeature(data interface{}, cfg *FeatureConfig) (float64, bool) {
 	var bytes []byte
 
-	// 类型转换
+	// translated comment
 	switch v := data.(type) {
 	case []byte:
 		bytes = v
@@ -149,7 +149,7 @@ func (b *BaseFeatureExtractor) extractEntropyFeature(data interface{}, cfg *Feat
 		return 0.0, false
 	}
 
-	// 计算低熵（重复字节）
+	// translated comment
 	var byteCounts [256]int
 	for _, b := range bytes {
 		byteCounts[b]++
@@ -161,12 +161,12 @@ func (b *BaseFeatureExtractor) extractEntropyFeature(data interface{}, cfg *Feat
 		}
 	}
 
-	// 低熵异常
+	// translated comment
 	if uniqueBytes < cfg.EntropyLowThreshold {
 		return 0.95, true
 	}
 
-	// 计算高熵（Shannon 熵）
+	// translated comment
 	if len(bytes) >= 20 {
 		n := float64(len(bytes))
 		entropy := 0.0
@@ -177,7 +177,7 @@ func (b *BaseFeatureExtractor) extractEntropyFeature(data interface{}, cfg *Feat
 			}
 		}
 
-		// 高熵异常
+		// translated comment
 		if entropy > cfg.EntropyHighThreshold {
 			return 0.85, true
 		}
@@ -186,19 +186,19 @@ func (b *BaseFeatureExtractor) extractEntropyFeature(data interface{}, cfg *Feat
 	return 0.0, false
 }
 
-// extractToolMarkerFeature 检测工具特征
-// 优化：对大文本使用 strings.Contains 进行高效匹配
+// translated comment
+// translated comment
 func (b *BaseFeatureExtractor) extractToolMarkerFeature(data interface{}, cfg *FeatureConfig) (float64, bool) {
 	var text string
 
 	switch v := data.(type) {
 	case []byte:
-		// 如果数据量很大，先尝试转为字符串进行高效匹配
+		// translated comment
 		if len(v) > 1024 {
-			// 对大文本使用更高效的 Boyer-Moore 类算法（strings.Contains 内部实现）
+			// translated comment
 			text = string(v)
 		} else {
-			// 小数据量使用逐字节匹配
+			// translated comment
 			return b.extractToolMarkerFromBytes(v, cfg.ToolMarkers)
 		}
 	case string:
@@ -207,7 +207,7 @@ func (b *BaseFeatureExtractor) extractToolMarkerFeature(data interface{}, cfg *F
 		return 0.0, false
 	}
 
-	// 使用 strings.Contains 进行高效匹配（内部使用优化的字符串搜索算法）
+	// translated comment
 	textLower := strings.ToLower(text)
 	for _, pattern := range cfg.ToolMarkers {
 		if strings.Contains(textLower, strings.ToLower(pattern)) {
@@ -218,7 +218,7 @@ func (b *BaseFeatureExtractor) extractToolMarkerFeature(data interface{}, cfg *F
 	return 0.0, false
 }
 
-// extractToolMarkerFromBytes 对小字节切片进行工具特征检测
+// translated comment
 func (b *BaseFeatureExtractor) extractToolMarkerFromBytes(data []byte, patterns []string) (float64, bool) {
 	dataLower := bytes.ToLower(data)
 	for _, pattern := range patterns {
@@ -229,7 +229,7 @@ func (b *BaseFeatureExtractor) extractToolMarkerFromBytes(data []byte, patterns 
 	return 0.0, false
 }
 
-// extractOSPlatformContradictionFeature 操作系统和平台矛盾
+// translated comment
 func (b *BaseFeatureExtractor) extractOSPlatformContradictionFeature(data interface{}) (float64, bool) {
 	attrs := toStringMap(data)
 	if attrs == nil {
@@ -243,15 +243,15 @@ func (b *BaseFeatureExtractor) extractOSPlatformContradictionFeature(data interf
 		return 0.0, false
 	}
 
-	// Windows OS 不应搭配非 Win platform
+	// translated comment
 	if strings.Contains(os, "Windows") && !strings.Contains(platform, "Win") {
 		return 0.8, true
 	}
-	// Mac OS 不应搭配非 Mac platform
+	// translated comment
 	if strings.Contains(os, "Mac") && !strings.Contains(platform, "Mac") {
 		return 0.8, true
 	}
-	// Linux 不应搭配非 X11/Linux platform
+	// translated comment
 	if strings.Contains(os, "Linux") && !strings.Contains(platform, "Linux") && !strings.Contains(platform, "X11") {
 		return 0.8, true
 	}
@@ -259,7 +259,7 @@ func (b *BaseFeatureExtractor) extractOSPlatformContradictionFeature(data interf
 	return 0.0, false
 }
 
-// extractUAOSContradictionFeature User-Agent 和操作系统矛盾
+// translated comment
 func (b *BaseFeatureExtractor) extractUAOSContradictionFeature(data interface{}) (float64, bool) {
 	attrs := toStringMap(data)
 	if attrs == nil {
@@ -276,15 +276,15 @@ func (b *BaseFeatureExtractor) extractUAOSContradictionFeature(data interface{})
 	uaLower := strings.ToLower(ua)
 	osLower := strings.ToLower(os)
 
-	// Windows UA 声称 Mac OS
+	// translated comment
 	if strings.Contains(uaLower, "windows") && strings.Contains(osLower, "mac") {
 		return 0.9, true
 	}
-	// Mac UA 声称 Windows OS
+	// translated comment
 	if strings.Contains(uaLower, "macintosh") && strings.Contains(osLower, "windows") {
 		return 0.9, true
 	}
-	// Linux UA 声称 Windows OS
+	// translated comment
 	if strings.Contains(uaLower, "x11; linux") && strings.Contains(osLower, "windows") {
 		return 0.9, true
 	}
@@ -292,7 +292,7 @@ func (b *BaseFeatureExtractor) extractUAOSContradictionFeature(data interface{})
 	return 0.0, false
 }
 
-// extractMobileScreenContradictionFeature 移动设备屏幕分辨率矛盾
+// translated comment
 func (b *BaseFeatureExtractor) extractMobileScreenContradictionFeature(data interface{}, cfg *FeatureConfig) (float64, bool) {
 	attrs := toStringMap(data)
 	if attrs == nil {
@@ -306,18 +306,18 @@ func (b *BaseFeatureExtractor) extractMobileScreenContradictionFeature(data inte
 		return 0.0, false
 	}
 
-	// 解析宽度
+	// translated comment
 	var width int
 	_, err := fmt.Sscanf(screenWidth, "%d", &width)
 	if err != nil {
 		return 0.0, false
 	}
 
-	// 移动设备不应使用超大分辨率
+	// translated comment
 	if isMobile == "true" && width > cfg.MobileScreenWidthMax {
 		return 0.85, true
 	}
-	// 桌面设备不应使用超小分辨率
+	// translated comment
 	if isMobile == "false" && width < cfg.DesktopScreenWidthMin {
 		return 0.85, true
 	}
@@ -325,7 +325,7 @@ func (b *BaseFeatureExtractor) extractMobileScreenContradictionFeature(data inte
 	return 0.0, false
 }
 
-// extractUAFeatureContradictionFeature User-Agent 特性矛盾
+// translated comment
 func (b *BaseFeatureExtractor) extractUAFeatureContradictionFeature(data interface{}) (float64, bool) {
 	attrs := toStringMap(data)
 	if attrs == nil {
@@ -342,11 +342,11 @@ func (b *BaseFeatureExtractor) extractUAFeatureContradictionFeature(data interfa
 	uaLower := strings.ToLower(ua)
 	featuresLower := strings.ToLower(features)
 
-	// Chrome 60 不应支持 WebGL2
+	// translated comment
 	if strings.Contains(uaLower, "chrome/60") && strings.Contains(featuresLower, "webgl2") {
 		return 0.8, true
 	}
-	// 移动版 UA 不应声称桌面特性
+	// translated comment
 	if strings.Contains(uaLower, "mobile") && strings.Contains(featuresLower, "desktop") {
 		return 0.8, true
 	}
@@ -354,7 +354,7 @@ func (b *BaseFeatureExtractor) extractUAFeatureContradictionFeature(data interfa
 	return 0.0, false
 }
 
-// extractHeadlessBrowserFeature 无头浏览器检测
+// translated comment
 func (b *BaseFeatureExtractor) extractHeadlessBrowserFeature(data interface{}, cfg *FeatureConfig) (float64, bool) {
 	var ua string
 
@@ -381,7 +381,7 @@ func (b *BaseFeatureExtractor) extractHeadlessBrowserFeature(data interface{}, c
 	return 0.0, false
 }
 
-// memEquals 比较两个字节切片是否相等
+// translated comment
 func memEquals(a, b []byte) bool {
 	if len(a) != len(b) {
 		return false
@@ -394,8 +394,8 @@ func memEquals(a, b []byte) bool {
 	return true
 }
 
-// toStringMap 将 interface{} 转换为 map[string]string
-// 支持 map[string]string 和 map[string]interface{} 类型
+// translated comment
+// translated comment
 func toStringMap(data interface{}) map[string]string {
 	switch v := data.(type) {
 	case map[string]string:
@@ -413,22 +413,22 @@ func toStringMap(data interface{}) map[string]string {
 	}
 }
 
-// FeatureVector 特征向量
+// translated comment
 type FeatureVector struct {
-	// 各特征的得分（0.0-1.0）
+	// translated comment
 	Scores map[FeatureType]float64
-	// MD5 哈希（便于去重）
+	// translated comment
 	Hash string
-	// 检测到的异常类型
+	// translated comment
 	Anomalies []FeatureType
-	// 总体风险评分（0.0-1.0）
+	// translated comment
 	RiskScore float64
 }
 
-// ExtractFeatureVector 从多个数据源提取完整的特征向量
-// 注意：此方法并发安全，但 config 参数仅在本次调用中生效
+// translated comment
+// translated comment
 func (b *BaseFeatureExtractor) ExtractFeatureVector(data map[string]interface{}, config *FeatureConfig) *FeatureVector {
-	// 使用传入的 config 或默认 config，不修改提取器的状态
+	// translated comment
 	cfg := b.config
 	if config != nil {
 		cfg = config
@@ -439,7 +439,7 @@ func (b *BaseFeatureExtractor) ExtractFeatureVector(data map[string]interface{},
 		Anomalies: []FeatureType{},
 	}
 
-	// 定义要提取的特征列表
+	// translated comment
 	featuresToExtract := []FeatureType{
 		FeatureEntropy,
 		FeatureToolMarker,
@@ -450,7 +450,7 @@ func (b *BaseFeatureExtractor) ExtractFeatureVector(data map[string]interface{},
 		FeatureUAFeatureContradiction,
 	}
 
-	// 提取所有特征
+	// translated comment
 	for _, fType := range featuresToExtract {
 		score, isAnomaly := b.ExtractFeature(fType, data, cfg)
 		vector.Scores[fType] = score
@@ -459,10 +459,10 @@ func (b *BaseFeatureExtractor) ExtractFeatureVector(data map[string]interface{},
 		}
 	}
 
-	// 计算总体风险评分
+	// translated comment
 	vector.RiskScore = calculateRiskScore(vector.Scores)
 
-	// 计算特征向量的 MD5 哈希（用于去重）
+	// translated comment
 	var hashInput strings.Builder
 	hashInput.Grow(len(featuresToExtract) * 20)
 	for _, fType := range featuresToExtract {
@@ -474,13 +474,13 @@ func (b *BaseFeatureExtractor) ExtractFeatureVector(data map[string]interface{},
 	return vector
 }
 
-// calculateRiskScore 计算综合风险评分
+// translated comment
 func calculateRiskScore(scores map[FeatureType]float64) float64 {
 	if len(scores) == 0 {
 		return 0.0
 	}
 
-	// 最大值法：取最高风险特征分数
+	// translated comment
 	maxScore := 0.0
 	for _, score := range scores {
 		if score > maxScore {
@@ -488,7 +488,7 @@ func calculateRiskScore(scores map[FeatureType]float64) float64 {
 		}
 	}
 
-	// 结合异常数量加权
+	// translated comment
 	anomalyCount := 0
 	for _, score := range scores {
 		if score > 0.5 {
@@ -496,7 +496,7 @@ func calculateRiskScore(scores map[FeatureType]float64) float64 {
 		}
 	}
 
-	// 多重异常会增加风险
+	// translated comment
 	weightedScore := maxScore * (1.0 + float64(anomalyCount-1)*0.1)
 	if weightedScore > 1.0 {
 		weightedScore = 1.0

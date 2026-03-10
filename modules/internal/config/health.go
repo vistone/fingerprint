@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// HealthStatus 健康检查状态
+// translated comment
 type HealthStatus string
 
 const (
@@ -14,7 +14,7 @@ const (
 	HealthCritical HealthStatus = "critical"
 )
 
-// HealthCheckResult 健康检查结果
+// translated comment
 type HealthCheckResult struct {
 	Status    HealthStatus
 	Message   string
@@ -23,7 +23,7 @@ type HealthCheckResult struct {
 	Overall   bool
 }
 
-// HealthCheckItem 单个健康检查项
+// translated comment
 type HealthCheckItem struct {
 	Name        string
 	Status      HealthStatus
@@ -31,52 +31,52 @@ type HealthCheckItem struct {
 	LastChecked time.Time
 }
 
-// HealthChecker 配置健康检查器
+// translated comment
 type HealthChecker struct {
 	center *ConfigCenter
 	checks []HealthCheck
 }
 
-// HealthCheck 健康检查函数接口
+// translated comment
 type HealthCheck interface {
-	// 执行健康检查
+	// translated comment
 	Check() *HealthCheckItem
 }
 
-// NewHealthChecker 创建健康检查器
+// translated comment
 func NewHealthChecker(center *ConfigCenter) *HealthChecker {
 	hc := &HealthChecker{
 		center: center,
 		checks: make([]HealthCheck, 0),
 	}
 
-	// 注册默认检查
+	// translated comment
 	hc.registerDefaultChecks()
 
 	return hc
 }
 
-// registerDefaultChecks 注册默认检查
+// translated comment
 func (hc *HealthChecker) registerDefaultChecks() {
-	// 检查配置是否已加载
+	// translated comment
 	hc.AddCheck(&loadedCheck{center: hc.center})
 
-	// 检查配置有效性
+	// translated comment
 	hc.AddCheck(&validityCheck{center: hc.center})
 
-	// 检查历史版本
+	// translated comment
 	hc.AddCheck(&historyCheck{center: hc.center})
 
-	// 检查配置文件可访问性
+	// translated comment
 	hc.AddCheck(&fileAccessCheck{center: hc.center})
 }
 
-// AddCheck 添加健康检查
+// translated comment
 func (hc *HealthChecker) AddCheck(check HealthCheck) {
 	hc.checks = append(hc.checks, check)
 }
 
-// CheckHealth 执行所有健康检查
+// translated comment
 func (hc *HealthChecker) CheckHealth() *HealthCheckResult {
 	result := &HealthCheckResult{
 		Status:    HealthOK,
@@ -89,7 +89,7 @@ func (hc *HealthChecker) CheckHealth() *HealthCheckResult {
 		item := check.Check()
 		result.Checks = append(result.Checks, item)
 
-		// 更新整体状态
+		// translated comment
 		if item.Status == HealthCritical {
 			result.Status = HealthCritical
 			result.Overall = false
@@ -98,7 +98,7 @@ func (hc *HealthChecker) CheckHealth() *HealthCheckResult {
 		}
 	}
 
-	// 生成消息
+	// translated comment
 	if result.Overall {
 		result.Message = "Configuration health is good"
 	} else {
@@ -114,7 +114,7 @@ func (hc *HealthChecker) CheckHealth() *HealthCheckResult {
 	return result
 }
 
-// loadedCheck 检查配置是否已加载
+// translated comment
 type loadedCheck struct {
 	center *ConfigCenter
 }
@@ -136,7 +136,7 @@ func (lc *loadedCheck) Check() *HealthCheckItem {
 	return item
 }
 
-// validityCheck 检查配置有效性
+// translated comment
 type validityCheck struct {
 	center *ConfigCenter
 }
@@ -154,7 +154,7 @@ func (vc *validityCheck) Check() *HealthCheckItem {
 		return item
 	}
 
-	// 验证配置
+	// translated comment
 	validator := NewConfigValidator()
 	errs := validator.Validate(config)
 
@@ -169,7 +169,7 @@ func (vc *validityCheck) Check() *HealthCheckItem {
 	return item
 }
 
-// historyCheck 检查历史版本
+// translated comment
 type historyCheck struct {
 	center *ConfigCenter
 }
@@ -193,7 +193,7 @@ func (hc *historyCheck) Check() *HealthCheckItem {
 	return item
 }
 
-// fileAccessCheck 检查配置文件可访问性
+// translated comment
 type fileAccessCheck struct {
 	center *ConfigCenter
 }
@@ -204,7 +204,7 @@ func (fac *fileAccessCheck) Check() *HealthCheckItem {
 		LastChecked: time.Now(),
 	}
 
-	// 尝试读取配置文件
+	// translated comment
 	if err := fac.center.Load(); err == nil {
 		item.Status = HealthOK
 		item.Message = "Configuration file is accessible"

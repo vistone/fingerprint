@@ -6,91 +6,91 @@ import (
 	"strings"
 )
 
-// JA4TResult JA4T 指纹结果（TCP 客户端指纹）
+// translated comment
 type JA4TResult struct {
-	// JA4T 完整指纹（原始字符串形式）
+	// translated comment
 	RawFingerprint string
 
-	// JA4T 哈希（SHA256 前 12 个字符）
+	// translated comment
 	Hash string
 
-	// 窗口大小
+	// translated comment
 	WindowSize uint16
 
-	// TCP 选项类型列表（按原始顺序）
+	// translated comment
 	Options []uint8
 
-	// 最大段大小（MSS）值
+	// translated comment
 	MSS uint16
 
-	// 窗口缩放因子
+	// translated comment
 	WindowScale uint8
 
-	// 异常标记
+	// translated comment
 	AnomalyFlags []string
 
-	// 风险评分 (0.0-1.0)
+	// translated comment
 	RiskScore float64
 
-	// 推测的操作系统
+	// translated comment
 	ProbableOS string
 }
 
-// JA4TSResult JA4TS 指纹结果（TCP 服务端指纹）
+// translated comment
 type JA4TSResult struct {
-	// JA4TS 完整指纹（原始字符串形式）
+	// translated comment
 	RawFingerprint string
 
-	// JA4TS 哈希（SHA256 前 12 个字符）
+	// translated comment
 	Hash string
 
-	// 窗口大小
+	// translated comment
 	WindowSize uint16
 
-	// TCP 选项类型列表（按原始顺序）
+	// translated comment
 	Options []uint8
 
-	// 最大段大小（MSS）值
+	// translated comment
 	MSS uint16
 
-	// 窗口缩放因子
+	// translated comment
 	WindowScale uint8
 }
 
-// TCPSYNData TCP SYN 数据包特征
+// translated comment
 type TCPSYNData struct {
-	// 窗口大小
+	// translated comment
 	WindowSize uint16
 
-	// TCP 选项（按原始顺序，Option Kind 值）
-	// 常见值: 2=MSS, 1=NOP, 3=Window Scale, 4=SACK Permitted, 8=Timestamps
+	// translated comment
+	// translated comment
 	Options []uint8
 
-	// 最大段大小（MSS）值
+	// translated comment
 	MSS uint16
 
-	// 窗口缩放因子
+	// translated comment
 	WindowScale uint8
 
-	// IP TTL（可选，用于 OS 检测）
+	// translated comment
 	TTL uint8
 
-	// IP DF 标志（Don't Fragment）
+	// translated comment
 	DF bool
 }
 
-// TCPOptionKind TCP 选项类型常量
+// translated comment
 const (
-	TCPOptionEndOfList  uint8 = 0  // 选项列表结束
-	TCPOptionNOP        uint8 = 1  // 无操作（填充）
-	TCPOptionMSS        uint8 = 2  // 最大段大小
-	TCPOptionWindowScale uint8 = 3  // 窗口缩放
-	TCPOptionSACKPermit uint8 = 4  // 选择性确认许可
-	TCPOptionSACK       uint8 = 5  // 选择性确认
-	TCPOptionTimestamps uint8 = 8  // 时间戳
+	TCPOptionEndOfList  uint8 = 0  // translated comment
+	TCPOptionNOP        uint8 = 1  // translated comment
+	TCPOptionMSS        uint8 = 2  // translated comment
+	TCPOptionWindowScale uint8 = 3  // translated comment
+	TCPOptionSACKPermit uint8 = 4  // translated comment
+	TCPOptionSACK       uint8 = 5  // translated comment
+	TCPOptionTimestamps uint8 = 8  // translated comment
 )
 
-// tcpOptionName TCP 选项类型名称
+// translated comment
 func tcpOptionName(kind uint8) string {
 	switch kind {
 	case TCPOptionEndOfList:
@@ -112,7 +112,7 @@ func tcpOptionName(kind uint8) string {
 	}
 }
 
-// ComputeJA4T 从 TCP SYN 数据计算 JA4T 指纹
+// translated comment
 func ComputeJA4T(data TCPSYNData) *JA4TResult {
 	result := &JA4TResult{
 		WindowSize:   data.WindowSize,
@@ -122,14 +122,14 @@ func ComputeJA4T(data TCPSYNData) *JA4TResult {
 		AnomalyFlags: []string{},
 	}
 
-	// 构建选项字符串：用 "-" 分隔的选项类型值
+	// translated comment
 	optionParts := make([]string, len(data.Options))
 	for i, opt := range data.Options {
 		optionParts[i] = fmt.Sprintf("%d", opt)
 	}
 	optionsStr := strings.Join(optionParts, "-")
 
-	// JA4T 格式: {window_size}_{options}_{mss}_{window_scale}
+	// translated comment
 	result.RawFingerprint = fmt.Sprintf("%d_%s_%d_%d",
 		data.WindowSize,
 		optionsStr,
@@ -137,20 +137,20 @@ func ComputeJA4T(data TCPSYNData) *JA4TResult {
 		data.WindowScale,
 	)
 
-	// 计算 SHA256 哈希（前 12 个字符）
+	// translated comment
 	hash := sha256.Sum256([]byte(result.RawFingerprint))
 	result.Hash = fmt.Sprintf("%x", hash)[:12]
 
-	// 异常检测
+	// translated comment
 	detectTCPAnomalies(data, result)
 
-	// OS 推测
+	// translated comment
 	result.ProbableOS = guessOS(data)
 
 	return result
 }
 
-// ComputeJA4TS 从 TCP SYN-ACK 数据计算 JA4TS 指纹（服务端）
+// translated comment
 func ComputeJA4TS(data TCPSYNData) *JA4TSResult {
 	result := &JA4TSResult{
 		WindowSize:  data.WindowSize,
@@ -159,14 +159,14 @@ func ComputeJA4TS(data TCPSYNData) *JA4TSResult {
 		WindowScale: data.WindowScale,
 	}
 
-	// 构建选项字符串
+	// translated comment
 	optionParts := make([]string, len(data.Options))
 	for i, opt := range data.Options {
 		optionParts[i] = fmt.Sprintf("%d", opt)
 	}
 	optionsStr := strings.Join(optionParts, "-")
 
-	// JA4TS 格式与 JA4T 相同
+	// translated comment
 	result.RawFingerprint = fmt.Sprintf("%d_%s_%d_%d",
 		data.WindowSize,
 		optionsStr,
@@ -174,23 +174,23 @@ func ComputeJA4TS(data TCPSYNData) *JA4TSResult {
 		data.WindowScale,
 	)
 
-	// 计算哈希
+	// translated comment
 	hash := sha256.Sum256([]byte(result.RawFingerprint))
 	result.Hash = fmt.Sprintf("%x", hash)[:12]
 
 	return result
 }
 
-// MatchJA4T 比较两个 JA4T 哈希是否匹配
+// translated comment
 func MatchJA4T(hash1, hash2 string) bool {
 	return len(hash1) == 12 && len(hash2) == 12 && hash1 == hash2
 }
 
-// detectTCPAnomalies 检测 TCP 异常特征
+// translated comment
 func detectTCPAnomalies(data TCPSYNData, result *JA4TResult) {
 	baseScore := 0.0
 
-	// 异常 1: 窗口大小为 0 或异常小
+	// translated comment
 	if data.WindowSize == 0 {
 		result.AnomalyFlags = append(result.AnomalyFlags, "ZERO_WINDOW")
 		baseScore += 0.3
@@ -199,7 +199,7 @@ func detectTCPAnomalies(data TCPSYNData, result *JA4TResult) {
 		baseScore += 0.15
 	}
 
-	// 异常 2: 缺少 MSS 选项（大多数正常实现都包含）
+	// translated comment
 	hasMSS := false
 	for _, opt := range data.Options {
 		if opt == TCPOptionMSS {
@@ -212,25 +212,25 @@ func detectTCPAnomalies(data TCPSYNData, result *JA4TResult) {
 		baseScore += 0.2
 	}
 
-	// 异常 3: MSS 值异常
+	// translated comment
 	if data.MSS > 0 && data.MSS < 536 {
 		result.AnomalyFlags = append(result.AnomalyFlags, "LOW_MSS")
 		baseScore += 0.15
 	}
 
-	// 异常 4: 无 TCP 选项（非常罕见）
+	// translated comment
 	if len(data.Options) == 0 {
 		result.AnomalyFlags = append(result.AnomalyFlags, "NO_OPTIONS")
 		baseScore += 0.25
 	}
 
-	// 异常 5: 窗口缩放因子过大（>14 不合理）
+	// translated comment
 	if data.WindowScale > 14 {
 		result.AnomalyFlags = append(result.AnomalyFlags, "EXCESSIVE_WINDOW_SCALE")
 		baseScore += 0.2
 	}
 
-	// 异常 6: TTL 异常值
+	// translated comment
 	if data.TTL > 0 && data.TTL < 32 {
 		result.AnomalyFlags = append(result.AnomalyFlags, "LOW_TTL")
 		baseScore += 0.15
@@ -242,42 +242,42 @@ func detectTCPAnomalies(data TCPSYNData, result *JA4TResult) {
 	result.RiskScore = baseScore
 }
 
-// guessOS 根据 TCP SYN 特征推测操作系统
+// translated comment
 func guessOS(data TCPSYNData) string {
-	// 基于常见的 TCP/IP 栈特征进行 OS 推测
-	// 主要参考: TTL 默认值、窗口大小、MSS、选项顺序
+	// translated comment
+	// translated comment
 
 	optionsStr := formatOptions(data.Options)
 
-	// Windows 特征: TTL=128, 窗口大小=65535 或 8192 的倍数
+	// translated comment
 	if data.TTL > 96 && data.TTL <= 128 {
 		if data.WindowSize == 65535 || data.WindowSize%8192 == 0 {
 			return "Windows"
 		}
 	}
 
-	// macOS/iOS 特征: TTL=64, 窗口大小=65535, 选项包含 1-1-8-4-2-3 或 2-1-1-4-8-3
+	// translated comment
 	if data.TTL > 32 && data.TTL <= 64 {
 		if data.WindowSize == 65535 && strings.Contains(optionsStr, "1-1-4-8") {
 			return "macOS"
 		}
 	}
 
-	// Linux 特征: TTL=64, 常见选项顺序 2-1-3-1-1-8-4 或 2-4-8-1-3
+	// translated comment
 	if data.TTL > 32 && data.TTL <= 64 {
 		if strings.HasPrefix(optionsStr, "2-1-3") || strings.HasPrefix(optionsStr, "2-4-8-1-3") {
 			return "Linux"
 		}
 	}
 
-	// FreeBSD 特征: TTL=64, 窗口大小=65535
+	// translated comment
 	if data.TTL > 32 && data.TTL <= 64 {
 		if data.WindowSize == 65535 {
 			return "FreeBSD"
 		}
 	}
 
-	// Solaris/AIX: TTL=254 或 255
+	// translated comment
 	if data.TTL >= 254 {
 		return "Solaris/AIX"
 	}
@@ -285,7 +285,7 @@ func guessOS(data TCPSYNData) string {
 	return "Unknown"
 }
 
-// formatOptions 格式化选项列表为字符串
+// translated comment
 func formatOptions(options []uint8) string {
 	parts := make([]string, len(options))
 	for i, opt := range options {
@@ -294,7 +294,7 @@ func formatOptions(options []uint8) string {
 	return strings.Join(parts, "-")
 }
 
-// GetOptionNames 获取选项的可读名称列表
+// translated comment
 func GetOptionNames(options []uint8) []string {
 	names := make([]string, len(options))
 	for i, opt := range options {
@@ -303,7 +303,7 @@ func GetOptionNames(options []uint8) []string {
 	return names
 }
 
-// KnownOSProfiles 返回已知操作系统的 TCP 特征
+// translated comment
 func KnownOSProfiles() []OSProfile {
 	return []OSProfile{
 		{
@@ -357,28 +357,28 @@ func KnownOSProfiles() []OSProfile {
 	}
 }
 
-// OSProfile 操作系统 TCP 特征
+// translated comment
 type OSProfile struct {
-	// 操作系统名称
+	// translated comment
 	Name string
 
-	// 默认 TTL
+	// translated comment
 	TTL uint8
 
-	// 默认窗口大小
+	// translated comment
 	WindowSize uint16
 
-	// 默认 MSS
+	// translated comment
 	MSS uint16
 
-	// 默认窗口缩放
+	// translated comment
 	WindowScale uint8
 
-	// TCP 选项顺序
+	// translated comment
 	Options []uint8
 }
 
-// ToSYNData 转换为 TCPSYNData
+// translated comment
 func (p *OSProfile) ToSYNData() TCPSYNData {
 	return TCPSYNData{
 		WindowSize:  p.WindowSize,

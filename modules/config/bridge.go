@@ -20,19 +20,19 @@ type ConfigChange = ic.ConfigChange
 // ConfigChangeListener configuration change listener interface.
 type ConfigChangeListener = ic.ConfigChangeListener
 
-// BehaviorAnalysisConfig behavioranalyzeconfiguration。
+// translated comment
 type BehaviorAnalysisConfig = ic.BehaviorAnalysisConfig
 
 // RiskScoringConfig risk scoring configuration.
 type RiskScoringConfig = ic.RiskScoringConfig
 
-// FeatureExtractionConfig featureextractconfiguration。
+// translated comment
 type FeatureExtractionConfig = ic.FeatureExtractionConfig
 
-// QUICConfig QUIC configuration。
+// translated comment
 type QUICConfig = ic.QUICConfig
 
-// TLSConfig TLS configuration。
+// translated comment
 type TLSConfig = ic.TLSConfig
 
 // GlobalConfig global configuration.

@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	// FingerprintGenerationTotal 指纹生成总次数
+	// translated comment
 	FingerprintGenerationTotal = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "fingerprint_generation_total",
@@ -15,7 +15,7 @@ var (
 		[]string{"browser", "os"},
 	)
 
-	// FingerprintGenerationDuration 指纹生成耗时（毫秒）
+	// translated comment
 	FingerprintGenerationDuration = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "fingerprint_generation_duration_ms",
@@ -25,7 +25,7 @@ var (
 		[]string{"browser"},
 	)
 
-	// ProfileCacheHit 配置文件缓存命中次数
+	// translated comment
 	ProfileCacheHit = promauto.NewCounter(
 		prometheus.CounterOpts{
 			Name: "fingerprint_profile_cache_hit_total",
@@ -33,7 +33,7 @@ var (
 		},
 	)
 
-	// ProfileCacheMiss 配置文件缓存未命中次数
+	// translated comment
 	ProfileCacheMiss = promauto.NewCounter(
 		prometheus.CounterOpts{
 			Name: "fingerprint_profile_cache_miss_total",
@@ -41,7 +41,7 @@ var (
 		},
 	)
 
-	// ActiveConnections 当前活跃连接数
+	// translated comment
 	ActiveConnections = promauto.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "fingerprint_active_connections",
@@ -49,7 +49,7 @@ var (
 		},
 	)
 
-	// BehaviorAnalysisSignals 行为分析检测到的信号数
+	// translated comment
 	BehaviorAnalysisSignals = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "fingerprint_behavior_signals_total",
@@ -58,7 +58,7 @@ var (
 		[]string{"risk_level"},
 	)
 
-	// HTTP2SignatureAnalysisDuration HTTP/2 签名分析耗时
+	// translated comment
 	HTTP2SignatureAnalysisDuration = promauto.NewHistogram(
 		prometheus.HistogramOpts{
 			Name:    "fingerprint_http2_analysis_duration_ms",
@@ -68,13 +68,13 @@ var (
 	)
 )
 
-// RecordFingerprintGeneration 记录指纹生成指标
+// translated comment
 func RecordFingerprintGeneration(browser, os string, durationMs float64) {
 	FingerprintGenerationTotal.WithLabelValues(browser, os).Inc()
 	FingerprintGenerationDuration.WithLabelValues(browser).Observe(durationMs)
 }
 
-// RecordProfileCacheAccess 记录配置文件缓存访问
+// translated comment
 func RecordProfileCacheAccess(hit bool) {
 	if hit {
 		ProfileCacheHit.Inc()
@@ -83,7 +83,7 @@ func RecordProfileCacheAccess(hit bool) {
 	}
 }
 
-// RecordBehaviorSignal 记录行为分析信号
+// translated comment
 func RecordBehaviorSignal(riskLevel string) {
 	BehaviorAnalysisSignals.WithLabelValues(riskLevel).Inc()
 }

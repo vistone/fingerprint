@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// QUICSignatureResult QUIC 签名结果
+// translated comment
 type QUICSignatureResult struct {
 	Hash string
 
@@ -29,7 +29,7 @@ type QUICSignatureResult struct {
 	TransportLayer string
 }
 
-// QUICInitialData QUIC Initial 包数据
+// translated comment
 type QUICInitialData struct {
 	Version uint32
 
@@ -43,12 +43,12 @@ type QUICInitialData struct {
 	InitialMaxStreamData    uint64
 }
 
-// QUICSignatureAnalyzer QUIC 签名分析器
+// translated comment
 type QUICSignatureAnalyzer struct {
 	knownClientProfiles map[string]*QUICClientProfile
 }
 
-// QUICClientProfile 已知的 QUIC 客户端配置
+// translated comment
 type QUICClientProfile struct {
 	Name                   string
 	ClientName             string
@@ -59,14 +59,14 @@ type QUICClientProfile struct {
 	RiskScore              float64
 }
 
-// NewQUICSignatureAnalyzer 创建分析器
+// translated comment
 func NewQUICSignatureAnalyzer() *QUICSignatureAnalyzer {
 	return &QUICSignatureAnalyzer{
 		knownClientProfiles: initKnownQUICClientProfiles(),
 	}
 }
 
-// AnalyzeQUICInitial 分析 QUIC Initial 包
+// translated comment
 func (a *QUICSignatureAnalyzer) AnalyzeQUICInitial(initial QUICInitialData) (*QUICSignatureResult, error) {
 	if initial.Version == 0 {
 		return nil, fmt.Errorf("QUIC version required")
@@ -139,7 +139,7 @@ func (a *QUICSignatureAnalyzer) detectAnomalies(result *QUICSignatureResult, ini
 	result.RiskScore = baseScore
 }
 
-// FindMatchingClients 查找匹配的已知客户端
+// translated comment
 func (a *QUICSignatureAnalyzer) FindMatchingClients(result *QUICSignatureResult, maxResults int) []string {
 	var matches []string
 
@@ -379,18 +379,18 @@ func initKnownQUICClientProfiles() map[string]*QUICClientProfile {
 	}
 }
 
-// ComputeQUICSignature 便捷函数：计算 QUIC 签名
+// translated comment
 func ComputeQUICSignature(initial QUICInitialData) (*QUICSignatureResult, error) {
 	analyzer := NewQUICSignatureAnalyzer()
 	return analyzer.AnalyzeQUICInitial(initial)
 }
 
-// NewAnalyzer 创建 QUIC 签名分析器（模块统一命名）。
+// translated comment
 func NewAnalyzer() *QUICSignatureAnalyzer {
 	return NewQUICSignatureAnalyzer()
 }
 
-// Compute 便捷函数：计算 QUIC 签名（模块统一命名）。
+// translated comment
 func Compute(initial QUICInitialData) (*QUICSignatureResult, error) {
 	return ComputeQUICSignature(initial)
 }

@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// LogEntry 一条日志记录
+// translated comment
 type LogEntry struct {
 	Timestamp time.Time `json:"timestamp"`
 	Level     string    `json:"level"`
@@ -17,20 +17,20 @@ type LogEntry struct {
 	Source    string    `json:"source"`
 }
 
-// LogBuffer 环形日志缓冲区，捕获 Go log 输出并支持 SSE 推流
+// translated comment
 type LogBuffer struct {
 	mu      sync.RWMutex
 	entries []LogEntry
 	maxSize int
-	// SSE 订阅者
+	// translated comment
 	subscribers map[chan LogEntry]struct{}
 	subMu       sync.RWMutex
 }
 
-// globalLogBuffer 全局日志缓冲区
+// translated comment
 var globalLogBuffer = NewLogBuffer(500)
 
-// NewLogBuffer 创建日志缓冲区
+// translated comment
 func NewLogBuffer(size int) *LogBuffer {
 	return &LogBuffer{
 		entries:     make([]LogEntry, 0, size),
@@ -39,7 +39,7 @@ func NewLogBuffer(size int) *LogBuffer {
 	}
 }
 
-// InitLogCapture 拦截标准 log 输出，转存到缓冲区
+// translated comment
 func InitLogCapture() {
 	pr, pw, err := os.Pipe()
 	if err != nil {
@@ -47,20 +47,20 @@ func InitLogCapture() {
 		return
 	}
 
-	// 重定向标准 log 输出
+	// translated comment
 	log.SetOutput(pw)
-	log.SetFlags(0) // 我们自己管理时间戳
+	log.SetFlags(0) // translated comment
 
-	// 后台读取 pipe 数据
+	// translated comment
 	go func() {
 		buf := make([]byte, 4096)
 		for {
 			n, err := pr.Read(buf)
 			if n > 0 {
 				msg := string(buf[:n])
-				// 同时写到 stderr 保留原有行为
+				// translated comment
 				os.Stderr.WriteString(msg)
-				// 解析级别
+				// translated comment
 				level := parseLogLevel(msg)
 				globalLogBuffer.Append(LogEntry{
 					Timestamp: time.Now(),
@@ -76,7 +76,7 @@ func InitLogCapture() {
 	}()
 }
 
-// Append 添加一条日志到缓冲区
+// translated comment
 func (lb *LogBuffer) Append(entry LogEntry) {
 	lb.mu.Lock()
 	lb.entries = append(lb.entries, entry)
@@ -85,19 +85,19 @@ func (lb *LogBuffer) Append(entry LogEntry) {
 	}
 	lb.mu.Unlock()
 
-	// 通知所有 SSE 订阅者
+	// translated comment
 	lb.subMu.RLock()
 	for ch := range lb.subscribers {
 		select {
 		case ch <- entry:
 		default:
-			// 订阅者跟不上，丢弃
+			// translated comment
 		}
 	}
 	lb.subMu.RUnlock()
 }
 
-// GetAll 获取缓冲区中所有日志
+// translated comment
 func (lb *LogBuffer) GetAll() []LogEntry {
 	lb.mu.RLock()
 	defer lb.mu.RUnlock()
@@ -106,7 +106,7 @@ func (lb *LogBuffer) GetAll() []LogEntry {
 	return result
 }
 
-// GetFiltered 按级别过滤日志
+// translated comment
 func (lb *LogBuffer) GetFiltered(level string) []LogEntry {
 	if level == "" || level == "all" {
 		return lb.GetAll()
@@ -122,7 +122,7 @@ func (lb *LogBuffer) GetFiltered(level string) []LogEntry {
 	return result
 }
 
-// Subscribe 订阅实时日志流，返回 channel。调用 Unsubscribe 释放。
+// translated comment
 func (lb *LogBuffer) Subscribe() chan LogEntry {
 	ch := make(chan LogEntry, 64)
 	lb.subMu.Lock()
@@ -131,7 +131,7 @@ func (lb *LogBuffer) Subscribe() chan LogEntry {
 	return ch
 }
 
-// Unsubscribe 取消订阅
+// translated comment
 func (lb *LogBuffer) Unsubscribe(ch chan LogEntry) {
 	lb.subMu.Lock()
 	delete(lb.subscribers, ch)
@@ -139,7 +139,7 @@ func (lb *LogBuffer) Unsubscribe(ch chan LogEntry) {
 	close(ch)
 }
 
-// WriteLog 对外公开的日志写入接口（其他模块可直接调用）
+// translated comment
 func WriteLog(level, source, format string, args ...interface{}) {
 	msg := fmt.Sprintf(format, args...)
 	globalLogBuffer.Append(LogEntry{
@@ -148,11 +148,11 @@ func WriteLog(level, source, format string, args ...interface{}) {
 		Message:   msg,
 		Source:    source,
 	})
-	// 同时输出到 stderr
+	// translated comment
 	fmt.Fprintf(os.Stderr, "[%s] %s: %s\n", level, source, msg)
 }
 
-// parseLogLevel 从日志消息中解析级别
+// translated comment
 func parseLogLevel(msg string) string {
 	switch {
 	case len(msg) > 6 && msg[:6] == "ERROR " || len(msg) > 7 && msg[:7] == "[ERROR]":

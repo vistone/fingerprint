@@ -1,4 +1,4 @@
-// Package http 提供 HTTP 指纹生成功能
+// translated comment
 package http
 
 import (
@@ -10,48 +10,48 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles"
 )
 
-// JA4HResult JA4H 指纹结果
+// translated comment
 type JA4HResult struct {
-	// Fingerprint JA4H 指纹
+	// translated comment
 	Fingerprint string
-	// Method HTTP 方法
+	// translated comment
 	Method string
-	// Headers HTTP 头列表
+	// translated comment
 	Headers []string
-	// CookieNames Cookie 名称列表
+	// translated comment
 	CookieNames []string
 }
 
-// CalculateJA4H 计算 JA4H 指纹
+// translated comment
 func CalculateJA4H(headers *core.HTTPHeaders, method string) *JA4HResult {
 	if headers == nil {
 		return nil
 	}
 
-	// 收集所有 header 名称
+	// translated comment
 	var headerNames []string
 	headerMap := headers.ToMap()
 	for name := range headerMap {
-		// 忽略 Cookie 头（单独处理）
+		// translated comment
 		if strings.ToLower(name) != "cookie" {
 			headerNames = append(headerNames, strings.ToLower(name))
 		}
 	}
 
-	// 提取 Cookie 名称
+	// translated comment
 	var cookieNames []string
 	if cookie, ok := headerMap["Cookie"]; ok {
 		cookieNames = extractCookieNames(cookie)
 	}
 
-	// 构建 JA4H 字符串
-	// 格式: ja4h_<method>_<header_count>_<cookie_count>_<accept_language_hash>
+	// translated comment
+	// translated comment
 	ja4hString := "ja4h_" +
 		strings.ToLower(method) + "_" +
 		intToHex(len(headerNames)) + "_" +
 		intToHex(len(cookieNames))
 
-	// 计算 Accept-Language 哈希
+	// translated comment
 	if lang := headers.AcceptLanguage; lang != "" {
 		hash := sha256.Sum256([]byte(lang))
 		ja4hString += "_" + hex.EncodeToString(hash[:6])
@@ -67,7 +67,7 @@ func CalculateJA4H(headers *core.HTTPHeaders, method string) *JA4HResult {
 	}
 }
 
-// extractCookieNames 提取 Cookie 名称
+// translated comment
 func extractCookieNames(cookie string) []string {
 	var names []string
 	parts := strings.Split(cookie, ";")
@@ -83,7 +83,7 @@ func extractCookieNames(cookie string) []string {
 	return names
 }
 
-// intToHex 将整数转换为十六进制字符串
+// translated comment
 func intToHex(n int) string {
 	if n < 10 {
 		return string('0' + byte(n))
@@ -91,21 +91,21 @@ func intToHex(n int) string {
 	return string('a' + byte(n-10))
 }
 
-// HTTP2Fingerprint HTTP/2 指纹
+// translated comment
 type HTTP2Fingerprint struct {
-	// SettingsHash Settings 帧哈希
+	// translated comment
 	SettingsHash string
-	// PriorityHash Priority 帧哈希
+	// translated comment
 	PriorityHash string
-	// WindowUpdateHash WINDOW_UPDATE 帧哈希
+	// translated comment
 	WindowUpdateHash string
-	// CombinedHash 综合哈希
+	// translated comment
 	CombinedHash string
 }
 
-// FingerprintHTTP2 生成 HTTP/2 指纹
+// translated comment
 func FingerprintHTTP2(settings core.HTTP2Settings, priorities []core.HTTP2Priority, connectionFlow uint32) *HTTP2Fingerprint {
-	// 简化实现
+	// translated comment
 	settingsStr := settingsToString(settings)
 	priorityStr := prioritiesToString(priorities)
 	flowStr := uintToString(connectionFlow)
@@ -123,7 +123,7 @@ func FingerprintHTTP2(settings core.HTTP2Settings, priorities []core.HTTP2Priori
 	}
 }
 
-// settingsToString 将 HTTP/2 Settings 转换为字符串
+// translated comment
 func settingsToString(settings core.HTTP2Settings) string {
 	return uintToString(settings.HeaderTableSize) + "_" +
 		uintToString(settings.EnablePush) + "_" +
@@ -133,7 +133,7 @@ func settingsToString(settings core.HTTP2Settings) string {
 		uintToString(settings.MaxHeaderListSize)
 }
 
-// prioritiesToString 将 HTTP/2 Priorities 转换为字符串
+// translated comment
 func prioritiesToString(priorities []core.HTTP2Priority) string {
 	var parts []string
 	for _, p := range priorities {
@@ -142,7 +142,7 @@ func prioritiesToString(priorities []core.HTTP2Priority) string {
 	return strings.Join(parts, ",")
 }
 
-// uintToString 将 uint32 转换为字符串
+// translated comment
 func uintToString(n uint32) string {
 	if n == 0 {
 		return "0"
@@ -155,23 +155,23 @@ func uintToString(n uint32) string {
 	return string(result)
 }
 
-// hashString 计算字符串哈希（简化版）
+// translated comment
 func hashString(s string) string {
 	hash := sha256.Sum256([]byte(s))
 	return hex.EncodeToString(hash[:8])
 }
 
-// Analyzer HTTP 分析器
+// translated comment
 type Analyzer struct {
 	profile *profiles.ClientProfile
 }
 
-// NewAnalyzer 创建新的 HTTP 分析器
+// translated comment
 func NewAnalyzer(profile *profiles.ClientProfile) *Analyzer {
 	return &Analyzer{profile: profile}
 }
 
-// AnalyzeJA4H 分析 JA4H 指纹
+// translated comment
 func (a *Analyzer) AnalyzeJA4H(method string) *JA4HResult {
 	if a.profile == nil || a.profile.Headers == nil {
 		return nil
@@ -179,7 +179,7 @@ func (a *Analyzer) AnalyzeJA4H(method string) *JA4HResult {
 	return CalculateJA4H(a.profile.Headers, method)
 }
 
-// AnalyzeHTTP2 分析 HTTP/2 指纹
+// translated comment
 func (a *Analyzer) AnalyzeHTTP2() *HTTP2Fingerprint {
 	if a.profile == nil {
 		return nil
@@ -187,7 +187,7 @@ func (a *Analyzer) AnalyzeHTTP2() *HTTP2Fingerprint {
 	return FingerprintHTTP2(a.profile.HTTP2Settings, a.profile.HTTP2Priorities, a.profile.ConnectionFlow)
 }
 
-// Fingerprint 生成完整的 HTTP 指纹
+// translated comment
 func (a *Analyzer) Fingerprint(method string) map[string]interface{} {
 	return map[string]interface{}{
 		"ja4h":  a.AnalyzeJA4H(method),
@@ -195,22 +195,22 @@ func (a *Analyzer) Fingerprint(method string) map[string]interface{} {
 	}
 }
 
-// MatchProfile 从 HTTP 头匹配浏览器配置
+// translated comment
 func MatchProfile(headers *core.HTTPHeaders) *profiles.ClientProfile {
 	if headers == nil {
 		return nil
 	}
 
-	// 基于 User-Agent 匹配
+	// translated comment
 	ua := headers.UserAgent
 	if ua == "" {
 		return nil
 	}
 
-	// 获取所有配置
+	// translated comment
 	allProfiles := profiles.GetAll()
 
-	// 简单的匹配逻辑（实际应该使用更复杂的算法）
+	// translated comment
 	for _, p := range allProfiles {
 		if p.Headers != nil && p.Headers.UserAgent == ua {
 			return &p

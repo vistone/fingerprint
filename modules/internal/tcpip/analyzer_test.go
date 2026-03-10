@@ -4,14 +4,14 @@ import (
 	"testing"
 )
 
-// TestBuildOSDatabase 测试操作系统数据库构建
+// translated comment
 func TestBuildOSDatabase(t *testing.T) {
 	db := BuildOSDatabase()
 	if db == nil {
 		t.Fatal("BuildOSDatabase returned nil")
 	}
 
-	// 验证包含主要的操作系统
+	// translated comment
 	requiredOSes := []string{
 		"Windows_10",
 		"Windows_11",
@@ -26,7 +26,7 @@ func TestBuildOSDatabase(t *testing.T) {
 	}
 }
 
-// TestOSSignatureFields 测试 OS 签名字段有效性
+// translated comment
 func TestOSSignatureFields(t *testing.T) {
 	db := BuildOSDatabase()
 
@@ -51,7 +51,7 @@ func TestOSSignatureFields(t *testing.T) {
 	}
 }
 
-// TestComputeTCPSignature 测试 TCP 签名计算
+// translated comment
 func TestComputeTCPSignature(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -59,7 +59,7 @@ func TestComputeTCPSignature(t *testing.T) {
 		windowSize int
 		options    string
 		flags      string
-		wantLen    int // MD5 哈希长度应为 32
+		wantLen    int // translated comment
 	}{
 		{
 			name:       "Basic TCP signature",
@@ -89,21 +89,21 @@ func TestComputeTCPSignature(t *testing.T) {
 	}
 }
 
-// TestComputeIPSignature 测试 IP 签名计算
+// translated comment
 func TestComputeIPSignature(t *testing.T) {
 	sig := ComputeIPSignature(64, 0x02, 12345)
 	if len(sig) != 32 {
 		t.Errorf("ComputeIPSignature() length = %d, want 32", len(sig))
 	}
 
-	// 相同的输入应该产生相同的输出
+	// translated comment
 	sig2 := ComputeIPSignature(64, 0x02, 12345)
 	if sig != sig2 {
 		t.Error("ComputeIPSignature should be deterministic")
 	}
 }
 
-// TestMatchOSSignature 测试 OS 签名匹配
+// translated comment
 func TestMatchOSSignature(t *testing.T) {
 	db := BuildOSDatabase()
 
@@ -112,7 +112,7 @@ func TestMatchOSSignature(t *testing.T) {
 		ttl     int
 		mss     int
 		options string
-		wantOS  string // 期望匹配的操作系统
+		wantOS  string // translated comment
 	}{
 		{
 			name:    "Windows 11 match",
@@ -130,10 +130,10 @@ func TestMatchOSSignature(t *testing.T) {
 		},
 		{
 			name:    "Close to Windows TTL",
-			ttl:     60, // 接近 64
+			ttl:     60, // translated comment
 			mss:     1460,
 			options: "MSS,SACK",
-			wantOS:  "Windows_10", // 应该匹配 Windows
+			wantOS:  "Windows_10", // translated comment
 		},
 	}
 
@@ -148,7 +148,7 @@ func TestMatchOSSignature(t *testing.T) {
 	}
 }
 
-// TestExtractTCPOptions 测试 TCP 选项提取（当前为简化实现）
+// translated comment
 func TestExtractTCPOptions(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -168,7 +168,7 @@ func TestExtractTCPOptions(t *testing.T) {
 		{
 			name:   "Valid packet",
 			packet: make([]byte, 20),
-			want:   "", // 空包（Data Offset=5，只有头部没有选项）
+			want:   "", // translated comment
 		},
 	}
 
@@ -182,7 +182,7 @@ func TestExtractTCPOptions(t *testing.T) {
 	}
 }
 
-// TestAnalyzeTTL 测试 TTL 分析
+// translated comment
 func TestAnalyzeTTL(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -206,7 +206,7 @@ func TestAnalyzeTTL(t *testing.T) {
 	}
 }
 
-// TestAnalyzeWindowSize 测试窗口大小分析
+// translated comment
 func TestAnalyzeWindowSize(t *testing.T) {
 	tests := []struct {
 		name string
@@ -230,7 +230,7 @@ func TestAnalyzeWindowSize(t *testing.T) {
 	}
 }
 
-// TestDetectSequenceNumberPattern 测试序列号模式检测
+// translated comment
 func TestDetectSequenceNumberPattern(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -269,7 +269,7 @@ func TestDetectSequenceNumberPattern(t *testing.T) {
 	}
 }
 
-// TestAnalyzeNetworkBehavior 测试网络行为分析
+// translated comment
 func TestAnalyzeNetworkBehavior(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -299,7 +299,7 @@ func TestAnalyzeNetworkBehavior(t *testing.T) {
 		{
 			name:      "Empty RTT",
 			rttValues: []int64{},
-			wantType:  "", // 空结果
+			wantType:  "", // translated comment
 		},
 	}
 
@@ -319,7 +319,7 @@ func TestAnalyzeNetworkBehavior(t *testing.T) {
 	}
 }
 
-// TestCalculateConfidence 测试置信度计算
+// translated comment
 func TestCalculateConfidence(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -343,14 +343,14 @@ func TestCalculateConfidence(t *testing.T) {
 	}
 }
 
-// BenchmarkComputeTCPSignature 基准测试：TCP 签名计算
+// translated comment
 func BenchmarkComputeTCPSignature(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		ComputeTCPSignature(1460, 65535, "MSS,SACK,TS", "SYN,ACK")
 	}
 }
 
-// BenchmarkMatchOSSignature 基准测试：OS 签名匹配
+// translated comment
 func BenchmarkMatchOSSignature(b *testing.B) {
 	db := BuildOSDatabase()
 	b.ResetTimer()
@@ -359,7 +359,7 @@ func BenchmarkMatchOSSignature(b *testing.B) {
 	}
 }
 
-// BenchmarkAnalyzeNetworkBehavior 基准测试：网络行为分析
+// translated comment
 func BenchmarkAnalyzeNetworkBehavior(b *testing.B) {
 	rttValues := []int64{10, 20, 30, 40, 50}
 	b.ResetTimer()

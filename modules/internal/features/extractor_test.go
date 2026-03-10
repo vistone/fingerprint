@@ -6,7 +6,7 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles/legacy"
 )
 
-// TestBaseFeatureExtractor_ExtractFeature_Entropy 测试熵特征提取
+// translated comment
 func TestBaseFeatureExtractor_ExtractFeature_Entropy(t *testing.T) {
 	extractor := NewBaseFeatureExtractor(nil)
 
@@ -55,23 +55,23 @@ func TestBaseFeatureExtractor_ExtractFeature_Entropy(t *testing.T) {
 	}
 }
 
-// TestBaseFeatureExtractor_ExtractFeature_ToolMarker 测试工具标记特征
+// translated comment
 func TestBaseFeatureExtractor_ExtractFeature_ToolMarker(t *testing.T) {
 	extractor := NewBaseFeatureExtractor(nil)
 
-	// 使用真实 Chrome 133 指纹的 User-Agent
+	// translated comment
 	chromeProfile, ok := profiles.MappedTLSClients["chrome_133"]
 	if !ok {
 		t.Skip("chrome_133 profile not found")
 	}
 
-	// 获取真实 User-Agent
+	// translated comment
 	spec, err := chromeProfile.GetClientHelloSpec()
 	if err != nil {
 		t.Skipf("chrome_133 does not support spec export: %v", err)
 	}
 
-	// 获取真实指纹的 Headers
+	// translated comment
 	realHeaders := spec.Extensions
 	if len(realHeaders) == 0 {
 		t.Skip("chrome_133 has no extensions")
@@ -119,7 +119,7 @@ func TestBaseFeatureExtractor_ExtractFeature_ToolMarker(t *testing.T) {
 	}
 }
 
-// TestBaseFeatureExtractor_ExtractFeature_HeadlessBrowser 测试无头浏览器检测
+// translated comment
 func TestBaseFeatureExtractor_ExtractFeature_HeadlessBrowser(t *testing.T) {
 	extractor := NewBaseFeatureExtractor(nil)
 
@@ -180,7 +180,7 @@ func TestBaseFeatureExtractor_ExtractFeature_HeadlessBrowser(t *testing.T) {
 	}
 }
 
-// TestBaseFeatureExtractor_ExtractFeature_OSPlatformContradiction 测试操作系统平台矛盾
+// translated comment
 func TestBaseFeatureExtractor_ExtractFeature_OSPlatformContradiction(t *testing.T) {
 	extractor := NewBaseFeatureExtractor(nil)
 
@@ -253,7 +253,7 @@ func TestBaseFeatureExtractor_ExtractFeature_OSPlatformContradiction(t *testing.
 	}
 }
 
-// TestBaseFeatureExtractor_ExtractFeature_UAOSContradiction 测试 UA/OS 矛盾
+// translated comment
 func TestBaseFeatureExtractor_ExtractFeature_UAOSContradiction(t *testing.T) {
 	extractor := NewBaseFeatureExtractor(nil)
 
@@ -321,7 +321,7 @@ func TestBaseFeatureExtractor_ExtractFeature_UAOSContradiction(t *testing.T) {
 	}
 }
 
-// TestBaseFeatureExtractor_ExtractFeature_MobileScreenContradiction 测试移动设备屏幕矛盾
+// translated comment
 func TestBaseFeatureExtractor_ExtractFeature_MobileScreenContradiction(t *testing.T) {
 	extractor := NewBaseFeatureExtractor(nil)
 
@@ -389,7 +389,7 @@ func TestBaseFeatureExtractor_ExtractFeature_MobileScreenContradiction(t *testin
 	}
 }
 
-// TestBaseFeatureExtractor_ExtractFeature_UAFeatureContradiction 测试 UA 特性矛盾
+// translated comment
 func TestBaseFeatureExtractor_ExtractFeature_UAFeatureContradiction(t *testing.T) {
 	extractor := NewBaseFeatureExtractor(nil)
 
@@ -441,7 +441,7 @@ func TestBaseFeatureExtractor_ExtractFeature_UAFeatureContradiction(t *testing.T
 	}
 }
 
-// TestBaseFeatureExtractor_GetFeatureName 测试特征名称获取
+// translated comment
 func TestBaseFeatureExtractor_GetFeatureName(t *testing.T) {
 	extractor := NewBaseFeatureExtractor(nil)
 
@@ -469,7 +469,7 @@ func TestBaseFeatureExtractor_GetFeatureName(t *testing.T) {
 	}
 }
 
-// TestBaseFeatureExtractor_ExtractFeatureVector 测试完整特征向量提取
+// translated comment
 func TestBaseFeatureExtractor_ExtractFeatureVector(t *testing.T) {
 	extractor := NewBaseFeatureExtractor(nil)
 
@@ -496,23 +496,23 @@ func TestBaseFeatureExtractor_ExtractFeatureVector(t *testing.T) {
 		t.Error("ExtractFeatureVector() returned empty hash")
 	}
 
-	// 正常数据不应该有异常
+	// translated comment
 	if vector.RiskScore > 0.5 {
 		t.Errorf("ExtractFeatureVector() normal data has high risk score: %v", vector.RiskScore)
 	}
 }
 
-// TestBaseFeatureExtractor_ExtractFeatureVector_Anomalous 测试异常数据的特征向量
+// translated comment
 func TestBaseFeatureExtractor_ExtractFeatureVector_Anomalous(t *testing.T) {
 	extractor := NewBaseFeatureExtractor(nil)
 
-	// 异常数据：UA 和 OS 矛盾
+	// translated comment
 	data := map[string]interface{}{
 		"user_agent":   "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0_0) Chrome/133.0.0.0", // Mac UA
-		"os":           "Windows NT 10.0",                                                // Windows OS - 矛盾！
+		"os":           "Windows NT 10.0",                                                // translated comment
 		"platform":     "Win32",
-		"is_mobile":    "true",          // 移动设备
-		"screen_width": "2560",          // 移动设备大屏幕 - 矛盾！
+		"is_mobile":    "true",          // translated comment
+		"screen_width": "2560",          // translated comment
 		"features":     "WebGL2",
 	}
 
@@ -522,18 +522,18 @@ func TestBaseFeatureExtractor_ExtractFeatureVector_Anomalous(t *testing.T) {
 		t.Fatal("ExtractFeatureVector() returned nil")
 	}
 
-	// 应该有异常检测到
+	// translated comment
 	if len(vector.Anomalies) == 0 {
 		t.Error("Expected anomalies for contradictory data, got none")
 	}
 
-	// 风险评分应该较高
+	// translated comment
 	if vector.RiskScore < 0.5 {
 		t.Errorf("Expected high risk score for anomalous data, got %v", vector.RiskScore)
 	}
 }
 
-// TestDefaultFeatureConfig 测试默认配置
+// translated comment
 func TestDefaultFeatureConfig(t *testing.T) {
 	config := DefaultFeatureConfig()
 
@@ -566,11 +566,11 @@ func TestDefaultFeatureConfig(t *testing.T) {
 	}
 }
 
-// TestBaseFeatureExtractor_Concurrency 测试并发安全性
+// translated comment
 func TestBaseFeatureExtractor_Concurrency(t *testing.T) {
 	extractor := NewBaseFeatureExtractor(nil)
 
-	// 并发读取测试
+	// translated comment
 	done := make(chan bool, 10)
 	for i := 0; i < 10; i++ {
 		go func() {
@@ -591,7 +591,7 @@ func TestBaseFeatureExtractor_Concurrency(t *testing.T) {
 	}
 }
 
-// TestCalculateRiskScore 测试风险评分计算
+// translated comment
 func TestCalculateRiskScore(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -608,7 +608,7 @@ func TestCalculateRiskScore(t *testing.T) {
 			scores: map[FeatureType]float64{
 				FeatureEntropy: 0.2,
 			},
-			want: 0.18, // 0.2 * (1 + (0-1)*0.1) = 0.18 (没有异常时 anomalyCount=0)
+			want: 0.18, // translated comment
 		},
 		{
 			name: "single high score",
@@ -624,14 +624,14 @@ func TestCalculateRiskScore(t *testing.T) {
 				FeatureHeadlessBrowser:           0.95,
 				FeatureOSPlatformContradiction:   0.8,
 			},
-			want: 1.0, // 应该被限制在 1.0
+			want: 1.0, // translated comment
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := calculateRiskScore(tt.scores)
-			// 使用范围比较处理浮点数精度问题
+			// translated comment
 			if got < tt.want - 0.001 || got > tt.want + 0.001 {
 				t.Errorf("calculateRiskScore() = %v, want ~%v", got, tt.want)
 			}
@@ -639,7 +639,7 @@ func TestCalculateRiskScore(t *testing.T) {
 	}
 }
 
-// TestExtractFeatureVector_HashConsistency 测试特征向量哈希一致性
+// translated comment
 func TestExtractFeatureVector_HashConsistency(t *testing.T) {
 	extractor := NewBaseFeatureExtractor(nil)
 
@@ -652,7 +652,7 @@ func TestExtractFeatureVector_HashConsistency(t *testing.T) {
 		"features":     "WebGL2",
 	}
 
-	// 多次提取应该产生相同的哈希
+	// translated comment
 	vector1 := extractor.ExtractFeatureVector(data, nil)
 	vector2 := extractor.ExtractFeatureVector(data, nil)
 
@@ -660,13 +660,13 @@ func TestExtractFeatureVector_HashConsistency(t *testing.T) {
 		t.Errorf("Hash inconsistency: %s vs %s", vector1.Hash, vector2.Hash)
 	}
 
-	// 不同数据应该产生不同哈希 - 使用明显异常的数据
+	// translated comment
 	data2 := map[string]interface{}{
-		"user_agent":   "HeadlessChrome/120.0.0.0", // 无头浏览器
+		"user_agent":   "HeadlessChrome/120.0.0.0", // translated comment
 		"os":           "Windows NT 10.0",
-		"platform":     "MacIntel", // 矛盾：Windows OS 但 Mac platform
+		"platform":     "MacIntel", // translated comment
 		"is_mobile":    "true",
-		"screen_width": "2560", // 移动设备大屏幕
+		"screen_width": "2560", // translated comment
 		"features":     "WebGL2",
 	}
 
@@ -677,7 +677,7 @@ func TestExtractFeatureVector_HashConsistency(t *testing.T) {
 	}
 }
 
-// BenchmarkExtractFeature 基准测试特征提取
+// translated comment
 func BenchmarkExtractFeature(b *testing.B) {
 	extractor := NewBaseFeatureExtractor(nil)
 	data := map[string]interface{}{
@@ -695,7 +695,7 @@ func BenchmarkExtractFeature(b *testing.B) {
 	}
 }
 
-// BenchmarkExtractFeature_Headless 基准测试无头浏览器检测
+// translated comment
 func BenchmarkExtractFeature_Headless(b *testing.B) {
 	extractor := NewBaseFeatureExtractor(nil)
 	ua := "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 HeadlessChrome/120.0.0.0"

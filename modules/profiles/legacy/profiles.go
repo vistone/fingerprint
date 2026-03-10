@@ -1,6 +1,6 @@
-// Package profiles 包含浏览器 TLS 指纹配置。
-// 注意：本包使用了来自 utls 库的无键字段结构体初始化，
-// 这是为了与库的设计兼容，由此产生的 go vet 警告应被忽略。
+// translated comment
+// translated comment
+// translated comment
 //
 //nolint:composites
 package profiles
@@ -14,7 +14,7 @@ import (
 
 var DefaultClientProfile = Chrome_133
 
-// MappedTLSClients 存储所有 TLS 客户端指纹配置（并发安全）
+// translated comment
 var MappedTLSClients = map[string]ClientProfile{
 	"chrome_103":        Chrome_103,
 	"chrome_104":        Chrome_104,
@@ -60,7 +60,7 @@ var MappedTLSClients = map[string]ClientProfile{
 	"opera_89":          Opera_89,
 	"opera_90":          Opera_90,
 	"opera_91":          Opera_91,
-	// 移动端和自定义指纹
+	// translated comment
 	"zalando_android_mobile": ZalandoAndroidMobile,
 	"zalando_ios_mobile":     ZalandoIosMobile,
 	"nike_ios_mobile":        NikeIosMobile,
@@ -83,7 +83,7 @@ var MappedTLSClients = map[string]ClientProfile{
 	"okhttp4_android_12":     Okhttp4Android12,
 	"okhttp4_android_13":     Okhttp4Android13,
 	"cloudflare_custom":      CloudflareCustom,
-	// Edge 系列
+	// translated comment
 	"edge_99":  Edge_99,
 	"edge_101": Edge_101,
 	"edge_120": Edge_120,
@@ -91,10 +91,10 @@ var MappedTLSClients = map[string]ClientProfile{
 	"edge_133": Edge_133,
 }
 
-// clientsMu 保护 MappedTLSClients 的并发访问
+// translated comment
 var clientsMu sync.RWMutex
 
-// GetClientProfile 并发安全地获取客户端配置
+// translated comment
 func GetClientProfile(name string) (ClientProfile, bool) {
 	clientsMu.RLock()
 	defer clientsMu.RUnlock()
@@ -102,7 +102,7 @@ func GetClientProfile(name string) (ClientProfile, bool) {
 	return profile, ok
 }
 
-// GetAllProfiles 并发安全地获取所有配置名称列表
+// translated comment
 func GetAllProfiles() []string {
 	clientsMu.RLock()
 	defer clientsMu.RUnlock()
@@ -113,7 +113,7 @@ func GetAllProfiles() []string {
 	return names
 }
 
-// HasProfile 并发安全地检查配置是否存在
+// translated comment
 func HasProfile(name string) bool {
 	clientsMu.RLock()
 	defer clientsMu.RUnlock()
@@ -130,15 +130,15 @@ type ClientProfile struct {
 	settingsOrder     []http2.SettingID
 	connectionFlow    uint32
 
-	// 元数据字段（用于 Client Hints 和 User-Agent 生成）
+	// translated comment
 	BrowserType    string // "chrome", "firefox", "safari", "edge"
 	BrowserVersion string // "120.0.6099.109"
 	OS             string // "Windows NT 10.0; Win64; x64"
 	OSVersion      string // "10.0.19045"
 	OSArch         string // "x86", "arm"
 	OSBitness      string // "64", "32"
-	IsMobile       bool   // 是否为移动设备
-	DeviceModel    string // 移动设备型号（如 "Pixel 7"）
+	IsMobile       bool   // translated comment
+	DeviceModel    string // translated comment
 }
 
 func NewClientProfile(clientHelloId tls.ClientHelloID, settings map[http2.SettingID]uint32, settingsOrder []http2.SettingID, pseudoHeaderOrder []string, connectionFlow uint32, priorities []http2.Priority, headerPriority *http2.PriorityParam) ClientProfile {
@@ -150,7 +150,7 @@ func NewClientProfile(clientHelloId tls.ClientHelloID, settings map[http2.Settin
 		connectionFlow:    connectionFlow,
 		priorities:        priorities,
 		headerPriority:    headerPriority,
-		// 元数据字段保持默认零值
+		// translated comment
 		BrowserType:    "",
 		BrowserVersion: "",
 		OS:             "",
@@ -198,33 +198,33 @@ func (c ClientProfile) GetPriorities() []http2.Priority {
 	return c.priorities
 }
 
-// GetClientHelloID 获取 ClientHelloID
+// translated comment
 func (c ClientProfile) GetClientHelloID() tls.ClientHelloID {
 	return c.clientHelloId
 }
 
-// GetMetadata 获取元数据信息
+// translated comment
 func (c ClientProfile) GetMetadata() (browserType, browserVersion, os, osVersion string, isMobile bool) {
 	return c.BrowserType, c.BrowserVersion, c.OS, c.OSVersion, c.IsMobile
 }
 
-// Clone 创建 ClientProfile 的深拷贝
+// translated comment
 func (c ClientProfile) Clone() ClientProfile {
-	// 拷贝 settings
+	// translated comment
 	newSettings := make(map[http2.SettingID]uint32, len(c.settings))
 	for k, v := range c.settings {
 		newSettings[k] = v
 	}
 
-	// 拷贝 priorities
+	// translated comment
 	newPriorities := make([]http2.Priority, len(c.priorities))
 	copy(newPriorities, c.priorities)
 
-	// 拷贝 pseudoHeaderOrder
+	// translated comment
 	newPseudoHeaderOrder := make([]string, len(c.pseudoHeaderOrder))
 	copy(newPseudoHeaderOrder, c.pseudoHeaderOrder)
 
-	// 拷贝 settingsOrder
+	// translated comment
 	newSettingsOrder := make([]http2.SettingID, len(c.settingsOrder))
 	copy(newSettingsOrder, c.settingsOrder)
 

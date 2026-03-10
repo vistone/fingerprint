@@ -7,7 +7,7 @@ import (
 	tls "github.com/bogdanfinn/utls"
 )
 
-// TestIsGREASEValue 测试导出的 IsGREASEValue 函数
+// translated comment
 func TestIsGREASEValue(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -141,7 +141,7 @@ func TestIsGREASEValue(t *testing.T) {
 	}
 }
 
-// TestFilterGREASEUint16 测试导出的 FilterGREASEUint16 函数
+// translated comment
 func TestFilterGREASEUint16(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -210,7 +210,7 @@ func TestFilterGREASEUint16(t *testing.T) {
 	}
 }
 
-// TestFilterGREASECurveID 测试导出的 FilterGREASECurveID 函数
+// translated comment
 func TestFilterGREASECurveID(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -279,7 +279,7 @@ func TestFilterGREASECurveID(t *testing.T) {
 	}
 }
 
-// TestUint16SliceToString 测试导出的 Uint16SliceToString 函数
+// translated comment
 func TestUint16SliceToString(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -328,7 +328,7 @@ func TestUint16SliceToString(t *testing.T) {
 	}
 }
 
-// TestCurveIDSliceToString 测试导出的 CurveIDSliceToString 函数
+// translated comment
 func TestCurveIDSliceToString(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -377,7 +377,7 @@ func TestCurveIDSliceToString(t *testing.T) {
 	}
 }
 
-// TestUint8SliceToString 测试导出的 Uint8SliceToString 函数
+// translated comment
 func TestUint8SliceToString(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -426,7 +426,7 @@ func TestUint8SliceToString(t *testing.T) {
 	}
 }
 
-// TestInternalIsGREASEValue 测试内部（小写）isGREASEValue 函数
+// translated comment
 func TestInternalIsGREASEValue(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -470,7 +470,7 @@ func TestInternalIsGREASEValue(t *testing.T) {
 	}
 }
 
-// TestInternalFilterGREASEUint16 测试内部（小写）filterGREASEUint16 函数
+// translated comment
 func TestInternalFilterGREASEUint16(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -514,7 +514,7 @@ func TestInternalFilterGREASEUint16(t *testing.T) {
 	}
 }
 
-// TestInternalFilterGREASECurveID 测试内部（小写）filterGREASECurveID 函数
+// translated comment
 func TestInternalFilterGREASECurveID(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -558,7 +558,7 @@ func TestInternalFilterGREASECurveID(t *testing.T) {
 	}
 }
 
-// TestInternalUint16SliceToString 测试内部（小写）uint16SliceToString 函数
+// translated comment
 func TestInternalUint16SliceToString(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -597,7 +597,7 @@ func TestInternalUint16SliceToString(t *testing.T) {
 	}
 }
 
-// TestInternalCurveIDSliceToString 测试内部（小写）curveIDSliceToString 函数
+// translated comment
 func TestInternalCurveIDSliceToString(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -636,7 +636,7 @@ func TestInternalCurveIDSliceToString(t *testing.T) {
 	}
 }
 
-// TestInternalUint8SliceToString 测试内部（小写）uint8SliceToString 函数
+// translated comment
 func TestInternalUint8SliceToString(t *testing.T) {
 	tests := []struct {
 		name     string

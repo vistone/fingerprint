@@ -9,19 +9,19 @@ import (
 	"time"
 )
 
-// LogLevel 日志级别
+// translated comment
 type LogLevel int
 
 const (
-	// DebugLevel 调试级别
+	// translated comment
 	DebugLevel LogLevel = iota
-	// InfoLevel 信息级别
+	// translated comment
 	InfoLevel
-	// WarnLevel 警告级别
+	// translated comment
 	WarnLevel
-	// ErrorLevel 错误级别
+	// translated comment
 	ErrorLevel
-	// FatalLevel 致命级别
+	// translated comment
 	FatalLevel
 )
 
@@ -42,7 +42,7 @@ func (l LogLevel) String() string {
 	}
 }
 
-// Logger 日志记录器
+// translated comment
 type Logger struct {
 	mu         sync.RWMutex
 	level      LogLevel
@@ -52,18 +52,18 @@ type Logger struct {
 	callerSkip int
 }
 
-// Formatter 日志格式化接口
+// translated comment
 type Formatter interface {
 	Format(level LogLevel, msg string, fields map[string]interface{}, timestamp time.Time) string
 }
 
-// DefaultFormatter 默认格式化器
+// translated comment
 type DefaultFormatter struct {
 	withTimestamp bool
 	withLevel     bool
 }
 
-// Format 格式化日志
+// translated comment
 func (f *DefaultFormatter) Format(level LogLevel, msg string, fields map[string]interface{}, timestamp time.Time) string {
 	var result string
 
@@ -77,7 +77,7 @@ func (f *DefaultFormatter) Format(level LogLevel, msg string, fields map[string]
 
 	result += msg
 
-	// 添加字段
+	// translated comment
 	if len(fields) > 0 {
 		result += " {"
 		first := true
@@ -94,12 +94,12 @@ func (f *DefaultFormatter) Format(level LogLevel, msg string, fields map[string]
 	return result
 }
 
-// JSONFormatter JSON 格式化器
+// translated comment
 type JSONFormatter struct{}
 
-// Format 格式化日志为 JSON
+// translated comment
 func (f *JSONFormatter) Format(level LogLevel, msg string, fields map[string]interface{}, timestamp time.Time) string {
-	// 简化实现，实际应该使用 json.Marshal
+	// translated comment
 	result := fmt.Sprintf(`{"timestamp":"%s","level":"%s","message":"%s"`,
 		timestamp.Format(time.RFC3339Nano),
 		level.String(),
@@ -113,7 +113,7 @@ func (f *JSONFormatter) Format(level LogLevel, msg string, fields map[string]int
 	return result
 }
 
-// New 创建新的日志记录器
+// translated comment
 func New(opts ...Option) *Logger {
 	l := &Logger{
 		level:      InfoLevel,
@@ -130,31 +130,31 @@ func New(opts ...Option) *Logger {
 	return l
 }
 
-// Option 日志选项
+// translated comment
 type Option func(*Logger)
 
-// WithLevel 设置日志级别
+// translated comment
 func WithLevel(level LogLevel) Option {
 	return func(l *Logger) {
 		l.level = level
 	}
 }
 
-// WithOutput 设置输出
+// translated comment
 func WithOutput(output io.Writer) Option {
 	return func(l *Logger) {
 		l.output = output
 	}
 }
 
-// WithFormatter 设置格式化器
+// translated comment
 func WithFormatter(formatter Formatter) Option {
 	return func(l *Logger) {
 		l.formatter = formatter
 	}
 }
 
-// WithFields 设置默认字段
+// translated comment
 func WithFields(fields map[string]interface{}) Option {
 	return func(l *Logger) {
 		for k, v := range fields {
@@ -163,7 +163,7 @@ func WithFields(fields map[string]interface{}) Option {
 	}
 }
 
-// log 内部日志方法
+// translated comment
 func (l *Logger) log(level LogLevel, msg string, fields map[string]interface{}) {
 	if level < l.level {
 		return
@@ -172,7 +172,7 @@ func (l *Logger) log(level LogLevel, msg string, fields map[string]interface{}) 
 	l.mu.RLock()
 	defer l.mu.RUnlock()
 
-	// 合并字段
+	// translated comment
 	mergedFields := make(map[string]interface{}, len(l.fields)+len(fields))
 	for k, v := range l.fields {
 		mergedFields[k] = v
@@ -181,92 +181,92 @@ func (l *Logger) log(level LogLevel, msg string, fields map[string]interface{}) 
 		mergedFields[k] = v
 	}
 
-	// 格式化并输出
+	// translated comment
 	formatted := l.formatter.Format(level, msg, mergedFields, time.Now())
 	fmt.Fprintln(l.output, formatted)
 
-	// Fatal 级别退出程序
+	// translated comment
 	if level == FatalLevel {
 		os.Exit(1)
 	}
 }
 
-// Debug 调试日志
+// translated comment
 func (l *Logger) Debug(msg string) {
 	l.log(DebugLevel, msg, nil)
 }
 
-// Debugf 格式化调试日志
+// translated comment
 func (l *Logger) Debugf(format string, args ...interface{}) {
 	l.log(DebugLevel, fmt.Sprintf(format, args...), nil)
 }
 
-// Debugw 带字段的调试日志
+// translated comment
 func (l *Logger) Debugw(msg string, keysAndValues ...interface{}) {
 	l.log(DebugLevel, msg, kvToMap(keysAndValues...))
 }
 
-// Info 信息日志
+// translated comment
 func (l *Logger) Info(msg string) {
 	l.log(InfoLevel, msg, nil)
 }
 
-// Infof 格式化信息日志
+// translated comment
 func (l *Logger) Infof(format string, args ...interface{}) {
 	l.log(InfoLevel, fmt.Sprintf(format, args...), nil)
 }
 
-// Infow 带字段的信息日志
+// translated comment
 func (l *Logger) Infow(msg string, keysAndValues ...interface{}) {
 	l.log(InfoLevel, msg, kvToMap(keysAndValues...))
 }
 
-// Warn 警告日志
+// translated comment
 func (l *Logger) Warn(msg string) {
 	l.log(WarnLevel, msg, nil)
 }
 
-// Warnf 格式化警告日志
+// translated comment
 func (l *Logger) Warnf(format string, args ...interface{}) {
 	l.log(WarnLevel, fmt.Sprintf(format, args...), nil)
 }
 
-// Warnw 带字段的警告日志
+// translated comment
 func (l *Logger) Warnw(msg string, keysAndValues ...interface{}) {
 	l.log(WarnLevel, msg, kvToMap(keysAndValues...))
 }
 
-// Error 错误日志
+// translated comment
 func (l *Logger) Error(msg string) {
 	l.log(ErrorLevel, msg, nil)
 }
 
-// Errorf 格式化错误日志
+// translated comment
 func (l *Logger) Errorf(format string, args ...interface{}) {
 	l.log(ErrorLevel, fmt.Sprintf(format, args...), nil)
 }
 
-// Errorw 带字段的错误日志
+// translated comment
 func (l *Logger) Errorw(msg string, keysAndValues ...interface{}) {
 	l.log(ErrorLevel, msg, kvToMap(keysAndValues...))
 }
 
-// Fatal 致命日志
+// translated comment
 func (l *Logger) Fatal(msg string) {
 	l.log(FatalLevel, msg, nil)
 }
 
-// Fatalf 格式化致命日志
+// translated comment
 func (l *Logger) Fatalf(format string, args ...interface{}) {
 	l.log(FatalLevel, fmt.Sprintf(format, args...), nil)
 }
 
-// Fatalw 带字段的致命日志
+// translated comment
 func (l *Logger) Fatalw(msg string, keysAndValues ...interface{}) {
 	l.log(FatalLevel, msg, kvToMap(keysAndValues...))
 }
 
-// With 创建带字段的子日志记录器
+// translated comment
 func (l *Logger) With(fields map[string]interface{}) *Logger {
 	l.mu.RLock()
 	defer l.mu.RUnlock()
@@ -288,17 +288,17 @@ func (l *Logger) With(fields map[string]interface{}) *Logger {
 	}
 }
 
-// SetLevel 动态设置日志级别
+// translated comment
 func (l *Logger) SetLevel(level LogLevel) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	l.level = level
 }
 
-// kvToMap 将键值对转换为 map
+// translated comment
 func kvToMap(keysAndValues ...interface{}) map[string]interface{} {
 	if len(keysAndValues)%2 != 0 {
-		// 奇数个参数，忽略最后一个
+		// translated comment
 		keysAndValues = keysAndValues[:len(keysAndValues)-1]
 	}
 
@@ -314,7 +314,7 @@ func kvToMap(keysAndValues ...interface{}) map[string]interface{} {
 }
 
 // ============================================================================
-// 全局日志记录器
+// translated comment
 // ============================================================================
 
 var (
@@ -322,7 +322,7 @@ var (
 	defaultLoggerOnce sync.Once
 )
 
-// Default 获取默认日志记录器
+// translated comment
 func Default() *Logger {
 	defaultLoggerOnce.Do(func() {
 		defaultLogger = New()
@@ -330,12 +330,12 @@ func Default() *Logger {
 	return defaultLogger
 }
 
-// SetDefault 设置默认日志记录器
+// translated comment
 func SetDefault(l *Logger) {
 	defaultLogger = l
 }
 
-// 全局便捷函数
+// translated comment
 func Debug(msg string)                         { Default().Debug(msg) }
 func Debugf(format string, args ...interface{}) { Default().Debugf(format, args...) }
 func Debugw(msg string, keysAndValues ...interface{}) {
@@ -362,7 +362,7 @@ func Fatalw(msg string, keysAndValues ...interface{}) {
 	Default().Fatalw(msg, keysAndValues...)
 }
 
-// InitFromEnv 从环境变量初始化日志
+// translated comment
 func InitFromEnv() {
 	level := InfoLevel
 	if lvl := os.Getenv("LOG_LEVEL"); lvl != "" {
@@ -390,6 +390,6 @@ func InitFromEnv() {
 		WithFormatter(formatter),
 	)
 
-	// 同时设置标准库日志
+	// translated comment
 	log.SetOutput(defaultLogger.output)
 }

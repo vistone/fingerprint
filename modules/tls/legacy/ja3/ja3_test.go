@@ -9,9 +9,9 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles/legacy"
 )
 
-// TestComputeJA3FromRealProfiles 使用真实指纹配置测试 JA3 计算
+// translated comment
 func TestComputeJA3FromRealProfiles(t *testing.T) {
-	// 使用真实的 Chrome 133 指纹
+	// translated comment
 	chromeProfile, ok := profiles.MappedTLSClients["chrome_133"]
 	if !ok {
 		t.Fatal("chrome_133 profile not found")
@@ -38,13 +38,13 @@ func TestComputeJA3FromRealProfiles(t *testing.T) {
 	t.Logf("Chrome 133 JA3 Hash: %s", result.Hash)
 	t.Logf("Chrome 133 JA3 Raw: %s", result.RawString)
 
-	// 验证 Hash 是有效的 MD5（32 个十六进制字符）
+	// translated comment
 	if len(result.Hash) != 32 {
 		t.Errorf("Expected MD5 hash length 32, got %d", len(result.Hash))
 	}
 }
 
-// TestComputeJA3FromMultipleProfiles 测试多个真实指纹的 JA3 计算
+// translated comment
 func TestComputeJA3FromMultipleProfiles(t *testing.T) {
 	testProfiles := []string{
 		"chrome_133",
@@ -87,9 +87,9 @@ func TestComputeJA3FromMultipleProfiles(t *testing.T) {
 	}
 }
 
-// TestMatchJA3WithRealHashes 使用真实 JA3 哈希测试匹配功能
+// translated comment
 func TestMatchJA3WithRealHashes(t *testing.T) {
-	// 获取真实指纹的 JA3 哈希
+	// translated comment
 	profile, ok := profiles.MappedTLSClients["chrome_133"]
 	if !ok {
 		t.Fatal("chrome_133 profile not found")
@@ -108,18 +108,18 @@ func TestMatchJA3WithRealHashes(t *testing.T) {
 
 	realHash := result.Hash
 
-	// 测试相同哈希匹配
+	// translated comment
 	if !MatchJA3(realHash, realHash) {
 		t.Error("Same hash should match")
 	}
 
-	// 测试不同哈希不匹配（修改一个字符）
+	// translated comment
 	modifiedHash := realHash[:31] + "x"
 	if MatchJA3(realHash, modifiedHash) {
 		t.Error("Different hashes should not match")
 	}
 
-	// 测试大小写不敏感匹配
+	// translated comment
 	upperHash := "ABCDEF1234567890ABCDEF1234567890"
 	lowerHash := "abcdef1234567890abcdef1234567890"
 	if !MatchJA3(upperHash, lowerHash) {
@@ -127,9 +127,9 @@ func TestMatchJA3WithRealHashes(t *testing.T) {
 	}
 }
 
-// TestFindProfileByJA3WithRealHashes 使用真实 JA3 哈希测试查找功能
+// translated comment
 func TestFindProfileByJA3WithRealHashes(t *testing.T) {
-	// 为几个真实指纹计算 JA3
+	// translated comment
 	testProfiles := []string{"chrome_133", "firefox_135"}
 
 	for _, profileName := range testProfiles {
@@ -148,20 +148,20 @@ func TestFindProfileByJA3WithRealHashes(t *testing.T) {
 			continue
 		}
 
-		// 使用真实哈希查找 profile
+		// translated comment
 		foundProfiles := FindProfileByJA3(result.Hash)
 		t.Logf("Profile %s has JA3 hash %s, found profiles: %v",
 			profileName, result.Hash, foundProfiles)
 	}
 
-	// 测试空哈希
+	// translated comment
 	emptyResult := FindProfileByJA3("")
 	if len(emptyResult) != 0 {
 		t.Error("Expected no profiles for empty hash")
 	}
 }
 
-// TestValidateClientHelloSpec 测试 ClientHello 规范验证
+// translated comment
 func TestValidateClientHelloSpec(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -237,7 +237,7 @@ func TestValidateClientHelloSpec(t *testing.T) {
 	}
 }
 
-// TestComputeJA3FromSpecWithInvalidInput 测试无效输入处理
+// translated comment
 func TestComputeJA3FromSpecWithInvalidInput(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -266,7 +266,7 @@ func TestComputeJA3FromSpecWithInvalidInput(t *testing.T) {
 				CipherSuites: []uint16{0x1301},
 				Extensions:   []tls.TLSExtension{nil},
 			},
-			wantErr: false, // 应该跳过 nil 扩展
+			wantErr: false, // translated comment
 		},
 	}
 
@@ -283,7 +283,7 @@ func TestComputeJA3FromSpecWithInvalidInput(t *testing.T) {
 	}
 }
 
-// TestComputeJA3FromSpecEdgeCases 测试边界情况
+// translated comment
 func TestComputeJA3FromSpecEdgeCases(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -331,7 +331,7 @@ func TestComputeJA3FromSpecEdgeCases(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Unexpected error: %v", err)
 				}
-				// 应该正确处理重复扩展
+				// translated comment
 				if len(result.Extensions) < 1 {
 					t.Error("Expected at least one extension")
 				}
@@ -347,7 +347,7 @@ func TestComputeJA3FromSpecEdgeCases(t *testing.T) {
 	}
 }
 
-// TestIsGREASEValue 测试 GREASE 值检测
+// translated comment
 func TestIsGREASEValue(t *testing.T) {
 	tests := []struct {
 		value uint16
@@ -369,7 +369,7 @@ func TestIsGREASEValue(t *testing.T) {
 		{0xDADA, true},
 		{0xEAEA, true},
 		{0xFAFA, true},
-		{0x1301, false}, // 正常密码套件
+		{0x1301, false}, // translated comment
 		{0x0000, false},
 		{0xFFFF, false},
 	}
@@ -383,7 +383,7 @@ func TestIsGREASEValue(t *testing.T) {
 	}
 }
 
-// TestFilterGREASEFunctions 测试 GREASE 过滤函数
+// translated comment
 func TestFilterGREASEFunctions(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -427,7 +427,7 @@ func TestFilterGREASEFunctions(t *testing.T) {
 	}
 }
 
-// BenchmarkComputeJA3FromSpec 基准测试：JA3 计算性能
+// translated comment
 func BenchmarkComputeJA3FromSpec(b *testing.B) {
 	spec := tls.ClientHelloSpec{
 		CipherSuites: []uint16{0x1301, 0x1302, 0x1303, 0xC02C, 0xC02B},

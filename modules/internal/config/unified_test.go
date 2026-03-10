@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// TestNewUnifiedConfigManager 测试创建统一配置管理器
+// translated comment
 func TestNewUnifiedConfigManager(t *testing.T) {
 	ucm := NewUnifiedConfigManager("")
 	if ucm == nil {
@@ -21,16 +21,16 @@ func TestNewUnifiedConfigManager(t *testing.T) {
 	}
 }
 
-// TestUnifiedConfigManager_EnableEnhancedFeatures 测试启用增强功能
+// translated comment
 func TestUnifiedConfigManager_EnableEnhancedFeatures(t *testing.T) {
 	ucm := NewUnifiedConfigManager("")
 
-	// 默认未启用
+	// translated comment
 	if ucm.enhanced != nil {
 		t.Error("enhanced features should be nil by default")
 	}
 
-	// 启用增强功能
+	// translated comment
 	ucm.EnableEnhancedFeatures()
 
 	if ucm.enhanced == nil {
@@ -49,24 +49,24 @@ func TestUnifiedConfigManager_EnableEnhancedFeatures(t *testing.T) {
 		t.Error("healthChecker is nil")
 	}
 
-	// 重复启用不应出错
+	// translated comment
 	ucm.EnableEnhancedFeatures()
 }
 
-// TestUnifiedConfigManager_Subscribe 测试订阅功能
+// translated comment
 func TestUnifiedConfigManager_Subscribe(t *testing.T) {
 	ucm := NewUnifiedConfigManager("")
 
-	// 未启用增强功能时订阅应该失败
+	// translated comment
 	_, err := ucm.Subscribe("test-subscriber")
 	if err == nil {
 		t.Error("Subscribe should fail when enhanced features not enabled")
 	}
 
-	// 启用增强功能
+	// translated comment
 	ucm.EnableEnhancedFeatures()
 
-	// 订阅应该成功
+	// translated comment
 	eventCh, err := ucm.Subscribe("test-subscriber")
 	if err != nil {
 		t.Errorf("Subscribe() error = %v", err)
@@ -76,36 +76,36 @@ func TestUnifiedConfigManager_Subscribe(t *testing.T) {
 		t.Error("Subscribe() returned nil channel")
 	}
 
-	// 重复订阅应该失败
+	// translated comment
 	_, err = ucm.Subscribe("test-subscriber")
 	if err == nil {
 		t.Error("Subscribe should fail for duplicate subscriber")
 	}
 
-	// 取消订阅
+	// translated comment
 	err = ucm.Unsubscribe("test-subscriber")
 	if err != nil {
 		t.Errorf("Unsubscribe() error = %v", err)
 	}
 
-	// 取消不存在的订阅者应该失败
+	// translated comment
 	err = ucm.Unsubscribe("non-existent")
 	if err == nil {
 		t.Error("Unsubscribe should fail for non-existent subscriber")
 	}
 }
 
-// TestUnifiedConfigManager_GetBehaviorAnalysisConfig 测试获取行为分析配置
+// translated comment
 func TestUnifiedConfigManager_GetBehaviorAnalysisConfig(t *testing.T) {
 	ucm := NewUnifiedConfigManager("")
 
-	// 获取默认配置
+	// translated comment
 	config := ucm.GetBehaviorAnalysisConfig()
 	if config == nil {
 		t.Fatal("GetBehaviorAnalysisConfig() returned nil")
 	}
 
-	// 验证默认值
+	// translated comment
 	if config.MinRequestsForAnalysis <= 0 {
 		t.Errorf("MinRequestsForAnalysis = %d, want > 0", config.MinRequestsForAnalysis)
 	}
@@ -115,7 +115,7 @@ func TestUnifiedConfigManager_GetBehaviorAnalysisConfig(t *testing.T) {
 	}
 }
 
-// TestUnifiedConfigManager_GetRiskScoringConfig 测试获取风险评分配置
+// translated comment
 func TestUnifiedConfigManager_GetRiskScoringConfig(t *testing.T) {
 	ucm := NewUnifiedConfigManager("")
 
@@ -129,7 +129,7 @@ func TestUnifiedConfigManager_GetRiskScoringConfig(t *testing.T) {
 	}
 }
 
-// TestUnifiedConfigManager_GetFeatureExtractionConfig 测试获取特征提取配置
+// translated comment
 func TestUnifiedConfigManager_GetFeatureExtractionConfig(t *testing.T) {
 	ucm := NewUnifiedConfigManager("")
 
@@ -147,7 +147,7 @@ func TestUnifiedConfigManager_GetFeatureExtractionConfig(t *testing.T) {
 	}
 }
 
-// TestUnifiedConfigManager_GetQUICConfig 测试获取 QUIC 配置
+// translated comment
 func TestUnifiedConfigManager_GetQUICConfig(t *testing.T) {
 	ucm := NewUnifiedConfigManager("")
 
@@ -157,7 +157,7 @@ func TestUnifiedConfigManager_GetQUICConfig(t *testing.T) {
 	}
 }
 
-// TestUnifiedConfigManager_GetTLSConfig 测试获取 TLS 配置
+// translated comment
 func TestUnifiedConfigManager_GetTLSConfig(t *testing.T) {
 	ucm := NewUnifiedConfigManager("")
 
@@ -167,7 +167,7 @@ func TestUnifiedConfigManager_GetTLSConfig(t *testing.T) {
 	}
 }
 
-// TestUnifiedConfigManager_GetGlobalConfig 测试获取全局配置
+// translated comment
 func TestUnifiedConfigManager_GetGlobalConfig(t *testing.T) {
 	ucm := NewUnifiedConfigManager("")
 
@@ -181,7 +181,7 @@ func TestUnifiedConfigManager_GetGlobalConfig(t *testing.T) {
 	}
 }
 
-// TestUnifiedConfigManager_UpdateBehaviorAnalysisConfig 测试更新行为分析配置
+// translated comment
 func TestUnifiedConfigManager_UpdateBehaviorAnalysisConfig(t *testing.T) {
 	ucm := NewUnifiedConfigManager("")
 
@@ -192,7 +192,7 @@ func TestUnifiedConfigManager_UpdateBehaviorAnalysisConfig(t *testing.T) {
 		AnomalousIntervalRateThreshold: 0.3,
 	}
 
-	// 需要先设置 loaded 为 true 才能更新
+	// translated comment
 	ucm.ConfigCenter.loaded = true
 
 	err := ucm.UpdateBehaviorAnalysisConfig(newConfig, "test update", "test")
@@ -200,47 +200,47 @@ func TestUnifiedConfigManager_UpdateBehaviorAnalysisConfig(t *testing.T) {
 		t.Errorf("UpdateBehaviorAnalysisConfig() error = %v", err)
 	}
 
-	// 验证更新后的配置
+	// translated comment
 	config := ucm.GetBehaviorAnalysisConfig()
 	if config.MinRequestsForAnalysis != 10 {
 		t.Errorf("MinRequestsForAnalysis = %d, want 10", config.MinRequestsForAnalysis)
 	}
 }
 
-// TestUnifiedConfigManager_GetHealthStatus 测试获取健康状态
+// translated comment
 func TestUnifiedConfigManager_GetHealthStatus(t *testing.T) {
 	ucm := NewUnifiedConfigManager("")
 
-	// 未启用增强功能时应该失败
+	// translated comment
 	_, err := ucm.GetHealthStatus()
 	if err == nil {
 		t.Error("GetHealthStatus should fail when enhanced features not enabled")
 	}
 
-	// 启用增强功能
+	// translated comment
 	ucm.EnableEnhancedFeatures()
 
-	// 给健康检查一点时间启动
+	// translated comment
 	time.Sleep(100 * time.Millisecond)
 
-	// 应该能获取健康状态
+	// translated comment
 	status, err := ucm.GetHealthStatus()
 	if err != nil {
 		t.Errorf("GetHealthStatus() error = %v", err)
 	}
 
-	// 空配置的健康状态
+	// translated comment
 	_ = status
 }
 
-// TestUnifiedConfigManager_DisableEnhancedFeatures 测试禁用增强功能
+// translated comment
 func TestUnifiedConfigManager_DisableEnhancedFeatures(t *testing.T) {
 	ucm := NewUnifiedConfigManager("")
 
-	// 禁用未启用的功能不应出错
+	// translated comment
 	ucm.DisableEnhancedFeatures()
 
-	// 启用后再禁用
+	// translated comment
 	ucm.EnableEnhancedFeatures()
 	ucm.DisableEnhancedFeatures()
 
@@ -249,28 +249,28 @@ func TestUnifiedConfigManager_DisableEnhancedFeatures(t *testing.T) {
 	}
 }
 
-// TestUnifiedConfigManager_WithConfigPath 测试带配置路径的管理器
+// translated comment
 func TestUnifiedConfigManager_WithConfigPath(t *testing.T) {
-	// 使用空路径（内存模式）
+	// translated comment
 	ucm := NewUnifiedConfigManager("")
 
 	if ucm.configPath != "" {
 		t.Error("configPath should be empty for memory mode")
 	}
 
-	// 验证可以正常操作
+	// translated comment
 	config := ucm.GetBehaviorAnalysisConfig()
 	if config == nil {
 		t.Error("GetBehaviorAnalysisConfig() returned nil")
 	}
 }
 
-// TestUnifiedConfigManager_ConcurrentAccess 测试并发访问
+// translated comment
 func TestUnifiedConfigManager_ConcurrentAccess(t *testing.T) {
 	ucm := NewUnifiedConfigManager("")
 	ucm.EnableEnhancedFeatures()
 
-	// 并发读取
+	// translated comment
 	done := make(chan bool, 10)
 	for i := 0; i < 10; i++ {
 		go func() {
@@ -291,7 +291,7 @@ func TestUnifiedConfigManager_ConcurrentAccess(t *testing.T) {
 	}
 }
 
-// TestCompatibility_NewConfigManager 测试兼容性的 NewConfigManager
+// translated comment
 func TestCompatibility_NewConfigManager(t *testing.T) {
 	center := NewConfigCenter("")
 	cm := NewConfigManager(center)
@@ -304,14 +304,14 @@ func TestCompatibility_NewConfigManager(t *testing.T) {
 		t.Error("center not set correctly")
 	}
 
-	// 验证 ConfigManager 的基本功能
+	// translated comment
 	config := cm.GetBehaviorAnalysisConfig()
 	if config == nil {
 		t.Error("GetBehaviorAnalysisConfig() returned nil")
 	}
 }
 
-// TestCompatibility_WrapConfigCenter 测试兼容性的 WrapConfigCenter
+// translated comment
 func TestCompatibility_WrapConfigCenter(t *testing.T) {
 	center := NewConfigCenter("")
 	enhanced := WrapConfigCenter(center)
@@ -324,7 +324,7 @@ func TestCompatibility_WrapConfigCenter(t *testing.T) {
 		t.Error("center not set correctly")
 	}
 
-	// 验证增强功能已启用
+	// translated comment
 	_, err := enhanced.Subscribe("test")
 	if err != nil {
 		t.Errorf("Subscribe() error = %v", err)

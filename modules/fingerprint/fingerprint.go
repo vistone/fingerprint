@@ -1,32 +1,32 @@
-// Package fingerprint 是主 facade 包
-// 提供统一的 API interface，整合所有子模块功能
+// translated comment
+// translated comment
 //
-// 这是 Go Workspace 重构后的主入口点，参考 Rust 版本的 workspace 架构设计
+// translated comment
 //
-// 基本用法：
+// translated comment
 //
 //	import "github.com/vistone/fingerprint"
 //
-//	// get随机指纹
+// translated comment
 //	result := fingerprint.GetRandom()
 //
-//	// get指定浏览器的指纹
+// translated comment
 //	chrome := fingerprint.GetByBrowser(fingerprint.BrowserChrome)
 //
-//	// execute指纹analyze
+// translated comment
 //	analyzer := fingerprint.NewAnalyzer()
 //	result := analyzer.Analyze(request)
 //
-// 模块结构：
+// translated comment
 //
-//	github.com/vistone/fingerprint/core     - 核心typeandinterface
-//	github.com/vistone/fingerprint/profiles - 浏览器指纹configuration
-//	github.com/vistone/fingerprint/tls      - TLS 指纹generate
-//	github.com/vistone/fingerprint/http     - HTTP 指纹generate
-//	github.com/vistone/fingerprint/ml       - ML classify器
-//	github.com/vistone/fingerprint/defense  - 安全防护
-//	github.com/vistone/fingerprint/frontend - 前端 SDK
-//	github.com/vistone/fingerprint/gateway  - API 网关
+// translated comment
+// translated comment
+// translated comment
+// translated comment
+// translated comment
+// translated comment
+// translated comment
+// translated comment
 //
 package fingerprint
 
@@ -45,9 +45,9 @@ import (
 	httpmod "github.com/vistone/fingerprint/modules/http"
 )
 
-// ==================== type别名 ====================
+// translated comment
 
-// BrowserType 浏览器type
+// translated comment
 type BrowserType = core.BrowserType
 
 const (
@@ -58,7 +58,7 @@ const (
 	BrowserEdge    = core.BrowserEdge
 )
 
-// OperatingSystem 操作系统type
+// translated comment
 type OperatingSystem = core.OperatingSystem
 
 const (
@@ -104,7 +104,7 @@ const (
 	FeatureEntropy         = core.FeatureEntropy
 )
 
-// RiskLevel 风险等级
+// translated comment
 type RiskLevel = core.RiskLevel
 
 const (
@@ -115,58 +115,58 @@ const (
 	RiskLevelCritical = core.RiskLevelCritical
 )
 
-// ==================== 核心type别名 ====================
+// translated comment
 
-// HTTPHeaders HTTP 头
+// translated comment
 type HTTPHeaders = core.HTTPHeaders
 
-// FingerprintResult 指纹result
+// translated comment
 type FingerprintResult = core.FingerprintResult
 
-// ClientHelloSpec ClientHello 规范
+// translated comment
 type ClientHelloSpec = core.ClientHelloSpec
 
-// TLSExtension TLS 扩展
+// translated comment
 type TLSExtension = core.TLSExtension
 
-// CurveID 曲线 ID
+// translated comment
 type CurveID = core.CurveID
 
 // HTTP2Settings HTTP/2 setting
 type HTTP2Settings = core.HTTP2Settings
 
-// HTTP2Priority HTTP/2 优先级
+// translated comment
 type HTTP2Priority = core.HTTP2Priority
 
-// FeatureVector feature向量
+// translated comment
 type FeatureVector = core.FeatureVector
 
-// RiskAssessment 风险评估
+// translated comment
 type RiskAssessment = core.RiskAssessment
 
-// RiskFactor 风险因子
+// translated comment
 type RiskFactor = core.RiskFactor
 
-// ==================== 核心函数 ====================
+// translated comment
 
-// GetRandom get随机指纹
+// translated comment
 func GetRandom() *profiles.ClientProfile {
 	p := profiles.GetRandom()
 	return &p
 }
 
-// GetByBrowser 按浏览器typeget随机指纹
+// translated comment
 func GetByBrowser(browser BrowserType) *profiles.ClientProfile {
 	p := profiles.GetRandomByBrowser(browser)
 	return &p
 }
 
-// GetAllProfiles get所有指纹configuration
+// translated comment
 func GetAllProfiles() []profiles.ClientProfile {
 	return profiles.GetAll()
 }
 
-// GetProfile get指定 ID 的指纹configuration
+// translated comment
 func GetProfile(id string) (*profiles.ClientProfile, bool) {
 	p, ok := profiles.Get(id)
 	if !ok {
@@ -175,14 +175,14 @@ func GetProfile(id string) (*profiles.ClientProfile, bool) {
 	return &p, true
 }
 
-// ==================== TLS 指纹 ====================
+// translated comment
 
-// CalculateJA3 calculate JA3 指纹
+// translated comment
 func CalculateJA3(spec ClientHelloSpec) *tls.JA3Result {
 	return tls.CalculateJA3(spec)
 }
 
-// CalculateJA4 calculate JA4 指纹
+// translated comment
 func CalculateJA4(spec ClientHelloSpec) *tls.JA4Result {
 	return tls.CalculateJA4(spec)
 }
@@ -193,9 +193,9 @@ type JA3Result = tls.JA3Result
 // JA4Result JA4 result
 type JA4Result = tls.JA4Result
 
-// ==================== HTTP 指纹 ====================
+// translated comment
 
-// CalculateJA4H calculate JA4H 指纹
+// translated comment
 func CalculateJA4H(headers *HTTPHeaders, method string) *httpmod.JA4HResult {
 	return httpmod.CalculateJA4H(headers, method)
 }
@@ -203,12 +203,12 @@ func CalculateJA4H(headers *HTTPHeaders, method string) *httpmod.JA4HResult {
 // JA4HResult JA4H result
 type JA4HResult = httpmod.JA4HResult
 
-// ==================== ML classify器 ====================
+// translated comment
 
-// HierarchicalClassifier 三层分层classify器
+// translated comment
 type HierarchicalClassifier = ml.HierarchicalClassifier
 
-// NewHierarchicalClassifier create新的分层classify器
+// translated comment
 func NewHierarchicalClassifier() *HierarchicalClassifier {
 	hc := ml.NewHierarchicalClassifier()
 	hc.Initialize()
@@ -218,71 +218,71 @@ func NewHierarchicalClassifier() *HierarchicalClassifier {
 // ClassificationResult classifyresult
 type ClassificationResult = ml.ClassificationResult
 
-// FeatureExtractor featureextract器
+// translated comment
 type FeatureExtractor = ml.FeatureExtractor
 
-// NewFeatureExtractor create新的featureextract器
+// translated comment
 func NewFeatureExtractor() *FeatureExtractor {
 	return ml.NewFeatureExtractor()
 }
 
-// ==================== 安全防护 ====================
+// translated comment
 
-// DefenseSystem 防护系统
+// translated comment
 type DefenseSystem = defense.DefenseSystem
 
-// NewDefenseSystem create新的防护系统
+// translated comment
 func NewDefenseSystem() *DefenseSystem {
 	return defense.NewDefenseSystem()
 }
 
-// DetectionResult 检测result
+// translated comment
 type DetectionResult = defense.DetectionResult
 
-// RiskEngine 风险引擎
+// translated comment
 type RiskEngine = defense.RiskEngine
 
-// NewRiskEngine create新的风险引擎
+// translated comment
 func NewRiskEngine() *RiskEngine {
 	return defense.NewRiskEngine()
 }
 
-// ProtectionConfig 防护configuration
+// translated comment
 type ProtectionConfig = defense.ProtectionConfig
 
-// DefaultProtectionConfig 默认防护configuration
+// translated comment
 var DefaultProtectionConfig = defense.DefaultProtectionConfig
 
-// ==================== 前端 SDK ====================
+// translated comment
 
-// FrontendSDK 前端 SDK
+// translated comment
 type FrontendSDK = frontend.SDK
 
-// NewFrontendSDK create新的前端 SDK
+// translated comment
 func NewFrontendSDK(config *frontend.SDKConfig) *FrontendSDK {
 	return frontend.NewSDK(config)
 }
 
-// DefaultSDKConfig 默认 SDK configuration
+// translated comment
 var DefaultSDKConfig = frontend.DefaultSDKConfig
 
-// FrontendFingerprintData 前端指纹data
+// translated comment
 type FrontendFingerprintData = ml.FrontendFingerprintData
 
-// ==================== 网关 ====================
+// translated comment
 
-// Gateway 网关
+// translated comment
 type Gateway = gateway.Gateway
 
-// GatewayConfig 网关configuration
+// translated comment
 type GatewayConfig = gateway.GatewayConfig
 
-// NewGateway create新的网关
+// translated comment
 func NewGateway(config *GatewayConfig) *Gateway {
 	return gateway.NewGateway(config)
 }
 
-// DefaultGatewayConfig 默认网关configuration
+// translated comment
 var DefaultGatewayConfig = gateway.DefaultGatewayConfig
 
 // AnalyzeRequest analyzerequest
@@ -291,15 +291,15 @@ type AnalyzeRequest = gateway.AnalyzeRequest
 // AnalyzeResponse analyzeresponse
 type AnalyzeResponse = gateway.AnalyzeResponse
 
-// StartGateway start网关服务
+// translated comment
 func StartGateway(config *GatewayConfig) error {
 	gw := NewGateway(config)
 	return gw.Start()
 }
 
-// ==================== analyze器 ====================
+// translated comment
 
-// Analyzer 综合analyze器
+// translated comment
 type Analyzer struct {
 	classifier *ml.HierarchicalClassifier
 	extractor  *ml.FeatureExtractor
@@ -307,7 +307,7 @@ type Analyzer struct {
 	defense    *defense.DefenseSystem
 }
 
-// NewAnalyzer create新的analyze器
+// translated comment
 func NewAnalyzer() *Analyzer {
 	hc := ml.NewHierarchicalClassifier()
 	hc.Initialize()
@@ -320,7 +320,7 @@ func NewAnalyzer() *Analyzer {
 	}
 }
 
-// Analyze execute综合analyze
+// translated comment
 func (a *Analyzer) Analyze(req *gateway.AnalyzeRequest) *AnalyzeResponse {
 	ctx := context.Background()
 	gw := gateway.NewGateway(nil)
@@ -338,19 +338,19 @@ func (a *Analyzer) ExtractFeatures(profile *profiles.ClientProfile) *core.Featur
 	return a.extractor.ExtractFromProfile(profile)
 }
 
-// EvaluateRisk 评估风险
+// translated comment
 func (a *Analyzer) EvaluateRisk(features *core.FeatureVector, classification *ml.ClassificationResult) *core.RiskAssessment {
 	return a.riskEngine.Evaluate(features, classification)
 }
 
-// GetDefenseAdvice get防护建议
+// translated comment
 func (a *Analyzer) GetDefenseAdvice(features *core.FeatureVector, classification *ml.ClassificationResult) *defense.DefenseAdvice {
 	return a.defense.Analyze(features, classification)
 }
 
-// ==================== 便捷函数 ====================
+// translated comment
 
-// QuickAnalyze 快速analyze
+// translated comment
 func QuickAnalyze(headers *HTTPHeaders, method string) *QuickAnalyzeResult {
 	// extractfeature
 	extractor := ml.NewFeatureExtractor()
@@ -361,7 +361,7 @@ func QuickAnalyze(headers *HTTPHeaders, method string) *QuickAnalyzeResult {
 	hc.Initialize()
 	classification := hc.Classify(features)
 
-	// calculate指纹
+	// translated comment
 	ja4h := httpmod.CalculateJA4H(headers, method)
 
 	riskLevel := RiskLevelMedium
@@ -375,21 +375,21 @@ func QuickAnalyze(headers *HTTPHeaders, method string) *QuickAnalyzeResult {
 	}
 }
 
-// QuickAnalyzeResult 快速analyzeresult
+// translated comment
 type QuickAnalyzeResult struct {
 	Classification *ml.ClassificationResult
 	JA4H           *httpmod.JA4HResult
 	RiskLevel      RiskLevel
 }
 
-// MatchProfile match指纹configuration
+// translated comment
 func MatchProfile(headers *HTTPHeaders) (*profiles.ClientProfile, float64) {
 	profiles := profiles.GetAll()
 	if len(profiles) == 0 {
 		return nil, 0
 	}
 
-	// 简单的match逻辑：compare User-Agent
+	// translated comment
 	ua := headers.UserAgent
 	if ua == "" {
 		return nil, 0
@@ -401,7 +401,7 @@ func MatchProfile(headers *HTTPHeaders) (*profiles.ClientProfile, float64) {
 		}
 	}
 
-	// return第一个作为默认值
+	// translated comment
 	return &profiles[0], 0.1
 }
 
@@ -422,17 +422,17 @@ func GenerateUserAgent(browser BrowserType, version string, os OperatingSystem) 
 	}
 }
 
-// IsHeadless 检测whether为无头浏览器
+// translated comment
 func IsHeadless(features *core.FeatureVector) bool {
-	// 基于feature判断
+	// translated comment
 	if features.Get(core.FeatureHeadlessBrowser) > 0.5 {
 		return true
 	}
-	// 其他检测逻辑...
+	// translated comment
 	return false
 }
 
-// CalculateSimilarity calculate两个指纹的相似度
+// translated comment
 func CalculateSimilarity(a, b *core.FeatureVector) float64 {
 	if a == nil || b == nil {
 		return 0
@@ -461,9 +461,9 @@ func CalculateSimilarity(a, b *core.FeatureVector) float64 {
 	return matchWeight / totalWeight
 }
 
-// ==================== HTTP process器 ====================
+// translated comment
 
-// HTTPHandler create HTTP process器
+// translated comment
 func HTTPHandler() http.Handler {
 	gw := gateway.NewGateway(nil)
 	

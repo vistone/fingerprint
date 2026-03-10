@@ -1,5 +1,5 @@
 // Package client provides complete browser fingerprint simulationtransport layer
-// uses unified fhttp type，supports automatic HTTP/2 → HTTP/1.1 fallback
+// translated comment
 package client
 
 import (
@@ -25,11 +25,11 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-// SmartTransport smart transport layer，uses unified fhttp type
+// translated comment
 type SmartTransport struct {
 	profile profiles.ClientProfile
 	dialer  *net.Dialer
-	// strictFingerprint disallow standard TLS compatibility fallback，ensure fingerprint chain path。
+	// translated comment
 	strictFingerprint bool
 
 	mu                sync.RWMutex
@@ -38,7 +38,7 @@ type SmartTransport struct {
 	http2Transport *http2.Transport
 }
 
-// SetStrictFingerprint set strict fingerprint mode。
+// translated comment
 func (st *SmartTransport) SetStrictFingerprint(strict bool) {
 	st.strictFingerprint = strict
 }
@@ -80,7 +80,7 @@ func (st *SmartTransport) configureTCP() error {
 		Control: func(network, address string, c syscall.RawConn) error {
 			var sockErr error
 			err := c.Control(func(fd uintptr) {
-				// prioritize applying core TCP/IP parameters，unsupported platform options will be safely ignored。
+				// translated comment
 				if tcpip.TTL > 0 {
 					sockErr = unix.SetsockoptInt(int(fd), unix.IPPROTO_IP, unix.IP_TTL, int(tcpip.TTL))
 					if sockErr != nil {

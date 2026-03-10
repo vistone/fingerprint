@@ -1,13 +1,13 @@
-// Package profiles - Brave浏览器指纹
-// 包含Brave 1.6x-1.7x版本的完整指纹配置
+// translated comment
+// translated comment
 package profiles
 
 import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// Brave浏览器指纹 (1.6x-1.7x版本)
-// braveTCPIP 返回 Brave 的 TCP/IP 指纹
+// translated comment
+// translated comment
 func braveTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
 	return CreateTCPIP(osType)
 }
@@ -132,16 +132,16 @@ var (
 )
 
 func init() {
-	// 注册所有Brave指纹
+	// translated comment
 	profiles := []ClientProfile{
 		Brave1_60, Brave1_62, Brave1_64, Brave1_66, Brave1_68, Brave1_70, Brave1_72,
 	}
 	
-	// 为每个 profile 填充缺失的 HTTP/2 和 HTTP/3 配置
+	// translated comment
 	for i := range profiles {
 		p := &profiles[i]
 		
-		// 填充 HTTP/2 配置（如果缺失）
+		// translated comment
 		if p.HTTP2Settings.HeaderTableSize == 0 && p.HTTP2Settings.InitialWindowSize == 0 {
 			p.HTTP2Settings = core.HTTP2Settings{
 				HeaderTableSize:      65536,
@@ -154,12 +154,12 @@ func init() {
 			p.PseudoHeaderOrder = []string{":method", ":authority", ":scheme", ":path"}
 		}
 		
-		// 填充 ConnectionFlow（如果缺失）
+		// translated comment
 		if p.ConnectionFlow == 0 {
 			p.ConnectionFlow = 15663105
 		}
 		
-		// 填充 HTTP/3 (QUIC) 配置（如果缺失）
+		// translated comment
 		if p.HTTP3Settings == nil {
 			p.HTTP3Settings = &core.HTTP3Settings{
 				QUICVersion:            core.QUICVersion1,
@@ -175,7 +175,7 @@ func init() {
 			p.QUICVersions = []uint32{core.QUICVersion1}
 		}
 		
-		// 填充 Headers（如果缺失）
+		// translated comment
 		if p.Headers == nil {
 			p.Headers = &core.HTTPHeaders{}
 		}
@@ -218,7 +218,7 @@ func init() {
 	}
 }
 
-// AllBraveProfiles 返回所有Brave指纹
+// translated comment
 func AllBraveProfiles() []ClientProfile {
 	return []ClientProfile{
 		Brave1_60, Brave1_62, Brave1_64, Brave1_66, Brave1_68, Brave1_70, Brave1_72,

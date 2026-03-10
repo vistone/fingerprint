@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// DeviceFingerprintingEngine 设备指纹识别引擎
+// translated comment
 type DeviceFingerprintingEngine struct {
 	deviceProfiles     map[string]*DeviceProfile
 	behaviorAnalyzer   *NetworkBehaviorAnalyzer
@@ -16,7 +16,7 @@ type DeviceFingerprintingEngine struct {
 	lastAnalysisResult *DeviceFingerprintResult
 }
 
-// DeviceProfile 设备轮廓
+// translated comment
 type DeviceProfile struct {
 	Name              string
 	DeviceType        string // phone, tablet, laptop, desktop, iot, router, server
@@ -25,13 +25,13 @@ type DeviceProfile struct {
 	OSVersion         string
 	BrowserSignatures map[string]string // browser name -> fingerprint
 	NetworkSignatures map[string]string // signal -> value
-	Applications      []string          // 常见应用
+	Applications      []string          // translated comment
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
 	Confidence        float64
 }
 
-// OSProfile 操作系统轮廓
+// translated comment
 type OSProfile struct {
 	Name              string
 	Family            string // Windows, Linux, Darwin, iOS, Android
@@ -45,7 +45,7 @@ type OSProfile struct {
 	BoostrapMSS       int
 }
 
-// DeviceFingerprintingConfig 设备指纹识别配置
+// translated comment
 type DeviceFingerprintingConfig struct {
 	EnableBehaviorAnalysis bool
 	EnableRiskAssessment   bool
@@ -55,7 +55,7 @@ type DeviceFingerprintingConfig struct {
 	MaxPacketsPerAnalysis  int
 }
 
-// NewDeviceFingerprintingEngine 创建新的设备指纹识别引擎
+// translated comment
 func NewDeviceFingerprintingEngine() *DeviceFingerprintingEngine {
 	return &DeviceFingerprintingEngine{
 		deviceProfiles:   make(map[string]*DeviceProfile),
@@ -65,7 +65,7 @@ func NewDeviceFingerprintingEngine() *DeviceFingerprintingEngine {
 	}
 }
 
-// RegisterDeviceProfile 注册设备轮廓
+// translated comment
 func (dfe *DeviceFingerprintingEngine) RegisterDeviceProfile(profile *DeviceProfile) error {
 	if profile.Name == "" {
 		return fmt.Errorf("device profile name is required")
@@ -78,7 +78,7 @@ func (dfe *DeviceFingerprintingEngine) RegisterDeviceProfile(profile *DeviceProf
 	return nil
 }
 
-// AnalyzeDevice 分析设备
+// translated comment
 func (dfe *DeviceFingerprintingEngine) AnalyzeDevice(packets []*TCPPacket, behaviors *NetworkBehaviorResult) *DeviceFingerprintResult {
 	result := &DeviceFingerprintResult{
 		Timestamp:       time.Now(),
@@ -93,22 +93,22 @@ func (dfe *DeviceFingerprintingEngine) AnalyzeDevice(packets []*TCPPacket, behav
 		return result
 	}
 
-	// 分析数据包特征
+	// translated comment
 	features := dfe.extractFeatures(packets)
 
-	// 匹配设备轮廓
+	// translated comment
 	result.DeviceMatches = dfe.matchDeviceProfiles(features)
 
-	// 匹配操作系统
+	// translated comment
 	result.OSMatches = dfe.matchOSProfiles(packets[0])
 
-	// 进行风险评估
+	// translated comment
 	result.RiskIndicators = dfe.assessRisk(packets, behaviors)
 
-	// 计算总体信心度
+	// translated comment
 	result.Confidence = dfe.calculateConfidence(result)
 
-	// 添加行为分析
+	// translated comment
 	if behaviors != nil {
 		result.BehaviorPattern = behaviors.SequenceNumberPattern
 		result.NetworkType = behaviors.RTTAnalysis.NetworkType
@@ -118,7 +118,7 @@ func (dfe *DeviceFingerprintingEngine) AnalyzeDevice(packets []*TCPPacket, behav
 	return result
 }
 
-// extractFeatures 提取特征
+// translated comment
 func (dfe *DeviceFingerprintingEngine) extractFeatures(packets []*TCPPacket) map[string]interface{} {
 	features := make(map[string]interface{})
 
@@ -128,20 +128,20 @@ func (dfe *DeviceFingerprintingEngine) extractFeatures(packets []*TCPPacket) map
 
 	firstPacket := packets[0]
 
-	// 提取 IP 特征
+	// translated comment
 	if firstPacket.IPHeader != nil {
 		features["ttl"] = firstPacket.IPHeader.TimeToLive
 		features["df"] = (firstPacket.IPHeader.Flags & 0x40) != 0
 		features["protocol"] = firstPacket.IPHeader.Protocol
 	}
 
-	// 提取 TCP 特征
+	// translated comment
 	features["src_port"] = firstPacket.SourcePort
 	features["dst_port"] = firstPacket.DestinationPort
 	features["flags"] = firstPacket.Flags
 	features["window_size"] = firstPacket.WindowSize
 
-	// 提取 TCP 选项
+	// translated comment
 	if len(firstPacket.Options) > 0 {
 		optStrings := make([]string, 0)
 		for _, opt := range firstPacket.Options {
@@ -150,21 +150,21 @@ func (dfe *DeviceFingerprintingEngine) extractFeatures(packets []*TCPPacket) map
 		features["tcp_options"] = strings.Join(optStrings, ",")
 	}
 
-	// MSS 特征
+	// translated comment
 	mss := 0
 	for _, opt := range firstPacket.Options {
 		if opt == OptMSS {
-			mss = 1460 // 标准 MSS
+			mss = 1460 // translated comment
 		}
 	}
 	if mss > 0 {
 		features["mss"] = mss
 	}
 
-	// 数据包数量统计
+	// translated comment
 	features["packet_count"] = len(packets)
 
-	// 计算会话时间
+	// translated comment
 	if len(packets) > 1 {
 		sessionDuration := packets[len(packets)-1].Timestamp.Sub(packets[0].Timestamp)
 		features["session_duration"] = sessionDuration
@@ -173,7 +173,7 @@ func (dfe *DeviceFingerprintingEngine) extractFeatures(packets []*TCPPacket) map
 	return features
 }
 
-// matchDeviceProfiles 匹配设备轮廓
+// translated comment
 func (dfe *DeviceFingerprintingEngine) matchDeviceProfiles(features map[string]interface{}) []*DeviceMatch {
 	matches := make([]*DeviceMatch, 0)
 
@@ -191,7 +191,7 @@ func (dfe *DeviceFingerprintingEngine) matchDeviceProfiles(features map[string]i
 		}
 	}
 
-	// 按分数排序
+	// translated comment
 	for i := 0; i < len(matches)-1; i++ {
 		for j := i + 1; j < len(matches); j++ {
 			if matches[j].MatchScore > matches[i].MatchScore {
@@ -203,7 +203,7 @@ func (dfe *DeviceFingerprintingEngine) matchDeviceProfiles(features map[string]i
 	return matches
 }
 
-// matchOSProfiles 匹配操作系统轮廓
+// translated comment
 func (dfe *DeviceFingerprintingEngine) matchOSProfiles(packet *TCPPacket) []*OSMatch {
 	matches := make([]*OSMatch, 0)
 
@@ -229,34 +229,34 @@ func (dfe *DeviceFingerprintingEngine) matchOSProfiles(packet *TCPPacket) []*OSM
 	return matches
 }
 
-// assessRisk 评估风险
+// translated comment
 func (dfe *DeviceFingerprintingEngine) assessRisk(packets []*TCPPacket, behaviors *NetworkBehaviorResult) []string {
 	riskIndicators := make([]string, 0)
 
-	// 检查异常
+	// translated comment
 	for _, packet := range packets {
 		if packet.IPHeader != nil {
-			// 检查非标准 TTL
+			// translated comment
 			if !dfe.isStandardTTL(packet.IPHeader.TimeToLive) {
 				riskIndicators = append(riskIndicators, "non_standard_ttl")
 				break
 			}
 
-			// 检查可疑 IP
+			// translated comment
 			if IsReservedIP(packet.IPHeader.SourceAddress) {
 				riskIndicators = append(riskIndicators, "reserved_ip")
 				break
 			}
 		}
 
-		// 检查异常 TCP 选项
+		// translated comment
 		if len(packet.Options) == 0 {
 			riskIndicators = append(riskIndicators, "missing_tcp_options")
 			break
 		}
 	}
 
-	// 基于行为的风险评估
+	// translated comment
 	if behaviors != nil {
 		for _, characteristic := range behaviors.BehaviorCharacteristics {
 			if characteristic == "scanning" {
@@ -270,22 +270,22 @@ func (dfe *DeviceFingerprintingEngine) assessRisk(packets []*TCPPacket, behavior
 	return riskIndicators
 }
 
-// calculateProfileScore 计算轮廓匹配分数
+// translated comment
 func (dfe *DeviceFingerprintingEngine) calculateProfileScore(features map[string]interface{}, profile *DeviceProfile) float64 {
 	score := 0.0
 	matches := 0
 	total := 0
 
-	// 检查 TTL
+	// translated comment
 	if ttl, ok := features["ttl"]; ok {
 		total++
-		// 设备轮廓通常关联特定的 OS，而 OS 有特定的 TTL
+		// translated comment
 		if ttlInt, ok := ttl.(int); ok && ttlInt == 64 {
 			matches++
 		}
 	}
 
-	// 检查 TCP 选项
+	// translated comment
 	if opts, ok := features["tcp_options"]; ok {
 		total++
 		if optStr, ok := opts.(string); ok {
@@ -305,22 +305,22 @@ func (dfe *DeviceFingerprintingEngine) calculateProfileScore(features map[string
 	return score
 }
 
-// calculateOSScore 计算操作系统匹配分数
+// translated comment
 func (dfe *DeviceFingerprintingEngine) calculateOSScore(packet *TCPPacket, osProfile *OSProfile) float64 {
 	matches := 0
 	total := 3
 
-	// 检查 TTL
+	// translated comment
 	if packet.IPHeader.TimeToLive == uint8(osProfile.DefaultTTL) {
 		matches++
 	}
 
-	// 检查窗口大小
+	// translated comment
 	if packet.WindowSize == uint16(osProfile.DefaultWindowSize) {
 		matches++
 	}
 
-	// 检查 DF 标志
+	// translated comment
 	if (packet.IPHeader.Flags & 0x40) != 0 {
 		matches++
 	}
@@ -328,7 +328,7 @@ func (dfe *DeviceFingerprintingEngine) calculateOSScore(packet *TCPPacket, osPro
 	return float64(matches) / float64(total)
 }
 
-// calculateConfidence 计算总体信心度
+// translated comment
 func (dfe *DeviceFingerprintingEngine) calculateConfidence(result *DeviceFingerprintResult) float64 {
 	if len(result.DeviceMatches) == 0 {
 		return 0
@@ -341,7 +341,7 @@ func (dfe *DeviceFingerprintingEngine) calculateConfidence(result *DeviceFingerp
 
 	avgScore /= float64(len(result.DeviceMatches))
 
-	// 根据风险调整信心度
+	// translated comment
 	riskPenalty := float64(len(result.RiskIndicators)) * 0.1
 	confidence := avgScore - riskPenalty
 
@@ -352,7 +352,7 @@ func (dfe *DeviceFingerprintingEngine) calculateConfidence(result *DeviceFingerp
 	return confidence
 }
 
-// isStandardTTL 检查是否为标准 TTL
+// translated comment
 func (dfe *DeviceFingerprintingEngine) isStandardTTL(ttl uint8) bool {
 	standardTTLs := []uint8{32, 64, 128, 255}
 	for _, std := range standardTTLs {
@@ -363,7 +363,7 @@ func (dfe *DeviceFingerprintingEngine) isStandardTTL(ttl uint8) bool {
 	return false
 }
 
-// DeviceFingerprintResult 设备指纹识别结果
+// translated comment
 type DeviceFingerprintResult struct {
 	Timestamp       time.Time
 	AnalyzedPackets int
@@ -376,7 +376,7 @@ type DeviceFingerprintResult struct {
 	DetailedReport  string
 }
 
-// DeviceMatch 设备匹配结果
+// translated comment
 type DeviceMatch struct {
 	DeviceName    string
 	DeviceType    string
@@ -385,7 +385,7 @@ type DeviceMatch struct {
 	MatchedFields []string
 }
 
-// OSMatch 操作系统匹配结果
+// translated comment
 type OSMatch struct {
 	OSName     string
 	OSFamily   string
@@ -395,13 +395,13 @@ type OSMatch struct {
 	TCPOptions string
 }
 
-// String 返回易读的指纹识别结果
+// translated comment
 func (dfr *DeviceFingerprintResult) String() string {
 	data, _ := json.MarshalIndent(dfr, "", "  ")
 	return string(data)
 }
 
-// extractMatchedFields 提取匹配的字段
+// translated comment
 func extractMatchedFields(features map[string]interface{}, profile *DeviceProfile) []string {
 	fields := make([]string, 0)
 
@@ -416,12 +416,12 @@ func extractMatchedFields(features map[string]interface{}, profile *DeviceProfil
 	return fields
 }
 
-// RiskAssessmentEngine 风险评估引擎
+// translated comment
 type RiskAssessmentEngine struct {
 	rules map[string]RiskRule
 }
 
-// RiskRule 风险规则
+// translated comment
 type RiskRule struct {
 	Name        string
 	Description string
@@ -429,19 +429,19 @@ type RiskRule struct {
 	CheckFunc   func(*TCPPacket) bool
 }
 
-// NewRiskAssessmentEngine 创建新的风险评估引擎
+// translated comment
 func NewRiskAssessmentEngine() *RiskAssessmentEngine {
 	return &RiskAssessmentEngine{
 		rules: initializeRiskRules(),
 	}
 }
 
-// initializeRiskRules 初始化风险规则
+// translated comment
 func initializeRiskRules() map[string]RiskRule {
 	return map[string]RiskRule{}
 }
 
-// initializeOSDatabase 初始化操作系统数据库
+// translated comment
 func initializeOSDatabase() map[string]*OSProfile {
 	return map[string]*OSProfile{
 		"Windows11": {

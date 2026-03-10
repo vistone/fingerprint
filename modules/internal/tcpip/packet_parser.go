@@ -7,17 +7,17 @@ import (
 	"strings"
 )
 
-// PacketParser 数据包解析器
+// translated comment
 type PacketParser struct {
 	rawData []byte
 }
 
-// NewPacketParser 创建新的解析器
+// translated comment
 func NewPacketParser(data []byte) *PacketParser {
 	return &PacketParser{rawData: data}
 }
 
-// ParseIPHeader 解析 IP 头
+// translated comment
 func (p *PacketParser) ParseIPHeader() error {
 	if len(p.rawData) < 20 {
 		return fmt.Errorf("IP header too short")
@@ -31,7 +31,7 @@ func (p *PacketParser) ParseIPHeader() error {
 	return nil
 }
 
-// ParseTCPHeader 解析 TCP 头
+// translated comment
 func (p *PacketParser) ParseTCPHeader() error {
 	if len(p.rawData) < 20 {
 		return fmt.Errorf("TCP header too short")
@@ -40,7 +40,7 @@ func (p *PacketParser) ParseTCPHeader() error {
 	return nil
 }
 
-// ExtractFlags 提取 TCP 标志
+// translated comment
 func (p *PacketParser) ExtractFlags(flagByte byte) []string {
 	var flags []string
 
@@ -66,12 +66,12 @@ func (p *PacketParser) ExtractFlags(flagByte byte) []string {
 	return flags
 }
 
-// FormatSignature 格式化签名字符串
+// translated comment
 func FormatSignature(ttl int, mss int, ws int, opts string) string {
 	return fmt.Sprintf("%d,%d,%d,%s", ttl, mss, ws, opts)
 }
 
-// ParseSignature 解析签名字符串
+// translated comment
 func ParseSignature(sigStr string) (int, int, int, string, error) {
 	parts := strings.Split(sigStr, ",")
 	if len(parts) < 4 {
@@ -98,7 +98,7 @@ func ParseSignature(sigStr string) (int, int, int, string, error) {
 	return ttl, mss, ws, opts, nil
 }
 
-// CalculateChecksum 计算校验和
+// translated comment
 func CalculateChecksum(data []byte) uint16 {
 	sum := uint32(0)
 
@@ -117,7 +117,7 @@ func CalculateChecksum(data []byte) uint16 {
 	return ^uint16(sum)
 }
 
-// IsPrivateIP 检查是否为私有 IP
+// translated comment
 func IsPrivateIP(ip string) bool {
 	parsedIP := net.ParseIP(ip)
 	if parsedIP == nil {
@@ -127,7 +127,7 @@ func IsPrivateIP(ip string) bool {
 	return parsedIP.IsPrivate()
 }
 
-// IsReservedIP 检查是否为保留 IP
+// translated comment
 func IsReservedIP(ip string) bool {
 	parsedIP := net.ParseIP(ip)
 	if parsedIP == nil {
@@ -139,19 +139,19 @@ func IsReservedIP(ip string) bool {
 		parsedIP.IsMulticast()
 }
 
-// DetectNATUsage 检测 NAT 使用（基于 IP ID 和序列号）
+// translated comment
 func DetectNATUsage(ipIDs []uint16) bool {
 	if len(ipIDs) < 3 {
 		return false
 	}
 
-	// 计算 IP ID 的差值
+	// translated comment
 	diffs := make([]int, len(ipIDs)-1)
 	for i := 0; i < len(diffs); i++ {
 		diffs[i] = int(ipIDs[i+1]) - int(ipIDs[i])
 	}
 
-	// 如果 IP ID 线性增长，可能使用了 NAT
+	// translated comment
 	consecutive := 0
 	for i := 0; i < len(diffs)-1; i++ {
 		if diffs[i] == diffs[i+1] && diffs[i] > 0 {
@@ -159,15 +159,15 @@ func DetectNATUsage(ipIDs []uint16) bool {
 		}
 	}
 
-	// 如果有明显的线性模式，可能是 NAT
+	// translated comment
 	return float64(consecutive) > float64(len(diffs))*0.5
 }
 
-// InferInitialTTL 推断初始 TTL 值
+// translated comment
 func InferInitialTTL(currentTTL int, hopCount int) int {
 	ttl := currentTTL + hopCount
 
-	// 使用最接近的标准 TTL 值
+	// translated comment
 	standards := []int{32, 64, 128, 255}
 	minDiff := 255
 	bestMatch := 64
@@ -186,7 +186,7 @@ func InferInitialTTL(currentTTL int, hopCount int) int {
 	return bestMatch
 }
 
-// GenerateSignatureHash 生成签名哈希
+// translated comment
 func GenerateSignatureHash(parts ...interface{}) string {
 	str := fmt.Sprintf("%v", parts)
 	hash := 0
@@ -196,7 +196,7 @@ func GenerateSignatureHash(parts ...interface{}) string {
 	return fmt.Sprintf("%x", hash)
 }
 
-// ProfileMatch 轮廓匹配结果
+// translated comment
 type ProfileMatch struct {
 	OS         string
 	Confidence float64
@@ -204,7 +204,7 @@ type ProfileMatch struct {
 	Total      int
 }
 
-// MatchProfile 匹配操作系统轮廓
+// translated comment
 func MatchProfile(ttl int, mss int, ws int, opts string, profiles map[string]ProfileTemplate) ProfileMatch {
 	maxScore := 0.0
 	bestOS := ""
@@ -241,7 +241,7 @@ func MatchProfile(ttl int, mss int, ws int, opts string, profiles map[string]Pro
 	}
 }
 
-// ProfileTemplate 操作系统轮廓模板
+// translated comment
 type ProfileTemplate struct {
 	Name        string
 	TTL         int

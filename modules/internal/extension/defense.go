@@ -6,20 +6,20 @@ import (
 	"time"
 )
 
-// RateLimiter 速率限制器，防止请求溅射
+// translated comment
 //
-// 使用示例：
+// translated comment
 //
 //	limiter := extension.NewRateLimiter(100, time.Minute)
 //	if err := limiter.Allow(); err != nil {
-//	    return err  // 超过限制
+// translated comment
 //	}
-//	// 处理请求
+// translated comment
 //
-// 工作原理：令牌桶算法
-//   - 每个时间窗口允许 maxRequests 个请求
-//   - 超过则返回 ErrCodeResourceExhausted
-//   - 使用互斥锁保证线程安全
+// translated comment
+// translated comment
+// translated comment
+// translated comment
 type RateLimiter struct {
 	mu          sync.Mutex
 	maxRequests int
@@ -27,7 +27,7 @@ type RateLimiter struct {
 	requests    []time.Time
 }
 
-// NewRateLimiter 创建速率限制器
+// translated comment
 func NewRateLimiter(maxRequests int, timeWindow time.Duration) *RateLimiter {
 	return &RateLimiter{
 		maxRequests: maxRequests,
@@ -36,7 +36,7 @@ func NewRateLimiter(maxRequests int, timeWindow time.Duration) *RateLimiter {
 	}
 }
 
-// Allow 检查是否允许请求
+// translated comment
 func (rl *RateLimiter) Allow() error {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
@@ -44,7 +44,7 @@ func (rl *RateLimiter) Allow() error {
 	now := time.Now()
 	cutoff := now.Add(-rl.timeWindow)
 
-	// 移除旧的请求记录
+	// translated comment
 	validRequests := []time.Time{}
 	for _, t := range rl.requests {
 		if t.After(cutoff) {
@@ -53,7 +53,7 @@ func (rl *RateLimiter) Allow() error {
 	}
 	rl.requests = validRequests
 
-	// 检查是否超过限制
+	// translated comment
 	if len(rl.requests) >= rl.maxRequests {
 		return NewError(ErrCodeResourceExhausted,
 			fmt.Sprintf("rate limit exceeded: %d requests in %v", rl.maxRequests, rl.timeWindow)).
@@ -65,7 +65,7 @@ func (rl *RateLimiter) Allow() error {
 	return nil
 }
 
-// ResourceMonitor 资源监测器
+// translated comment
 type ResourceMonitor struct {
 	mu                sync.RWMutex
 	maxMemoryBytes    int64
@@ -73,10 +73,10 @@ type ResourceMonitor struct {
 	maxTimeoutSeconds int
 
 	startTime   time.Time
-	allocations map[string]int64 // 追踪按类型分配
+	allocations map[string]int64 // translated comment
 }
 
-// NewResourceMonitor 创建资源监测器
+// translated comment
 func NewResourceMonitor(maxMemoryMB int, maxGoroutines int, maxTimeoutSec int) *ResourceMonitor {
 	return &ResourceMonitor{
 		maxMemoryBytes:    int64(maxMemoryMB) * 1024 * 1024,
@@ -87,7 +87,7 @@ func NewResourceMonitor(maxMemoryMB int, maxGoroutines int, maxTimeoutSec int) *
 	}
 }
 
-// CheckMemory 检查内存使用
+// translated comment
 func (rm *ResourceMonitor) CheckMemory(size int64, label string) error {
 	rm.mu.Lock()
 	defer rm.mu.Unlock()
@@ -106,7 +106,7 @@ func (rm *ResourceMonitor) CheckMemory(size int64, label string) error {
 	return nil
 }
 
-// ReleaseMemory 释放内存
+// translated comment
 func (rm *ResourceMonitor) ReleaseMemory(size int64, label string) {
 	rm.mu.Lock()
 	defer rm.mu.Unlock()
@@ -119,7 +119,7 @@ func (rm *ResourceMonitor) ReleaseMemory(size int64, label string) {
 	}
 }
 
-// GetMemoryUsage 获取内存使用统计
+// translated comment
 func (rm *ResourceMonitor) GetMemoryUsage() map[string]int64 {
 	rm.mu.RLock()
 	defer rm.mu.RUnlock()
@@ -131,7 +131,7 @@ func (rm *ResourceMonitor) GetMemoryUsage() map[string]int64 {
 	return result
 }
 
-// CheckTimeout 检查超时
+// translated comment
 func (rm *ResourceMonitor) CheckTimeout() error {
 	elapsed := time.Since(rm.startTime).Seconds()
 	if int(elapsed) > rm.maxTimeoutSeconds {
@@ -142,9 +142,9 @@ func (rm *ResourceMonitor) CheckTimeout() error {
 	return nil
 }
 
-// DefensePolicy 防御策略配置
+// translated comment
 //
-// 使用示例（默认策略）：
+// translated comment
 //
 //	policy := extension.DefaultDefensePolicy()
 //	guard := extension.NewRequestGuard(policy)
@@ -152,7 +152,7 @@ func (rm *ResourceMonitor) CheckTimeout() error {
 //	    return err
 //	}
 //
-// 自定义严格策略：
+// translated comment
 //
 //	policy := &extension.DefensePolicy{
 //	    ValidateInput:    true,
@@ -166,34 +166,34 @@ func (rm *ResourceMonitor) CheckTimeout() error {
 //	    StrictMode:       true,
 //	}
 //
-// 默认值（推荐）：
+// translated comment
 //
 //	MaxInputSize: 65536 (64KB)
 //	MaxMemoryMB: 256
 //	TimeoutSec: 30
 //	RateLimit: 1000 (1000 req/min)
 type DefensePolicy struct {
-	// 输入检查
+	// translated comment
 	ValidateInput bool
 	MaxInputSize  int
 
-	// 资源限制
+	// translated comment
 	LimitMemory bool
 	MaxMemoryMB int
 
-	// 超时设置
+	// translated comment
 	EnableTimeout bool
 	TimeoutSec    int
 
-	// 速率限制
+	// translated comment
 	EnableRateLimit bool
-	RateLimit       int // 每分钟请求数
+	RateLimit       int // translated comment
 
-	// 严格模式
+	// translated comment
 	StrictMode bool
 }
 
-// DefaultDefensePolicy 默认防御策略
+// translated comment
 func DefaultDefensePolicy() *DefensePolicy {
 	return &DefensePolicy{
 		ValidateInput:   true,
@@ -201,23 +201,23 @@ func DefaultDefensePolicy() *DefensePolicy {
 		LimitMemory:     true,
 		MaxMemoryMB:     256, // 256MB
 		EnableTimeout:   true,
-		TimeoutSec:      30, // 30 秒
+		TimeoutSec:      30, // translated comment
 		EnableRateLimit: true,
-		RateLimit:       1000, // 1000 请求/分钟
+		RateLimit:       1000, // translated comment
 		StrictMode:      true,
 	}
 }
 
-// SecurityAuditor 安全审计员
+// translated comment
 type SecurityAuditor struct {
 	mu             sync.Mutex
 	events         []AuditEvent
 	maxEvents      int
-	alertThreshold int // 警告阈值
-	blockThreshold int // 阻止阈值
+	alertThreshold int // translated comment
+	blockThreshold int // translated comment
 }
 
-// AuditEvent 审计事件
+// translated comment
 type AuditEvent struct {
 	Timestamp time.Time
 	EventType string // "validation_failed", "resource_exceeded", "security_violation"
@@ -226,17 +226,17 @@ type AuditEvent struct {
 	Details   map[string]interface{}
 }
 
-// NewSecurityAuditor 创建安全审计员
+// translated comment
 func NewSecurityAuditor(maxEvents int) *SecurityAuditor {
 	return &SecurityAuditor{
 		events:         make([]AuditEvent, 0, maxEvents),
 		maxEvents:      maxEvents,
-		alertThreshold: 10, // 10 个警告后发送警报
-		blockThreshold: 20, // 20 个严重事件后阻止
+		alertThreshold: 10, // translated comment
+		blockThreshold: 20, // translated comment
 	}
 }
 
-// RecordEvent 记录事件
+// translated comment
 func (sa *SecurityAuditor) RecordEvent(eventType, severity, message string, details map[string]interface{}) error {
 	sa.mu.Lock()
 	defer sa.mu.Unlock()
@@ -249,7 +249,7 @@ func (sa *SecurityAuditor) RecordEvent(eventType, severity, message string, deta
 		Details:   details,
 	}
 
-	// 检查是否应该阻止
+	// translated comment
 	criticalCount := 0
 	for _, e := range sa.events {
 		if e.Severity == "critical" {
@@ -263,10 +263,10 @@ func (sa *SecurityAuditor) RecordEvent(eventType, severity, message string, deta
 			WithContext("critical_events", criticalCount)
 	}
 
-	// 添加事件
+	// translated comment
 	sa.events = append(sa.events, event)
 
-	// 保持最大事件数限制
+	// translated comment
 	if len(sa.events) > sa.maxEvents {
 		sa.events = sa.events[len(sa.events)-sa.maxEvents:]
 	}
@@ -274,7 +274,7 @@ func (sa *SecurityAuditor) RecordEvent(eventType, severity, message string, deta
 	return nil
 }
 
-// GetAuditLog 获取审计日志
+// translated comment
 func (sa *SecurityAuditor) GetAuditLog() []AuditEvent {
 	sa.mu.Lock()
 	defer sa.mu.Unlock()
@@ -284,38 +284,38 @@ func (sa *SecurityAuditor) GetAuditLog() []AuditEvent {
 	return result
 }
 
-// ClearAuditLog 清除审计日志
+// translated comment
 func (sa *SecurityAuditor) ClearAuditLog() {
 	sa.mu.Lock()
 	defer sa.mu.Unlock()
 	sa.events = make([]AuditEvent, 0, sa.maxEvents)
 }
 
-// RequestGuard 请求守卫，集成所有防御机制
+// translated comment
 //
-// 装配所有防御组件：RateLimiter、ResourceMonitor、SecurityAuditor、Validator
+// translated comment
 //
-// 使用示例：
+// translated comment
 //
 //	policy := extension.DefaultDefensePolicy()
 //	guard := extension.NewRequestGuard(policy)
 //
-//	// 验证请求
+// translated comment
 //	if err := guard.ValidateRequest(request); err != nil {
-//	    // 请求被拒绝（大小超限、速率限制、超时等）
+// translated comment
 //	    return err
 //	}
 //
-//	// 请求已验证，可以安全处理
+// translated comment
 //	return processRequest(request)
 //
-// 防御层次（按执行顺序）：
-//  1. 速率限制 - 防止流量溅射
-//  2. 大小检查 - 防止超大请求
-//  3. 超时检查 - 防止无限等待
-//  4. 数据验证 - 防止格式错误和恶意输入
+// translated comment
+// translated comment
+// translated comment
+// translated comment
+// translated comment
 //
-// 所有检查失败都会被记录到审计日志
+// translated comment
 type RequestGuard struct {
 	policy    *DefensePolicy
 	monitor   *ResourceMonitor
@@ -324,7 +324,7 @@ type RequestGuard struct {
 	limiter   *RateLimiter
 }
 
-// NewRequestGuard 创建请求守卫
+// translated comment
 func NewRequestGuard(policy *DefensePolicy) *RequestGuard {
 	rg := &RequestGuard{
 		policy:    policy,
@@ -337,17 +337,17 @@ func NewRequestGuard(policy *DefensePolicy) *RequestGuard {
 	return rg
 }
 
-// ValidateRequest 验证请求
+// translated comment
 //
-// 执行四层防御检查（按顺序）：
-// 1. 速率限制 - 防止流量溅射
-// 2. 大小检查 - 防止超大请求
-// 3. 超时检查 - 防止无限等待
-// 4. 数据验证 - 防止格式错误和恶意输入
+// translated comment
+// translated comment
+// translated comment
+// translated comment
+// translated comment
 //
-// 所有失败都会被记录到审计日志
+// translated comment
 func (rg *RequestGuard) ValidateRequest(data []byte) error {
-	// 第1层：速率限制
+	// translated comment
 	if rg.policy.EnableRateLimit {
 		if err := rg.limiter.Allow(); err != nil {
 			return rg.logAndReturnError(
@@ -360,7 +360,7 @@ func (rg *RequestGuard) ValidateRequest(data []byte) error {
 		}
 	}
 
-	// 第2层：大小检查
+	// translated comment
 	if rg.policy.ValidateInput {
 		if len(data) > rg.policy.MaxInputSize {
 			err := NewError(ErrCodeFieldSizeMismatch,
@@ -378,7 +378,7 @@ func (rg *RequestGuard) ValidateRequest(data []byte) error {
 		}
 	}
 
-	// 第3层：超时检查
+	// translated comment
 	if rg.policy.EnableTimeout {
 		if err := rg.monitor.CheckTimeout(); err != nil {
 			return rg.logAndReturnError(
@@ -391,7 +391,7 @@ func (rg *RequestGuard) ValidateRequest(data []byte) error {
 		}
 	}
 
-	// 第4层：数据验证
+	// translated comment
 	if err := rg.validator.ValidateData(data); err != nil {
 		return rg.logAndReturnError(
 			"validation_failed",
@@ -405,33 +405,33 @@ func (rg *RequestGuard) ValidateRequest(data []byte) error {
 	return nil
 }
 
-// logAndReturnError 记录审计事件并返回错误
-// 提取重复的错误处理和审计日志记录逻辑
+// translated comment
+// translated comment
 func (rg *RequestGuard) logAndReturnError(
 	eventType, severity, message string,
 	details map[string]interface{},
 	err error,
 ) error {
-	// 忽略 RecordEvent 可能返回的错误，因为审计失败不应该阻止主流程
-	// 但优先级检查通过 blockThreshold 机制自动处理
+	// translated comment
+	// translated comment
 	_ = rg.auditor.RecordEvent(eventType, severity, message, details)
 	return err
 }
 
-// DefenseConfig 防御配置助手
+// translated comment
 type DefenseConfig struct {
 	guards map[string]*RequestGuard
 	mu     sync.RWMutex
 }
 
-// NewDefenseConfig 创建防御配置
+// translated comment
 func NewDefenseConfig() *DefenseConfig {
 	return &DefenseConfig{
 		guards: make(map[string]*RequestGuard),
 	}
 }
 
-// RegisterGuard 注册守卫
+// translated comment
 func (dc *DefenseConfig) RegisterGuard(name string, policy *DefensePolicy) error {
 	if name == "" {
 		return NewError(ErrCodeInvalidConfig, "guard name cannot be empty")
@@ -449,7 +449,7 @@ func (dc *DefenseConfig) RegisterGuard(name string, policy *DefensePolicy) error
 	return nil
 }
 
-// GetGuard 获取守卫
+// translated comment
 func (dc *DefenseConfig) GetGuard(name string) (*RequestGuard, error) {
 	dc.mu.RLock()
 	defer dc.mu.RUnlock()
@@ -463,7 +463,7 @@ func (dc *DefenseConfig) GetGuard(name string) (*RequestGuard, error) {
 	return guard, nil
 }
 
-// ValidationResult 验证结果
+// translated comment
 type ValidationResult struct {
 	Valid     bool
 	Error     error
@@ -472,7 +472,7 @@ type ValidationResult struct {
 	CheckedAt time.Time
 }
 
-// ComprehensiveValidation 全面验证
+// translated comment
 func ComprehensiveValidation(data []byte, metadata *ExtensionMetadata, policy *DefensePolicy) *ValidationResult {
 	result := &ValidationResult{
 		Valid:     true,
@@ -481,17 +481,17 @@ func ComprehensiveValidation(data []byte, metadata *ExtensionMetadata, policy *D
 		CheckedAt: time.Now(),
 	}
 
-	// 创建验证器
+	// translated comment
 	validator := NewDefaultValidator()
 
-	// 验证数据
+	// translated comment
 	if err := validator.ValidateData(data); err != nil {
 		result.Valid = false
 		result.Error = err
 		return result
 	}
 
-	// 验证元数据
+	// translated comment
 	if metadata != nil {
 		if err := validator.ValidateMetadata(metadata); err != nil {
 			if extErr, ok := err.(*Error); ok && extErr.Severity == SeverityWarning {

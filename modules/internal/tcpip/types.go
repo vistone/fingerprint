@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// TCPPacket 代表一个 TCP 数据包
+// translated comment
 type TCPPacket struct {
 	IPHeader        *IPHeader
 	SourcePort      uint16
@@ -18,7 +18,7 @@ type TCPPacket struct {
 	Timestamp       time.Time
 }
 
-// IPHeader 代表一个 IP 数据包头
+// translated comment
 type IPHeader struct {
 	Version        uint8
 	TimeToLive     uint8
@@ -29,7 +29,7 @@ type IPHeader struct {
 	DestAddress    string
 }
 
-// TCPIPSignature TCP/IP 签名
+// translated comment
 type TCPIPSignature struct {
 	Hash       string
 	OS         string
@@ -40,7 +40,7 @@ type TCPIPSignature struct {
 	Options    string
 }
 
-// OSFingerprint 操作系统指纹
+// translated comment
 type OSFingerprint struct {
 	Name       string
 	Family     string
@@ -50,19 +50,19 @@ type OSFingerprint struct {
 	Options    string
 }
 
-// TCPIPAnalyzer TCP/IP 分析器
+// translated comment
 type TCPIPAnalyzer struct {
 	packets []*TCPPacket
 }
 
-// NewTCPIPAnalyzer 创建新的 TCP/IP 分析器
+// translated comment
 func NewTCPIPAnalyzer() *TCPIPAnalyzer {
 	return &TCPIPAnalyzer{
 		packets: make([]*TCPPacket, 0),
 	}
 }
 
-// AddPacket 添加数据包
+// translated comment
 func (ta *TCPIPAnalyzer) AddPacket(packet *TCPPacket) error {
 	if packet == nil {
 		return nil
@@ -71,7 +71,7 @@ func (ta *TCPIPAnalyzer) AddPacket(packet *TCPPacket) error {
 	return nil
 }
 
-// AnalyzePacket 分析单个数据包
+// translated comment
 func (ta *TCPIPAnalyzer) AnalyzePacket(packet *TCPPacket) *TCPIPResult {
 	result := &TCPIPResult{
 		IsValid:   true,
@@ -86,7 +86,7 @@ func (ta *TCPIPAnalyzer) AnalyzePacket(packet *TCPPacket) *TCPIPResult {
 	return result
 }
 
-// AnalyzeStream 分析数据流
+// translated comment
 func (ta *TCPIPAnalyzer) AnalyzeStream() *TCPIPResult {
 	if len(ta.packets) == 0 {
 		return &TCPIPResult{IsValid: false}
@@ -101,7 +101,7 @@ func (ta *TCPIPAnalyzer) AnalyzeStream() *TCPIPResult {
 	return result
 }
 
-// TCPIPResult TCP/IP 分析结果
+// translated comment
 type TCPIPResult struct {
 	IsValid     bool
 	Timestamp   time.Time

@@ -8,26 +8,26 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles/legacy"
 )
 
-// TestComputeJA4SFromRealProfiles 使用真实指纹配置测试 JA4S 计算
+// translated comment
 func TestComputeJA4SFromRealProfiles(t *testing.T) {
-	// 使用真实的 Chrome 133 指纹
+	// translated comment
 	chromeProfile, ok := profiles.MappedTLSClients["chrome_133"]
 	if !ok {
 		t.Fatal("chrome_133 profile not found")
 	}
 
-	// 获取 ClientHelloSpec
+	// translated comment
 	_, err := chromeProfile.GetClientHelloSpec()
 	if err != nil {
 		t.Skipf("chrome_133 does not support spec export: %v", err)
 		return
 	}
 
-	// 构造 ServerHello 数据（基于真实 ClientHello 的响应）
-	// 使用与 Chrome 133 兼容的 TLS 1.3 配置
+	// translated comment
+	// translated comment
 	serverHello := ServerHelloData{
 		TLSVersion:     0x0304,                       // TLS 1.3
-		CipherSuite:    0x1301,                       // TLS_AES_128_GCM_SHA256 (Chrome 首选)
+		CipherSuite:    0x1301,                       // translated comment
 		Extensions:     []uint16{0x002b, 0x0033},     // supported_versions, key_share
 		Compression:    0,
 		ServerName:     "www.google.com",
@@ -51,7 +51,7 @@ func TestComputeJA4SFromRealProfiles(t *testing.T) {
 	t.Logf("Chrome 133 -> Server JA4S Raw: %s", result.RawString)
 }
 
-// TestComputeJA4SFromMultipleProfiles 测试多个真实指纹的 JA4S 计算
+// translated comment
 func TestComputeJA4SFromMultipleProfiles(t *testing.T) {
 	testCases := []struct {
 		profileName string
@@ -104,11 +104,11 @@ func TestComputeJA4SFromMultipleProfiles(t *testing.T) {
 	}
 }
 
-// TestAnalyzeServerHelloWithRealData 使用真实 ServerHello 数据测试分析
+// translated comment
 func TestAnalyzeServerHelloWithRealData(t *testing.T) {
 	analyzer := NewJA4SAnalyzer()
 
-	// 测试 TLS 1.3 ServerHello（模拟真实服务器响应）
+	// translated comment
 	serverHello := ServerHelloData{
 		TLSVersion:  0x0304,
 		CipherSuite: 0x1301, // TLS_AES_128_GCM_SHA256
@@ -138,7 +138,7 @@ func TestAnalyzeServerHelloWithRealData(t *testing.T) {
 	t.Logf("ServerHello Analysis: Hash=%s, RiskScore=%.2f", result.Hash, result.RiskScore)
 }
 
-// TestMatchJA4S 测试 JA4S 哈希匹配
+// translated comment
 func TestMatchJA4S(t *testing.T) {
 	serverHello := ServerHelloData{
 		TLSVersion:  0x0304,
@@ -150,13 +150,13 @@ func TestMatchJA4S(t *testing.T) {
 	result1, _ := ComputeJA4S(serverHello)
 	result2, _ := ComputeJA4S(serverHello)
 
-	// 相同输入应该产生相同哈希
+	// translated comment
 	if !MatchJA4S(result1.Hash, result2.Hash) {
 		t.Error("Same ServerHello should produce matching JA4S hashes")
 	}
 
-	// 不同输入应该产生不同哈希
-	serverHello.CipherSuite = 0x1302 // 改变密码套件
+	// translated comment
+	serverHello.CipherSuite = 0x1302 // translated comment
 	result3, _ := ComputeJA4S(serverHello)
 
 	if MatchJA4S(result1.Hash, result3.Hash) {
@@ -164,7 +164,7 @@ func TestMatchJA4S(t *testing.T) {
 	}
 }
 
-// TestNewJA4SAnalyzer 测试创建分析器时已知配置库已初始化
+// translated comment
 func TestNewJA4SAnalyzer(t *testing.T) {
 	analyzer := NewJA4SAnalyzer()
 	if analyzer == nil {
@@ -174,7 +174,7 @@ func TestNewJA4SAnalyzer(t *testing.T) {
 		t.Error("Known profiles should be initialized")
 	}
 
-	// 验证已知配置文件是否存在
+	// translated comment
 	expectedProfiles := []string{"nginx_default", "apache_default", "cloudflare"}
 	for _, name := range expectedProfiles {
 		if _, ok := analyzer.knownProfiles[name]; !ok {
@@ -183,7 +183,7 @@ func TestNewJA4SAnalyzer(t *testing.T) {
 	}
 }
 
-// TestAnalyzeServerHelloBytes 测试分析 TLS ServerHello 字节数据
+// translated comment
 func TestAnalyzeServerHelloBytes(t *testing.T) {
 	analyzer := NewJA4SAnalyzer()
 
@@ -202,7 +202,7 @@ func TestAnalyzeServerHelloBytes(t *testing.T) {
 		{
 			name:        "数据刚好43字节但结构无效",
 			data:        make([]byte, 43),
-			expectError: false, // 可以解析但可能结果不正确
+			expectError: false, // translated comment
 		},
 		{
 			name:        "空数据",
@@ -229,11 +229,11 @@ func TestAnalyzeServerHelloBytes(t *testing.T) {
 		})
 	}
 
-	// 测试有效的 ServerHello 字节数据
+	// translated comment
 	t.Run("有效的 ServerHello 字节数据", func(t *testing.T) {
-		// 构建一个有效的 TLS ServerHello 消息
+		// translated comment
 		// HandshakeType(1) + Length(3) + Version(2) + Random(32) + SessionIDLen(1) + SessionID(0) + CipherSuite(2) + Compression(1)
-		// 总共 42 字节基础，加上扩展长度 2 字节
+		// translated comment
 		data := make([]byte, 64)
 		data[0] = 0x02                                           // Server Hello
 		data[1], data[2], data[3] = 0x00, 0x00, 0x3d             // Length: 61 bytes
@@ -269,9 +269,9 @@ func TestAnalyzeServerHelloBytes(t *testing.T) {
 		}
 	})
 
-	// 测试解析扩展列表
+	// translated comment
 	t.Run("解析扩展列表", func(t *testing.T) {
-		// 构建一个包含多个扩展的 ServerHello
+		// translated comment
 		data := make([]byte, 80)
 		data[0] = 0x02                                           // Server Hello
 		data[1], data[2], data[3] = 0x00, 0x00, 0x49             // Length
@@ -317,7 +317,7 @@ func TestAnalyzeServerHelloBytes(t *testing.T) {
 	})
 }
 
-// TestGenerateServerHelloSignature 测试生成签名和异常检测
+// translated comment
 func TestGenerateServerHelloSignature(t *testing.T) {
 	analyzer := NewJA4SAnalyzer()
 
@@ -393,10 +393,10 @@ func TestGenerateServerHelloSignature(t *testing.T) {
 		},
 		{
 			name:              "多个异常",
-			tlsVersion:        0x0301, // 已弃用
-			cipherSuite:       0x000a, // 弱密码
+			tlsVersion:        0x0301, // translated comment
+			cipherSuite:       0x000a, // translated comment
 			extensions:        []uint16{0x002b},
-			compressionMethod: 1,      // 不安全压缩
+			compressionMethod: 1,      // translated comment
 			expectHashLen:     64,
 			expectRiskScore:   0.85,   // 0.2 + 0.25 + 0.2 + 0.2
 			expectAnomalies:   []string{"DEPRECATED_TLS_VERSION", "WEAK_CIPHER_SUITE", "MINIMAL_EXTENSIONS", "UNSAFE_COMPRESSION"},
@@ -438,7 +438,7 @@ func TestGenerateServerHelloSignature(t *testing.T) {
 	}
 }
 
-// TestFindMatchingProfiles 测试查找匹配的已知服务端配置
+// translated comment
 func TestFindMatchingProfiles(t *testing.T) {
 	analyzer := NewJA4SAnalyzer()
 
@@ -511,7 +511,7 @@ func TestFindMatchingProfiles(t *testing.T) {
 	}
 }
 
-// TestParseServerHello 测试解析 ServerHello 字节数据
+// translated comment
 func TestParseServerHello(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -568,7 +568,7 @@ func TestParseServerHello(t *testing.T) {
 			data:        buildTruncatedExtensionsBytes(),
 			expectError: false,
 			checkFunc: func(t *testing.T, sh *serverHelloData) {
-				// 扩展被截断，应该只解析到有效的部分
+				// translated comment
 				if len(sh.Extensions) > 0 {
 					t.Logf("Got %d extensions despite truncation", len(sh.Extensions))
 				}
@@ -601,7 +601,7 @@ func TestParseServerHello(t *testing.T) {
 	}
 }
 
-// TestFormatTLSVersion 测试 TLS 版本格式化
+// translated comment
 func TestFormatTLSVersion(t *testing.T) {
 	tests := []struct {
 		input    uint16
@@ -626,7 +626,7 @@ func TestFormatTLSVersion(t *testing.T) {
 	}
 }
 
-// TestTLSVersionString 测试 TLS 版本字符串
+// translated comment
 func TestTLSVersionString(t *testing.T) {
 	tests := []struct {
 		input    uint16
@@ -651,7 +651,7 @@ func TestTLSVersionString(t *testing.T) {
 	}
 }
 
-// TestFormatCipherCode 测试密码套件格式化
+// translated comment
 func TestFormatCipherCode(t *testing.T) {
 	tests := []struct {
 		input    uint16
@@ -676,7 +676,7 @@ func TestFormatCipherCode(t *testing.T) {
 	}
 }
 
-// TestFormatCompressionCode 测试压缩方法格式化
+// translated comment
 func TestFormatCompressionCode(t *testing.T) {
 	tests := []struct {
 		input    uint8
@@ -698,7 +698,7 @@ func TestFormatCompressionCode(t *testing.T) {
 	}
 }
 
-// TestIsSupportedTLSVersion 测试支持的 TLS 版本检查
+// translated comment
 func TestIsSupportedTLSVersion(t *testing.T) {
 	tests := []struct {
 		input    uint16
@@ -723,7 +723,7 @@ func TestIsSupportedTLSVersion(t *testing.T) {
 	}
 }
 
-// TestIsDeprecatedTLSVersion 测试已弃用 TLS 版本检查
+// translated comment
 func TestIsDeprecatedTLSVersion(t *testing.T) {
 	tests := []struct {
 		input    uint16
@@ -748,7 +748,7 @@ func TestIsDeprecatedTLSVersion(t *testing.T) {
 	}
 }
 
-// TestIsWeakCipherSuite 测试弱密码套件检查
+// translated comment
 func TestIsWeakCipherSuite(t *testing.T) {
 	weakCiphers := []uint16{
 		0x0000, // TLS_NULL_WITH_NULL_NULL
@@ -785,7 +785,7 @@ func TestIsWeakCipherSuite(t *testing.T) {
 	}
 }
 
-// TestHasValidExtensionOrder 测试扩展顺序验证
+// translated comment
 func TestHasValidExtensionOrder(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -811,7 +811,7 @@ func TestHasValidExtensionOrder(t *testing.T) {
 	}
 }
 
-// TestDetectAnomalies_DeprecatedTLS 测试检测已弃用的 TLS 版本
+// translated comment
 func TestDetectAnomalies_DeprecatedTLS(t *testing.T) {
 	analyzer := NewJA4SAnalyzer()
 
@@ -863,7 +863,7 @@ func TestDetectAnomalies_DeprecatedTLS(t *testing.T) {
 	}
 }
 
-// TestDetectAnomalies_WeakCipher 测试检测弱密码套件
+// translated comment
 func TestDetectAnomalies_WeakCipher(t *testing.T) {
 	analyzer := NewJA4SAnalyzer()
 
@@ -909,7 +909,7 @@ func TestDetectAnomalies_WeakCipher(t *testing.T) {
 	}
 }
 
-// TestDetectAnomalies_Extensions 测试检测扩展数量异常和重复扩展
+// translated comment
 func TestDetectAnomalies_Extensions(t *testing.T) {
 	analyzer := NewJA4SAnalyzer()
 
@@ -954,7 +954,7 @@ func TestDetectAnomalies_Extensions(t *testing.T) {
 	}
 }
 
-// TestDetectAnomalies_Compression 测试检测不安全的压缩方法
+// translated comment
 func TestDetectAnomalies_Compression(t *testing.T) {
 	analyzer := NewJA4SAnalyzer()
 
@@ -999,9 +999,9 @@ func TestDetectAnomalies_Compression(t *testing.T) {
 	}
 }
 
-// TestComputeJA4SFromBytes 测试便捷函数 ComputeJA4SFromBytes
+// translated comment
 func TestComputeJA4SFromBytes(t *testing.T) {
-	// 构建有效的 ServerHello 字节数据
+	// translated comment
 	data := buildServerHelloBytes(0x0304, 0x1301, 0, []uint16{0x002b, 0x0033})
 
 	result, err := ComputeJA4SFromBytes(data)
@@ -1018,14 +1018,14 @@ func TestComputeJA4SFromBytes(t *testing.T) {
 		t.Errorf("Expected TLS version 1.3, got %s", result.TLSVersion)
 	}
 
-	// 测试无效数据
+	// translated comment
 	_, err = ComputeJA4SFromBytes(make([]byte, 42))
 	if err == nil {
 		t.Error("Expected error for invalid data")
 	}
 }
 
-// TestComputeJA4SFromProfileData 测试从 Profile 数据计算 JA4S
+// translated comment
 func TestComputeJA4SFromProfileData(t *testing.T) {
 	result, err := ComputeJA4SFromProfileData(
 		0x0304,                       // TLS 1.3
@@ -1049,7 +1049,7 @@ func TestComputeJA4SFromProfileData(t *testing.T) {
 	}
 }
 
-// TestMatchJA4S_Extended 扩展现有测试
+// translated comment
 func TestMatchJA4S_Extended(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -1075,7 +1075,7 @@ func TestMatchJA4S_Extended(t *testing.T) {
 	}
 }
 
-// TestServerHelloData_String 测试 String() 方法
+// translated comment
 func TestServerHelloData_String(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -1124,12 +1124,12 @@ func TestServerHelloData_String(t *testing.T) {
 	}
 }
 
-// ==================== 辅助函数 ====================
+// translated comment
 
-// buildServerHelloBytes 构建 ServerHello 字节数据
+// translated comment
 func buildServerHelloBytes(version, cipher uint16, sessionIDLen int, extensions []uint16) []byte {
-	// 计算总长度
-	baseLen := 43 + sessionIDLen // 基础长度 + Session ID
+	// translated comment
+	baseLen := 43 + sessionIDLen // translated comment
 	extLen := 0
 	for range extensions {
 		extLen += 4 + 4 // Type(2) + Len(2) + DummyData(4) for simplicity
@@ -1176,7 +1176,7 @@ func buildServerHelloBytes(version, cipher uint16, sessionIDLen int, extensions 
 	// Extensions
 	if len(extensions) > 0 {
 		// Extensions Length
-		extTotalLen := len(extensions) * 8 // 每个扩展 8 字节
+		extTotalLen := len(extensions) * 8 // translated comment
 		data[offset] = byte(extTotalLen >> 8)
 		data[offset+1] = byte(extTotalLen & 0xff)
 		offset += 2
@@ -1202,14 +1202,14 @@ func buildServerHelloBytes(version, cipher uint16, sessionIDLen int, extensions 
 	return data
 }
 
-// buildServerHelloBytesWithSessionID 构建带 Session ID 的 ServerHello 字节数据
+// translated comment
 func buildServerHelloBytesWithSessionID(version, cipher uint16, sessionIDLen int, compression uint8, extensions []uint16) []byte {
 	return buildServerHelloBytes(version, cipher, sessionIDLen, extensions)
 }
 
-// buildTruncatedExtensionsBytes 构建扩展被截断的 ServerHello
+// translated comment
 func buildTruncatedExtensionsBytes() []byte {
-	// 基础 43 字节 + Session ID Len(1) + Cipher(2) + Compression(1) + Extensions Length(2)
+	// translated comment
 	data := make([]byte, 49)
 	offset := 0
 
@@ -1241,12 +1241,12 @@ func buildTruncatedExtensionsBytes() []byte {
 	data[offset] = 0x00
 	offset++
 
-	// Extensions Length = 20 (但数据只有 10)
+	// translated comment
 	data[offset] = 0x00
 	data[offset+1] = 0x14
 	offset += 2
 
-	// 添加一个不完整的扩展
+	// translated comment
 	data[offset] = 0x00
 	data[offset+1] = 0x2b
 	offset += 2
@@ -1256,9 +1256,9 @@ func buildTruncatedExtensionsBytes() []byte {
 	return data
 }
 
-// buildShortCipherDataBytes 构建密码套件数据太短的数据
+// translated comment
 func buildShortCipherDataBytes() []byte {
-	// 刚好到 Session ID 结束，但没有 Cipher Suite
+	// translated comment
 	data := make([]byte, 42)
 	offset := 0
 
@@ -1281,7 +1281,7 @@ func buildShortCipherDataBytes() []byte {
 	data[offset] = 0x00
 	offset++
 
-	// 这里应该有两个字节的 Cipher Suite，但数据已经结束了
+	// translated comment
 
 	return data
 }

@@ -9,10 +9,10 @@ import (
 )
 
 // ========================================================================
-// 灰度推出框架：ProcessWithPipeline 生产环境灰度管理
+// translated comment
 // ========================================================================
 
-// CanaryStage 灰度阶段
+// translated comment
 type CanaryStage string
 
 const (
@@ -22,34 +22,34 @@ const (
 	CanaryStage100Percent CanaryStage = "100%"
 )
 
-// CanaryConfig 灰度配置
+// translated comment
 type CanaryConfig struct {
-	// 灰度阶段
+	// translated comment
 	Stage CanaryStage
 
-	// 目标流量百分比
+	// translated comment
 	TargetPercentage float64
 
-	// 启用灰度
+	// translated comment
 	Enabled bool
 
-	// 灰度开始时间
+	// translated comment
 	StartTime time.Time
 
-	// 灰度时长 (如果为 0 则不限制)
+	// translated comment
 	Duration time.Duration
 }
 
-// CanaryMetrics 灰度指标
+// translated comment
 type CanaryMetrics struct {
-	// 基础指标
+	// translated comment
 	TotalRequests      int64
 	NewMethodRequests  int64
 	OldMethodRequests  int64
 	SuccessfulRequests int64
 	FailedRequests     int64
 
-	// 延迟指标
+	// translated comment
 	TotalLatency time.Duration
 	MinLatency   time.Duration
 	MaxLatency   time.Duration
@@ -58,59 +58,59 @@ type CanaryMetrics struct {
 	P95Latency   time.Duration
 	P99Latency   time.Duration
 
-	// 缓存指标
+	// translated comment
 	CacheHits    int64
 	CacheMisses  int64
 	CacheHitRate float64
 
-	// 错误指标
+	// translated comment
 	ErrorCount int64
 	ErrorRate  float64
 
-	// 资源指标
+	// translated comment
 	MemoryUsage int64
 	GCTime      time.Duration
 
-	// 时间戳
+	// translated comment
 	CollectedAt time.Time
 }
 
-// CanaryMetricsCollector 灰度指标收集器
+// translated comment
 type CanaryMetricsCollector struct {
 	mu sync.RWMutex
 
-	// 当前配置
+	// translated comment
 	config *CanaryConfig
 
-	// 指标数据
+	// translated comment
 	metrics *CanaryMetrics
 
-	// 历史数据 (用于分析趋势)
+	// translated comment
 	history []*CanaryMetrics
 
-	// 流量分配器
+	// translated comment
 	router *CanaryRouter
 }
 
-// CanaryRouter 灰度流量路由器
+// translated comment
 type CanaryRouter struct {
 	config *CanaryConfig
 }
 
-// ShouldUseNewMethod 判断是否使用新方式
+// translated comment
 func (r *CanaryRouter) ShouldUseNewMethod(requestID string) bool {
 	if !r.config.Enabled {
 		return false
 	}
 
-	// 基于 requestID 的 hash 进行一致性分配
+	// translated comment
 	hash := hashRequestID(requestID)
-	// 计算阈值: 百分比 * 最大 uint32
+	// translated comment
 	threshold := uint32(float64(^uint32(0)) * r.config.TargetPercentage)
 	return hash < threshold
 }
 
-// NewCanaryMetricsCollector 创建灰度指标收集器
+// translated comment
 func NewCanaryMetricsCollector(config *CanaryConfig) *CanaryMetricsCollector {
 	if config == nil {
 		config = &CanaryConfig{
@@ -130,7 +130,7 @@ func NewCanaryMetricsCollector(config *CanaryConfig) *CanaryMetricsCollector {
 	}
 }
 
-// EnableCanary 启用灰度
+// translated comment
 func (c *CanaryMetricsCollector) EnableCanary(stage CanaryStage, percentage float64, duration time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -144,7 +144,7 @@ func (c *CanaryMetricsCollector) EnableCanary(stage CanaryStage, percentage floa
 	fmt.Printf("✅ 灰度已启用: %s (%.0f%% 流量)\n", stage, percentage*100)
 }
 
-// DisableCanary 禁用灰度
+// translated comment
 func (c *CanaryMetricsCollector) DisableCanary() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -153,7 +153,7 @@ func (c *CanaryMetricsCollector) DisableCanary() {
 	fmt.Println("⚠️  灰度已禁用")
 }
 
-// RecordRequest 记录请求
+// translated comment
 func (c *CanaryMetricsCollector) RecordRequest(requestID string, useNewMethod bool, duration time.Duration, success bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -172,7 +172,7 @@ func (c *CanaryMetricsCollector) RecordRequest(requestID string, useNewMethod bo
 		atomic.AddInt64(&c.metrics.FailedRequests, 1)
 	}
 
-	// 更新延迟指标
+	// translated comment
 	c.metrics.TotalLatency += duration
 	if duration < c.metrics.MinLatency || c.metrics.MinLatency == 0 {
 		c.metrics.MinLatency = duration
@@ -182,7 +182,7 @@ func (c *CanaryMetricsCollector) RecordRequest(requestID string, useNewMethod bo
 	}
 }
 
-// RecordCacheHit 记录缓存命中
+// translated comment
 func (c *CanaryMetricsCollector) RecordCacheHit(hit bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -194,7 +194,7 @@ func (c *CanaryMetricsCollector) RecordCacheHit(hit bool) {
 	}
 }
 
-// GetCurrentMetrics 获取当前指标
+// translated comment
 func (c *CanaryMetricsCollector) GetCurrentMetrics() *CanaryMetrics {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -202,13 +202,13 @@ func (c *CanaryMetricsCollector) GetCurrentMetrics() *CanaryMetrics {
 	metrics := *c.metrics
 	metrics.CollectedAt = time.Now()
 
-	// 计算平均延迟
+	// translated comment
 	if metrics.TotalRequests > 0 {
 		metrics.AvgLatency = metrics.TotalLatency / time.Duration(metrics.TotalRequests)
 		metrics.ErrorRate = float64(metrics.FailedRequests) / float64(metrics.TotalRequests)
 	}
 
-	// 计算缓存命中率
+	// translated comment
 	totalCacheOps := metrics.CacheHits + metrics.CacheMisses
 	if totalCacheOps > 0 {
 		metrics.CacheHitRate = float64(metrics.CacheHits) / float64(totalCacheOps)
@@ -217,12 +217,12 @@ func (c *CanaryMetricsCollector) GetCurrentMetrics() *CanaryMetrics {
 	return &metrics
 }
 
-// SnapshotMetrics 保存指标快照 (用于历史分析)
+// translated comment
 func (c *CanaryMetricsCollector) SnapshotMetrics() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	// 直接复制当前指标而不调用其他需要锁的函数
+	// translated comment
 	snapshot := &CanaryMetrics{
 		TotalRequests:      atomic.LoadInt64(&c.metrics.TotalRequests),
 		NewMethodRequests:  atomic.LoadInt64(&c.metrics.NewMethodRequests),
@@ -237,13 +237,13 @@ func (c *CanaryMetricsCollector) SnapshotMetrics() {
 		CollectedAt:        time.Now(),
 	}
 
-	// 计算平均延迟
+	// translated comment
 	if snapshot.TotalRequests > 0 {
 		snapshot.AvgLatency = snapshot.TotalLatency / time.Duration(snapshot.TotalRequests)
 		snapshot.ErrorRate = float64(snapshot.FailedRequests) / float64(snapshot.TotalRequests)
 	}
 
-	// 计算缓存命中率
+	// translated comment
 	totalCacheOps := snapshot.CacheHits + snapshot.CacheMisses
 	if totalCacheOps > 0 {
 		snapshot.CacheHitRate = float64(snapshot.CacheHits) / float64(totalCacheOps)
@@ -251,13 +251,13 @@ func (c *CanaryMetricsCollector) SnapshotMetrics() {
 
 	c.history = append(c.history, snapshot)
 
-	// 只保留最近 1000 个快照
+	// translated comment
 	if len(c.history) > 1000 {
 		c.history = c.history[1:]
 	}
 }
 
-// GetMetricsHistory 获取指标历史
+// translated comment
 func (c *CanaryMetricsCollector) GetMetricsHistory(hours int) []*CanaryMetrics {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -274,41 +274,41 @@ func (c *CanaryMetricsCollector) GetMetricsHistory(hours int) []*CanaryMetrics {
 	return result
 }
 
-// CanaryHealthCheck 灰度健康检查
+// translated comment
 type CanaryHealthCheck struct {
 	collector  *CanaryMetricsCollector
 	thresholds *CanaryThresholds
 }
 
-// CanaryThresholds 灰度阈值
+// translated comment
 type CanaryThresholds struct {
-	// 告警阈值
+	// translated comment
 	MaxErrorRate    float64
 	MaxP99Latency   time.Duration
 	MinCacheHitRate float64
 	MaxMemoryGrowth int64 // bytes/minute
 
-	// 回滚触发阈值
+	// translated comment
 	CriticalErrorRate  float64
 	CriticalP99Latency time.Duration
 }
 
-// DefaultCanaryThresholds 默认的灰度阈值
+// translated comment
 func DefaultCanaryThresholds() *CanaryThresholds {
 	return &CanaryThresholds{
-		// 告警阈值 (严格)
+		// translated comment
 		MaxErrorRate:    0.01, // 1%
 		MaxP99Latency:   150 * time.Millisecond,
 		MinCacheHitRate: 0.5,    // 50%
 		MaxMemoryGrowth: 100000, // 100KB
 
-		// 回滚触发阈值 (严格)
+		// translated comment
 		CriticalErrorRate:  0.03, // 3%
 		CriticalP99Latency: 500 * time.Millisecond,
 	}
 }
 
-// NewCanaryHealthCheck 创建灰度健康检查
+// translated comment
 func NewCanaryHealthCheck(collector *CanaryMetricsCollector) *CanaryHealthCheck {
 	return &CanaryHealthCheck{
 		collector:  collector,
@@ -316,7 +316,7 @@ func NewCanaryHealthCheck(collector *CanaryMetricsCollector) *CanaryHealthCheck 
 	}
 }
 
-// CheckHealth 检查灰度健康状况
+// translated comment
 func (c *CanaryHealthCheck) CheckHealth(ctx context.Context) (healthy bool, alerts []string, critique string) {
 	metrics := c.collector.GetCurrentMetrics()
 
@@ -327,7 +327,7 @@ func (c *CanaryHealthCheck) CheckHealth(ctx context.Context) (healthy bool, aler
 	alerts = []string{}
 	healthy = true
 
-	// 检查错误率
+	// translated comment
 	if metrics.ErrorRate > c.thresholds.CriticalErrorRate {
 		critique = fmt.Sprintf("❌ 严重错误率: %.2f%% (> %.2f%%)",
 			metrics.ErrorRate*100, c.thresholds.CriticalErrorRate*100)
@@ -339,7 +339,7 @@ func (c *CanaryHealthCheck) CheckHealth(ctx context.Context) (healthy bool, aler
 		healthy = false
 	}
 
-	// 检查延迟
+	// translated comment
 	if metrics.P99Latency > c.thresholds.CriticalP99Latency && metrics.P99Latency > 0 {
 		critique = fmt.Sprintf("❌ 严重延迟升高: P99=%.0fms (> %.0fms)",
 			metrics.P99Latency.Seconds()*1000, c.thresholds.CriticalP99Latency.Seconds()*1000)
@@ -351,7 +351,7 @@ func (c *CanaryHealthCheck) CheckHealth(ctx context.Context) (healthy bool, aler
 		healthy = false
 	}
 
-	// 检查缓存命中率
+	// translated comment
 	if metrics.CacheHitRate > 0 && metrics.CacheHitRate < c.thresholds.MinCacheHitRate {
 		alerts = append(alerts, fmt.Sprintf("⚠️  缓存命中率过低: %.1f%%", metrics.CacheHitRate*100))
 		healthy = false
@@ -364,39 +364,39 @@ func (c *CanaryHealthCheck) CheckHealth(ctx context.Context) (healthy bool, aler
 	return healthy, alerts, critique
 }
 
-// CanaryReport 灰度报告
+// translated comment
 type CanaryReport struct {
 	Stage     CanaryStage
 	Duration  time.Duration
 	StartTime time.Time
 	EndTime   time.Time
 
-	// 流量分布
+	// translated comment
 	TotalRequests     int64
 	NewMethodRequests int64
 	OldMethodRequests int64
 	NewMethodPercent  float64
 
-	// 成功率
+	// translated comment
 	SuccessRate float64
 	ErrorRate   float64
 
-	// 延迟对比
+	// translated comment
 	NewMethodAvgLatency time.Duration
 	OldMethodAvgLatency time.Duration
 	LatencyDifference   float64 // percentage
 
-	// 缓存效果
+	// translated comment
 	CacheHitRate float64
 
-	// 结果一致性
+	// translated comment
 	Consistency float64 // 0-1
 
-	// 建议
+	// translated comment
 	Recommendation string
 }
 
-// GenerateCanaryReport 生成灰度报告
+// translated comment
 func (c *CanaryMetricsCollector) GenerateCanaryReport(startTime time.Time) *CanaryReport {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -417,12 +417,12 @@ func (c *CanaryMetricsCollector) GenerateCanaryReport(startTime time.Time) *Cana
 		CacheHitRate:      metrics.CacheHitRate,
 	}
 
-	// 计算新方式的百分比
+	// translated comment
 	if metrics.TotalRequests > 0 {
 		report.NewMethodPercent = float64(metrics.NewMethodRequests) / float64(metrics.TotalRequests)
 	}
 
-	// 生成建议
+	// translated comment
 	if report.ErrorRate > 0.03 {
 		report.Recommendation = "❌ 立即回滚 (错误率过高)"
 	} else if report.ErrorRate > 0.01 {
@@ -438,7 +438,7 @@ func (c *CanaryMetricsCollector) GenerateCanaryReport(startTime time.Time) *Cana
 	return report
 }
 
-// PrintCanaryReport 打印灰度报告
+// translated comment
 func (report *CanaryReport) Print() {
 	fmt.Println()
 	fmt.Println("╔════════════════════════════════════════════════╗")
@@ -469,10 +469,10 @@ func (report *CanaryReport) Print() {
 }
 
 // ========================================================================
-// 辅助函数
+// translated comment
 // ========================================================================
 
-// hashRequestID 对 requestID 进行 hash (用于一致性流量分配)
+// translated comment
 func hashRequestID(requestID string) uint32 {
 	hash := uint32(0)
 	for _, ch := range requestID {
@@ -481,7 +481,7 @@ func hashRequestID(requestID string) uint32 {
 	return hash
 }
 
-// WaitForCanaryCompletion 等待灰度完成
+// translated comment
 func WaitForCanaryCompletion(ctx context.Context, collector *CanaryMetricsCollector, duration time.Duration) {
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
@@ -509,10 +509,10 @@ func WaitForCanaryCompletion(ctx context.Context, collector *CanaryMetricsCollec
 }
 
 // ========================================================================
-// 灰度生命周期管理
+// translated comment
 // ========================================================================
 
-// CanaryLifecycle 灰度生命周期管理器
+// translated comment
 type CanaryLifecycle struct {
 	collector   *CanaryMetricsCollector
 	healthCheck *CanaryHealthCheck
@@ -520,7 +520,7 @@ type CanaryLifecycle struct {
 	currentIdx  int
 }
 
-// NewCanaryLifecycle 创建灰度生命周期管理器
+// translated comment
 func NewCanaryLifecycle() *CanaryLifecycle {
 	config := &CanaryConfig{}
 	collector := NewCanaryMetricsCollector(config)
@@ -538,7 +538,7 @@ func NewCanaryLifecycle() *CanaryLifecycle {
 	}
 }
 
-// StartStage 启动新的灰度阶段
+// translated comment
 func (c *CanaryLifecycle) StartStage(stage CanaryStage, duration time.Duration) {
 	percentages := map[CanaryStage]float64{
 		CanaryStage5Percent:   0.05,
@@ -552,7 +552,7 @@ func (c *CanaryLifecycle) StartStage(stage CanaryStage, duration time.Duration) 
 	fmt.Printf("🚀 开始灰度: %s (%.0f%% 流量, 持续 %v)\n", stage, percentage*100, duration)
 }
 
-// EndStage 结束当前灰度阶段
+// translated comment
 func (c *CanaryLifecycle) EndStage() *CanaryReport {
 	startTime := c.collector.config.StartTime
 	report := c.collector.GenerateCanaryReport(startTime)
@@ -560,7 +560,7 @@ func (c *CanaryLifecycle) EndStage() *CanaryReport {
 	return report
 }
 
-// CanUpgrade 检查是否可以升级到下一阶段
+// translated comment
 func (c *CanaryLifecycle) CanUpgrade() bool {
 	healthy, alerts, _ := c.healthCheck.CheckHealth(context.Background())
 
@@ -572,7 +572,7 @@ func (c *CanaryLifecycle) CanUpgrade() bool {
 	return healthy
 }
 
-// PrintLifecycleStatus 打印生命周期状态
+// translated comment
 func (c *CanaryLifecycle) PrintLifecycleStatus() {
 	fmt.Println()
 	fmt.Println("═══════════════════════════════════════════════════")

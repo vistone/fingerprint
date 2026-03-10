@@ -1,11 +1,11 @@
-// Package main - P3 现代 JS 高熵对抗点集成测试
+// translated comment
 //
-// 测试场景：
-// 1. WebGPU 对抗点生成和注入
-// 2. MediaDevices 对抗点生成和注入
-// 3. Permissions API 对抗点生成和注入
-// 4. Automation 检测隐藏
-// 5. 跨层一致性校验（UA/CH/JS/TCP-IP）
+// translated comment
+// translated comment
+// translated comment
+// translated comment
+// translated comment
+// translated comment
 package main
 
 import (
@@ -22,12 +22,12 @@ func main() {
 	fmt.Println("P3: 现代 JS 高熵对抗点集成测试")
 	fmt.Println("================================================================================\n")
 
-	// 创建示例配置文件
+	// translated comment
 	profile := createSampleProfile()
 
 	fmt.Println("【第一部分】JavaScript 反检测对抗点代码生成\n")
 
-	// 1. 测试 WebGPU 对抗点
+	// translated comment
 	fmt.Println("1️⃣ WebGPU 对抗点生成:")
 	fmt.Println("─────────────────────────────────────────────────────────")
 	generator := frontend.NewJSAntiDetectCodeGenerator(&profile)
@@ -41,7 +41,7 @@ func main() {
 	}
 	fmt.Println()
 
-	// 2. 测试 MediaDevices 对抗点
+	// translated comment
 	fmt.Println("2️⃣ MediaDevices 对抗点生成:")
 	fmt.Println("─────────────────────────────────────────────────────────")
 	mediaCode := generator.GenerateMediaDevicesCode()
@@ -59,7 +59,7 @@ func main() {
 	}
 	fmt.Println()
 
-	// 3. 测试 Permissions 对抗点
+	// translated comment
 	fmt.Println("3️⃣ Permissions API 对抗点生成:")
 	fmt.Println("─────────────────────────────────────────────────────────")
 	permCode := generator.GeneratePermissionsCode()
@@ -73,7 +73,7 @@ func main() {
 	}
 	fmt.Println()
 
-	// 4. 测试 Automation 对抗点
+	// translated comment
 	fmt.Println("4️⃣ Automation 检测隐藏:")
 	fmt.Println("─────────────────────────────────────────────────────────")
 	autoCode := generator.GenerateAutomationCode()
@@ -102,7 +102,7 @@ func main() {
 	}
 	fmt.Println()
 
-	// 5. 测试完整反检测代码
+	// translated comment
 	fmt.Println("5️⃣ 完整 JavaScript 反检测代码:")
 	fmt.Println("─────────────────────────────────────────────────────────")
 	fullCode := generator.GenerateFullAntiDetectionCode()
@@ -112,7 +112,7 @@ func main() {
 
 	fmt.Println("【第二部分】跨层一致性校验\n")
 
-	// 6. 跨层一致性校验
+	// translated comment
 	fmt.Println("6️⃣ 跨层一致性校验 (UA/CH/JS/TCP-IP):")
 	fmt.Println("─────────────────────────────────────────────────────────")
 
@@ -123,7 +123,7 @@ func main() {
 	fmt.Printf("一致性状态: %v\n", report.IsConsistent)
 	fmt.Println()
 
-	// HTTP 层检查
+	// translated comment
 	fmt.Println("📊 HTTP 层检查结果:")
 	fmt.Printf("  状态: %v\n", report.HTTPLayer.IsConsistent)
 	fmt.Println("  数据:")
@@ -140,7 +140,7 @@ func main() {
 	}
 	fmt.Println()
 
-	// Client Hints 层检查
+	// translated comment
 	fmt.Println("📊 Client Hints 层检查结果:")
 	fmt.Printf("  状态: %v\n", report.ClientHints.IsConsistent)
 	fmt.Println("  数据:")
@@ -157,7 +157,7 @@ func main() {
 	}
 	fmt.Println()
 
-	// JavaScript 层检查
+	// translated comment
 	fmt.Println("📊 JavaScript 层检查结果:")
 	fmt.Printf("  状态: %v\n", report.JSLayer.IsConsistent)
 	fmt.Println("  对抗点配置:")
@@ -173,7 +173,7 @@ func main() {
 	}
 	fmt.Println()
 
-	// TCP/IP 层检查
+	// translated comment
 	fmt.Println("📊 TCP/IP 层检查结果:")
 	fmt.Printf("  状态: %v\n", report.TCPIPLayer.IsConsistent)
 	fmt.Println("  数据:")
@@ -188,7 +188,7 @@ func main() {
 	}
 	fmt.Println()
 
-	// 交叉验证结果
+	// translated comment
 	if len(report.Mismatches) > 0 {
 		fmt.Println("⚠️  跨层不匹配:")
 		for _, m := range report.Mismatches {
@@ -207,7 +207,7 @@ func main() {
 
 	fmt.Println("【第三部分】SDK 集成\n")
 
-	// 7. SDK 集成
+	// translated comment
 	fmt.Println("7️⃣ SDK 集成测试:")
 	fmt.Println("─────────────────────────────────────────────────────────")
 	sdk := frontend.NewSDK(frontend.DefaultSDKConfig)
@@ -234,20 +234,20 @@ func main() {
 	fmt.Println("\n代码已准备好用于生产部署!")
 }
 
-// createSampleProfile 创建示例指纹配置
+// translated comment
 func createSampleProfile() profiles.ClientProfile {
 	return profiles.ClientProfile{
 		ID:          "chrome_134_p3_test",
 		Name:        "Chrome 134 - P3 测试",
 		Description: "包含现代 JS 高熵对抗点的 Chrome 134 配置",
 
-		// 浏览器和操作系统信息
+		// translated comment
 		BrowserType:    core.BrowserChrome,
 		BrowserVersion: "134.0.6998.35",
 		OS:             core.OSWindows10,
 		OSVersion:      "10",
 
-		// HTTP 头
+		// translated comment
 		Headers: &core.HTTPHeaders{
 			UserAgent:       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.6998.35 Safari/537.36",
 			SecCHUA:         `"Chromium";v="134", "Google Chrome";v="134", "Not=A?Brand";v="99"`,
@@ -256,12 +256,12 @@ func createSampleProfile() profiles.ClientProfile {
 			AcceptLanguage:  "en-US,en;q=0.9",
 		},
 
-		// TCP/IP 指纹
+		// translated comment
 		TCPIP: profiles.CreateTCPIP(core.OSWindows10),
 
-		// 【P3 新增】JavaScript 反检测对抗点
+		// translated comment
 		JSAntiDetection: &profiles.JSAntiDetection{
-			// WebGPU 对抗点
+			// translated comment
 			WebGPU: &profiles.WebGPUAntiDetect{
 				Available:    true,
 				AdapterName:  "ANGLE (Intel HD Graphics 630)",
@@ -300,7 +300,7 @@ func createSampleProfile() profiles.ClientProfile {
 				BackendType: "d3d12",
 			},
 
-			// MediaDevices 对抗点
+			// translated comment
 			MediaDevices: &profiles.MediaDevicesAntiDetect{
 				VideoInputs: []*profiles.MediaDeviceInfo{
 					{
@@ -342,7 +342,7 @@ func createSampleProfile() profiles.ClientProfile {
 				},
 			},
 
-			// Permissions 对抗点
+			// translated comment
 			Permissions: &profiles.PermissionsAntiDetect{
 				PermissionState: map[string]string{
 					"camera":        "prompt",
@@ -356,20 +356,20 @@ func createSampleProfile() profiles.ClientProfile {
 				ShowNotification: true,
 			},
 
-			// Automation 对抗点
+			// translated comment
 			Automation: &profiles.AutomationAntiDetect{
-				WebDriver:        false, // 隐藏 webdriver
-				Headless:         true,  // 隐藏 headless 特征
+				WebDriver:        false, // translated comment
+				Headless:         true,  // translated comment
 				ChromeDebugPort:  false,
-				Phantom:          false, // 隐藏 phantomjs
-				Selenium:         true,  // 隐藏 selenium
-				Puppeteer:        true,  // 隐藏 puppeteer
-				Playwright:       true,  // 隐藏 playwright
-				PluginsOverride:  true,  // 覆盖 plugins 数组
-				LanguageOverride: true,  // 覆盖 language
-				ProductOverride:  true,  // 覆盖 product
-				VendorOverride:   true,  // 覆盖 vendor
-				RuntimeOverride:  true,  // 隐藏运行时检测
+				Phantom:          false, // translated comment
+				Selenium:         true,  // translated comment
+				Puppeteer:        true,  // translated comment
+				Playwright:       true,  // translated comment
+				PluginsOverride:  true,  // translated comment
+				LanguageOverride: true,  // translated comment
+				ProductOverride:  true,  // translated comment
+				VendorOverride:   true,  // translated comment
+				RuntimeOverride:  true,  // translated comment
 			},
 		},
 

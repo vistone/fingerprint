@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-// Environment 运行环境枚举
+// translated comment
 type Environment string
 
 const (
@@ -14,99 +14,99 @@ const (
 	EnvProduction  Environment = "production"
 )
 
-// Config 统一配置对象，管理所有模块配置
+// translated comment
 //
-// 使用示例：
+// translated comment
 //
 //	config := NewConfig(EnvProduction)
 //	config.Defense.MaxInputSize = 4096
 //	config.Logger.Level = 2
 //
-// 环境变量支持：
+// translated comment
 //
-//	FINGERPRINT_ENV - 运行环境 (development/testing/production)
-//	FINGERPRINT_LOG_LEVEL - 日志级别 (0-4)
-//	FINGERPRINT_MAX_INPUT_SIZE - 最大输入大小 (字节)
+// translated comment
+// translated comment
+// translated comment
 type Config struct {
-	// 运行环境
+	// translated comment
 	Environment Environment
 
-	// 防御配置
+	// translated comment
 	Defense *DefensePolicy
 
-	// 日志配置
+	// translated comment
 	Logger *LoggerConfig
 
-	// 验证配置
+	// translated comment
 	Validator *ValidatorConfig
 
-	// 审计配置
+	// translated comment
 	Audit *AuditConfig
 
-	// 规则配置
+	// translated comment
 	Rules *RulesConfig
 
-	// 规则配置来源（文件路径或文件名）
+	// translated comment
 	RulesSource string
 }
 
-// LoggerConfig 日志配置
+// translated comment
 type LoggerConfig struct {
-	// 日志级别 (0=debug, 1=info, 2=warn, 3=error, 4=fatal)
+	// translated comment
 	Level int
 
-	// 日志输出目标
+	// translated comment
 	// "stdout", "stderr", "file"
 	Output string
 
-	// 日志文件路径（仅当 Output="file" 时有效）
+	// translated comment
 	FilePath string
 
-	// 是否启用结构化日志
+	// translated comment
 	Structured bool
 
-	// 日志格式
+	// translated comment
 	// "text", "json"
 	Format string
 }
 
-// ValidatorConfig 验证器配置
+// translated comment
 type ValidatorConfig struct {
-	// 最大数据大小（字节）
+	// translated comment
 	MaxDataSize int
 
-	// 是否启用严格模式
+	// translated comment
 	StrictMode bool
 
-	// 是否验证元数据
+	// translated comment
 	ValidateMetadata bool
 
-	// 是否验证配置
+	// translated comment
 	ValidateConfig bool
 }
 
-// AuditConfig 审计配置
+// translated comment
 type AuditConfig struct {
-	// 是否启用审计
+	// translated comment
 	Enable bool
 
-	// 最大审计事件数（内存中保留）
+	// translated comment
 	MaxEvents int
 
-	// 警告阈值
+	// translated comment
 	AlertThreshold int
 
-	// 阻止阈值
+	// translated comment
 	BlockThreshold int
 
-	// 审计日志输出目标
+	// translated comment
 	LogOutput string
 
-	// 审计日志文件路径
+	// translated comment
 	LogFilePath string
 }
 
-// NewConfig 创建配置对象，根据环境应用预设
+// translated comment
 func NewConfig(env Environment) *Config {
 	config := &Config{
 		Environment: env,
@@ -118,26 +118,26 @@ func NewConfig(env Environment) *Config {
 		RulesSource: "rules.json",
 	}
 
-	// 从环境变量覆盖配置
+	// translated comment
 	config.loadFromEnv()
 
 	return config
 }
 
-// NewConfigFromEnv 从环境变量创建配置
+// translated comment
 func NewConfigFromEnv() *Config {
 	env := Environment(getEnv("FINGERPRINT_ENV", string(EnvDevelopment)))
 	return NewConfig(env)
 }
 
-// NewUnifiedConfigFromEnv 从环境变量创建统一配置
-// 该入口会同时加载：
-//   - extension 运行配置（Defense/Logger/Validator/Audit）
-//   - 规则配置（internal/config/rules.json）
+// translated comment
+// translated comment
+// translated comment
+// translated comment
 //
-// 环境变量：
-//   - FINGERPRINT_RULES_PATH: 规则配置绝对/相对路径
-//   - FINGERPRINT_RULES_FILE: 规则配置文件名（用于按候选路径搜索）
+// translated comment
+// translated comment
+// translated comment
 func NewUnifiedConfigFromEnv() *Config {
 	config := NewConfigFromEnv()
 
@@ -164,7 +164,7 @@ func NewUnifiedConfigFromEnv() *Config {
 	return config
 }
 
-// LoadRulesFromPath 从指定路径加载规则配置并应用覆盖
+// translated comment
 func (c *Config) LoadRulesFromPath(path string) error {
 	rules, err := LoadRulesConfig(path)
 	if err != nil {
@@ -178,7 +178,7 @@ func (c *Config) LoadRulesFromPath(path string) error {
 	return nil
 }
 
-// LoadRulesByFilename 按文件名加载规则配置并应用覆盖
+// translated comment
 func (c *Config) LoadRulesByFilename(filename string) error {
 	rules, err := LoadRulesConfigByFilename(filename)
 	if err != nil {
@@ -192,7 +192,7 @@ func (c *Config) LoadRulesByFilename(filename string) error {
 	return nil
 }
 
-// applyRulesOverlay 将规则配置中的关键阈值映射到运行配置
+// translated comment
 func (c *Config) applyRulesOverlay() {
 	if c.Rules == nil {
 		return
@@ -217,9 +217,9 @@ func (c *Config) applyRulesOverlay() {
 	}
 }
 
-// loadFromEnv 从环境变量加载配置
+// translated comment
 func (c *Config) loadFromEnv() {
-	// 日志级别
+	// translated comment
 	if logLevel := getEnv("FINGERPRINT_LOG_LEVEL", ""); logLevel != "" {
 		var level int
 		if _, err := fmt.Sscanf(logLevel, "%d", &level); err == nil {
@@ -227,7 +227,7 @@ func (c *Config) loadFromEnv() {
 		}
 	}
 
-	// 最大输入大小
+	// translated comment
 	if maxSize := getEnv("FINGERPRINT_MAX_INPUT_SIZE", ""); maxSize != "" {
 		var size int
 		if _, err := fmt.Sscanf(maxSize, "%d", &size); err == nil {
@@ -236,7 +236,7 @@ func (c *Config) loadFromEnv() {
 		}
 	}
 
-	// 最大内存
+	// translated comment
 	if maxMem := getEnv("FINGERPRINT_MAX_MEMORY_MB", ""); maxMem != "" {
 		var mem int
 		if _, err := fmt.Sscanf(maxMem, "%d", &mem); err == nil {
@@ -244,7 +244,7 @@ func (c *Config) loadFromEnv() {
 		}
 	}
 
-	// 超时设置
+	// translated comment
 	if timeout := getEnv("FINGERPRINT_TIMEOUT_SEC", ""); timeout != "" {
 		var sec int
 		if _, err := fmt.Sscanf(timeout, "%d", &sec); err == nil {
@@ -252,7 +252,7 @@ func (c *Config) loadFromEnv() {
 		}
 	}
 
-	// 速率限制
+	// translated comment
 	if rateLimit := getEnv("FINGERPRINT_RATE_LIMIT", ""); rateLimit != "" {
 		var limit int
 		if _, err := fmt.Sscanf(rateLimit, "%d", &limit); err == nil {
@@ -261,7 +261,7 @@ func (c *Config) loadFromEnv() {
 	}
 }
 
-// newLoggerConfig 创建日志配置预设
+// translated comment
 func newLoggerConfig(env Environment) *LoggerConfig {
 	config := &LoggerConfig{
 		Output:     "stdout",
@@ -282,7 +282,7 @@ func newLoggerConfig(env Environment) *LoggerConfig {
 	return config
 }
 
-// newValidatorConfig 创建验证器配置预设
+// translated comment
 func newValidatorConfig(env Environment) *ValidatorConfig {
 	config := &ValidatorConfig{
 		ValidateMetadata: true,
@@ -291,20 +291,20 @@ func newValidatorConfig(env Environment) *ValidatorConfig {
 
 	switch env {
 	case EnvProduction:
-		config.MaxDataSize = 4096 // 4KB，严格限制
+		config.MaxDataSize = 4096 // translated comment
 		config.StrictMode = true
 	case EnvTesting:
 		config.MaxDataSize = 65536 // 64KB
 		config.StrictMode = true
 	case EnvDevelopment:
-		config.MaxDataSize = 1024 * 1024 // 1MB，宽松限制
+		config.MaxDataSize = 1024 * 1024 // translated comment
 		config.StrictMode = false
 	}
 
 	return config
 }
 
-// newAuditConfig 创建审计配置预设
+// translated comment
 func newAuditConfig(env Environment) *AuditConfig {
 	config := &AuditConfig{
 		Enable:         true,
@@ -324,13 +324,13 @@ func newAuditConfig(env Environment) *AuditConfig {
 		config.Enable = true
 		config.MaxEvents = 10000
 	case EnvDevelopment:
-		config.Enable = false // 开发环境默认禁用审计
+		config.Enable = false // translated comment
 	}
 
 	return config
 }
 
-// getEnv 获取环境变量，带默认值
+// translated comment
 func getEnv(key, defaultValue string) string {
 	if value, exists := os.LookupEnv(key); exists {
 		return value
@@ -338,7 +338,7 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
-// Validate 验证配置的有效性
+// translated comment
 func (c *Config) Validate() error {
 	if c.Rules == nil {
 		return NewError(ErrCodeInvalidConfig, "Rules config cannot be nil")

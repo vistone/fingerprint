@@ -9,7 +9,7 @@ import (
 	"github.com/vistone/fingerprint/modules/core/types"
 )
 
-// TestGetRandomFingerprint 测试随机指纹获取
+// translated comment
 func TestGetRandomFingerprint(t *testing.T) {
 	result, err := GetRandomFingerprint()
 	if err != nil {
@@ -20,33 +20,33 @@ func TestGetRandomFingerprint(t *testing.T) {
 		t.Fatal("GetRandomFingerprint() returned nil")
 	}
 
-	// 验证 Profile 不为空
+	// translated comment
 	if result.Profile.GetClientHelloStr() == "" {
 		t.Error("Profile.GetClientHelloStr() is empty")
 	}
 
-	// 验证 User-Agent 不为空
+	// translated comment
 	if result.UserAgent == "" {
 		t.Error("UserAgent is empty")
 	}
 
-	// 验证 Headers 不为空
+	// translated comment
 	if result.Headers == nil {
 		t.Error("Headers is nil")
 	}
 
-	// 验证 Headers 包含必要的字段
+	// translated comment
 	if result.Headers.UserAgent == "" {
 		t.Error("Headers.UserAgent is empty")
 	}
 
-	// 验证 HelloClientID 不为空
+	// translated comment
 	if result.HelloClientID == "" {
 		t.Error("HelloClientID is empty")
 	}
 }
 
-// TestGetRandomFingerprintWithOS 测试指定操作系统的随机指纹获取
+// translated comment
 func TestGetRandomFingerprintWithOS(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -98,13 +98,13 @@ func TestGetRandomFingerprintWithOS(t *testing.T) {
 				t.Error("UserAgent is empty")
 			}
 
-			// 注意：UA 内容检查被简化，因为实际 UA 格式取决于随机选择的 profile
-			// 且不同 profile 可能有不同的 OS 显示方式
+			// translated comment
+			// translated comment
 		})
 	}
 }
 
-// TestGetRandomFingerprintByBrowser 测试按浏览器类型获取随机指纹
+// translated comment
 func TestGetRandomFingerprintByBrowser(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -171,7 +171,7 @@ func TestGetRandomFingerprintByBrowser(t *testing.T) {
 				t.Fatal("GetRandomFingerprintByBrowser() returned nil")
 			}
 
-			// 验证 User-Agent 包含预期的浏览器 (Edge 使用 Edg，Opera 使用 OPR)
+			// translated comment
 			uaLower := strings.ToLower(result.UserAgent)
 			searchTerm := tt.wantBrowser
 			if searchTerm == "edge" {
@@ -183,7 +183,7 @@ func TestGetRandomFingerprintByBrowser(t *testing.T) {
 				t.Errorf("UserAgent %s does not contain expected browser %s", result.UserAgent, searchTerm)
 			}
 
-			// 验证 Headers 不为空
+			// translated comment
 			if result.Headers == nil {
 				t.Error("Headers is nil")
 			}
@@ -191,7 +191,7 @@ func TestGetRandomFingerprintByBrowser(t *testing.T) {
 	}
 }
 
-// TestGetRandomFingerprintByBrowserWithOS 测试按浏览器类型和操作系统获取随机指纹
+// translated comment
 func TestGetRandomFingerprintByBrowserWithOS(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -246,7 +246,7 @@ func TestGetRandomFingerprintByBrowserWithOS(t *testing.T) {
 				t.Fatal("GetRandomFingerprintByBrowserWithOS() returned nil")
 			}
 
-			// 验证浏览器类型
+			// translated comment
 			uaLower := strings.ToLower(result.UserAgent)
 			if !strings.Contains(uaLower, tt.browserType) {
 				t.Errorf("UserAgent does not contain browser type %s", tt.browserType)
@@ -255,7 +255,7 @@ func TestGetRandomFingerprintByBrowserWithOS(t *testing.T) {
 	}
 }
 
-// TestIsMobileProfile 测试移动端 profile 判断
+// translated comment
 func TestIsMobileProfile(t *testing.T) {
 	tests := []struct {
 		profileName string
@@ -301,7 +301,7 @@ func TestIsMobileProfile(t *testing.T) {
 	}
 }
 
-// TestInferBrowserFromProfileName 测试从 profile 名称推断浏览器类型
+// translated comment
 func TestInferBrowserFromProfileName(t *testing.T) {
 	tests := []struct {
 		profileName   string
@@ -340,12 +340,12 @@ func TestInferBrowserFromProfileName(t *testing.T) {
 		},
 		{
 			profileName: "unknown_profile",
-			wantBrowser: "chrome", // 默认
+			wantBrowser: "chrome", // translated comment
 			wantVersion: "",
 		},
 		{
 			profileName: "",
-			wantBrowser: "chrome", // 默认
+			wantBrowser: "chrome", // translated comment
 			wantVersion: "",
 		},
 	}
@@ -363,7 +363,7 @@ func TestInferBrowserFromProfileName(t *testing.T) {
 	}
 }
 
-// TestErrBrowserNotFound 测试浏览器未找到错误
+// translated comment
 func TestErrBrowserNotFound(t *testing.T) {
 	err := &ErrBrowserNotFound{Browser: "unknown"}
 	expected := "browser type not found: unknown"
@@ -372,12 +372,12 @@ func TestErrBrowserNotFound(t *testing.T) {
 	}
 }
 
-// TestGetRandomFingerprint_AllProfiles 测试所有 profile 都能正常生成指纹
+// translated comment
 func TestGetRandomFingerprint_AllProfiles(t *testing.T) {
-	// 遍历所有可用的 profile
+	// translated comment
 	for name := range profiles.MappedTLSClients {
 		t.Run(name, func(t *testing.T) {
-			// 使用 GetRandomFingerprintByBrowser 测试每个浏览器类型
+			// translated comment
 			browser, _ := inferBrowserFromProfileName(name)
 			
 			result, err := GetRandomFingerprintByBrowser(browser)
@@ -400,7 +400,7 @@ func TestGetRandomFingerprint_AllProfiles(t *testing.T) {
 	}
 }
 
-// TestGetRandomFingerprint_Concurrency 测试并发安全性
+// translated comment
 func TestGetRandomFingerprint_Concurrency(t *testing.T) {
 	const numGoroutines = 100
 	const iterations = 10
@@ -446,7 +446,7 @@ func TestGetRandomFingerprint_Concurrency(t *testing.T) {
 	}
 }
 
-// 自定义错误类型用于并发测试
+// translated comment
 var (
 	ErrNilResult   = &testError{msg: "nil result"}
 	ErrEmptyProfile = &testError{msg: "empty profile"}
@@ -460,9 +460,9 @@ func (e *testError) Error() string {
 	return e.msg
 }
 
-// TestGetRandomFingerprint_RandomDistribution 测试随机分布
+// translated comment
 func TestGetRandomFingerprint_RandomDistribution(t *testing.T) {
-	// 多次获取随机指纹，验证分布
+	// translated comment
 	profileCounts := make(map[string]int)
 	const iterations = 100
 
@@ -474,7 +474,7 @@ func TestGetRandomFingerprint_RandomDistribution(t *testing.T) {
 		profileCounts[result.HelloClientID]++
 	}
 
-	// 验证有多个不同的 profile 被选中
+	// translated comment
 	if len(profileCounts) < 2 {
 		t.Errorf("Random distribution test: only %d unique profiles selected out of %d iterations", len(profileCounts), iterations)
 	}
@@ -482,7 +482,7 @@ func TestGetRandomFingerprint_RandomDistribution(t *testing.T) {
 	t.Logf("Selected %d unique profiles out of %d iterations", len(profileCounts), iterations)
 }
 
-// BenchmarkGetRandomFingerprint 基准测试随机指纹获取
+// translated comment
 func BenchmarkGetRandomFingerprint(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_, err := GetRandomFingerprint()
@@ -492,7 +492,7 @@ func BenchmarkGetRandomFingerprint(b *testing.B) {
 	}
 }
 
-// BenchmarkGetRandomFingerprintByBrowser 基准测试按浏览器获取
+// translated comment
 func BenchmarkGetRandomFingerprintByBrowser(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -503,7 +503,7 @@ func BenchmarkGetRandomFingerprintByBrowser(b *testing.B) {
 	}
 }
 
-// BenchmarkGetRandomFingerprintByBrowserWithOS 基准测试按浏览器和 OS 获取
+// translated comment
 func BenchmarkGetRandomFingerprintByBrowserWithOS(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -514,7 +514,7 @@ func BenchmarkGetRandomFingerprintByBrowserWithOS(b *testing.B) {
 	}
 }
 
-// BenchmarkIsMobileProfile 基准测试移动端判断
+// translated comment
 func BenchmarkIsMobileProfile(b *testing.B) {
 	profiles := []string{
 		"chrome_133",
@@ -531,7 +531,7 @@ func BenchmarkIsMobileProfile(b *testing.B) {
 	}
 }
 
-// BenchmarkInferBrowserFromProfileName 基准测试浏览器推断
+// translated comment
 func BenchmarkInferBrowserFromProfileName(b *testing.B) {
 	profiles := []string{
 		"chrome_133",

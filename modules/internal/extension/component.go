@@ -1,69 +1,69 @@
 package extension
 
-// Component 所有可治理组件的基础接口
+// translated comment
 //
-// 遵循单一职责原则，每个组件只定义最小必要的行为
-// 具体组件可通过组合来扩展功能
+// translated comment
+// translated comment
 //
-// 使用示例：
+// translated comment
 //
 //	var comp Component = myParser
 //	info := comp.GetInfo()
 type Component interface {
-	// GetInfo 获取组件信息
+	// translated comment
 	GetInfo() ComponentInfo
 }
 
-// ComponentInfo 组件信息
+// translated comment
 type ComponentInfo struct {
-	// 组件名称
+	// translated comment
 	Name string
 
-	// 组件版本
+	// translated comment
 	Version string
 
-	// 组件描述
+	// translated comment
 	Description string
 
-	// 组件作者
+	// translated comment
 	Author string
 }
 
-// Auditable 可审计的组件接口
+// translated comment
 //
-// 遵循 Go 的隐式接口设计，组件无需显式声明实现
+// translated comment
 type Auditable interface {
-	// RecordEvent 记录事件
-	// 返回: 错误信息
+	// translated comment
+	// translated comment
 	RecordEvent(eventType, severity, message string, details map[string]interface{}) error
 }
 
-// Closeable 支持资源清理的组件接口
+// translated comment
 //
-// 任何需要释放资源的组件都可实现此接口
-// 与 io.Closer 一致，便于使用
+// translated comment
+// translated comment
 type Closeable interface {
-	// Close 关闭组件并释放资源
+	// translated comment
 	Close() error
 }
 
-// Initializable 支持初始化的组件接口
+// translated comment
 //
-// 用于延迟初始化和复杂的设置过程
+// translated comment
 type Initializable interface {
-	// Initialize 初始化组件
-	// config: 初始化配置
-	// 返回: 错误信息
+	// translated comment
+	// translated comment
+	// translated comment
 	Initialize(config map[string]interface{}) error
 
-	// IsInitialized 检查是否已初始化
+	// translated comment
 	IsInitialized() bool
 }
 
-// Identifiable 可识别的组件接口
+// translated comment
 //
-// 任何有唯一标识符的对象都应实现此接口
+// translated comment
 type Identifiable interface {
-	// GetID 获取唯一标识符
+	// translated comment
 	GetID() string
 }

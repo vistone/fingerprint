@@ -1,5 +1,5 @@
-// handler_advanced.go — 高级功能 API 端点
-// 分析引擎 / ML引擎 / 防御系统 / 反检测引擎 / 插件系统 / 指纹工具
+// translated comment
+// translated comment
 package web
 
 import (
@@ -19,10 +19,10 @@ import (
 )
 
 // =====================================================================
-// 分析引擎 API — 通过 Profile 运行完整分析管线
+// translated comment
 // =====================================================================
 
-// handleAnalyzeProfile 基于 Profile 执行完整指纹分析
+// translated comment
 func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -41,7 +41,7 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 查找 profile
+	// translated comment
 	var profile profiles.ClientProfile
 	found := false
 	h.mu.RLock()
@@ -58,7 +58,7 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 构建 AnalyzeRequest
+	// translated comment
 	analyzeReq := &gateway.AnalyzeRequest{
 		TLSVersion:      profile.TLSVersion,
 		CipherSuites:    profile.CipherSuites,
@@ -79,7 +79,7 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 构建丰富的结果
+	// translated comment
 	result := map[string]interface{}{
 		"profile": map[string]interface{}{
 			"id":      profile.ID,
@@ -93,7 +93,7 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 		"processingTimeMs": resp.ProcessingTimeMs,
 	}
 
-	// 分类结果
+	// translated comment
 	if resp.Classification != nil {
 		result["classification"] = map[string]interface{}{
 			"protocol":           resp.Classification.Protocol,
@@ -107,7 +107,7 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 风险评估
+	// translated comment
 	if resp.RiskAssessment != nil {
 		factors := make([]map[string]interface{}, 0, len(resp.RiskAssessment.Factors))
 		for _, f := range resp.RiskAssessment.Factors {
@@ -136,11 +136,11 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 		result["ja4h"] = resp.JA4H
 	}
 
-	// 检测发现
+	// translated comment
 	result["findings"] = resp.Findings
 	result["defenseHints"] = resp.DefenseHints
 
-	// Agent 决策
+	// translated comment
 	if resp.AgentDecision != nil {
 		result["agentDecision"] = resp.AgentDecision
 	}
@@ -150,10 +150,10 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 // =====================================================================
-// ML 引擎 API
+// translated comment
 // =====================================================================
 
-// handleMLInfo 返回 ML 分类器模型信息
+// translated comment
 func (h *Handler) handleMLInfo(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -215,7 +215,7 @@ func (h *Handler) handleMLInfo(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(info)
 }
 
-// handleMLExtract 从 Profile 提取特征向量
+// translated comment
 func (h *Handler) handleMLExtract(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -239,7 +239,7 @@ func (h *Handler) handleMLExtract(w http.ResponseWriter, r *http.Request) {
 	extractor := h.gateway.GetExtractor()
 	fv := extractor.ExtractFromProfile(&profile)
 
-	// 转换特征列表
+	// translated comment
 	features := make([]map[string]interface{}, 0, len(fv.Features))
 	for ft, val := range fv.Features {
 		features = append(features, map[string]interface{}{
@@ -257,7 +257,7 @@ func (h *Handler) handleMLExtract(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleMLClassify 对 Profile 执行 ML 分类
+// translated comment
 func (h *Handler) handleMLClassify(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -304,7 +304,7 @@ func (h *Handler) handleMLClassify(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleMLBatch 批量分类所有 Profile
+// translated comment
 func (h *Handler) handleMLBatch(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -357,17 +357,17 @@ func (h *Handler) handleMLBatch(w http.ResponseWriter, r *http.Request) {
 }
 
 // =====================================================================
-// 防御系统 API
+// translated comment
 // =====================================================================
 
-// handleDefenseRules 返回所有检测规则
+// translated comment
 func (h *Handler) handleDefenseRules(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// 从 Detector 获取规则描述
+	// translated comment
 	rules := []map[string]interface{}{
 		{
 			"name":        "headless_browser",
@@ -407,7 +407,7 @@ func (h *Handler) handleDefenseRules(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	// 从 Agent 取策略补充
+	// translated comment
 	strategies := []map[string]interface{}{}
 	if a := h.gateway.GetAgent(); a != nil {
 		for _, s := range a.GetActiveStrategies() {
@@ -436,7 +436,7 @@ func (h *Handler) handleDefenseRules(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleDefenseDetect 对 Profile 执行威胁检测
+// translated comment
 func (h *Handler) handleDefenseDetect(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -460,17 +460,17 @@ func (h *Handler) handleDefenseDetect(w http.ResponseWriter, r *http.Request) {
 	extractor := h.gateway.GetExtractor()
 	fv := extractor.ExtractFromProfile(&profile)
 
-	// 运行检测
+	// translated comment
 	detector := defense.NewDetector()
 	detection := detector.Detect(fv)
 
-	// 运行风险评估
+	// translated comment
 	classifier := h.gateway.GetClassifier()
 	classification := classifier.Classify(fv)
 	riskEngine := h.gateway.GetRiskEngine()
 	risk := riskEngine.Evaluate(fv, classification)
 
-	// 获取防御建议
+	// translated comment
 	defenseSystem := defense.NewDefenseSystem()
 	advice := defenseSystem.Analyze(fv, classification)
 
@@ -528,10 +528,10 @@ func (h *Handler) handleDefenseDetect(w http.ResponseWriter, r *http.Request) {
 }
 
 // =====================================================================
-// 反检测引擎 API
+// translated comment
 // =====================================================================
 
-// handleAntiDetectStatus 返回反检测引擎状态
+// translated comment
 func (h *Handler) handleAntiDetectStatus(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -558,7 +558,7 @@ func (h *Handler) handleAntiDetectStatus(w http.ResponseWriter, r *http.Request)
 		status["profileCount"] = len(profileList)
 	}
 
-	// 列出可用的代码生成器
+	// translated comment
 	status["generators"] = []map[string]interface{}{
 		{"id": "webgpu", "name": "WebGPU Override", "description": "重写 navigator.gpu API 以匹配目标浏览器的 WebGPU 能力"},
 		{"id": "media_devices", "name": "MediaDevices Override", "description": "伪造 enumerateDevices() 返回一致的虚拟设备列表"},
@@ -572,7 +572,7 @@ func (h *Handler) handleAntiDetectStatus(w http.ResponseWriter, r *http.Request)
 	json.NewEncoder(w).Encode(status)
 }
 
-// handleAntiDetectPreview 预览反检测代码
+// translated comment
 func (h *Handler) handleAntiDetectPreview(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -588,7 +588,7 @@ func (h *Handler) handleAntiDetectPreview(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// 获取 profile
+	// translated comment
 	var profile *profiles.ClientProfile
 	if req.ProfileID != "" {
 		if p, ok := h.findProfile(req.ProfileID); ok {
@@ -596,7 +596,7 @@ func (h *Handler) handleAntiDetectPreview(w http.ResponseWriter, r *http.Request
 		}
 	}
 	if profile == nil {
-		// 使用默认 profile
+		// translated comment
 		pm := h.gateway.GetProfileManager()
 		if pm != nil {
 			var err error
@@ -651,7 +651,7 @@ func (h *Handler) handleAntiDetectPreview(w http.ResponseWriter, r *http.Request
 	})
 }
 
-// handleAntiDetectInjectTest 测试 HTML 注入
+// translated comment
 func (h *Handler) handleAntiDetectInjectTest(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -692,7 +692,7 @@ func (h *Handler) handleAntiDetectInjectTest(w http.ResponseWriter, r *http.Requ
 	})
 }
 
-// handleAntiDetectSDKPreview 预览 SDK JavaScript
+// translated comment
 func (h *Handler) handleAntiDetectSDKPreview(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -722,10 +722,10 @@ func (h *Handler) handleAntiDetectSDKPreview(w http.ResponseWriter, r *http.Requ
 }
 
 // =====================================================================
-// 插件系统 API
+// translated comment
 // =====================================================================
 
-// handlePluginsInfo 返回插件注册表信息
+// translated comment
 func (h *Handler) handlePluginsInfo(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -787,10 +787,10 @@ func (h *Handler) handlePluginsInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 // =====================================================================
-// 指纹工具 API
+// translated comment
 // =====================================================================
 
-// handleToolsJA3 计算 JA3 指纹
+// translated comment
 func (h *Handler) handleToolsJA3(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -850,7 +850,7 @@ func (h *Handler) handleToolsJA3(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
-// handleToolsValidate 验证 Profile 完整性
+// translated comment
 func (h *Handler) handleToolsValidate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -874,13 +874,13 @@ func (h *Handler) handleToolsValidate(w http.ResponseWriter, r *http.Request) {
 	validator := profiles.NewProfileValidator()
 	result := validator.Validate(profile)
 
-	// TCP/IP 验证
+	// translated comment
 	tcpipResult := ""
 	if profile.TCPIP != nil {
 		tcpipResult = profiles.ValidateTCPIP(profile.TCPIP)
 	}
 
-	// Header 验证
+	// translated comment
 	headerResult := map[string]interface{}{}
 	if profile.Headers != nil {
 		hvr := profiles.ValidateHeaders(profile.Headers)
@@ -903,7 +903,7 @@ func (h *Handler) handleToolsValidate(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleToolsCompare 比较两个 Profile
+// translated comment
 func (h *Handler) handleToolsCompare(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -926,14 +926,14 @@ func (h *Handler) handleToolsCompare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 提取特征并计算相似度
+	// translated comment
 	extractor := h.gateway.GetExtractor()
 	fvA := extractor.ExtractFromProfile(&profileA)
 	fvB := extractor.ExtractFromProfile(&profileB)
 
 	similarity := calculateSimilarity(fvA, fvB)
 
-	// 详细比较
+	// translated comment
 	comparison := map[string]interface{}{
 		"a": map[string]interface{}{
 			"id": profileA.ID, "name": profileA.Name,
@@ -978,7 +978,7 @@ func calculateSimilarity(a, b *core.FeatureVector) float64 {
 	if a == nil || b == nil {
 		return 0
 	}
-	// 收集所有 feature keys
+	// translated comment
 	keys := make(map[core.FeatureType]bool)
 	for k := range a.Features {
 		keys[k] = true
@@ -997,7 +997,7 @@ func calculateSimilarity(a, b *core.FeatureVector) float64 {
 		if va == vb {
 			matches++
 		} else if va != 0 && vb != 0 {
-			// 相对误差 < 10% 算匹配
+			// translated comment
 			ratio := va / vb
 			if ratio < 0 {
 				ratio = -ratio
@@ -1058,7 +1058,7 @@ func buildProfileDiffs(a, b profiles.ClientProfile) []map[string]interface{} {
 		}
 	}
 
-	// TCP/IP 比较
+	// translated comment
 	if a.TCPIP != nil && b.TCPIP != nil {
 		if a.TCPIP.TTL != b.TCPIP.TTL {
 			diffs = append(diffs, map[string]interface{}{

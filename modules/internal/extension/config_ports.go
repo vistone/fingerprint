@@ -1,11 +1,11 @@
 package extension
 
-// ConfigProvider 运行配置提供端口
+// translated comment
 type ConfigProvider interface {
 	NewConfigFromEnv() *Config
 }
 
-// RulesProvider 规则配置提供端口
+// translated comment
 type RulesProvider interface {
 	LoadRules(path string) (*RulesConfig, error)
 	LoadRulesByFilename(filename string) (*RulesConfig, error)

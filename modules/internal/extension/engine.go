@@ -7,8 +7,8 @@ import (
 	"sync"
 )
 
-// ProcessingEngine 扩展处理引擎
-// 协调解析、分析、转换和处理流程
+// translated comment
+// translated comment
 type ProcessingEngine struct {
 	mu           sync.RWMutex
 	config       *EngineConfig
@@ -16,92 +16,92 @@ type ProcessingEngine struct {
 	interceptors map[string][]Interceptor
 }
 
-// EngineConfig 引擎配置
+// translated comment
 type EngineConfig struct {
-	// 是否启用并发处理
+	// translated comment
 	ConcurrentProcessing bool
 
-	// 最大并发数
+	// translated comment
 	MaxConcurrency int
 
-	// 是否启用缓存
+	// translated comment
 	EnableCaching bool
 
-	// 缓存大小
+	// translated comment
 	CacheSize int
 
-	// 处理超时（毫秒）
+	// translated comment
 	TimeoutMs int
 
-	// 是否严格验证
+	// translated comment
 	StrictValidation bool
 
-	// 是否记录详细日志
+	// translated comment
 	VerboseLogging bool
 
-	// 自定义配置
+	// translated comment
 	CustomConfig map[string]interface{}
 }
 
-// ProcessingRequest 处理请求
+// translated comment
 type ProcessingRequest struct {
-	// 扩展类型
+	// translated comment
 	ExtensionType ExtensionType
 
-	// 原始扩展数据
+	// translated comment
 	RawData []byte
 
-	// 处理步骤（parse, analyze, transform）
+	// translated comment
 	Steps []string
 
-	// 分析配置
+	// translated comment
 	AnalysisConfig map[string]interface{}
 
-	// 上下文信息
+	// translated comment
 	Context context.Context
 
-	// 请求元数据
+	// translated comment
 	Metadata map[string]interface{}
 }
 
-// ProcessingResult 处理结果
+// translated comment
 type ProcessingResult struct {
-	// 请求ID
+	// translated comment
 	RequestID string
 
-	// 是否成功
+	// translated comment
 	Success bool
 
-	// 错误消息
+	// translated comment
 	Error string
 
-	// 解析结果
+	// translated comment
 	ParsedData ExtensionData
 
-	// 分析结果列表
+	// translated comment
 	AnalysisResults []AnalysisResult
 
-	// 处理事件列表
+	// translated comment
 	Events []*ExtensionEvent
 
-	// 处理耗时（毫秒）
+	// translated comment
 	ElapsedMs int64
 
-	// 结果元数据
+	// translated comment
 	Metadata map[string]interface{}
 }
 
-// Interceptor 拦截器接口
-// 用于在处理流程中插入自定义逻辑
+// translated comment
+// translated comment
 type Interceptor interface {
-	// Intercept 拦截处理
-	// phase: 处理阶段（pre, post）
-	// request: 处理请求
-	// result: 处理结果（post 阶段有效）
+	// translated comment
+	// translated comment
+	// translated comment
+	// translated comment
 	Intercept(phase string, request *ProcessingRequest, result *ProcessingResult) error
 }
 
-// NewProcessingEngine 创建处理引擎
+// translated comment
 func NewProcessingEngine(config *EngineConfig) *ProcessingEngine {
 	if config == nil {
 		config = &EngineConfig{
@@ -122,8 +122,8 @@ func NewProcessingEngine(config *EngineConfig) *ProcessingEngine {
 	}
 }
 
-// RegisterInterceptor 注册拦截器
-// phase: pre 或 post
+// translated comment
+// translated comment
 func (e *ProcessingEngine) RegisterInterceptor(phase string, interceptor Interceptor) error {
 	e.mu.Lock()
 	defer e.mu.Unlock()
@@ -141,7 +141,7 @@ func (e *ProcessingEngine) RegisterInterceptor(phase string, interceptor Interce
 	return nil
 }
 
-// Process 处理扩展请求
+// translated comment
 func (e *ProcessingEngine) Process(request *ProcessingRequest) *ProcessingResult {
 	result := &ProcessingResult{
 		Success:         true,
@@ -156,26 +156,26 @@ func (e *ProcessingEngine) Process(request *ProcessingRequest) *ProcessingResult
 		return result
 	}
 
-	// 创建上下文
+	// translated comment
 	ctx := request.Context
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	// 执行 Pre 拦截器
+	// translated comment
 	if err := e.executeInterceptors("pre", request, result); err != nil {
 		result.Error = fmt.Sprintf("pre-interceptor error: %v", err)
 		result.Success = false
 		return result
 	}
 
-	// 决定处理步骤
+	// translated comment
 	steps := request.Steps
 	if len(steps) == 0 {
-		steps = []string{"parse", "analyze"} // 默认步骤
+		steps = []string{"parse", "analyze"} // translated comment
 	}
 
-	// 执行处理步骤
+	// translated comment
 	for _, step := range steps {
 		switch step {
 		case "parse":
@@ -229,7 +229,7 @@ func (e *ProcessingEngine) Process(request *ProcessingRequest) *ProcessingResult
 		}
 	}
 
-	// 执行 Post 拦截器
+	// translated comment
 	if err := e.executeInterceptors("post", request, result); err != nil {
 		result.Error = fmt.Sprintf("post-interceptor error: %v", err)
 		result.Success = false
@@ -239,7 +239,7 @@ func (e *ProcessingEngine) Process(request *ProcessingRequest) *ProcessingResult
 	return result
 }
 
-// parseExtension 解析扩展
+// translated comment
 func (e *ProcessingEngine) parseExtension(ctx context.Context, request *ProcessingRequest, result *ProcessingResult) error {
 	parser, err := GetParser(request.ExtensionType)
 	if err != nil {
@@ -255,11 +255,11 @@ func (e *ProcessingEngine) parseExtension(ctx context.Context, request *Processi
 	return nil
 }
 
-// analyzeExtension 分析扩展
+// translated comment
 func (e *ProcessingEngine) analyzeExtension(ctx context.Context, request *ProcessingRequest, result *ProcessingResult) error {
 	analyzer, err := GetAnalyzer(request.ExtensionType)
 	if err != nil {
-		// 如果没有分析器，不当作错误返回
+		// translated comment
 		return nil
 	}
 
@@ -272,11 +272,11 @@ func (e *ProcessingEngine) analyzeExtension(ctx context.Context, request *Proces
 	return nil
 }
 
-// handleExtension 处理扩展
+// translated comment
 func (e *ProcessingEngine) handleExtension(ctx context.Context, request *ProcessingRequest, result *ProcessingResult) error {
 	handlers := GetHandlers(request.ExtensionType)
 
-	// 按优先级排序处理器
+	// translated comment
 	sort.Slice(handlers, func(i, j int) bool {
 		return handlers[i].GetPriority() > handlers[j].GetPriority()
 	})
@@ -297,7 +297,7 @@ func (e *ProcessingEngine) handleExtension(ctx context.Context, request *Process
 
 		result.Events = append(result.Events, event)
 
-		// 如果处理器要求停止传递，则中断
+		// translated comment
 		if !handlerResult.ContinueProcessing {
 			break
 		}
@@ -306,7 +306,7 @@ func (e *ProcessingEngine) handleExtension(ctx context.Context, request *Process
 	return nil
 }
 
-// transformExtension 转换扩展
+// translated comment
 func (e *ProcessingEngine) transformExtension(ctx context.Context, request *ProcessingRequest, result *ProcessingResult) error {
 	if result.ParsedData == nil {
 		return fmt.Errorf("parsed data is nil")
@@ -375,7 +375,7 @@ func (e *ProcessingEngine) transformExtension(ctx context.Context, request *Proc
 	return nil
 }
 
-// executeInterceptors 执行拦截器
+// translated comment
 func (e *ProcessingEngine) executeInterceptors(phase string, request *ProcessingRequest, result *ProcessingResult) error {
 	e.mu.RLock()
 	interceptors := e.interceptors[phase]
@@ -390,12 +390,12 @@ func (e *ProcessingEngine) executeInterceptors(phase string, request *Processing
 	return nil
 }
 
-// GetConfig 获取引擎配置
+// translated comment
 func (e *ProcessingEngine) GetConfig() *EngineConfig {
 	e.mu.RLock()
 	defer e.mu.RUnlock()
 
-	// 返回配置副本
+	// translated comment
 	if e.config == nil {
 		return nil
 	}
@@ -417,7 +417,7 @@ func (e *ProcessingEngine) GetConfig() *EngineConfig {
 	}
 }
 
-// SetConfig 设置引擎配置
+// translated comment
 func (e *ProcessingEngine) SetConfig(config *EngineConfig) error {
 	if config == nil {
 		return fmt.Errorf("config cannot be nil")

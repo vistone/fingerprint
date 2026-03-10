@@ -1,5 +1,5 @@
-// Package profiles - Firefox浏览器指纹
-// 包含Firefox 115-135版本的完整指纹配置，含ESR系列
+// translated comment
+// translated comment
 package profiles
 
 import (
@@ -8,14 +8,14 @@ import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// Firefox浏览器指纹 (115-135版本)
-// firefoxTCPIP 返回 Firefox 的 TCP/IP 指纹
+// translated comment
+// translated comment
 func firefoxTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
 	return CreateTCPIP(osType)
 }
 
 var (
-	// Firefox 115-119 ESR系列
+	// translated comment
 	Firefox115 = ClientProfile{
 		ID: "firefox_115", Name: "Firefox 115 ESR",
 		BrowserType: core.BrowserFirefox, BrowserVersion: "115.0",
@@ -349,7 +349,7 @@ var (
 )
 
 func init() {
-	// 注册所有Firefox指纹
+	// translated comment
 	profiles := []ClientProfile{
 		Firefox115, Firefox116, Firefox117, Firefox118, Firefox119,
 		Firefox121, Firefox122, Firefox123, Firefox124,
@@ -357,11 +357,11 @@ func init() {
 		Firefox131, Firefox134, Firefox135, Firefox136, Firefox137, Firefox138, Firefox139, Firefox140,
 	}
 	
-	// 为每个 profile 填充缺失的 HTTP/2 和 HTTP/3 配置
+	// translated comment
 	for i := range profiles {
 		p := &profiles[i]
 		
-		// 填充 HTTP/2 配置（如果缺失）
+		// translated comment
 		if p.HTTP2Settings.HeaderTableSize == 0 && p.HTTP2Settings.InitialWindowSize == 0 {
 			p.HTTP2Settings = core.HTTP2Settings{
 				HeaderTableSize:      65536,
@@ -375,7 +375,7 @@ func init() {
 			p.ConnectionFlow = 15663105
 		}
 		
-		// 填充 HTTP/3 (QUIC) 配置（如果缺失）
+		// translated comment
 		if p.HTTP3Settings == nil {
 			p.HTTP3Settings = &core.HTTP3Settings{
 				QUICVersion:            core.QUICVersion1,
@@ -391,7 +391,7 @@ func init() {
 			p.QUICVersions = []uint32{core.QUICVersion1}
 		}
 		
-		// 填充 Headers（如果缺失）
+		// translated comment
 		if p.Headers == nil {
 			p.Headers = &core.HTTPHeaders{}
 		}
@@ -416,7 +416,7 @@ func init() {
 	}
 }
 
-// buildFirefoxUserAgent 构建 Firefox User-Agent
+// translated comment
 func buildFirefoxUserAgent(version string, os core.OperatingSystem) string {
 	osStr := string(os)
 	switch {
@@ -431,7 +431,7 @@ func buildFirefoxUserAgent(version string, os core.OperatingSystem) string {
 	}
 }
 
-// AllFirefoxProfiles 返回所有Firefox指纹
+// translated comment
 func AllFirefoxProfiles() []ClientProfile {
 	return []ClientProfile{
 		Firefox115, Firefox116, Firefox117, Firefox118, Firefox119,

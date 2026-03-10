@@ -2,7 +2,7 @@
 //
 // Paradigm shift: From passive "fingerprint recognition" to active "behavioral agent".
 //
-// Core architecture: Observe → Analyze → Decide → Act (OADA loop)
+// translated comment
 //
 //   - Observer: Continuously collect fingerprint analysis event stream
 //   - BehaviorAnalyzer: Build client behavioral profile, identify temporal anomalies

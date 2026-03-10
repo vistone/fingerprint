@@ -1,5 +1,5 @@
-// Package profiles - Microsoft Edge浏览器指纹
-// 包含Edge 115-130版本的完整指纹配置
+// translated comment
+// translated comment
 package profiles
 
 import (
@@ -8,8 +8,8 @@ import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// Edge浏览器指纹 (115-130版本)
-// edgeTCPIP 返回 Edge 的 TCP/IP 指纹
+// translated comment
+// translated comment
 func edgeTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
 	return CreateTCPIP(osType)
 }
@@ -291,18 +291,18 @@ var (
 )
 
 func init() {
-	// 注册所有Edge指纹
+	// translated comment
 	profiles := []ClientProfile{
 		Edge115, Edge116, Edge117, Edge118, Edge119,
 		Edge120, Edge121, Edge122, Edge123, Edge124,
 		Edge126, Edge128, Edge130, Edge131, Edge132, Edge133, Edge134,
 	}
 	
-	// 为每个 profile 填充缺失的 HTTP/2 和 HTTP/3 配置
+	// translated comment
 	for i := range profiles {
 		p := &profiles[i]
 		
-		// 填充 HTTP/2 配置（如果缺失）
+		// translated comment
 		if p.HTTP2Settings.HeaderTableSize == 0 && p.HTTP2Settings.InitialWindowSize == 0 {
 			p.HTTP2Settings = core.HTTP2Settings{
 				HeaderTableSize:      65536,
@@ -315,12 +315,12 @@ func init() {
 			p.PseudoHeaderOrder = []string{":method", ":authority", ":scheme", ":path"}
 		}
 		
-		// 填充 ConnectionFlow（如果缺失）
+		// translated comment
 		if p.ConnectionFlow == 0 {
 			p.ConnectionFlow = 15663105
 		}
 		
-		// 填充 HTTP/3 (QUIC) 配置（如果缺失）
+		// translated comment
 		if p.HTTP3Settings == nil {
 			p.HTTP3Settings = &core.HTTP3Settings{
 				QUICVersion:            core.QUICVersion1,
@@ -336,7 +336,7 @@ func init() {
 			p.QUICVersions = []uint32{core.QUICVersion1}
 		}
 		
-		// 填充 Headers（如果缺失）
+		// translated comment
 		if p.Headers == nil {
 			p.Headers = &core.HTTPHeaders{}
 		}
@@ -379,7 +379,7 @@ func init() {
 	}
 }
 
-// buildEdgeUserAgent 构建 Edge User-Agent
+// translated comment
 func buildEdgeUserAgent(version string, os core.OperatingSystem) string {
 	osStr := string(os)
 	switch {
@@ -392,7 +392,7 @@ func buildEdgeUserAgent(version string, os core.OperatingSystem) string {
 	}
 }
 
-// AllEdgeProfiles 返回所有Edge指纹
+// translated comment
 func AllEdgeProfiles() []ClientProfile {
 	return []ClientProfile{
 		Edge115, Edge116, Edge117, Edge118, Edge119,

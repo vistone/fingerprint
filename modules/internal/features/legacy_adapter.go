@@ -2,14 +2,14 @@ package features
 
 import "strings"
 
-// LegacyFeatureAdapter 遗留特征适配器
-// 为现有 defense.go 的 API 提供兼容层，使用新的 Feature Extractor 引擎
+// translated comment
+// translated comment
 type LegacyFeatureAdapter struct {
 	extractor *BaseFeatureExtractor
 	config    *FeatureConfig
 }
 
-// NewLegacyFeatureAdapter 创建新的遗留特征适配器
+// translated comment
 func NewLegacyFeatureAdapter(config *FeatureConfig) *LegacyFeatureAdapter {
 	if config == nil {
 		config = DefaultFeatureConfig()
@@ -20,7 +20,7 @@ func NewLegacyFeatureAdapter(config *FeatureConfig) *LegacyFeatureAdapter {
 	}
 }
 
-// DetectAnomalies 兼容 defense.go 的异常检测 API
+// translated comment
 func (a *LegacyFeatureAdapter) DetectAnomalies(data []byte) bool {
 	_, isAnomaly := a.extractor.ExtractFeature(FeatureEntropy, data, a.config)
 	if isAnomaly {
@@ -31,37 +31,37 @@ func (a *LegacyFeatureAdapter) DetectAnomalies(data []byte) bool {
 	return isAnomaly
 }
 
-// HasLowEntropy 检查数据熵值是否过低（兼容 defense.go）
+// translated comment
 func (a *LegacyFeatureAdapter) HasLowEntropy(data []byte) bool {
 	score, isAnomaly := a.extractor.ExtractFeature(FeatureEntropy, data, a.config)
 	return isAnomaly && score > 0.9
 }
 
-// HasExcessiveEntropy 检查数据熵值是否过高（兼容 defense.go）
+// translated comment
 func (a *LegacyFeatureAdapter) HasExcessiveEntropy(data []byte) bool {
 	score, isAnomaly := a.extractor.ExtractFeature(FeatureEntropy, data, a.config)
 	return isAnomaly && score > 0.8 && score < 0.95
 }
 
-// ContainsSpoofingMarkers 检查是否包含已知自动化工具特征（兼容 defense.go）
+// translated comment
 func (a *LegacyFeatureAdapter) ContainsSpoofingMarkers(data []byte) bool {
 	_, isAnomaly := a.extractor.ExtractFeature(FeatureToolMarker, data, a.config)
 	return isAnomaly
 }
 
-// DetectHeadlessBrowser 检测 User-Agent 是否为无头浏览器
+// translated comment
 func (a *LegacyFeatureAdapter) DetectHeadlessBrowser(userAgent string) bool {
 	_, isAnomaly := a.extractor.ExtractFeature(FeatureHeadlessBrowser, userAgent, a.config)
 	return isAnomaly
 }
 
-// CheckContradictions 检查指纹属性是否存在矛盾
+// translated comment
 func (a *LegacyFeatureAdapter) CheckContradictions(attributes map[string]string) bool {
 	if len(attributes) == 0 {
 		return false
 	}
 
-	// 检查操作系统与平台矛盾
+	// translated comment
 	if os, ok := attributes["os"]; ok {
 		if platform, ok := attributes["platform"]; ok {
 			score, isAnomaly := a.extractor.ExtractFeature(
@@ -70,13 +70,13 @@ func (a *LegacyFeatureAdapter) CheckContradictions(attributes map[string]string)
 				a.config,
 			)
 			if isAnomaly {
-				_ = score // 使用 score 防止未使用警告
+				_ = score // translated comment
 				return true
 			}
 		}
 	}
 
-	// 检查 User-Agent 与操作系统矛盾
+	// translated comment
 	if ua, ok := attributes["user_agent"]; ok {
 		if os, ok := attributes["os"]; ok {
 			score, isAnomaly := a.extractor.ExtractFeature(
@@ -91,7 +91,7 @@ func (a *LegacyFeatureAdapter) CheckContradictions(attributes map[string]string)
 		}
 	}
 
-	// 检查 User-Agent 与特性矛盾
+	// translated comment
 	if ua, ok := attributes["user_agent"]; ok {
 		if features, ok := attributes["features"]; ok {
 			score, isAnomaly := a.extractor.ExtractFeature(
@@ -106,7 +106,7 @@ func (a *LegacyFeatureAdapter) CheckContradictions(attributes map[string]string)
 		}
 	}
 
-	// 检查移动设备与屏幕分辨率矛盾
+	// translated comment
 	if isMobile, ok := attributes["is_mobile"]; ok {
 		if screenWidth, ok := attributes["screen_width"]; ok {
 			score, isAnomaly := a.extractor.ExtractFeature(
@@ -124,7 +124,7 @@ func (a *LegacyFeatureAdapter) CheckContradictions(attributes map[string]string)
 	return false
 }
 
-// RecognitionResultLegacy 被动识别结果（兼容 defense.go）
+// translated comment
 type RecognitionResultLegacy struct {
 	Browser        string
 	OS             string
@@ -134,7 +134,7 @@ type RecognitionResultLegacy struct {
 	IsBot          bool
 }
 
-// RecognizeFromHeaders 从 HTTP 请求头识别浏览器指纹（兼容 defense.go）
+// translated comment
 func (a *LegacyFeatureAdapter) RecognizeFromHeaders(headers map[string]string) *RecognitionResultLegacy {
 	result := &RecognitionResultLegacy{}
 
@@ -144,7 +144,7 @@ func (a *LegacyFeatureAdapter) RecognizeFromHeaders(headers map[string]string) *
 		return result
 	}
 
-	// 检测机器人
+	// translated comment
 	if a.DetectHeadlessBrowser(ua) {
 		result.IsBot = true
 		result.Confidence = 0.9
@@ -153,29 +153,29 @@ func (a *LegacyFeatureAdapter) RecognizeFromHeaders(headers map[string]string) *
 
 	uaLower := strings.ToLower(ua)
 
-	// 检测移动设备
+	// translated comment
 	result.IsMobile = strings.Contains(uaLower, "mobile") ||
 		strings.Contains(uaLower, "android") ||
 		strings.Contains(uaLower, "iphone") ||
 		strings.Contains(uaLower, "ipad")
 
-	// 识别浏览器
+	// translated comment
 	result.Browser, result.BrowserVersion = detectBrowserFromUALegacy(ua)
 
-	// 识别操作系统
+	// translated comment
 	result.OS = detectOSFromUALegacy(ua)
 
-	// 计算置信度
+	// translated comment
 	result.Confidence = calculateConfidenceLegacy(headers)
 
 	return result
 }
 
-// 辅助函数：从 User-Agent 检测浏览器类型和版本
+// translated comment
 func detectBrowserFromUALegacy(ua string) (string, string) {
 	uaLower := strings.ToLower(ua)
 
-	// Edge 必须在 Chrome 之前检测
+	// translated comment
 	if strings.Contains(uaLower, "edg/") || strings.Contains(uaLower, "edge/") {
 		version := extractVersionFromUALegacy(ua, "Edg/")
 		if version == "" {
@@ -184,7 +184,7 @@ func detectBrowserFromUALegacy(ua string) (string, string) {
 		return "Edge", version
 	}
 
-	// Opera 必须在 Chrome 之前检测
+	// translated comment
 	if strings.Contains(uaLower, "opr/") {
 		version := extractVersionFromUALegacy(ua, "OPR/")
 		return "Opera", version
@@ -211,7 +211,7 @@ func detectBrowserFromUALegacy(ua string) (string, string) {
 	return "Chrome", ""
 }
 
-// 从 User-Agent 提取版本号
+// translated comment
 func extractVersionFromUALegacy(ua, prefix string) string {
 	idx := strings.Index(ua, prefix)
 	if idx == -1 {
@@ -228,7 +228,7 @@ func extractVersionFromUALegacy(ua, prefix string) string {
 	return ""
 }
 
-// 从 User-Agent 检测操作系统
+// translated comment
 func detectOSFromUALegacy(ua string) string {
 	if strings.Contains(ua, "Windows NT 10.0") {
 		return "Windows 10"
@@ -248,7 +248,7 @@ func detectOSFromUALegacy(ua string) string {
 	return "Windows 10"
 }
 
-// 计算识别置信度
+// translated comment
 func calculateConfidenceLegacy(headers map[string]string) float64 {
 	score := 0.5
 

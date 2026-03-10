@@ -7,81 +7,81 @@ import (
 	"sync"
 )
 
-// ExtensionType 定义扩展类型
+// translated comment
 type ExtensionType uint16
 
-// ExtensionMetadata 扩展元数据
+// translated comment
 type ExtensionMetadata struct {
-	// 扩展类型ID
+	// translated comment
 	Type ExtensionType
 
-	// 扩展名称（如 "Encrypted Client Hello"）
+	// translated comment
 	Name string
 
-	// 扩展描述
+	// translated comment
 	Description string
 
-	// RFC 文档引用
+	// translated comment
 	RFC string
 
-	// IANA 注册编号
+	// translated comment
 	IANANumber uint16
 
-	// 最后更新时间
+	// translated comment
 	LastUpdated string
 
-	// 扩展类别（如 "encryption", "negotiation", "preference"）
+	// translated comment
 	Category string
 
-	// 是否为实验性扩展
+	// translated comment
 	IsExperimental bool
 
-	// 兼容的 TLS 版本
+	// translated comment
 	CompatibleTLSVersions []uint16
 }
 
-// ExtensionData 扩展数据接口
+// translated comment
 type ExtensionData interface {
-	// 获取扩展类型
+	// translated comment
 	GetType() ExtensionType
 
-	// 获取原始字节数据
+	// translated comment
 	GetRawData() []byte
 
-	// 获取扩展名称
+	// translated comment
 	GetName() string
 
-	// 转换为 map 用于序列化
+	// translated comment
 	ToMap() map[string]interface{}
 }
 
-// AnalysisResult 通用分析结果接口
+// translated comment
 type AnalysisResult interface {
-	// 获取分析的扩展类型
+	// translated comment
 	GetExtensionType() ExtensionType
 
-	// 是否存在异常
+	// translated comment
 	HasAnomalies() bool
 
-	// 获取异常信息
+	// translated comment
 	GetAnomalies() []string
 
-	// 获取风险评分（0.0-1.0）
+	// translated comment
 	GetRiskScore() float64
 
-	// 转换为 map 用于序列化
+	// translated comment
 	ToMap() map[string]interface{}
 }
 
-// ExtensionRegistry 全局扩展注册表
+// translated comment
 type ExtensionRegistry struct {
 	mu            sync.RWMutex
 	metadata      map[ExtensionType]*ExtensionMetadata
 	parsers       map[ExtensionType]Parser
 	analyzers     map[ExtensionType]Analyzer
 	handlers      map[ExtensionType][]Handler
-	typeNames     map[string]ExtensionType // 反向查找
-	customPlugins map[string]Plugin        // 第三方插件
+	typeNames     map[string]ExtensionType // translated comment
+	customPlugins map[string]Plugin        // translated comment
 }
 
 // Global registry instance
@@ -97,11 +97,11 @@ func init() {
 		customPlugins: make(map[string]Plugin),
 	}
 
-	// 初始化标准扩展
+	// translated comment
 	initStandardExtensions()
 }
 
-// RegisterExtension 注册扩展类型及其元数据
+// translated comment
 func RegisterExtension(metadata *ExtensionMetadata) error {
 	globalRegistry.mu.Lock()
 	defer globalRegistry.mu.Unlock()
@@ -116,7 +116,7 @@ func RegisterExtension(metadata *ExtensionMetadata) error {
 	return nil
 }
 
-// RegisterParser 注册扩展解析器
+// translated comment
 func RegisterParser(extType ExtensionType, parser Parser) error {
 	globalRegistry.mu.Lock()
 	defer globalRegistry.mu.Unlock()
@@ -133,7 +133,7 @@ func RegisterParser(extType ExtensionType, parser Parser) error {
 	return nil
 }
 
-// RegisterAnalyzer 注册扩展分析器
+// translated comment
 func RegisterAnalyzer(extType ExtensionType, analyzer Analyzer) error {
 	globalRegistry.mu.Lock()
 	defer globalRegistry.mu.Unlock()
@@ -150,7 +150,7 @@ func RegisterAnalyzer(extType ExtensionType, analyzer Analyzer) error {
 	return nil
 }
 
-// RegisterHandler 注册扩展处理器（事件驱动）
+// translated comment
 func RegisterHandler(extType ExtensionType, handler Handler) error {
 	globalRegistry.mu.Lock()
 	defer globalRegistry.mu.Unlock()
@@ -167,7 +167,7 @@ func RegisterHandler(extType ExtensionType, handler Handler) error {
 	return nil
 }
 
-// GetMetadata 获取扩展元数据
+// translated comment
 func GetMetadata(extType ExtensionType) (*ExtensionMetadata, error) {
 	globalRegistry.mu.RLock()
 	defer globalRegistry.mu.RUnlock()
@@ -180,7 +180,7 @@ func GetMetadata(extType ExtensionType) (*ExtensionMetadata, error) {
 	return metadata, nil
 }
 
-// GetParser 获取扩展解析器
+// translated comment
 func GetParser(extType ExtensionType) (Parser, error) {
 	globalRegistry.mu.RLock()
 	defer globalRegistry.mu.RUnlock()
@@ -193,7 +193,7 @@ func GetParser(extType ExtensionType) (Parser, error) {
 	return parser, nil
 }
 
-// GetAnalyzer 获取扩展分析器
+// translated comment
 func GetAnalyzer(extType ExtensionType) (Analyzer, error) {
 	globalRegistry.mu.RLock()
 	defer globalRegistry.mu.RUnlock()
@@ -206,19 +206,19 @@ func GetAnalyzer(extType ExtensionType) (Analyzer, error) {
 	return analyzer, nil
 }
 
-// GetHandlers 获取扩展处理器
+// translated comment
 func GetHandlers(extType ExtensionType) []Handler {
 	globalRegistry.mu.RLock()
 	defer globalRegistry.mu.RUnlock()
 
 	handlers := globalRegistry.handlers[extType]
-	// 返回副本以避免并发修改
+	// translated comment
 	result := make([]Handler, len(handlers))
 	copy(result, handlers)
 	return result
 }
 
-// ListAllExtensions 列举所有注册的扩展
+// translated comment
 func ListAllExtensions() []*ExtensionMetadata {
 	globalRegistry.mu.RLock()
 	defer globalRegistry.mu.RUnlock()
@@ -231,7 +231,7 @@ func ListAllExtensions() []*ExtensionMetadata {
 	return extensions
 }
 
-// FindExtensionByName 按名称查找扩展
+// translated comment
 func FindExtensionByName(name string) (ExtensionType, error) {
 	globalRegistry.mu.RLock()
 	defer globalRegistry.mu.RUnlock()
@@ -244,7 +244,7 @@ func FindExtensionByName(name string) (ExtensionType, error) {
 	return extType, nil
 }
 
-// RegisterPlugin 注册第三方插件
+// translated comment
 func RegisterPlugin(name string, plugin Plugin) error {
 	globalRegistry.mu.Lock()
 	defer globalRegistry.mu.Unlock()
@@ -253,7 +253,7 @@ func RegisterPlugin(name string, plugin Plugin) error {
 		return ErrInvalidPlugin
 	}
 
-	// 验证插件
+	// translated comment
 	if err := plugin.Validate(); err != nil {
 		return err
 	}
@@ -262,7 +262,7 @@ func RegisterPlugin(name string, plugin Plugin) error {
 	return nil
 }
 
-// GetPlugin 获取第三方插件
+// translated comment
 func GetPlugin(name string) (Plugin, error) {
 	globalRegistry.mu.RLock()
 	defer globalRegistry.mu.RUnlock()
@@ -275,7 +275,7 @@ func GetPlugin(name string) (Plugin, error) {
 	return plugin, nil
 }
 
-// LoadPlugins 加载配置文件中的所有插件
+// translated comment
 func LoadPlugins(configPath string) error {
 	type pluginConfigItem struct {
 		Name    string                 `json:"name"`
@@ -341,12 +341,12 @@ func LoadPlugins(configPath string) error {
 	return nil
 }
 
-// GetRegistry 获取全局注册表实例
+// translated comment
 func GetRegistry() *ExtensionRegistry {
 	return globalRegistry
 }
 
-// GetRegistryStats 获取注册表统计信息
+// translated comment
 func GetRegistryStats() map[string]interface{} {
 	globalRegistry.mu.RLock()
 	defer globalRegistry.mu.RUnlock()

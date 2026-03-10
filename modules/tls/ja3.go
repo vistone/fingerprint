@@ -1,4 +1,4 @@
-// Package tls 提供 TLS 指纹生成功能
+// translated comment
 package tls
 
 import (
@@ -11,32 +11,32 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles"
 )
 
-// JA3Result JA3 指纹结果
+// translated comment
 type JA3Result struct {
-	// Hash JA3 MD5 哈希
+	// translated comment
 	Hash string
-	// RawString JA3 原始字符串
+	// translated comment
 	RawString string
-	// TLSVersion TLS 版本
+	// translated comment
 	TLSVersion uint16
-	// CipherSuites 密码套件列表
+	// translated comment
 	CipherSuites []uint16
-	// Extensions 扩展列表
+	// translated comment
 	Extensions []uint16
-	// EllipticCurves 椭圆曲线列表
+	// translated comment
 	EllipticCurves []core.CurveID
-	// EllipticCurvePointFormats 椭圆曲线点格式列表
+	// translated comment
 	EllipticCurvePointFormats []uint8
 }
 
-// CalculateJA3 从 ClientHello 规范计算 JA3 指纹
+// translated comment
 func CalculateJA3(spec core.ClientHelloSpec) *JA3Result {
-	// 过滤 GREASE 值
+	// translated comment
 	cipherSuites := filterGREASEUint16(spec.CipherSuites)
 	extensions := filterGREASEExtensions(spec.Extensions)
 	curves := filterGREASECurves(spec.SupportedCurves)
 
-	// 构建 JA3 字符串
+	// translated comment
 	parts := []string{
 		strconv.Itoa(int(spec.TLSVersion)),
 		joinUint16(cipherSuites),
@@ -47,7 +47,7 @@ func CalculateJA3(spec core.ClientHelloSpec) *JA3Result {
 
 	rawString := strings.Join(parts, ",")
 
-	// 计算 MD5 哈希
+	// translated comment
 	hash := md5.Sum([]byte(rawString))
 
 	return &JA3Result{
@@ -61,7 +61,7 @@ func CalculateJA3(spec core.ClientHelloSpec) *JA3Result {
 	}
 }
 
-// CalculateJA3FromProfile 从客户端配置计算 JA3 指纹
+// translated comment
 func CalculateJA3FromProfile(profile profiles.ClientProfile) *JA3Result {
 	spec := core.ClientHelloSpec{
 		TLSVersion:      profile.TLSVersion,
@@ -73,14 +73,14 @@ func CalculateJA3FromProfile(profile profiles.ClientProfile) *JA3Result {
 	return CalculateJA3(spec)
 }
 
-// IsGREASEUint16 检查是否为 GREASE 值
+// translated comment
 func IsGREASEUint16(v uint16) bool {
-	// GREASE 值模式: 0x0A0A, 0x1A1A, 0x2A2A, ..., 0xFAFA
-	// 高字节和低字节相等，且低字节的形式为 0xXA (X 是任意值)
+	// translated comment
+	// translated comment
 	return ((v >> 8) & 0xFF) == (v & 0xFF) && (v&0x0F) == 0x0A
 }
 
-// filterGREASEUint16 过滤 GREASE 值
+// translated comment
 func filterGREASEUint16(values []uint16) []uint16 {
 	var result []uint16
 	for _, v := range values {
@@ -91,7 +91,7 @@ func filterGREASEUint16(values []uint16) []uint16 {
 	return result
 }
 
-// filterGREASEExtensions 过滤 GREASE 扩展
+// translated comment
 func filterGREASEExtensions(exts []core.TLSExtension) []core.TLSExtension {
 	var result []core.TLSExtension
 	for _, e := range exts {
@@ -102,7 +102,7 @@ func filterGREASEExtensions(exts []core.TLSExtension) []core.TLSExtension {
 	return result
 }
 
-// filterGREASECurves 过滤 GREASE 曲线
+// translated comment
 func filterGREASECurves(curves []core.CurveID) []core.CurveID {
 	var result []core.CurveID
 	for _, c := range curves {
@@ -113,7 +113,7 @@ func filterGREASECurves(curves []core.CurveID) []core.CurveID {
 	return result
 }
 
-// joinUint16 将 uint16 切片连接为字符串
+// translated comment
 func joinUint16(values []uint16) string {
 	var parts []string
 	for _, v := range values {
@@ -122,7 +122,7 @@ func joinUint16(values []uint16) string {
 	return strings.Join(parts, "-")
 }
 
-// joinUint8 将 uint8 切片连接为字符串
+// translated comment
 func joinUint8(values []uint8) string {
 	var parts []string
 	for _, v := range values {
@@ -131,7 +131,7 @@ func joinUint8(values []uint8) string {
 	return strings.Join(parts, "-")
 }
 
-// joinExtensions 将扩展连接为字符串
+// translated comment
 func joinExtensions(exts []core.TLSExtension) string {
 	var parts []string
 	for _, e := range exts {
@@ -140,7 +140,7 @@ func joinExtensions(exts []core.TLSExtension) string {
 	return strings.Join(parts, "-")
 }
 
-// extensionTypes 提取扩展类型
+// translated comment
 func extensionTypes(exts []core.TLSExtension) []uint16 {
 	var result []uint16
 	for _, e := range exts {
@@ -149,29 +149,29 @@ func extensionTypes(exts []core.TLSExtension) []uint16 {
 	return result
 }
 
-// JA4Result JA4 指纹结果
+// translated comment
 type JA4Result struct {
-	// Fingerprint JA4 指纹
+	// translated comment
 	Fingerprint string
-	// TLSVersion TLS 版本
+	// translated comment
 	TLSVersion uint16
-	// CipherSuitesCount 密码套件数量
+	// translated comment
 	CipherSuitesCount int
-	// ExtensionsCount 扩展数量
+	// translated comment
 	ExtensionsCount int
 }
 
-// CalculateJA4 从 ClientHello 规范计算 JA4 指纹（简化版）
+// translated comment
 func CalculateJA4(spec core.ClientHelloSpec) *JA4Result {
-	// JA4 格式: t<version><sni><cipher_count><extension_count><algo>
-	// 例如: t13d1516h2_8daaf6152771_b1ff...a5
+	// translated comment
+	// translated comment
 
-	// 简化实现
+	// translated comment
 	version := core.TLSVersionToString(spec.TLSVersion)
 	cipherCount := len(filterGREASEUint16(spec.CipherSuites))
 	extCount := len(filterGREASEExtensions(spec.Extensions))
 
-	// 构建简化的 JA4 指纹
+	// translated comment
 	fingerprint := "t" + version + "d" +
 		strconv.Itoa(cipherCount) +
 		strconv.Itoa(extCount)
@@ -184,7 +184,7 @@ func CalculateJA4(spec core.ClientHelloSpec) *JA4Result {
 	}
 }
 
-// TLSVersionToString 将 TLS 版本转换为 JA4 格式
+// translated comment
 func TLSVersionToString(version uint16) string {
 	switch version {
 	case 0x0301:
@@ -200,17 +200,17 @@ func TLSVersionToString(version uint16) string {
 	}
 }
 
-// Analyzer TLS 分析器
+// translated comment
 type Analyzer struct {
 	profile *profiles.ClientProfile
 }
 
-// NewAnalyzer 创建新的 TLS 分析器
+// translated comment
 func NewAnalyzer(profile *profiles.ClientProfile) *Analyzer {
 	return &Analyzer{profile: profile}
 }
 
-// AnalyzeJA3 分析 JA3 指纹
+// translated comment
 func (a *Analyzer) AnalyzeJA3() *JA3Result {
 	if a.profile == nil {
 		return nil
@@ -218,7 +218,7 @@ func (a *Analyzer) AnalyzeJA3() *JA3Result {
 	return CalculateJA3FromProfile(*a.profile)
 }
 
-// AnalyzeJA4 分析 JA4 指纹
+// translated comment
 func (a *Analyzer) AnalyzeJA4() *JA4Result {
 	if a.profile == nil {
 		return nil
@@ -231,7 +231,7 @@ func (a *Analyzer) AnalyzeJA4() *JA4Result {
 	return CalculateJA4(spec)
 }
 
-// joinCurves 将曲线 ID 切片连接为字符串
+// translated comment
 func joinCurves(curves []core.CurveID) string {
 	var parts []string
 	for _, c := range curves {
@@ -240,7 +240,7 @@ func joinCurves(curves []core.CurveID) string {
 	return strings.Join(parts, "-")
 }
 
-// Fingerprint 生成完整的 TLS 指纹
+// translated comment
 func (a *Analyzer) Fingerprint() map[string]interface{} {
 	return map[string]interface{}{
 		"ja3": a.AnalyzeJA3(),

@@ -9,7 +9,7 @@ import (
 
 // KnowledgeBase global fingerprint feature knowledge base
 //
-// Encodes the "canonical form" of real browser fingerprints — from TLS handshake to HTTP/2 frames,
+// translated comment
 // from TCP/IP stack to JavaScript API, what feature combinations each browser family should
 // exhibit on each OS.
 //
@@ -19,7 +19,7 @@ import (
 //  3. Identify traces of forgery/anti-detection tools
 //  4. Provide reliable reference baselines for fingerprint generation
 type KnowledgeBase struct {
-	// Browser fingerprint blueprints: each BrowserType → version → OS → expected features
+	// translated comment
 	browsers map[core.BrowserType]*BrowserKnowledge
 
 	// TLS feature dictionary
@@ -92,7 +92,7 @@ type TLSKnowledge struct {
 
 // TCPIPKnowledge TCP/IP stack fingerprint knowledge
 type TCPIPKnowledge struct {
-	// OS → expected TCP/IP parameters
+	// translated comment
 	OSFingerprints map[string]*TCPIPExpected
 }
 
@@ -109,7 +109,7 @@ type TCPIPExpected struct {
 
 // HTTP2Knowledge HTTP/2 protocol fingerprint knowledge
 type HTTP2Knowledge struct {
-	// Browser → expected HTTP/2 settings
+	// translated comment
 	BrowserSettings map[core.BrowserType]*H2Expected
 }
 
@@ -485,7 +485,7 @@ func (kb *KnowledgeBase) computeStats() {
 	}
 	kb.stats.TotalKnownBrowsers = len(kb.browsers)
 	kb.stats.TotalKnownVersions = totalVersions
-	kb.stats.TotalKnownProfiles = totalVersions * 3 // Estimate × OS combinations
+	kb.stats.TotalKnownProfiles = totalVersions * 3 // translated comment
 }
 
 // ===================================================================

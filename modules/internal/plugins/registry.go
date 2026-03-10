@@ -1,4 +1,4 @@
-// Package plugins 实现插件注册表
+// translated comment
 package plugins
 
 import (
@@ -6,20 +6,20 @@ import (
 	"sync"
 )
 
-// Registry 插件注册表
+// translated comment
 type Registry struct {
 	plugins map[string]*PluginInfo
 	mu      sync.RWMutex
 }
 
-// NewRegistry 创建注册表
+// translated comment
 func NewRegistry() *Registry {
 	return &Registry{
 		plugins: make(map[string]*PluginInfo),
 	}
 }
 
-// Register 注册插件
+// translated comment
 func (r *Registry) Register(id string, plugin Plugin, source PluginSource) error {
 	if id == "" || plugin == nil {
 		return fmt.Errorf("invalid parameters")
@@ -45,7 +45,7 @@ func (r *Registry) Register(id string, plugin Plugin, source PluginSource) error
 	return nil
 }
 
-// Get 获取插件
+// translated comment
 func (r *Registry) Get(id string) (Plugin, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -58,7 +58,7 @@ func (r *Registry) Get(id string) (Plugin, error) {
 	return info.Plugin, nil
 }
 
-// List 列出所有插件
+// translated comment
 func (r *Registry) List() map[string]*PluginInfo {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -70,7 +70,7 @@ func (r *Registry) List() map[string]*PluginInfo {
 	return result
 }
 
-// ListByCategory 按分类列出
+// translated comment
 func (r *Registry) ListByCategory(category FingerprintCategory) map[string]*PluginInfo {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -84,7 +84,7 @@ func (r *Registry) ListByCategory(category FingerprintCategory) map[string]*Plug
 	return result
 }
 
-// Count 获取数量
+// translated comment
 func (r *Registry) Count() int {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -92,7 +92,7 @@ func (r *Registry) Count() int {
 	return len(r.plugins)
 }
 
-// Exists 检查是否存在
+// translated comment
 func (r *Registry) Exists(id string) bool {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -101,7 +101,7 @@ func (r *Registry) Exists(id string) bool {
 	return exists
 }
 
-// Unregister 注销插件
+// translated comment
 func (r *Registry) Unregister(id string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()

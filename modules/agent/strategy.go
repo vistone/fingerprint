@@ -71,7 +71,7 @@ func NewStrategyEngine(config *AgentConfig, memory *Memory) *StrategyEngine {
 func (se *StrategyEngine) registerBuiltinStrategies() {
 	cfg := se.config
 	se.strategies = append(se.strategies,
-		// S1: Fast fingerprint switching → possible fingerprint forging/rotation tool
+		// translated comment
 		&Strategy{
 			ID:          "builtin_fp_switch",
 			Name:        "Fast Fingerprint Switching Detection",
@@ -85,7 +85,7 @@ func (se *StrategyEngine) registerBuiltinStrategies() {
 			CreatedAt: time.Now(),
 			Enabled:   true,
 		},
-		// S2: Low consistency → behavioral anomaly
+		// translated comment
 		&Strategy{
 			ID:          "builtin_low_consistency",
 			Name:        "Low Fingerprint Consistency Detection",
@@ -100,7 +100,7 @@ func (se *StrategyEngine) registerBuiltinStrategies() {
 			CreatedAt: time.Now(),
 			Enabled:   true,
 		},
-		// S3: Request burst → possible automation tool
+		// translated comment
 		&Strategy{
 			ID:          "builtin_request_burst",
 			Name:        "Request Burst Detection",
@@ -118,7 +118,7 @@ func (se *StrategyEngine) registerBuiltinStrategies() {
 			CreatedAt: time.Now(),
 			Enabled:   true,
 		},
-		// S4: Risk continuously rising → escalate response
+		// translated comment
 		&Strategy{
 			ID:          "builtin_risk_escalation",
 			Name:        "Risk Rising Trend Detection",
@@ -132,7 +132,7 @@ func (se *StrategyEngine) registerBuiltinStrategies() {
 			CreatedAt: time.Now(),
 			Enabled:   true,
 		},
-		// S5: High-risk rule triggered + low ML confidence → block
+		// translated comment
 		&Strategy{
 			ID:          "builtin_high_risk_block",
 			Name:        "High-Risk Comprehensive Block",
@@ -212,7 +212,7 @@ func (se *StrategyEngine) Evaluate(obs *Observation, profile *BehaviorSummary) *
 	return decision
 }
 
-// Evolve strategy self-evolution — automatically generate new strategies or eliminate ineffective strategies based on accumulated observation statistics
+// translated comment
 func (se *StrategyEngine) Evolve() {
 	se.mu.Lock()
 	defer se.mu.Unlock()

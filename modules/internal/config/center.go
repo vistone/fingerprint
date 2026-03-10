@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-// ConfigCenter 配置中心 - 集中管理所有配置
-// 当 configPath 为空时，ConfigCenter 以内存模式运行，配置仅保存在内存中不持久化到文件。
+// translated comment
+// translated comment
 type ConfigCenter struct {
 	mu                sync.RWMutex
 	current           *ManagedConfig
@@ -23,35 +23,35 @@ type ConfigCenter struct {
 	autoReload        bool
 	reloadInterval    time.Duration
 	stopReloadChan    chan struct{}
-	reloadOnce        sync.Once // 确保 autoReloadWorker 只启动一次
+	reloadOnce        sync.Once // translated comment
 	validationEnabled bool
 }
 
-// ManagedConfig 被管理的配置对象
+// translated comment
 type ManagedConfig struct {
-	// 行为分析配置
+	// translated comment
 	BehaviorAnalysis *BehaviorAnalysisConfig `json:"behavior_analysis"`
 
-	// 风险评分配置
+	// translated comment
 	RiskScoring *RiskScoringConfig `json:"risk_scoring"`
 
-	// 特征提取配置
+	// translated comment
 	Features *FeatureExtractionConfig `json:"features"`
 
-	// QUIC 配置
+	// translated comment
 	QUIC *QUICConfig `json:"quic"`
 
-	// TLS 配置
+	// translated comment
 	TLS *TLSConfig `json:"tls"`
 
-	// 全局限制和阈值
+	// translated comment
 	Global *GlobalConfig `json:"global"`
 
-	// 元数据
+	// translated comment
 	Metadata *ConfigMetadata `json:"metadata"`
 }
 
-// ConfigMetadata 配置元数据
+// translated comment
 type ConfigMetadata struct {
 	Version      string    `json:"version"`
 	LastModified time.Time `json:"last_modified"`
@@ -59,7 +59,7 @@ type ConfigMetadata struct {
 	Description  string    `json:"description"`
 }
 
-// VersionedConfig 带版本信息的配置
+// translated comment
 type VersionedConfig struct {
 	Timestamp    time.Time
 	Version      string
@@ -68,21 +68,21 @@ type VersionedConfig struct {
 	ChangedBy    string
 }
 
-// ConfigChangeListener 配置变更监听器接口
+// translated comment
 type ConfigChangeListener interface {
-	// OnConfigChange 当配置变更时被调用
+	// translated comment
 	OnConfigChange(old, new *ManagedConfig, changes []ConfigChange) error
 }
 
-// ConfigChange 配置变更信息
+// translated comment
 type ConfigChange struct {
-	Path      string      // 变更的配置路径（如 "behavior_analysis.min_requests"）
-	OldValue  interface{} // 旧值
-	NewValue  interface{} // 新值
+	Path      string      // translated comment
+	OldValue  interface{} // translated comment
+	NewValue  interface{} // translated comment
 	Timestamp time.Time
 }
 
-// NewConfigCenter 创建新的配置中心
+// translated comment
 func NewConfigCenter(configPath string) *ConfigCenter {
 	return &ConfigCenter{
 		current:           &ManagedConfig{},
@@ -97,9 +97,9 @@ func NewConfigCenter(configPath string) *ConfigCenter {
 	}
 }
 
-// Load 从文件加载配置
+// translated comment
 func (cc *ConfigCenter) Load() error {
-	// 检查配置路径
+	// translated comment
 	cc.mu.RLock()
 	configPath := cc.configPath
 	validationEnabled := cc.validationEnabled
@@ -109,38 +109,38 @@ func (cc *ConfigCenter) Load() error {
 		return fmt.Errorf("config path not set")
 	}
 
-	// 1. 无锁读取文件（IO 操作）
+	// translated comment
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		return fmt.Errorf("failed to read config file: %w", err)
 	}
 
-	// 2. 解析 JSON（CPU 操作，无需锁）
+	// translated comment
 	var config ManagedConfig
 	if err := json.Unmarshal(data, &config); err != nil {
 		return fmt.Errorf("failed to parse config JSON: %w", err)
 	}
 
-	// 3. 验证配置
+	// translated comment
 	if validationEnabled {
 		if errs := cc.validateConfig(&config); len(errs) > 0 {
 			return fmt.Errorf("config validation failed: %v", errs)
 		}
 	}
 
-	// 4. 获取文件修改时间
+	// translated comment
 	fileInfo, err := os.Stat(configPath)
 	if err != nil {
 		return fmt.Errorf("failed to stat config file: %w", err)
 	}
 
-	// 5. 初始化元数据
+	// translated comment
 	if config.Metadata == nil {
 		config.Metadata = &ConfigMetadata{}
 	}
 	config.Metadata.LastModified = fileInfo.ModTime()
 
-	// 6. 获取锁，更新状态
+	// translated comment
 	cc.mu.Lock()
 	defer cc.mu.Unlock()
 
@@ -152,14 +152,14 @@ func (cc *ConfigCenter) Load() error {
 	return nil
 }
 
-// Get 获取当前配置（只读）
+// translated comment
 func (cc *ConfigCenter) Get() *ManagedConfig {
 	cc.mu.RLock()
 	defer cc.mu.RUnlock()
 	return cc.current
 }
 
-// Update 更新配置
+// translated comment
 func (cc *ConfigCenter) Update(newConfig *ManagedConfig, reason, changedBy string) error {
 	cc.mu.Lock()
 
@@ -168,7 +168,7 @@ func (cc *ConfigCenter) Update(newConfig *ManagedConfig, reason, changedBy strin
 		return fmt.Errorf("config center not loaded")
 	}
 
-	// 验证新配置
+	// translated comment
 	if cc.validationEnabled {
 		if errs := cc.validateConfig(newConfig); len(errs) > 0 {
 			cc.mu.Unlock()
@@ -176,23 +176,23 @@ func (cc *ConfigCenter) Update(newConfig *ManagedConfig, reason, changedBy strin
 		}
 	}
 
-	// 检测变更
+	// translated comment
 	changes := cc.detectChanges(cc.current, newConfig)
 
-	// 保存旧配置用于通知
+	// translated comment
 	oldConfig := cc.current
 
-	// 复制监听器列表（避免在通知时持有锁）
+	// translated comment
 	listeners := make([]ConfigChangeListener, len(cc.listeners))
 	copy(listeners, cc.listeners)
 
-	// 更新当前配置
+	// translated comment
 	cc.current = newConfig
 	cc.recordVersion(newConfig, reason, changedBy)
 
-	// 保存到文件（在释放锁之前完成）
+	// translated comment
 	if err := cc.saveToFileLocked(); err != nil {
-		// 回滚到旧配置
+		// translated comment
 		cc.current = oldConfig
 		cc.mu.Unlock()
 		return fmt.Errorf("failed to save config: %w", err)
@@ -200,7 +200,7 @@ func (cc *ConfigCenter) Update(newConfig *ManagedConfig, reason, changedBy strin
 
 	cc.mu.Unlock()
 
-	// 通知监听器（在锁外进行，避免死锁）
+	// translated comment
 	for _, listener := range listeners {
 		if err := listener.OnConfigChange(oldConfig, newConfig, changes); err != nil {
 			return fmt.Errorf("listener error: %w", err)
@@ -210,7 +210,7 @@ func (cc *ConfigCenter) Update(newConfig *ManagedConfig, reason, changedBy strin
 	return nil
 }
 
-// SaveToFile 保存配置到文件
+// translated comment
 func (cc *ConfigCenter) SaveToFile() error {
 	cc.mu.RLock()
 	defer cc.mu.RUnlock()
@@ -218,9 +218,9 @@ func (cc *ConfigCenter) SaveToFile() error {
 	return cc.saveToFileLocked()
 }
 
-// saveToFileLocked 保存配置到文件（调用者必须已持有锁）
+// translated comment
 func (cc *ConfigCenter) saveToFileLocked() error {
-	// 如果没有配置文件路径，跳过文件保存（仅内存模式）
+	// translated comment
 	if cc.configPath == "" {
 		return nil
 	}
@@ -230,13 +230,13 @@ func (cc *ConfigCenter) saveToFileLocked() error {
 		return fmt.Errorf("failed to marshal config: %w", err)
 	}
 
-	// 创建目录（如果不存在）
+	// translated comment
 	dir := filepath.Dir(cc.configPath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
-	// 写入文件
+	// translated comment
 	if err := os.WriteFile(cc.configPath, data, 0644); err != nil {
 		return fmt.Errorf("failed to write config file: %w", err)
 	}
@@ -244,7 +244,7 @@ func (cc *ConfigCenter) saveToFileLocked() error {
 	return nil
 }
 
-// RegisterListener 注册配置变更监听器
+// translated comment
 func (cc *ConfigCenter) RegisterListener(listener ConfigChangeListener) {
 	cc.mu.Lock()
 	defer cc.mu.Unlock()
@@ -252,23 +252,23 @@ func (cc *ConfigCenter) RegisterListener(listener ConfigChangeListener) {
 	cc.listeners = append(cc.listeners, listener)
 }
 
-// EnableAutoReload 启用自动重新加载
+// translated comment
 func (cc *ConfigCenter) EnableAutoReload(interval time.Duration) {
 	cc.mu.Lock()
 	cc.autoReload = true
 	if interval < time.Second {
-		interval = time.Second // 最小间隔 1 秒，防止过于频繁的检查
+		interval = time.Second // translated comment
 	}
 	cc.reloadInterval = interval
 	cc.mu.Unlock()
 
-	// 使用 sync.Once 确保只启动一个 autoReloadWorker
+	// translated comment
 	cc.reloadOnce.Do(func() {
 		go cc.autoReloadWorker()
 	})
 }
 
-// DisableAutoReload 禁用自动重新加载
+// translated comment
 func (cc *ConfigCenter) DisableAutoReload() {
 	cc.mu.Lock()
 	defer cc.mu.Unlock()
@@ -278,10 +278,10 @@ func (cc *ConfigCenter) DisableAutoReload() {
 	}
 }
 
-// autoReloadWorker 自动重新加载 worker
+// translated comment
 func (cc *ConfigCenter) autoReloadWorker() {
 	for {
-		// 获取当前的停止通道和间隔
+		// translated comment
 		cc.mu.RLock()
 		stopChan := cc.stopReloadChan
 		interval := cc.reloadInterval
@@ -315,7 +315,7 @@ func (cc *ConfigCenter) autoReloadWorker() {
 
 				if fileInfo.ModTime().After(lastModTime) {
 					if err := cc.Load(); err == nil {
-						// 通知监听器配置已重新加载
+						// translated comment
 						current := cc.Get()
 						for _, listener := range listeners {
 							listener.OnConfigChange(nil, current, nil)
@@ -327,7 +327,7 @@ func (cc *ConfigCenter) autoReloadWorker() {
 	}
 }
 
-// GetHistory 获取配置版本历史
+// translated comment
 func (cc *ConfigCenter) GetHistory(limit int) []*VersionedConfig {
 	cc.mu.RLock()
 	defer cc.mu.RUnlock()
@@ -341,7 +341,7 @@ func (cc *ConfigCenter) GetHistory(limit int) []*VersionedConfig {
 	return result
 }
 
-// Rollback 回滚到指定版本
+// translated comment
 func (cc *ConfigCenter) Rollback(version string, reason, rolledBackBy string) error {
 	cc.mu.Lock()
 	defer cc.mu.Unlock()
@@ -350,7 +350,7 @@ func (cc *ConfigCenter) Rollback(version string, reason, rolledBackBy string) er
 		return fmt.Errorf("config center not loaded")
 	}
 
-	// 查找指定版本
+	// translated comment
 	var targetVersion *VersionedConfig
 	for _, v := range cc.history {
 		if v.Version == version {
@@ -363,27 +363,27 @@ func (cc *ConfigCenter) Rollback(version string, reason, rolledBackBy string) er
 		return fmt.Errorf("version not found: %s", version)
 	}
 
-	// 创建配置副本
+	// translated comment
 	oldConfig := cc.current
 	newConfig := cc.copyConfig(targetVersion.Config)
 
-	// 检测变更
+	// translated comment
 	changes := cc.detectChanges(cc.current, newConfig)
 
-	// 通知监听器
+	// translated comment
 	for _, listener := range cc.listeners {
 		if err := listener.OnConfigChange(cc.current, newConfig, changes); err != nil {
 			return fmt.Errorf("listener error: %w", err)
 		}
 	}
 
-	// 更新当前配置
+	// translated comment
 	cc.current = newConfig
 	cc.recordVersion(newConfig, reason+" (rolled back from "+version+")", rolledBackBy)
 
-	// 保存到文件
+	// translated comment
 	if err := cc.saveToFileLocked(); err != nil {
-		// 回滚到旧配置
+		// translated comment
 		cc.current = oldConfig
 		return fmt.Errorf("failed to save config: %w", err)
 	}
@@ -391,7 +391,7 @@ func (cc *ConfigCenter) Rollback(version string, reason, rolledBackBy string) er
 	return nil
 }
 
-// recordVersion 记录配置版本
+// translated comment
 func (cc *ConfigCenter) recordVersion(config *ManagedConfig, reason, changedBy string) {
 	version := fmt.Sprintf("v%d", len(cc.history)+1)
 
@@ -405,20 +405,20 @@ func (cc *ConfigCenter) recordVersion(config *ManagedConfig, reason, changedBy s
 
 	cc.history = append(cc.history, versionedConfig)
 
-	// 限制历史大小
+	// translated comment
 	if len(cc.history) > cc.maxHistorySize {
 		cc.history = cc.history[len(cc.history)-cc.maxHistorySize:]
 	}
 }
 
-// detectChanges 检测配置变更
+// translated comment
 func (cc *ConfigCenter) detectChanges(old, new *ManagedConfig) []ConfigChange {
 	changes := make([]ConfigChange, 0)
 	if old == nil || new == nil {
 		return changes
 	}
 
-	// 行为分析配置变更
+	// translated comment
 	if old.BehaviorAnalysis != nil && new.BehaviorAnalysis != nil {
 		if old.BehaviorAnalysis.MinRequestsForAnalysis != new.BehaviorAnalysis.MinRequestsForAnalysis {
 			changes = append(changes, ConfigChange{
@@ -433,13 +433,13 @@ func (cc *ConfigCenter) detectChanges(old, new *ManagedConfig) []ConfigChange {
 	return changes
 }
 
-// copyConfig 深复制配置
-// 使用手写的 Clone 方法，性能优于 JSON 序列化
+// translated comment
+// translated comment
 func (cc *ConfigCenter) copyConfig(config *ManagedConfig) *ManagedConfig {
 	return config.Clone()
 }
 
-// validateConfig 验证配置（基础验证）
+// translated comment
 func (cc *ConfigCenter) validateConfig(config *ManagedConfig) []error {
 	errs := make([]error, 0)
 
@@ -455,14 +455,14 @@ func (cc *ConfigCenter) validateConfig(config *ManagedConfig) []error {
 	return errs
 }
 
-// IsLoaded 检查配置是否已加载
+// translated comment
 func (cc *ConfigCenter) IsLoaded() bool {
 	cc.mu.RLock()
 	defer cc.mu.RUnlock()
 	return cc.loaded
 }
 
-// SetValidationEnabled 设置是否启用配置验证
+// translated comment
 func (cc *ConfigCenter) SetValidationEnabled(enabled bool) {
 	cc.mu.Lock()
 	defer cc.mu.Unlock()

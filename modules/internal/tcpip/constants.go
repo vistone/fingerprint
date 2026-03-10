@@ -1,8 +1,8 @@
 package tcpip
 
-// TCP 协议常量
+// translated comment
 const (
-	// TCP 标志位
+	// translated comment
 	FlagFIN = 1 << iota
 	FlagSYN
 	FlagRST
@@ -13,22 +13,22 @@ const (
 	FlagCWR
 )
 
-// TCP 选项类型
+// translated comment
 const (
-	OptMSS      = 2  // 最大段大小
-	OptWS       = 3  // 窗口缩放
-	OptSACK     = 4  // 选择性确认
-	OptTS       = 8  // 时间戳
+	OptMSS      = 2  // translated comment
+	OptWS       = 3  // translated comment
+	OptSACK     = 4  // translated comment
+	OptTS       = 8  // translated comment
 	OptNOP      = 1  // No Operation
-	OptEOL      = 0  // 选项列表结束
+	OptEOL      = 0  // translated comment
 	OptSACKPerm = 4  // SACK Permitted
-	OptAltSum   = 14 // 替代校验和
+	OptAltSum   = 14 // translated comment
 	OptMD5      = 19 // TCP MD5
 	OptFastOpen = 34 // TCP Fast Open
 	OptMptcp    = 30 // MPTCP
 )
 
-// TTL 推荐值（基于操作系统）
+// translated comment
 const (
 	DefaultTTLLinux   = 64
 	DefaultTTLWindows = 128
@@ -37,22 +37,22 @@ const (
 	DefaultTTLAndroid = 64
 )
 
-// IP 标志位
+// translated comment
 const (
-	IPFlagMF = 0x20 // 更多分片
-	IPFlagDF = 0x40 // "不要分片"标志
-	IPFlagRF = 0x80 // 保留位
+	IPFlagMF = 0x20 // translated comment
+	IPFlagDF = 0x40 // translated comment
+	IPFlagRF = 0x80 // translated comment
 )
 
-// TCP 特征阈值
+// translated comment
 const (
 	MinWindowSize = 512
 	MaxWindowSize = 1073741824 // 1GB
-	MinMSS        = 536        // 最小可行 MSS
+	MinMSS        = 536        // translated comment
 	MaxMSS        = 65495
 )
 
-// 网络设备特征
+// translated comment
 var NetworkDeviceSignatures = map[string]DeviceSignature{
 	"FritzBox_Router": {
 		Name:       "AVM FritzBox Router",
@@ -96,17 +96,17 @@ var NetworkDeviceSignatures = map[string]DeviceSignature{
 	},
 }
 
-// DeviceSignature 设备签名
+// translated comment
 type DeviceSignature struct {
-	Name       string // 设备名称
-	Vendor     string // 厂商
-	Device     string // 设备类型
-	HTTPOS     string // HTTP 服务的 OS 特征
-	DefaultTTL int    // 默认 TTL
-	Behavior   string // 典型行为
+	Name       string // translated comment
+	Vendor     string // translated comment
+	Device     string // translated comment
+	HTTPOS     string // translated comment
+	DefaultTTL int    // translated comment
+	Behavior   string // translated comment
 }
 
-// TCPIPAnomalyType TCP/IP 异常类型
+// translated comment
 type TCPIPAnomalyType string
 
 const (
@@ -123,7 +123,7 @@ const (
 	AnomalyTTLDecrement      TCPIPAnomalyType = "unexpected_ttl_decrement"
 )
 
-// VPNSignature VPN 特征
+// translated comment
 var VPNSignatures = []string{
 	"non-standard_ttl",
 	"consistent_ip_id_counter",
@@ -132,7 +132,7 @@ var VPNSignatures = []string{
 	"specific_cipher_patterns",
 }
 
-// ProxySignature 代理特征
+// translated comment
 var ProxySignatures = []string{
 	"time_sync_issues",
 	"inconsistent_tcp_options",
@@ -141,7 +141,7 @@ var ProxySignatures = []string{
 	"duplicate_sequence_numbers",
 }
 
-// BotSignature 机器人特征
+// translated comment
 var BotSignatures = []string{
 	"abnormal_syn_timing",
 	"identical_tcp_fingerprints",
@@ -152,7 +152,7 @@ var BotSignatures = []string{
 	"impossible_os_combinations",
 }
 
-// RiskIndicators 风险指标
+// translated comment
 type RiskIndicators struct {
 	IsBot      bool
 	IsScanner  bool
@@ -164,7 +164,7 @@ type RiskIndicators struct {
 	RiskScore  float64
 }
 
-// CalculateRiskScore 计算总体风险评分
+// translated comment
 func CalculateRiskScore(indicators RiskIndicators) float64 {
 	score := 0.0
 

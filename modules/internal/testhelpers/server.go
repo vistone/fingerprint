@@ -18,15 +18,15 @@ import (
 	tls_utls "github.com/bogdanfinn/utls"
 )
 
-// TestServer 包装 httptest.Server，提供便捷的测试服务器功能
+// translated comment
 type TestServer struct {
 	*httptest.Server
 	handlers map[string]func(http.ResponseWriter, *http.Request)
 	tlsConf  *tls.Config
 }
 
-// NewTestServer 创建一个新的本地测试服务器
-// 使用 httptest 避免真实网络连接的依赖
+// translated comment
+// translated comment
 func NewTestServer(routes map[string]func(http.ResponseWriter, *http.Request)) *TestServer {
 	ts := &TestServer{
 		handlers: routes,
@@ -34,7 +34,7 @@ func NewTestServer(routes map[string]func(http.ResponseWriter, *http.Request)) *
 
 	mux := http.NewServeMux()
 
-	// 注册所有路由
+	// translated comment
 	for path, handler := range routes {
 		mux.HandleFunc(path, handler)
 	}
@@ -43,7 +43,7 @@ func NewTestServer(routes map[string]func(http.ResponseWriter, *http.Request)) *
 	return ts
 }
 
-// NewTestServerTLS 创建一个支持 TLS 的测试服务器（自签证书）
+// translated comment
 func NewTestServerTLS(routes map[string]func(http.ResponseWriter, *http.Request)) (*TestServer, error) {
 	ts := &TestServer{
 		handlers: routes,
@@ -51,12 +51,12 @@ func NewTestServerTLS(routes map[string]func(http.ResponseWriter, *http.Request)
 
 	mux := http.NewServeMux()
 
-	// 注册所有路由
+	// translated comment
 	for path, handler := range routes {
 		mux.HandleFunc(path, handler)
 	}
 
-	// 创建自签TLS证书
+	// translated comment
 	cert, key, err := generateSelfSignedCert()
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate self-signed certificate: %w", err)
@@ -73,7 +73,7 @@ func NewTestServerTLS(routes map[string]func(http.ResponseWriter, *http.Request)
 
 	ts.tlsConf = tlsConf
 
-	// 创建 HTTPS 测试服务器
+	// translated comment
 	ts.Server = httptest.NewUnstartedServer(mux)
 	ts.Server.TLS = tlsConf
 	ts.Server.StartTLS()
@@ -81,44 +81,44 @@ func NewTestServerTLS(routes map[string]func(http.ResponseWriter, *http.Request)
 	return ts, nil
 }
 
-// RegisterRoute 动态注册新的路由处理器
+// translated comment
 func (ts *TestServer) RegisterRoute(path string, handler func(http.ResponseWriter, *http.Request)) {
 	ts.handlers[path] = handler
-	// 注意：httptest.Server 不支持动态添加路由
-	// 这里仅作为演示，实际应用需要重新创建服务器
+	// translated comment
+	// translated comment
 }
 
-// URL 返回测试服务器的 URL
+// translated comment
 func (ts *TestServer) URL() string {
 	return ts.Server.URL
 }
 
-// Close 关闭测试服务器
+// translated comment
 func (ts *TestServer) Close() {
 	if ts.Server != nil {
 		ts.Server.Close()
 	}
 }
 
-// GetTestResponse 从测试服务器获取响应（用于集成测试）
+// translated comment
 func (ts *TestServer) GetTestResponse(path string) (*http.Response, error) {
 	return http.Get(ts.URL() + path)
 }
 
-// Listener 返回测试服务器的监听器
+// translated comment
 func (ts *TestServer) Listener() net.Listener {
 	return ts.Server.Listener
 }
 
-// generateSelfSignedCert 生成自签 TLS 证书
+// translated comment
 func generateSelfSignedCert() (certPEM, keyPEM []byte, err error) {
-	// 生成私钥
+	// translated comment
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	// 创建证书模板
+	// translated comment
 	serialNumber, err := rand.Int(rand.Reader, new(big.Int).Lsh(big.NewInt(1), 128))
 	if err != nil {
 		return nil, nil, err
@@ -138,13 +138,13 @@ func generateSelfSignedCert() (certPEM, keyPEM []byte, err error) {
 		DNSNames: []string{"localhost", "127.0.0.1"},
 	}
 
-	// 自签证书
+	// translated comment
 	certBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	// 编码为 PEM 格式
+	// translated comment
 	certPEM = pem.EncodeToMemory(&pem.Block{
 		Type:  "CERTIFICATE",
 		Bytes: certBytes,
@@ -158,7 +158,7 @@ func generateSelfSignedCert() (certPEM, keyPEM []byte, err error) {
 	return certPEM, keyPEM, nil
 }
 
-// RecordHTTPInteraction 记录 HTTP 交互（用于 golden file 测试）
+// translated comment
 type RecordHTTPInteraction struct {
 	Method   string              `json:"method"`
 	Path     string              `json:"path"`
@@ -168,16 +168,16 @@ type RecordHTTPInteraction struct {
 	Response string              `json:"response"`
 }
 
-// RecordTLSInteraction 记录 TLS 握手交互（用于指纹测试）
+// translated comment
 type RecordTLSInteraction struct {
-	ClientHello string `json:"client_hello"` // 十六进制编码
-	ServerHello string `json:"server_hello"` // 十六进制编码
-	Certificate string `json:"certificate"`  // PEM 格式
+	ClientHello string `json:"client_hello"` // translated comment
+	ServerHello string `json:"server_hello"` // translated comment
+	Certificate string `json:"certificate"`  // translated comment
 	Cipher      uint16 `json:"cipher"`       // TLS cipher suite ID
 	Version     string `json:"version"`      // TLS version
 }
 
-// MockTLSConnection 为单元测试模拟预录制的 TLS 连接
+// translated comment
 type MockTLSConnection struct {
 	recorded  *RecordTLSInteraction
 	readIdx   int
@@ -185,16 +185,16 @@ type MockTLSConnection struct {
 	clientVer uint16
 }
 
-// NewMockTLSConnection 创建一个模拟 TLS 连接
+// translated comment
 func NewMockTLSConnection(recorded *RecordTLSInteraction) *MockTLSConnection {
 	return &MockTLSConnection{
 		recorded: recorded,
 	}
 }
 
-// Read 实现 net.Conn.Read() 接口
+// translated comment
 func (m *MockTLSConnection) Read(b []byte) (int, error) {
-	// 返回预录制的服务器响应
+	// translated comment
 	if m.readIdx >= len(m.readBuf) {
 		return 0, nil // EOF
 	}
@@ -203,46 +203,46 @@ func (m *MockTLSConnection) Read(b []byte) (int, error) {
 	return n, nil
 }
 
-// Write 实现 net.Conn.Write() 接口
+// translated comment
 func (m *MockTLSConnection) Write(b []byte) (int, error) {
-	// 在模拟模式下，只需记录写入数据
+	// translated comment
 	m.clientVer = extractTLSVersionFromClientHello(b)
-	// 准备返回预录制的服务器响应
+	// translated comment
 	// m.readBuf = decodeHex(m.recorded.ServerHello)
 	return len(b), nil
 }
 
-// Close 实现 net.Conn.Close() 接口
+// translated comment
 func (m *MockTLSConnection) Close() error {
 	return nil
 }
 
-// LocalAddr 实现 net.Conn.LocalAddr() 接口
+// translated comment
 func (m *MockTLSConnection) LocalAddr() net.Addr {
 	return nil
 }
 
-// RemoteAddr 实现 net.Conn.RemoteAddr() 接口
+// translated comment
 func (m *MockTLSConnection) RemoteAddr() net.Addr {
 	return nil
 }
 
-// SetDeadline 实现 net.Conn.SetDeadline() 接口
+// translated comment
 func (m *MockTLSConnection) SetDeadline(t time.Time) error {
 	return nil
 }
 
-// SetReadDeadline 实现 net.Conn.SetReadDeadline() 接口
+// translated comment
 func (m *MockTLSConnection) SetReadDeadline(t time.Time) error {
 	return nil
 }
 
-// SetWriteDeadline 实现 net.Conn.SetWriteDeadline() 接口
+// translated comment
 func (m *MockTLSConnection) SetWriteDeadline(t time.Time) error {
 	return nil
 }
 
-// extractTLSVersionFromClientHello 从 ClientHello 消息中提取 TLS 版本
+// translated comment
 func extractTLSVersionFromClientHello(data []byte) uint16 {
 	if len(data) < 5 {
 		return 0
@@ -252,11 +252,11 @@ func extractTLSVersionFromClientHello(data []byte) uint16 {
 	if len(data) < 7 {
 		return 0
 	}
-	// 返回 ClientHello 中的版本字段
+	// translated comment
 	return uint16(data[4])<<8 | uint16(data[5])
 }
 
-// AssertHTTPHandlerBehavior 验证 HTTP 处理器的行为（单元测试辅助）
+// translated comment
 func AssertHTTPHandlerBehavior(t *testing.T, handler func(http.ResponseWriter, *http.Request),
 	expectedStatus int, expectedBody string) {
 	req := httptest.NewRequest("GET", "/", nil)
@@ -273,7 +273,7 @@ func AssertHTTPHandlerBehavior(t *testing.T, handler func(http.ResponseWriter, *
 	}
 }
 
-// AssertTLSFingerprint 验证 TLS 指纹（单元测试辅助）
+// translated comment
 func AssertTLSFingerprint(t *testing.T, actual *tls_utls.ClientHelloSpec,
 	expectedCiphers []uint16, expectedExtensions []tls_utls.TLSExtension) {
 
@@ -281,5 +281,5 @@ func AssertTLSFingerprint(t *testing.T, actual *tls_utls.ClientHelloSpec,
 		t.Errorf("expected %d ciphers, got %d", len(expectedCiphers), len(actual.CipherSuites))
 	}
 
-	// 更多验证逻辑...
+	// translated comment
 }

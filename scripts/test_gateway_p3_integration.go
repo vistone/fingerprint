@@ -1,5 +1,5 @@
-// Gateway P3 集成测试 - HTML 注入功能验证
-// 测试网关的 P3 反检测代码自动注入功能
+// translated comment
+// translated comment
 package main
 
 import (
@@ -19,19 +19,19 @@ func main() {
 	fmt.Println(strings.Repeat("=", 70))
 	fmt.Println()
 
-	// 第一部分：测试 P3 API 端点
+	// translated comment
 	fmt.Println("【第一部分】测试 P3 API 端点")
 	fmt.Println(strings.Repeat("-", 70))
 	testP3APIs()
 	fmt.Println()
 
-	// 第二部分：测试 HTML 注入中间件
+	// translated comment
 	fmt.Println("【第二部分】测试 HTML 注入中间件")
 	fmt.Println(strings.Repeat("-", 70))
 	testHTMLInjection()
 	fmt.Println()
 
-	// 第三部分：端到端集成测试
+	// translated comment
 	fmt.Println("【第三部分】端到端集成测试")
 	fmt.Println(strings.Repeat("-", 70))
 	testEndToEnd()
@@ -42,9 +42,9 @@ func main() {
 	fmt.Println(strings.Repeat("=", 70))
 }
 
-// testP3APIs 测试 P3 相关的 API 端点
+// translated comment
 func testP3APIs() {
-	// 创建网关配置
+	// translated comment
 	config := *gateway.DefaultGatewayConfig
 	config.Port = 8081
 	config.P3Enabled = true
@@ -52,10 +52,10 @@ func testP3APIs() {
 	config.P3ConfigDir = "./profiles"
 	config.P3InjectConsist = true
 
-	// 创建网关
+	// translated comment
 	gw := gateway.NewGateway(&config)
 
-	// 测试 1: 获取 Profile 列表
+	// translated comment
 	fmt.Println("1️⃣ 测试 Profile 列表 API")
 	req := httptest.NewRequest("GET", "/api/v1/p3/profiles", nil)
 	w := httptest.NewRecorder()
@@ -72,7 +72,7 @@ func testP3APIs() {
 	}
 	fmt.Println()
 
-	// 测试 2: 获取 Profile 详情
+	// translated comment
 	fmt.Println("2️⃣ 测试 Profile 详情 API")
 	req = httptest.NewRequest("GET", "/api/v1/p3/profile?id=chrome_134_default", nil)
 	w = httptest.NewRecorder()
@@ -83,7 +83,7 @@ func testP3APIs() {
 
 	if resp.StatusCode == 200 {
 		fmt.Printf("   ✓ Profile 详情获取成功 (长度: %d 字节)\n", len(body))
-		// 显示前200个字符
+		// translated comment
 		preview := string(body)
 		if len(preview) > 200 {
 			preview = preview[:200] + "..."
@@ -94,7 +94,7 @@ func testP3APIs() {
 	}
 	fmt.Println()
 
-	// 测试 3: 获取反检测代码
+	// translated comment
 	fmt.Println("3️⃣ 测试反检测代码生成 API")
 	req = httptest.NewRequest("GET", "/api/v1/p3/antidetect.js", nil)
 	w = httptest.NewRecorder()
@@ -108,7 +108,7 @@ func testP3APIs() {
 		fmt.Printf("     代码长度: %d 字节\n", len(body))
 		fmt.Printf("     Content-Type: %s\n", resp.Header.Get("Content-Type"))
 
-		// 验证代码内容
+		// translated comment
 		code := string(body)
 		checks := []struct {
 			keyword string
@@ -139,7 +139,7 @@ func testP3APIs() {
 	}
 	fmt.Println()
 
-	// 测试 4: 使用不同 Profile
+	// translated comment
 	fmt.Println("4️⃣ 测试切换 Profile")
 	req = httptest.NewRequest("GET", "/api/v1/p3/antidetect.js?profile=firefox_132_default", nil)
 	w = httptest.NewRecorder()
@@ -155,14 +155,14 @@ func testP3APIs() {
 	}
 }
 
-// testHTMLInjection 测试 HTML 注入功能
+// translated comment
 func testHTMLInjection() {
-	// 创建网关配置
+	// translated comment
 	config := *gateway.DefaultGatewayConfig
 	config.P3Enabled = true
 	gw := gateway.NewGateway(&config)
 
-	// 创建一个简单的 HTML handler
+	// translated comment
 	htmlHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Write([]byte(`<!DOCTYPE html>
@@ -176,11 +176,11 @@ func testHTMLInjection() {
 </html>`))
 	})
 
-	// 使用注入器中间件包装
+	// translated comment
 	injectorMiddleware := gw.GetInjectorMiddleware()
 	wrappedHandler := injectorMiddleware(htmlHandler)
 
-	// 测试注入
+	// translated comment
 	fmt.Println("1️⃣ 测试 HTML 注入")
 	req := httptest.NewRequest("GET", "/test", nil)
 	w := httptest.NewRecorder()
@@ -193,7 +193,7 @@ func testHTMLInjection() {
 	fmt.Printf("   原始 HTML 长度: ~150 字节\n")
 	fmt.Printf("   注入后 HTML 长度: %d 字节\n", len(html))
 
-	// 验证注入
+	// translated comment
 	if strings.Contains(html, "P3 Anti-Detection") {
 		fmt.Println("   ✓ P3 代码已成功注入")
 	} else {
@@ -210,17 +210,17 @@ func testHTMLInjection() {
 		}
 	}
 
-	// 显示注入片段
+	// translated comment
 	fmt.Println("\n   注入代码预览:")
 	lines := strings.Split(html, "\n")
 	for i, line := range lines {
-		if i > 5 && i < 10 { // 显示第6-10行
+		if i > 5 && i < 10 { // translated comment
 			fmt.Printf("     %s\n", line)
 		}
 	}
 	fmt.Println()
 
-	// 测试非 HTML 响应
+	// translated comment
 	fmt.Println("2️⃣ 测试非 HTML 响应（不应注入）")
 	jsonHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -242,25 +242,25 @@ func testHTMLInjection() {
 	}
 }
 
-// testEndToEnd 端到端集成测试
+// translated comment
 func testEndToEnd() {
 	fmt.Println("1️⃣ 启动测试网关服务器")
 
-	// 创建网关配置
+	// translated comment
 	config := *gateway.DefaultGatewayConfig
-	config.Port = 0 // 使用随机端口
+	config.Port = 0 // translated comment
 	config.P3Enabled = true
 	gw := gateway.NewGateway(&config)
 
-	// 创建测试服务器
+	// translated comment
 	mux := http.NewServeMux()
 
-	// 注册路由
+	// translated comment
 	mux.HandleFunc("/api/v1/p3/antidetect.js", gw.AntiDetectCodeHandler)
 	mux.HandleFunc("/api/v1/p3/profiles", gw.ProfileListHandler)
 	mux.HandleFunc("/api/v1/p3/profile", gw.ProfileDetailHandler)
 
-	// 创建一个 HTML 测试页面
+	// translated comment
 	injectorMiddleware := gw.GetInjectorMiddleware()
 	htmlHandler := injectorMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
@@ -277,14 +277,14 @@ func testEndToEnd() {
 	}))
 	mux.Handle("/", htmlHandler)
 
-	// 启动服务器
+	// translated comment
 	ts := httptest.NewServer(mux)
 	defer ts.Close()
 
 	fmt.Printf("   ✓ 测试服务器启动: %s\n", ts.URL)
 	fmt.Println()
 
-	// 测试 API 端点
+	// translated comment
 	fmt.Println("2️⃣ 测试 API 端点")
 
 	resp, err := http.Get(ts.URL + "/api/v1/p3/profiles")
@@ -305,7 +305,7 @@ func testEndToEnd() {
 	}
 	fmt.Println()
 
-	// 测试 HTML 页面注入
+	// translated comment
 	fmt.Println("3️⃣ 测试 HTML 页面注入")
 
 	resp, err = http.Get(ts.URL + "/")
@@ -318,7 +318,7 @@ func testEndToEnd() {
 		fmt.Printf("   ✓ 页面请求成功\n")
 		fmt.Printf("   HTML 长度: %d 字节\n", len(html))
 
-		// 验证注入
+		// translated comment
 		checks := []string{
 			"<script>",
 			"P3 Anti-Detection",
@@ -347,7 +347,7 @@ func testEndToEnd() {
 	}
 	fmt.Println()
 
-	// 性能测试
+	// translated comment
 	fmt.Println("4️⃣ 性能测试")
 
 	iterations := 100

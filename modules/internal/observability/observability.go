@@ -2,7 +2,7 @@
 // +build instrumentation
 
 // internal/observability/observability.go
-// 完整的可观测性整合（现在就能用）
+// translated comment
 
 package observability
 
@@ -18,25 +18,25 @@ import (
 )
 
 // ========================================================================
-// 1. Prometheus 指标注册
+// translated comment
 // ========================================================================
 
-// FingerprintMetrics 指纹生成相关指标
+// translated comment
 type FingerprintMetrics struct {
-	// JA3/JA4/JA4S 生成耗时
+	// translated comment
 	GenerationDuration prometheus.HistogramVec
 
-	// 缓存命中率
+	// translated comment
 	CacheHitRate prometheus.GaugeVec
 
-	// 错误计数
+	// translated comment
 	ErrorCount prometheus.CounterVec
 
-	// 生成速率（每秒）
+	// translated comment
 	GenerationRate prometheus.GaugeVec
 }
 
-// NewFingerprintMetrics 创建指纹相关指标
+// translated comment
 func NewFingerprintMetrics() *FingerprintMetrics {
 	return &FingerprintMetrics{
 		GenerationDuration: *promauto.NewHistogramVec(
@@ -71,22 +71,22 @@ func NewFingerprintMetrics() *FingerprintMetrics {
 	}
 }
 
-// BehaviorAnalysisMetrics 行为分析相关指标
+// translated comment
 type BehaviorAnalysisMetrics struct {
-	// 异常检测延迟
+	// translated comment
 	AnalysisDuration prometheus.HistogramVec
 
-	// 检测到的异常数
+	// translated comment
 	AnomalyCount prometheus.CounterVec
 
-	// 风险评分分布
+	// translated comment
 	RiskScoreHistogram prometheus.HistogramVec
 
-	// 高风险客户端数
+	// translated comment
 	HighRiskClientCount prometheus.GaugeVec
 }
 
-// NewBehaviorAnalysisMetrics 创建行为分析指标
+// translated comment
 func NewBehaviorAnalysisMetrics() *BehaviorAnalysisMetrics {
 	return &BehaviorAnalysisMetrics{
 		AnalysisDuration: *promauto.NewHistogramVec(
@@ -122,19 +122,19 @@ func NewBehaviorAnalysisMetrics() *BehaviorAnalysisMetrics {
 	}
 }
 
-// PipelineMetrics 管道执行相关指标
+// translated comment
 type PipelineMetrics struct {
-	// 各阶段耗时
+	// translated comment
 	StageDuration prometheus.HistogramVec
 
-	// 阶段失败计数
+	// translated comment
 	StageErrorCount prometheus.CounterVec
 
-	// 总管道耗时
+	// translated comment
 	TotalDuration prometheus.HistogramVec
 }
 
-// NewPipelineMetrics 创建管道指标
+// translated comment
 func NewPipelineMetrics() *PipelineMetrics {
 	return &PipelineMetrics{
 		StageDuration: *promauto.NewHistogramVec(
@@ -164,62 +164,62 @@ func NewPipelineMetrics() *PipelineMetrics {
 }
 
 // ========================================================================
-// 2. OpenTelemetry 追踪集成
+// translated comment
 // ========================================================================
 
-// TracingContext 追踪上下文
+// translated comment
 type TracingContext struct {
 	Tracer   trace.Tracer
 	Logger   *zap.SugaredLogger
-	Metadata map[string]string // request_id, user_id 等
+	Metadata map[string]string // translated comment
 }
 
-// StartSpan 开启追踪 span
+// translated comment
 func (tc *TracingContext) StartSpan(ctx context.Context, spanName string, attrs ...attribute.KeyValue) (context.Context, trace.Span) {
 	ctx, span := tc.Tracer.Start(ctx, spanName)
 
-	// 添加元数据作为 span 属性
+	// translated comment
 	for k, v := range tc.Metadata {
 		span.SetAttributes(attribute.String(k, v))
 	}
 
-	// 添加自定义属性
+	// translated comment
 	span.SetAttributes(attrs...)
 
 	return ctx, span
 }
 
-// RecordEvent 在 span 中记录事件
+// translated comment
 func (tc *TracingContext) RecordEvent(span trace.Span, eventName string, attrs ...attribute.KeyValue) {
 	span.AddEvent(eventName, trace.WithAttributes(attrs...))
 }
 
-// RecordError 记录错误
+// translated comment
 func (tc *TracingContext) RecordError(span trace.Span, err error) {
 	span.RecordError(err)
 }
 
 // ========================================================================
-// 3. 结构化日志集成
+// translated comment
 // ========================================================================
 
-// Logger 结构化日志包装
+// translated comment
 type Logger struct {
 	inner *zap.SugaredLogger
 }
 
-// NewLogger 创建日志器
+// translated comment
 func NewLogger() *Logger {
 	cfg := zap.NewProductionConfig()
 	l, _ := cfg.Build()
 	return &Logger{inner: l.Sugar()}
 }
 
-// WithContext 创建带上下文的日志器
+// translated comment
 func (l *Logger) WithContext(ctx context.Context) *Logger {
 	fields := make([]interface{}, 0)
 
-	// 从上下文提取标准字段
+	// translated comment
 	if requestID := ctx.Value("request_id"); requestID != nil {
 		fields = append(fields, "request_id", requestID)
 	}
@@ -230,7 +230,7 @@ func (l *Logger) WithContext(ctx context.Context) *Logger {
 	return &Logger{inner: l.inner.With(fields...)}
 }
 
-// WithFields 添加字段
+// translated comment
 func (l *Logger) WithFields(fields ...interface{}) *Logger {
 	return &Logger{inner: l.inner.With(fields...)}
 }
@@ -252,17 +252,17 @@ func (l *Logger) Error(msg string, fields ...interface{}) {
 }
 
 // ========================================================================
-// 4. 可观测性中间件
+// translated comment
 // ========================================================================
 
-// ObservabilityMiddleware 为业务逻辑自动添加指标和追踪
+// translated comment
 type ObservabilityMiddleware struct {
 	tracer  trace.Tracer
 	logger  *Logger
 	metrics *PipelineMetrics
 }
 
-// NewObservabilityMiddleware 创建中间件
+// translated comment
 func NewObservabilityMiddleware(tracer trace.Tracer, logger *Logger, metrics *PipelineMetrics) *ObservabilityMiddleware {
 	return &ObservabilityMiddleware{
 		tracer:  tracer,
@@ -271,11 +271,11 @@ func NewObservabilityMiddleware(tracer trace.Tracer, logger *Logger, metrics *Pi
 	}
 }
 
-// WrapFunctionWithMetrics 为函数添加自动指标收集
-// 示例：
+// translated comment
+// translated comment
 //
 //	WrapFunctionWithMetrics("ja3.parse", func() {
-//	    // ya3 解析逻辑
+// translated comment
 //	})
 func (om *ObservabilityMiddleware) WrapFunctionWithMetrics(
 	ctx context.Context,
@@ -290,7 +290,7 @@ func (om *ObservabilityMiddleware) WrapFunctionWithMetrics(
 
 	log.Info("function started", "function", functionName)
 
-	// 执行函数
+	// translated comment
 	err := fn(ctx)
 
 	duration := time.Since(startTime)
@@ -315,7 +315,7 @@ func (om *ObservabilityMiddleware) WrapFunctionWithMetrics(
 }
 
 // ========================================================================
-// 5. 使用示例（立即可集成到项目）
+// translated comment
 // ========================================================================
 
 /*
@@ -329,7 +329,7 @@ import (
 )
 
 func init() {
-	// 初始化 observability
+	// translated comment
 	tracer := otel.Tracer("fingerprint")
 	logger := observability.NewLogger()
 	metrics := observability.NewPipelineMetrics()
@@ -337,31 +337,31 @@ func init() {
 	middleware := observability.NewObservabilityMiddleware(tracer, logger, metrics)
 }
 
-// 在 BehaviorAnalyzer 中
+// translated comment
 func (ba *BehaviorAnalyzer) Analyze(ctx context.Context, clientIP string) error {
 	return middleware.WrapFunctionWithMetrics(
 		ctx,
 		"behavior.analyze",
 		func(ctx context.Context) error {
-			// 原有的分析逻辑
+			// translated comment
 			return ba.analyzeImpl(ctx, clientIP)
 		},
 	)
 }
 
-// 在 ProcessingEngine 中
+// translated comment
 func (pe *ProcessingEngine) Process(ctx context.Context, req *ProcessingRequest) error {
 	return middleware.WrapFunctionWithMetrics(
 		ctx,
 		"processing.process",
 		func(ctx context.Context) error {
-			// 原有的处理逻辑
+			// translated comment
 			return pe.processImpl(ctx, req)
 		},
 	)
 }
 
-// 使用 Prometheus /metrics 端口
+// translated comment
 import "net/http"
 import "github.com/prometheus/client_golang/prometheus/promhttp"
 

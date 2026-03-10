@@ -293,7 +293,7 @@ func TestWeightedDistance(t *testing.T) {
 
 	dist := sc.weightedDistance(a, b)
 
-	// Expected distance: sqrt(1*3^2 + 2*4^2) = sqrt(9 + 32) = sqrt(41) ≈ 6.4
+	// translated comment
 	expected := math.Sqrt(41)
 	if math.Abs(dist-expected) > 0.001 {
 		t.Errorf("weightedDistance = %v, want %v", dist, expected)

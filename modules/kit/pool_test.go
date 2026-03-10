@@ -6,23 +6,23 @@ import (
 	"github.com/vistone/fingerprint/modules/core/types"
 )
 
-// TestHTTPHeadersPool 测试 HTTPHeaders 对象池
+// translated comment
 func TestHTTPHeadersPool(t *testing.T) {
-	// 获取对象
+	// translated comment
 	h1 := GetHTTPHeaders()
 	if h1 == nil {
 		t.Fatal("GetHTTPHeaders() returned nil")
 	}
 
-	// 设置一些值
+	// translated comment
 	h1.UserAgent = "test-ua"
 	h1.Accept = "test-accept"
 	h1.Custom["key"] = "value"
 
-	// 归还对象
+	// translated comment
 	PutHTTPHeaders(h1)
 
-	// 再次获取，应该被重置
+	// translated comment
 	h2 := GetHTTPHeaders()
 	if h2.UserAgent != "" {
 		t.Errorf("UserAgent not reset: %s", h2.UserAgent)
@@ -35,7 +35,7 @@ func TestHTTPHeadersPool(t *testing.T) {
 	}
 }
 
-// TestMapStringStringPool 测试 map[string]string 对象池
+// translated comment
 func TestMapStringStringPool(t *testing.T) {
 	m1 := GetMapStringString()
 	if m1 == nil {
@@ -53,9 +53,9 @@ func TestMapStringStringPool(t *testing.T) {
 	}
 }
 
-// TestByteSlicePool 测试字节切片池
+// translated comment
 func TestByteSlicePool(t *testing.T) {
-	// 测试大缓冲区
+	// translated comment
 	buf1 := GetByteSlice()
 	if cap(buf1) < 4096 {
 		t.Errorf("Buffer capacity too small: %d", cap(buf1))
@@ -69,7 +69,7 @@ func TestByteSlicePool(t *testing.T) {
 		t.Errorf("Buffer not reset: %d", len(buf2))
 	}
 
-	// 测试小缓冲区
+	// translated comment
 	smallBuf := GetSmallByteSlice()
 	if cap(smallBuf) < 1024 {
 		t.Errorf("Small buffer capacity too small: %d", cap(smallBuf))
@@ -77,7 +77,7 @@ func TestByteSlicePool(t *testing.T) {
 	PutSmallByteSlice(smallBuf)
 }
 
-// TestStringBuilderPool 测试字符串构建器池
+// translated comment
 func TestStringBuilderPool(t *testing.T) {
 	sb1 := GetStringBuilder()
 	sb1.WriteString("test string")
@@ -90,19 +90,19 @@ func TestStringBuilderPool(t *testing.T) {
 	}
 }
 
-// TestPutHTTPHeaders_Nil 测试归还 nil
+// translated comment
 func TestPutHTTPHeaders_Nil(t *testing.T) {
-	// 不应 panic
+	// translated comment
 	PutHTTPHeaders(nil)
 }
 
-// TestPutMapStringString_Nil 测试归还 nil map
+// translated comment
 func TestPutMapStringString_Nil(t *testing.T) {
-	// 不应 panic
+	// translated comment
 	PutMapStringString(nil)
 }
 
-// BenchmarkHTTPHeadersPool 基准测试 HTTPHeaders 池
+// translated comment
 func BenchmarkHTTPHeadersPool(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
@@ -113,7 +113,7 @@ func BenchmarkHTTPHeadersPool(b *testing.B) {
 	})
 }
 
-// BenchmarkMapStringStringPool 基准测试 map 池
+// translated comment
 func BenchmarkMapStringStringPool(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
@@ -124,7 +124,7 @@ func BenchmarkMapStringStringPool(b *testing.B) {
 	})
 }
 
-// BenchmarkHTTPHeadersNew 基准测试直接创建 HTTPHeaders
+// translated comment
 func BenchmarkHTTPHeadersNew(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
@@ -137,7 +137,7 @@ func BenchmarkHTTPHeadersNew(b *testing.B) {
 	})
 }
 
-// BenchmarkMapStringStringNew 基准测试直接创建 map
+// translated comment
 func BenchmarkMapStringStringNew(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {

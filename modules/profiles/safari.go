@@ -1,5 +1,5 @@
-// Package profiles - Safari浏览器指纹
-// 包含Safari 16-18版本的完整指纹配置
+// translated comment
+// translated comment
 package profiles
 
 import (
@@ -8,7 +8,7 @@ import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// safariTCPIP 返回 Safari 浏览器的 TCP/IP 指纹 (macOS)
+// translated comment
 func safariTCPIP() *TCPIPFingerprint {
 	return &TCPIPFingerprint{
 		IPVersion:        4,
@@ -26,9 +26,9 @@ func safariTCPIP() *TCPIPFingerprint {
 	}
 }
 
-// Safari浏览器指纹 (16-18版本)
+// translated comment
 var (
-	// Safari 16.x 系列 - macOS Ventura
+	// translated comment
 	Safari16_0 = ClientProfile{
 		ID: "safari_16_0", Name: "Safari 16.0",
 		BrowserType: core.BrowserSafari, BrowserVersion: "16.0",
@@ -146,7 +146,7 @@ var (
 		TCPIP: safariTCPIP(),
 	}
 
-	// Safari 17.x 系列 - macOS Sonoma
+	// translated comment
 	Safari17_0 = ClientProfile{
 		ID: "safari_17_0", Name: "Safari 17.0",
 		BrowserType: core.BrowserSafari, BrowserVersion: "17.0",
@@ -252,7 +252,7 @@ var (
 		TCPIP: safariTCPIP(),
 	}
 
-	// Safari 18.x 系列 - macOS Sequoia
+	// translated comment
 	Safari18_0 = ClientProfile{
 		ID: "safari_18_0", Name: "Safari 18.0",
 		BrowserType: core.BrowserSafari, BrowserVersion: "18.0",
@@ -300,18 +300,18 @@ var (
 )
 
 func init() {
-	// 注册所有Safari指纹
+	// translated comment
 	profiles := []ClientProfile{
 		Safari16_0, Safari16_1, Safari16_2, Safari16_3, Safari16_4, Safari16_5, Safari16_6,
 		Safari17_0, Safari17_1, Safari17_2, Safari17_3, Safari17_4, Safari17_5, Safari17_6,
 		Safari18_0, Safari18_1, Safari18_2,
 	}
 	
-	// 为每个 profile 填充缺失的 HTTP/2 和 HTTP/3 配置
+	// translated comment
 	for i := range profiles {
 		p := &profiles[i]
 		
-		// 填充 HTTP/2 配置（如果缺失）
+		// translated comment
 		if p.HTTP2Settings.HeaderTableSize == 0 && p.HTTP2Settings.InitialWindowSize == 0 {
 			p.HTTP2Settings = core.HTTP2Settings{
 				HeaderTableSize:      4096,
@@ -324,12 +324,12 @@ func init() {
 			p.PseudoHeaderOrder = []string{":method", ":scheme", ":path", ":authority"}
 		}
 		
-		// 填充 ConnectionFlow（如果缺失）
+		// translated comment
 		if p.ConnectionFlow == 0 {
 			p.ConnectionFlow = 15663105
 		}
 		
-		// 填充 HTTP/3 (QUIC) 配置（如果缺失）
+		// translated comment
 		if p.HTTP3Settings == nil {
 			p.HTTP3Settings = &core.HTTP3Settings{
 				QUICVersion:            core.QUICVersion1,
@@ -345,7 +345,7 @@ func init() {
 			p.QUICVersions = []uint32{core.QUICVersion1}
 		}
 		
-		// 填充 Headers（如果缺失）
+		// translated comment
 		if p.Headers == nil {
 			p.Headers = &core.HTTPHeaders{}
 		}
@@ -367,7 +367,7 @@ func init() {
 	}
 }
 
-// buildSafariUserAgent 构建 Safari User-Agent
+// translated comment
 func buildSafariUserAgent(version string, os core.OperatingSystem) string {
 	osStr := string(os)
 	switch {
@@ -378,7 +378,7 @@ func buildSafariUserAgent(version string, os core.OperatingSystem) string {
 	}
 }
 
-// AllSafariProfiles 返回所有Safari指纹
+// translated comment
 func AllSafariProfiles() []ClientProfile {
 	return []ClientProfile{
 		Safari16_0, Safari16_1, Safari16_2, Safari16_3, Safari16_4, Safari16_5, Safari16_6,

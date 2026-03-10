@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Cache 是一个简单的并发安全缓存
+// translated comment
 type Cache struct {
 	mu    sync.RWMutex
 	items map[string]cacheItem
@@ -16,17 +16,17 @@ type cacheItem struct {
 	expiration int64
 }
 
-// NewCache 创建新缓存
+// translated comment
 func NewCache() *Cache {
 	c := &Cache{
 		items: make(map[string]cacheItem),
 	}
-	// 启动清理 goroutine
+	// translated comment
 	go c.cleanup()
 	return c
 }
 
-// Set 设置缓存项
+// translated comment
 func (c *Cache) Set(key string, value interface{}, ttl time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -38,7 +38,7 @@ func (c *Cache) Set(key string, value interface{}, ttl time.Duration) {
 	}
 }
 
-// Get 获取缓存项
+// translated comment
 func (c *Cache) Get(key string) (interface{}, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -48,7 +48,7 @@ func (c *Cache) Get(key string) (interface{}, bool) {
 		return nil, false
 	}
 
-	// 检查是否过期
+	// translated comment
 	if time.Now().UnixNano() > item.expiration {
 		return nil, false
 	}
@@ -56,7 +56,7 @@ func (c *Cache) Get(key string) (interface{}, bool) {
 	return item.value, true
 }
 
-// GetString 获取字符串缓存项
+// translated comment
 func (c *Cache) GetString(key string) (string, bool) {
 	val, ok := c.Get(key)
 	if !ok {
@@ -66,21 +66,21 @@ func (c *Cache) GetString(key string) (string, bool) {
 	return str, ok
 }
 
-// Delete 删除缓存项
+// translated comment
 func (c *Cache) Delete(key string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	delete(c.items, key)
 }
 
-// Clear 清空缓存
+// translated comment
 func (c *Cache) Clear() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.items = make(map[string]cacheItem)
 }
 
-// cleanup 定期清理过期项
+// translated comment
 func (c *Cache) cleanup() {
 	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
@@ -97,7 +97,7 @@ func (c *Cache) cleanup() {
 	}
 }
 
-// LRUCache 是一个简单的 LRU 缓存
+// translated comment
 type LRUCache struct {
 	mu       sync.RWMutex
 	items    map[string]*lruItem
@@ -114,7 +114,7 @@ type lruItem struct {
 	next       *lruItem
 }
 
-// NewLRUCache 创建新的 LRU 缓存
+// translated comment
 func NewLRUCache(maxSize int) *LRUCache {
 	if maxSize <= 0 {
 		maxSize = 1000
@@ -125,14 +125,14 @@ func NewLRUCache(maxSize int) *LRUCache {
 	}
 }
 
-// Set 设置缓存项
+// translated comment
 func (c *LRUCache) Set(key string, value interface{}, ttl time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	expiration := time.Now().Add(ttl).UnixNano()
 
-	// 如果已存在，更新值并移动到头部
+	// translated comment
 	if item, exists := c.items[key]; exists {
 		item.value = value
 		item.expiration = expiration
@@ -140,7 +140,7 @@ func (c *LRUCache) Set(key string, value interface{}, ttl time.Duration) {
 		return
 	}
 
-	// 创建新项
+	// translated comment
 	newItem := &lruItem{
 		key:        key,
 		value:      value,
@@ -149,13 +149,13 @@ func (c *LRUCache) Set(key string, value interface{}, ttl time.Duration) {
 	c.items[key] = newItem
 	c.addToHead(newItem)
 
-	// 如果超过最大大小，移除尾部
+	// translated comment
 	if len(c.items) > c.maxSize {
 		c.removeTail()
 	}
 }
 
-// Get 获取缓存项
+// translated comment
 func (c *LRUCache) Get(key string) (interface{}, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -165,18 +165,18 @@ func (c *LRUCache) Get(key string) (interface{}, bool) {
 		return nil, false
 	}
 
-	// 检查是否过期
+	// translated comment
 	if time.Now().UnixNano() > item.expiration {
 		c.removeItem(item)
 		return nil, false
 	}
 
-	// 移动到头部（最近使用）
+	// translated comment
 	c.moveToHead(item)
 	return item.value, true
 }
 
-// addToHead 添加项到头部
+// translated comment
 func (c *LRUCache) addToHead(item *lruItem) {
 	item.prev = nil
 	item.next = c.head
@@ -189,7 +189,7 @@ func (c *LRUCache) addToHead(item *lruItem) {
 	}
 }
 
-// moveToHead 移动项到头部
+// translated comment
 func (c *LRUCache) moveToHead(item *lruItem) {
 	if item == c.head {
 		return
@@ -198,7 +198,7 @@ func (c *LRUCache) moveToHead(item *lruItem) {
 	c.addToHead(item)
 }
 
-// removeItem 移除项
+// translated comment
 func (c *LRUCache) removeItem(item *lruItem) {
 	if item.prev != nil {
 		item.prev.next = item.next
@@ -212,7 +212,7 @@ func (c *LRUCache) removeItem(item *lruItem) {
 	}
 }
 
-// removeTail 移除尾部项（最久未使用）
+// translated comment
 func (c *LRUCache) removeTail() {
 	if c.tail == nil {
 		return

@@ -2,66 +2,66 @@ package config
 
 import "github.com/vistone/fingerprint/modules/internal/extension"
 
-// 兼容层说明：
-// 规则配置主入口已收敛到 extension 包。
-// 本包保留同名类型与函数，便于历史调用方平滑迁移。
+// translated comment
+// translated comment
+// translated comment
 
-// RulesConfig 兼容别名（迁移到 extension.RulesConfig）
+// translated comment
 type RulesConfig = extension.RulesConfig
 
-// EntropyConfig 兼容别名
+// translated comment
 type EntropyConfig = extension.EntropyConfig
 
-// ToolMarkersConfig 兼容别名
+// translated comment
 type ToolMarkersConfig = extension.ToolMarkersConfig
 
-// MarkerInfo 兼容别名
+// translated comment
 type MarkerInfo = extension.MarkerInfo
 
-// HeadlessBrowserConfig 兼容别名
+// translated comment
 type HeadlessBrowserConfig = extension.HeadlessBrowserConfig
 
-// OSPlatformConfig 兼容别名
+// translated comment
 type OSPlatformConfig = extension.OSPlatformConfig
 
-// OSRule 兼容别名
+// translated comment
 type OSRule = extension.OSRule
 
-// UAOSConfig 兼容别名
+// translated comment
 type UAOSConfig = extension.UAOSConfig
 
-// UARuleOS 兼容别名
+// translated comment
 type UARuleOS = extension.UARuleOS
 
-// MobileScreenConfig 兼容别名
+// translated comment
 type MobileScreenConfig = extension.MobileScreenConfig
 
-// MobileScreenRule 兼容别名
+// translated comment
 type MobileScreenRule = extension.MobileScreenRule
 
-// UAFeatureConfig 兼容别名
+// translated comment
 type UAFeatureConfig = extension.UAFeatureConfig
 
-// UAFeatureRule 兼容别名
+// translated comment
 type UAFeatureRule = extension.UAFeatureRule
 
-// ScoringConfig 兼容别名（对应 extension.RulesScoringConfig）
+// translated comment
 type ScoringConfig = extension.RulesScoringConfig
 
-// RiskLevel 兼容别名
+// translated comment
 type RiskLevel = extension.RiskLevel
 
-// LoadRulesConfig 兼容转发
+// translated comment
 func LoadRulesConfig(path string) (*RulesConfig, error) {
 	return extension.LoadRulesConfig(path)
 }
 
-// LoadRulesConfigByFilename 兼容转发
+// translated comment
 func LoadRulesConfigByFilename(filename string) (*RulesConfig, error) {
 	return extension.LoadRulesConfigByFilename(filename)
 }
 
-// DefaultRulesConfig 兼容转发
+// translated comment
 func DefaultRulesConfig() *RulesConfig {
 	return extension.DefaultRulesConfig()
 }

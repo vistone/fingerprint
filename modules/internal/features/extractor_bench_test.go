@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-// BenchmarkExtractFeature_Entropy 基准测试：熵特征提取
+// translated comment
 func BenchmarkExtractFeature_Entropy(b *testing.B) {
 	extractor := NewBaseFeatureExtractor(nil)
 	config := DefaultFeatureConfig()
@@ -17,7 +17,7 @@ func BenchmarkExtractFeature_Entropy(b *testing.B) {
 	}
 }
 
-// BenchmarkExtractFeature_ToolMarker 基准测试：工具标记特征提取
+// translated comment
 func BenchmarkExtractFeature_ToolMarker(b *testing.B) {
 	extractor := NewBaseFeatureExtractor(nil)
 	config := DefaultFeatureConfig()
@@ -30,7 +30,7 @@ func BenchmarkExtractFeature_ToolMarker(b *testing.B) {
 	}
 }
 
-// BenchmarkExtractFeature_HeadlessBrowser 基准测试：无头浏览器检测
+// translated comment
 func BenchmarkExtractFeature_HeadlessBrowser(b *testing.B) {
 	extractor := NewBaseFeatureExtractor(nil)
 	config := DefaultFeatureConfig()
@@ -43,7 +43,7 @@ func BenchmarkExtractFeature_HeadlessBrowser(b *testing.B) {
 	}
 }
 
-// BenchmarkExtractFeature_OSPlatformContradiction 基准测试：OS平台矛盾检测
+// translated comment
 func BenchmarkExtractFeature_OSPlatformContradiction(b *testing.B) {
 	extractor := NewBaseFeatureExtractor(nil)
 	config := DefaultFeatureConfig()
@@ -59,7 +59,7 @@ func BenchmarkExtractFeature_OSPlatformContradiction(b *testing.B) {
 	}
 }
 
-// BenchmarkBaseFeatureExtractor_AllFeatures 基准测试：所有特征提取
+// translated comment
 func BenchmarkBaseFeatureExtractor_AllFeatures(b *testing.B) {
 	extractor := NewBaseFeatureExtractor(nil)
 	config := DefaultFeatureConfig()
@@ -85,7 +85,7 @@ func BenchmarkBaseFeatureExtractor_AllFeatures(b *testing.B) {
 	}
 }
 
-// BenchmarkLegacyFeatureAdapter_DetectAnomalies 基准测试：遗留适配器异常检测
+// translated comment
 func BenchmarkLegacyFeatureAdapter_DetectAnomalies(b *testing.B) {
 	adapter := NewLegacyFeatureAdapter(nil)
 	data := []byte("Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0")
@@ -97,7 +97,7 @@ func BenchmarkLegacyFeatureAdapter_DetectAnomalies(b *testing.B) {
 	}
 }
 
-// BenchmarkLegacyFeatureAdapter_CheckContradictions 基准测试：矛盾检测
+// translated comment
 func BenchmarkLegacyFeatureAdapter_CheckContradictions(b *testing.B) {
 	adapter := NewLegacyFeatureAdapter(nil)
 	attributes := map[string]string{
@@ -113,7 +113,7 @@ func BenchmarkLegacyFeatureAdapter_CheckContradictions(b *testing.B) {
 	}
 }
 
-// BenchmarkLegacyFeatureAdapter_RecognizeFromHeaders 基准测试：从Headers识别
+// translated comment
 func BenchmarkLegacyFeatureAdapter_RecognizeFromHeaders(b *testing.B) {
 	adapter := NewLegacyFeatureAdapter(nil)
 	headers := map[string]string{
@@ -129,7 +129,7 @@ func BenchmarkLegacyFeatureAdapter_RecognizeFromHeaders(b *testing.B) {
 	}
 }
 
-// BenchmarkCalculateRiskScore 基准测试：风险分数计算
+// translated comment
 func BenchmarkCalculateRiskScore(b *testing.B) {
 	scores := map[FeatureType]float64{
 		FeatureEntropy:                   0.8,

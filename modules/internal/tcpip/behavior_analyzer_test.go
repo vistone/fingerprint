@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// TestNewNetworkBehaviorAnalyzer 测试创建网络行为分析器
+// translated comment
 func TestNewNetworkBehaviorAnalyzer(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -70,7 +70,7 @@ func TestNewNetworkBehaviorAnalyzer(t *testing.T) {
 	}
 }
 
-// TestNetworkBehaviorAnalyzer_RecordPacket 测试记录数据包
+// translated comment
 func TestNetworkBehaviorAnalyzer_RecordPacket(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -98,7 +98,7 @@ func TestNetworkBehaviorAnalyzer_RecordPacket(t *testing.T) {
 			name:        "测试滑动窗口行为",
 			packetCount: 10,
 			maxSamples:  8,
-			expectedLen: 7, // 超过后移除25%(2个) + 新添加 = 8 - 2 + 1 = 7... 实际是滑动窗口逻辑
+			expectedLen: 7, // translated comment
 		},
 	}
 
@@ -120,19 +120,19 @@ func TestNetworkBehaviorAnalyzer_RecordPacket(t *testing.T) {
 				lastSeq += 100
 			}
 
-			// 对于滑动窗口测试，实际长度可能不同
+			// translated comment
 			if tt.packetCount <= tt.maxSamples {
 				if len(nba.packets) != tt.packetCount {
 					t.Errorf("packets length = %v, want %v", len(nba.packets), tt.packetCount)
 				}
 			} else {
-				// 滑动窗口生效，检查长度不超过maxSamples
+				// translated comment
 				if len(nba.packets) > tt.maxSamples {
 					t.Errorf("packets length %v exceeds maxSamples %v", len(nba.packets), tt.maxSamples)
 				}
 			}
 
-			// 验证第一个数据包的序列号（对于非滑动窗口情况）
+			// translated comment
 			if tt.packetCount <= tt.maxSamples && len(nba.packets) > 0 {
 				if nba.packets[0].SequenceNumber != 1000 {
 					t.Errorf("first packet seq = %v, want %v", nba.packets[0].SequenceNumber, 1000)
@@ -142,7 +142,7 @@ func TestNetworkBehaviorAnalyzer_RecordPacket(t *testing.T) {
 	}
 }
 
-// TestAppendWithLimit 测试带限制的切片追加
+// translated comment
 func TestAppendWithLimit(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -163,14 +163,14 @@ func TestAppendWithLimit(t *testing.T) {
 			initial:    []int{1, 2, 3, 4},
 			item:       5,
 			maxSamples: 4,
-			expected:   []int{2, 3, 4, 5}, // 移除25%(1个) + 添加新项
+			expected:   []int{2, 3, 4, 5}, // translated comment
 		},
 		{
 			name:       "maxSamples为1的边界情况",
 			initial:    []int{1},
 			item:       2,
 			maxSamples: 1,
-			expected:   []int{2}, // 移除1个 + 添加新项
+			expected:   []int{2}, // translated comment
 		},
 		{
 			name:       "空切片追加",
@@ -184,7 +184,7 @@ func TestAppendWithLimit(t *testing.T) {
 			initial:    []int{1, 2, 3},
 			item:       4,
 			maxSamples: 4,
-			expected:   []int{1, 2, 3, 4}, // 刚好达到限制，不滑动
+			expected:   []int{1, 2, 3, 4}, // translated comment
 		},
 	}
 
@@ -198,7 +198,7 @@ func TestAppendWithLimit(t *testing.T) {
 	}
 }
 
-// TestNetworkBehaviorAnalyzer_AnalyzeBehavior 测试分析网络行为
+// translated comment
 func TestNetworkBehaviorAnalyzer_AnalyzeBehavior(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -291,7 +291,7 @@ func TestNetworkBehaviorAnalyzer_AnalyzeBehavior(t *testing.T) {
 	}
 }
 
-// TestAnalyzeRTT 测试RTT分析
+// translated comment
 func TestAnalyzeRTT(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -315,7 +315,7 @@ func TestAnalyzeRTT(t *testing.T) {
 			expectedAvg: 50 * time.Millisecond,
 			expectedMin: 50 * time.Millisecond,
 			expectedMax: 50 * time.Millisecond,
-			wantNetwork: "regional", // 50ms是regional的边界
+			wantNetwork: "regional", // translated comment
 		},
 		{
 			name:        "多RTT计算",
@@ -370,7 +370,7 @@ func TestAnalyzeRTT(t *testing.T) {
 			result := nba.AnalyzeBehavior()
 
 			if len(tt.rttValues) == 0 {
-				// 空RTT列表时，RTTAnalysis应该是空的（Count=0）
+				// translated comment
 				if result.RTTAnalysis != nil && result.RTTAnalysis.Count != 0 {
 					t.Errorf("Expected empty RTT analysis, got count %d", result.RTTAnalysis.Count)
 				}
@@ -393,7 +393,7 @@ func TestAnalyzeRTT(t *testing.T) {
 	}
 }
 
-// TestAnalyzeSequenceNumbers 测试序列号分析
+// translated comment
 func TestAnalyzeSequenceNumbers(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -418,12 +418,12 @@ func TestAnalyzeSequenceNumbers(t *testing.T) {
 		{
 			name:        "线性顺序模式",
 			seqNumbers:  []uint32{1000, 1100, 1200, 1300, 1400},
-			wantPattern: "time_based", // 差值是100，会被识别为时间相关
+			wantPattern: "time_based", // translated comment
 		},
 		{
 			name:        "复杂模式",
 			seqNumbers:  []uint32{1000, 1100, 1150, 1200, 1250},
-			wantPattern: "time_based", // 大多数是正的小差值，会被识别为时间相关
+			wantPattern: "time_based", // translated comment
 		},
 	}
 
@@ -451,7 +451,7 @@ func TestAnalyzeSequenceNumbers(t *testing.T) {
 	}
 }
 
-// TestAnalyzeIPIDs 测试IP ID分析
+// translated comment
 func TestAnalyzeIPIDs(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -504,7 +504,7 @@ func TestAnalyzeIPIDs(t *testing.T) {
 	}
 }
 
-// TestAnalyzePacketSizes 测试数据包大小分析
+// translated comment
 func TestAnalyzePacketSizes(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -524,7 +524,7 @@ func TestAnalyzePacketSizes(t *testing.T) {
 		{
 			name:         "不同大小的数据包",
 			payloads:     []string{"a", "ab", "abc", "abcd"},
-			wantVariance: 1, // 整数除法: 5/4 = 1
+			wantVariance: 1, // translated comment
 		},
 	}
 
@@ -552,7 +552,7 @@ func TestAnalyzePacketSizes(t *testing.T) {
 	}
 }
 
-// TestAnalyzeProtocolDistribution 测试协议分布统计
+// translated comment
 func TestAnalyzeProtocolDistribution(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -623,7 +623,7 @@ func TestAnalyzeProtocolDistribution(t *testing.T) {
 	}
 }
 
-// TestAnalyzeTimingPattern 测试时间模式分析
+// translated comment
 func TestAnalyzeTimingPattern(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -667,7 +667,7 @@ func TestAnalyzeTimingPattern(t *testing.T) {
 					},
 				}
 				nba.RecordPacket(packet, 10*time.Millisecond)
-				// 手动设置时间戳来模拟特定的时间间隔
+				// translated comment
 				nba.timestamps[i] = baseTime.Add(time.Duration(i) * interval)
 			}
 
@@ -679,7 +679,7 @@ func TestAnalyzeTimingPattern(t *testing.T) {
 	}
 }
 
-// TestComputeBehaviorCharacteristics 测试行为特征计算
+// translated comment
 func TestComputeBehaviorCharacteristics(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -691,7 +691,7 @@ func TestComputeBehaviorCharacteristics(t *testing.T) {
 			name:           "空数据包",
 			packetCount:    0,
 			setupFunc:      func(nba *NetworkBehaviorAnalyzer) {},
-			wantCharacteristics: nil, // 空切片返回nil
+			wantCharacteristics: nil, // translated comment
 		},
 		{
 			name:        "自动化流量检测",
@@ -709,7 +709,7 @@ func TestComputeBehaviorCharacteristics(t *testing.T) {
 					nba.RecordPacket(packet, 100*time.Millisecond)
 				}
 			},
-			wantCharacteristics: []string{"automated", "interactive", "bulk_transfer"}, // 101个包会触发多个特征
+			wantCharacteristics: []string{"automated", "interactive", "bulk_transfer"}, // translated comment
 		},
 		{
 			name:        "交互式流量检测",
@@ -724,7 +724,7 @@ func TestComputeBehaviorCharacteristics(t *testing.T) {
 							Protocol:       6,
 						},
 					}
-					// RTT在50-500ms之间表示交互式流量
+					// translated comment
 					nba.RecordPacket(packet, 100*time.Millisecond)
 				}
 			},
@@ -753,7 +753,7 @@ func TestComputeBehaviorCharacteristics(t *testing.T) {
 			packetCount: 10,
 			setupFunc: func(nba *NetworkBehaviorAnalyzer) {
 				for i := 0; i < 10; i++ {
-					// 设置RST标志
+					// translated comment
 					flags := uint8(0x04)
 					packet := &TCPPacket{
 						SequenceNumber: uint32(i * 100),
@@ -784,7 +784,7 @@ func TestComputeBehaviorCharacteristics(t *testing.T) {
 	}
 }
 
-// TestCalculateStdDeviation 测试标准差计算
+// translated comment
 func TestCalculateStdDeviation(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -812,7 +812,7 @@ func TestCalculateStdDeviation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			nba := NewNetworkBehaviorAnalyzer()
 			result := nba.calculateStdDeviation(tt.measurements, tt.avg)
-			// 标准差应该非负
+			// translated comment
 			if result < 0 {
 				t.Errorf("StdDeviation = %v, want non-negative", result)
 			}
@@ -820,7 +820,7 @@ func TestCalculateStdDeviation(t *testing.T) {
 	}
 }
 
-// TestClassifyNetworkType 测试网络类型分类
+// translated comment
 func TestClassifyNetworkType(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -880,7 +880,7 @@ func TestClassifyNetworkType(t *testing.T) {
 	}
 }
 
-// TestHasHighVariance 测试高方差检测
+// translated comment
 func TestHasHighVariance(t *testing.T) {
 	tests := []struct {
 		name string
@@ -925,7 +925,7 @@ func TestHasHighVariance(t *testing.T) {
 	}
 }
 
-// TestIsTimeRelated 测试时间相关检测
+// translated comment
 func TestIsTimeRelated(t *testing.T) {
 	tests := []struct {
 		name string
@@ -950,7 +950,7 @@ func TestIsTimeRelated(t *testing.T) {
 		{
 			name: "部分递增",
 			diffs: []int64{1000, 2000, -5000, 3000},
-			want: true, // 3/4 = 75% > 70%，满足时间相关条件
+			want: true, // translated comment
 		},
 	}
 
@@ -965,7 +965,7 @@ func TestIsTimeRelated(t *testing.T) {
 	}
 }
 
-// TestIsLinear 测试线性检测
+// translated comment
 func TestIsLinear(t *testing.T) {
 	tests := []struct {
 		name string
@@ -1005,7 +1005,7 @@ func TestIsLinear(t *testing.T) {
 	}
 }
 
-// TestIsLinearIPID 测试线性IP ID检测
+// translated comment
 func TestIsLinearIPID(t *testing.T) {
 	tests := []struct {
 		name string
@@ -1050,7 +1050,7 @@ func TestIsLinearIPID(t *testing.T) {
 	}
 }
 
-// TestHasRegularIntervals 测试规律间隔检测
+// translated comment
 func TestHasRegularIntervals(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -1090,7 +1090,7 @@ func TestHasRegularIntervals(t *testing.T) {
 	}
 }
 
-// TestIsBurstPattern 测试突发模式检测
+// translated comment
 func TestIsBurstPattern(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -1110,7 +1110,7 @@ func TestIsBurstPattern(t *testing.T) {
 		{
 			name:      "突发模式-大间隔为主",
 			intervals: []time.Duration{500 * time.Millisecond, 10 * time.Millisecond, 600 * time.Millisecond, 15 * time.Millisecond},
-			want:      false, // 2小2大，都不超过一半
+			want:      false, // translated comment
 		},
 		{
 			name:      "非突发-全部小间隔",
@@ -1135,7 +1135,7 @@ func TestIsBurstPattern(t *testing.T) {
 	}
 }
 
-// TestNetworkBehaviorResult_String 测试结果字符串输出
+// translated comment
 func TestNetworkBehaviorResult_String(t *testing.T) {
 	tests := []struct {
 		name   string

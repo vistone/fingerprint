@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// TestNewConfigCenter 测试创建配置中心
+// translated comment
 func TestNewConfigCenter(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -87,7 +87,7 @@ func TestNewConfigCenter(t *testing.T) {
 	}
 }
 
-// TestConfigCenter_Load 测试从文件加载配置
+// translated comment
 func TestConfigCenter_Load(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -230,7 +230,7 @@ func TestConfigCenter_Load(t *testing.T) {
 			}
 
 			if !tt.wantErr && tt.wantLoaded {
-				// 验证历史记录
+				// translated comment
 				history := cc.GetHistory(1)
 				if len(history) == 0 {
 					t.Error("Expected history to be recorded after load")
@@ -243,14 +243,14 @@ func TestConfigCenter_Load(t *testing.T) {
 	}
 }
 
-// TestConfigCenter_Get 测试获取当前配置（并发安全）
+// translated comment
 func TestConfigCenter_Get(t *testing.T) {
 	cc := NewConfigCenter("")
 
-	// 设置初始配置
+	// translated comment
 	cc.current = DefaultManagedConfig()
 
-	// 测试并发读取
+	// translated comment
 	var wg sync.WaitGroup
 	for i := 0; i < 100; i++ {
 		wg.Add(1)
@@ -277,7 +277,7 @@ func TestConfigCenter_Get(t *testing.T) {
 	}
 }
 
-// TestConfigCenter_Update 测试更新配置
+// translated comment
 func TestConfigCenter_Update(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -290,7 +290,7 @@ func TestConfigCenter_Update(t *testing.T) {
 		{
 			name: "未加载时更新返回错误",
 			setup: func(t *testing.T, cc *ConfigCenter) {
-				// 不加载配置
+				// translated comment
 			},
 			newConfig:  DefaultManagedConfig(),
 			wantErr:    true,
@@ -303,7 +303,7 @@ func TestConfigCenter_Update(t *testing.T) {
 			},
 			newConfig: func() *ManagedConfig {
 				cfg := DefaultManagedConfig()
-				cfg.BehaviorAnalysis.MinRequestsForAnalysis = 0 // 无效值
+				cfg.BehaviorAnalysis.MinRequestsForAnalysis = 0 // translated comment
 				return cfg
 			}(),
 			wantErr:    true,
@@ -313,13 +313,13 @@ func TestConfigCenter_Update(t *testing.T) {
 			name: "监听器被正确调用",
 			setup: func(t *testing.T, cc *ConfigCenter) {
 				cc.loaded = true
-				cc.current = DefaultManagedConfig() // 初始化 current 避免 nil 字段
+				cc.current = DefaultManagedConfig() // translated comment
 				listener := &mockListener{t: t, called: false}
 				cc.RegisterListener(listener)
 			},
 			newConfig: func() *ManagedConfig {
 				cfg := DefaultManagedConfig()
-				cfg.BehaviorAnalysis.MinRequestsForAnalysis = 10 // 修改一个字段以触发变更检测
+				cfg.BehaviorAnalysis.MinRequestsForAnalysis = 10 // translated comment
 				return cfg
 			}(),
 			wantErr: false,
@@ -328,7 +328,7 @@ func TestConfigCenter_Update(t *testing.T) {
 			name: "监听器返回错误时更新失败",
 			setup: func(t *testing.T, cc *ConfigCenter) {
 				cc.loaded = true
-				cc.current = DefaultManagedConfig() // 初始化 current
+				cc.current = DefaultManagedConfig() // translated comment
 				listener := &mockErrorListener{}
 				cc.RegisterListener(listener)
 			},
@@ -340,7 +340,7 @@ func TestConfigCenter_Update(t *testing.T) {
 			name: "更新成功并保存到文件",
 			setup: func(t *testing.T, cc *ConfigCenter) {
 				cc.loaded = true
-				cc.current = DefaultManagedConfig() // 初始化 current
+				cc.current = DefaultManagedConfig() // translated comment
 			},
 			newConfig: DefaultManagedConfig(),
 			wantErr:   false,
@@ -369,12 +369,12 @@ func TestConfigCenter_Update(t *testing.T) {
 			}
 
 			if !tt.wantErr {
-				// 验证配置已更新
+				// translated comment
 				if cc.Get() != tt.newConfig {
 					t.Error("Config was not updated")
 				}
 
-				// 验证历史记录
+				// translated comment
 				history := cc.GetHistory(1)
 				if len(history) == 0 {
 					t.Error("Expected history to be recorded after update")
@@ -383,7 +383,7 @@ func TestConfigCenter_Update(t *testing.T) {
 					t.Errorf("ChangedBy = %v, want tester", history[0].ChangedBy)
 				}
 
-				// 验证文件保存
+				// translated comment
 				if tt.checkFile {
 					if _, err := os.Stat(configPath); os.IsNotExist(err) {
 						t.Error("Config file was not saved")
@@ -394,7 +394,7 @@ func TestConfigCenter_Update(t *testing.T) {
 	}
 }
 
-// TestConfigCenter_SaveToFile 测试保存到文件
+// translated comment
 func TestConfigCenter_SaveToFile(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -407,7 +407,7 @@ func TestConfigCenter_SaveToFile(t *testing.T) {
 			name:       "保存到文件成功",
 			configPath: "",
 			setupConfig: func(cc *ConfigCenter) {
-				// configPath 会在测试循环中被设置
+				// translated comment
 				cc.current = DefaultManagedConfig()
 			},
 			wantErr:  false,
@@ -418,10 +418,10 @@ func TestConfigCenter_SaveToFile(t *testing.T) {
 			configPath: "",
 			setupConfig: func(cc *ConfigCenter) {
 				cc.current = DefaultManagedConfig()
-				// configPath 为空，表示内存模式
+				// translated comment
 			},
 			wantErr:  false,
-			wantFile: false, // 内存模式不创建文件
+			wantFile: false, // translated comment
 		},
 	}
 
@@ -449,7 +449,7 @@ func TestConfigCenter_SaveToFile(t *testing.T) {
 					t.Error("Config file was not created")
 				}
 
-				// 验证文件内容
+				// translated comment
 				data, err := os.ReadFile(configPath)
 				if err != nil {
 					t.Errorf("Failed to read saved file: %v", err)
@@ -462,11 +462,11 @@ func TestConfigCenter_SaveToFile(t *testing.T) {
 	}
 }
 
-// TestConfigCenter_RegisterListener 测试注册配置变更监听器
+// translated comment
 func TestConfigCenter_RegisterListener(t *testing.T) {
 	cc := NewConfigCenter("")
 
-	// 测试注册单个监听器
+	// translated comment
 	listener1 := &mockListener{t: t, called: false}
 	cc.RegisterListener(listener1)
 
@@ -474,7 +474,7 @@ func TestConfigCenter_RegisterListener(t *testing.T) {
 		t.Errorf("listeners count = %d, want 1", len(cc.listeners))
 	}
 
-	// 测试注册多个监听器
+	// translated comment
 	listener2 := &mockListener{t: t, called: false}
 	cc.RegisterListener(listener2)
 
@@ -483,7 +483,7 @@ func TestConfigCenter_RegisterListener(t *testing.T) {
 	}
 }
 
-// TestConfigCenter_EnableAutoReload 测试启用自动重载
+// translated comment
 func TestConfigCenter_EnableAutoReload(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -512,7 +512,7 @@ func TestConfigCenter_EnableAutoReload(t *testing.T) {
 			tmpDir := t.TempDir()
 			configPath := filepath.Join(tmpDir, "config.json")
 
-			// 创建初始配置文件
+			// translated comment
 			config := DefaultManagedConfig()
 			data, _ := json.MarshalIndent(config, "", "  ")
 			os.WriteFile(configPath, data, 0644)
@@ -530,24 +530,24 @@ func TestConfigCenter_EnableAutoReload(t *testing.T) {
 				t.Errorf("reloadInterval = %v, want >= %v", cc.reloadInterval, tt.wantMin)
 			}
 
-			// 给 worker 一点时间启动
+			// translated comment
 			time.Sleep(100 * time.Millisecond)
 
-			// 再次启用，不应该启动新的 worker
+			// translated comment
 			cc.EnableAutoReload(tt.interval)
 
-			// 禁用清理
+			// translated comment
 			cc.DisableAutoReload()
 		})
 	}
 }
 
-// TestConfigCenter_DisableAutoReload 测试禁用自动重载
+// translated comment
 func TestConfigCenter_DisableAutoReload(t *testing.T) {
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "config.json")
 
-	// 创建初始配置文件
+	// translated comment
 	config := DefaultManagedConfig()
 	data, _ := json.MarshalIndent(config, "", "  ")
 	os.WriteFile(configPath, data, 0644)
@@ -555,32 +555,32 @@ func TestConfigCenter_DisableAutoReload(t *testing.T) {
 	cc := NewConfigCenter(configPath)
 	cc.loaded = true
 
-	// 先启用
+	// translated comment
 	cc.EnableAutoReload(time.Second)
 	if !cc.autoReload {
 		t.Fatal("autoReload should be true")
 	}
 
-	// 给 worker 一点时间启动
+	// translated comment
 	time.Sleep(100 * time.Millisecond)
 
-	// 再禁用
+	// translated comment
 	cc.DisableAutoReload()
 
 	if cc.autoReload {
 		t.Error("autoReload should be false after DisableAutoReload")
 	}
 
-	// 重复禁用不应 panic
+	// translated comment
 	cc.DisableAutoReload()
 }
 
-// TestConfigCenter_GetHistory 测试获取历史版本
+// translated comment
 func TestConfigCenter_GetHistory(t *testing.T) {
 	cc := NewConfigCenter("")
 	cc.loaded = true
 
-	// 添加多个历史版本
+	// translated comment
 	for i := 0; i < 10; i++ {
 		config := DefaultManagedConfig()
 		config.Metadata = &ConfigMetadata{Version: fmt.Sprintf("1.0.%d", i)}
@@ -624,7 +624,7 @@ func TestConfigCenter_GetHistory(t *testing.T) {
 	}
 }
 
-// TestConfigCenter_Rollback 测试回滚到指定版本
+// translated comment
 func TestConfigCenter_Rollback(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -637,13 +637,13 @@ func TestConfigCenter_Rollback(t *testing.T) {
 			name: "回滚到指定版本成功",
 			setup: func(t *testing.T, cc *ConfigCenter) string {
 				cc.loaded = true
-				// 添加多个版本
+				// translated comment
 				for i := 0; i < 3; i++ {
 					config := DefaultManagedConfig()
 					config.BehaviorAnalysis.MinRequestsForAnalysis = 5 + i
 					cc.Update(config, fmt.Sprintf("update %d", i), "tester")
 				}
-				return "v1" // 回滚到第一个版本
+				return "v1" // translated comment
 			},
 			version: "v1",
 			wantErr: false,
@@ -663,7 +663,7 @@ func TestConfigCenter_Rollback(t *testing.T) {
 		{
 			name: "未加载时回滚返回错误",
 			setup: func(t *testing.T, cc *ConfigCenter) string {
-				// 不加载配置
+				// translated comment
 				return "v1"
 			},
 			version:    "v1",
@@ -698,7 +698,7 @@ func TestConfigCenter_Rollback(t *testing.T) {
 	}
 }
 
-// TestConfigCenter_IsLoaded 测试检查配置是否已加载
+// translated comment
 func TestConfigCenter_IsLoaded(t *testing.T) {
 	cc := NewConfigCenter("")
 
@@ -712,7 +712,7 @@ func TestConfigCenter_IsLoaded(t *testing.T) {
 	}
 }
 
-// TestConfigCenter_SetValidationEnabled 测试设置是否启用配置验证
+// translated comment
 func TestConfigCenter_SetValidationEnabled(t *testing.T) {
 	cc := NewConfigCenter("")
 
@@ -731,7 +731,7 @@ func TestConfigCenter_SetValidationEnabled(t *testing.T) {
 	}
 }
 
-// TestDefaultManagedConfig 测试默认值创建
+// translated comment
 func TestDefaultManagedConfig(t *testing.T) {
 	config := DefaultManagedConfig()
 
@@ -739,7 +739,7 @@ func TestDefaultManagedConfig(t *testing.T) {
 		t.Fatal("DefaultManagedConfig() returned nil")
 	}
 
-	// 验证 BehaviorAnalysis
+	// translated comment
 	if config.BehaviorAnalysis == nil {
 		t.Error("BehaviorAnalysis is nil")
 	} else {
@@ -751,7 +751,7 @@ func TestDefaultManagedConfig(t *testing.T) {
 		}
 	}
 
-	// 验证 RiskScoring
+	// translated comment
 	if config.RiskScoring == nil {
 		t.Error("RiskScoring is nil")
 	} else {
@@ -760,7 +760,7 @@ func TestDefaultManagedConfig(t *testing.T) {
 		}
 	}
 
-	// 验证 Features
+	// translated comment
 	if config.Features == nil {
 		t.Error("Features is nil")
 	} else {
@@ -769,28 +769,28 @@ func TestDefaultManagedConfig(t *testing.T) {
 		}
 	}
 
-	// 验证 QUIC
+	// translated comment
 	if config.QUIC == nil {
 		t.Error("QUIC is nil")
 	}
 
-	// 验证 TLS
+	// translated comment
 	if config.TLS == nil {
 		t.Error("TLS is nil")
 	}
 
-	// 验证 Global
+	// translated comment
 	if config.Global == nil {
 		t.Error("Global is nil")
 	}
 
-	// 验证 Metadata
+	// translated comment
 	if config.Metadata == nil {
 		t.Error("Metadata is nil")
 	}
 }
 
-// TestValidation 测试配置验证
+// translated comment
 func TestValidation(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -929,7 +929,7 @@ func TestValidation(t *testing.T) {
 	}
 }
 
-// TestValidationError 测试验证错误类型
+// translated comment
 func TestValidationError(t *testing.T) {
 	err := ValidationError{
 		Field:  "test.field",
@@ -949,11 +949,11 @@ func TestValidationError(t *testing.T) {
 	}
 }
 
-// TestConfigValidator_AddRule 测试添加自定义验证规则
+// translated comment
 func TestConfigValidator_AddRule(t *testing.T) {
 	validator := NewConfigValidator()
 
-	// 添加自定义规则
+	// translated comment
 	validator.AddRule("custom_rule", func(cfg *ManagedConfig) error {
 		if cfg.Global.MaxConcurrency > 1000 {
 			return ValidationError{
@@ -965,7 +965,7 @@ func TestConfigValidator_AddRule(t *testing.T) {
 		return nil
 	})
 
-	// 测试通过的配置
+	// translated comment
 	config := DefaultManagedConfig()
 	config.Global.MaxConcurrency = 500
 	errs := validator.Validate(config)
@@ -973,7 +973,7 @@ func TestConfigValidator_AddRule(t *testing.T) {
 		t.Errorf("Expected no errors, got: %v", errs)
 	}
 
-	// 测试失败的配置
+	// translated comment
 	config.Global.MaxConcurrency = 2000
 	errs = validator.Validate(config)
 	if len(errs) == 0 {
@@ -981,24 +981,24 @@ func TestConfigValidator_AddRule(t *testing.T) {
 	}
 }
 
-// TestConfigValidator_ValidateField 测试验证指定字段
+// translated comment
 func TestConfigValidator_ValidateField(t *testing.T) {
 	validator := NewConfigValidator()
 
-	// 当前实现是简化版，总是返回 nil
+	// translated comment
 	err := validator.ValidateField("any.field", "any value")
 	if err != nil {
 		t.Errorf("ValidateField() unexpected error: %v", err)
 	}
 }
 
-// TestConfigManager 测试配置管理器
+// translated comment
 func TestConfigManager(t *testing.T) {
 	center := NewConfigCenter("")
 	center.current = DefaultManagedConfig()
 	manager := NewConfigManager(center)
 
-	// 测试 GetBehaviorAnalysisConfig
+	// translated comment
 	t.Run("GetBehaviorAnalysisConfig", func(t *testing.T) {
 		config := manager.GetBehaviorAnalysisConfig()
 		if config == nil {
@@ -1006,7 +1006,7 @@ func TestConfigManager(t *testing.T) {
 		}
 	})
 
-	// 测试 GetRiskScoringConfig
+	// translated comment
 	t.Run("GetRiskScoringConfig", func(t *testing.T) {
 		config := manager.GetRiskScoringConfig()
 		if config == nil {
@@ -1014,7 +1014,7 @@ func TestConfigManager(t *testing.T) {
 		}
 	})
 
-	// 测试 GetFeatureExtractionConfig
+	// translated comment
 	t.Run("GetFeatureExtractionConfig", func(t *testing.T) {
 		config := manager.GetFeatureExtractionConfig()
 		if config == nil {
@@ -1022,7 +1022,7 @@ func TestConfigManager(t *testing.T) {
 		}
 	})
 
-	// 测试 GetQUICConfig
+	// translated comment
 	t.Run("GetQUICConfig", func(t *testing.T) {
 		config := manager.GetQUICConfig()
 		if config == nil {
@@ -1030,7 +1030,7 @@ func TestConfigManager(t *testing.T) {
 		}
 	})
 
-	// 测试 GetTLSConfig
+	// translated comment
 	t.Run("GetTLSConfig", func(t *testing.T) {
 		config := manager.GetTLSConfig()
 		if config == nil {
@@ -1038,7 +1038,7 @@ func TestConfigManager(t *testing.T) {
 		}
 	})
 
-	// 测试 GetGlobalConfig
+	// translated comment
 	t.Run("GetGlobalConfig", func(t *testing.T) {
 		config := manager.GetGlobalConfig()
 		if config == nil {
@@ -1046,7 +1046,7 @@ func TestConfigManager(t *testing.T) {
 		}
 	})
 
-	// 测试 GetConfigValue
+	// translated comment
 	t.Run("GetConfigValue", func(t *testing.T) {
 		tests := []struct {
 			path    string
@@ -1066,7 +1066,7 @@ func TestConfigManager(t *testing.T) {
 		}
 	})
 
-	// 测试 IsLoaded
+	// translated comment
 	t.Run("IsLoaded", func(t *testing.T) {
 		if manager.IsLoaded() != center.IsLoaded() {
 			t.Error("IsLoaded() should return same value as center")
@@ -1074,13 +1074,13 @@ func TestConfigManager(t *testing.T) {
 	})
 }
 
-// TestConfigManager_NilConfig 测试配置管理器处理 nil 配置
+// translated comment
 func TestConfigManager_NilConfig(t *testing.T) {
 	center := NewConfigCenter("")
-	// 不设置 current，让它保持默认的空 ManagedConfig
+	// translated comment
 	manager := NewConfigManager(center)
 
-	// 测试当配置字段为 nil 时返回默认值
+	// translated comment
 	t.Run("GetBehaviorAnalysisConfig with nil", func(t *testing.T) {
 		center.current.BehaviorAnalysis = nil
 		config := manager.GetBehaviorAnalysisConfig()
@@ -1130,7 +1130,7 @@ func TestConfigManager_NilConfig(t *testing.T) {
 	})
 }
 
-// TestHealthChecker 测试健康检查器
+// translated comment
 func TestHealthChecker(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -1140,7 +1140,7 @@ func TestHealthChecker(t *testing.T) {
 		{
 			name: "未加载配置的健康状态",
 			setup: func(cc *ConfigCenter) {
-				// 不加载配置
+				// translated comment
 			},
 			wantStatus: HealthCritical,
 		},
@@ -1149,9 +1149,9 @@ func TestHealthChecker(t *testing.T) {
 			setup: func(cc *ConfigCenter) {
 				cc.current = DefaultManagedConfig()
 				cc.loaded = true
-				// 保存配置到文件以使 fileAccessCheck 通过
+				// translated comment
 				cc.SaveToFile()
-				// 记录版本以使 historyCheck 通过
+				// translated comment
 				cc.Update(DefaultManagedConfig(), "test", "tester")
 			},
 			wantStatus: HealthOK,
@@ -1175,15 +1175,15 @@ func TestHealthChecker(t *testing.T) {
 	}
 }
 
-// TestHealthChecker_AddCheck 测试添加健康检查
+// translated comment
 func TestHealthChecker_AddCheck(t *testing.T) {
 	cc := NewConfigCenter("")
 	hc := NewHealthChecker(cc)
 
-	// 记录原始检查数量
+	// translated comment
 	originalCount := len(hc.checks)
 
-	// 添加自定义检查
+	// translated comment
 	hc.AddCheck(&mockHealthCheck{})
 
 	if len(hc.checks) != originalCount+1 {
@@ -1191,7 +1191,7 @@ func TestHealthChecker_AddCheck(t *testing.T) {
 	}
 }
 
-// TestConfigChange 测试配置变更信息
+// translated comment
 func TestConfigChange(t *testing.T) {
 	change := ConfigChange{
 		Path:      "test.path",
@@ -1211,7 +1211,7 @@ func TestConfigChange(t *testing.T) {
 	}
 }
 
-// TestVersionedConfig 测试版本化配置
+// translated comment
 func TestVersionedConfig(t *testing.T) {
 	config := DefaultManagedConfig()
 	vc := &VersionedConfig{
@@ -1233,7 +1233,7 @@ func TestVersionedConfig(t *testing.T) {
 	}
 }
 
-// TestConfigMetadata 测试配置元数据
+// translated comment
 func TestConfigMetadata(t *testing.T) {
 	now := time.Now()
 	meta := &ConfigMetadata{
@@ -1254,7 +1254,7 @@ func TestConfigMetadata(t *testing.T) {
 	}
 }
 
-// TestHealthCheckResult 测试健康检查结果
+// translated comment
 func TestHealthCheckResult(t *testing.T) {
 	result := &HealthCheckResult{
 		Status:    HealthOK,
@@ -1272,7 +1272,7 @@ func TestHealthCheckResult(t *testing.T) {
 	}
 }
 
-// TestHealthCheckItem 测试健康检查项
+// translated comment
 func TestHealthCheckItem(t *testing.T) {
 	item := &HealthCheckItem{
 		Name:        "Test Check",
@@ -1289,7 +1289,7 @@ func TestHealthCheckItem(t *testing.T) {
 	}
 }
 
-// TestHealthStatus 测试健康状态常量
+// translated comment
 func TestHealthStatus(t *testing.T) {
 	if HealthOK != "ok" {
 		t.Errorf("HealthOK = %v, want ok", HealthOK)
@@ -1302,9 +1302,9 @@ func TestHealthStatus(t *testing.T) {
 	}
 }
 
-// 辅助函数和模拟对象
+// translated comment
 
-// mockListener 模拟配置变更监听器
+// translated comment
 type mockListener struct {
 	t      *testing.T
 	called bool
@@ -1315,14 +1315,14 @@ func (m *mockListener) OnConfigChange(old, new *ManagedConfig, changes []ConfigC
 	return nil
 }
 
-// mockErrorListener 模拟返回错误的监听器
+// translated comment
 type mockErrorListener struct{}
 
 func (m *mockErrorListener) OnConfigChange(old, new *ManagedConfig, changes []ConfigChange) error {
 	return fmt.Errorf("mock listener error")
 }
 
-// mockHealthCheck 模拟健康检查
+// translated comment
 type mockHealthCheck struct{}
 
 func (m *mockHealthCheck) Check() *HealthCheckItem {
@@ -1334,7 +1334,7 @@ func (m *mockHealthCheck) Check() *HealthCheckItem {
 	}
 }
 
-// contains 检查字符串是否包含子串
+// translated comment
 func contains(s, substr string) bool {
 	return len(s) >= len(substr) && (s == substr || len(substr) == 0 ||
 		(len(s) > 0 && len(substr) > 0 && containsInternal(s, substr)))

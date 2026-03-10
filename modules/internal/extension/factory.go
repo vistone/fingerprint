@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-// ParserFactory 解析器工厂
+// translated comment
 type ParserFactory struct {
 	mu       sync.RWMutex
 	builders map[ExtensionType]func() (Parser, error)
@@ -15,7 +15,7 @@ var parserFactory = &ParserFactory{
 	builders: make(map[ExtensionType]func() (Parser, error)),
 }
 
-// RegisterParserBuilder 注册解析器生成函数
+// translated comment
 func RegisterParserBuilder(extType ExtensionType, builder func() (Parser, error)) error {
 	parserFactory.mu.Lock()
 	defer parserFactory.mu.Unlock()
@@ -28,7 +28,7 @@ func RegisterParserBuilder(extType ExtensionType, builder func() (Parser, error)
 	return nil
 }
 
-// CreateParser 创建解析器实例
+// translated comment
 func CreateParser(extType ExtensionType) (Parser, error) {
 	parserFactory.mu.RLock()
 	builder, exists := parserFactory.builders[extType]
@@ -41,7 +41,7 @@ func CreateParser(extType ExtensionType) (Parser, error) {
 	return builder()
 }
 
-// AnalyzerFactory 分析器工厂
+// translated comment
 type AnalyzerFactory struct {
 	mu       sync.RWMutex
 	builders map[ExtensionType]func() (Analyzer, error)
@@ -51,7 +51,7 @@ var analyzerFactory = &AnalyzerFactory{
 	builders: make(map[ExtensionType]func() (Analyzer, error)),
 }
 
-// RegisterAnalyzerBuilder 注册分析器生成函数
+// translated comment
 func RegisterAnalyzerBuilder(extType ExtensionType, builder func() (Analyzer, error)) error {
 	analyzerFactory.mu.Lock()
 	defer analyzerFactory.mu.Unlock()
@@ -64,7 +64,7 @@ func RegisterAnalyzerBuilder(extType ExtensionType, builder func() (Analyzer, er
 	return nil
 }
 
-// CreateAnalyzer 创建分析器实例
+// translated comment
 func CreateAnalyzer(extType ExtensionType) (Analyzer, error) {
 	analyzerFactory.mu.RLock()
 	builder, exists := analyzerFactory.builders[extType]
@@ -77,7 +77,7 @@ func CreateAnalyzer(extType ExtensionType) (Analyzer, error) {
 	return builder()
 }
 
-// HandlerFactory 处理器工厂
+// translated comment
 type HandlerFactory struct {
 	mu       sync.RWMutex
 	builders map[string]func() (Handler, error)
@@ -87,8 +87,8 @@ var handlerFactory = &HandlerFactory{
 	builders: make(map[string]func() (Handler, error)),
 }
 
-// RegisterHandlerBuilder 注册处理器生成函数
-// name: 处理器唯一标识名称
+// translated comment
+// translated comment
 func RegisterHandlerBuilder(name string, builder func() (Handler, error)) error {
 	handlerFactory.mu.Lock()
 	defer handlerFactory.mu.Unlock()
@@ -101,7 +101,7 @@ func RegisterHandlerBuilder(name string, builder func() (Handler, error)) error 
 	return nil
 }
 
-// CreateHandler 创建处理器实例
+// translated comment
 func CreateHandler(name string) (Handler, error) {
 	handlerFactory.mu.RLock()
 	builder, exists := handlerFactory.builders[name]
@@ -114,7 +114,7 @@ func CreateHandler(name string) (Handler, error) {
 	return builder()
 }
 
-// TransformFactory 转换工厂
+// translated comment
 type TransformFactory struct {
 	mu       sync.RWMutex
 	builders map[string]func() (Transform, error)
@@ -124,7 +124,7 @@ var transformFactory = &TransformFactory{
 	builders: make(map[string]func() (Transform, error)),
 }
 
-// RegisterTransformBuilder 注册转换生成函数
+// translated comment
 func RegisterTransformBuilder(name string, builder func() (Transform, error)) error {
 	transformFactory.mu.Lock()
 	defer transformFactory.mu.Unlock()
@@ -137,7 +137,7 @@ func RegisterTransformBuilder(name string, builder func() (Transform, error)) er
 	return nil
 }
 
-// CreateTransform 创建转换实例
+// translated comment
 func CreateTransform(name string) (Transform, error) {
 	transformFactory.mu.RLock()
 	builder, exists := transformFactory.builders[name]
@@ -150,7 +150,7 @@ func CreateTransform(name string) (Transform, error) {
 	return builder()
 }
 
-// ValidatorFactory 验证器工厂
+// translated comment
 type ValidatorFactory struct {
 	mu       sync.RWMutex
 	builders map[string]func() (Validator, error)
@@ -160,7 +160,7 @@ var validatorFactory = &ValidatorFactory{
 	builders: make(map[string]func() (Validator, error)),
 }
 
-// RegisterValidatorBuilder 注册验证器生成函数
+// translated comment
 func RegisterValidatorBuilder(name string, builder func() (Validator, error)) error {
 	validatorFactory.mu.Lock()
 	defer validatorFactory.mu.Unlock()
@@ -173,7 +173,7 @@ func RegisterValidatorBuilder(name string, builder func() (Validator, error)) er
 	return nil
 }
 
-// CreateValidator 创建验证器实例
+// translated comment
 func CreateValidator(name string) (Validator, error) {
 	validatorFactory.mu.RLock()
 	builder, exists := validatorFactory.builders[name]
@@ -186,7 +186,7 @@ func CreateValidator(name string) (Validator, error) {
 	return builder()
 }
 
-// ComparerFactory 比较器工厂
+// translated comment
 type ComparerFactory struct {
 	mu       sync.RWMutex
 	builders map[string]func() (Comparer, error)
@@ -196,7 +196,7 @@ var comparerFactory = &ComparerFactory{
 	builders: make(map[string]func() (Comparer, error)),
 }
 
-// PluginFactory 插件工厂
+// translated comment
 type PluginFactory struct {
 	mu       sync.RWMutex
 	builders map[string]func() (Plugin, error)
@@ -206,7 +206,7 @@ var pluginFactory = &PluginFactory{
 	builders: make(map[string]func() (Plugin, error)),
 }
 
-// RegisterComparerBuilder 注册比较器生成函数
+// translated comment
 func RegisterComparerBuilder(name string, builder func() (Comparer, error)) error {
 	comparerFactory.mu.Lock()
 	defer comparerFactory.mu.Unlock()
@@ -219,7 +219,7 @@ func RegisterComparerBuilder(name string, builder func() (Comparer, error)) erro
 	return nil
 }
 
-// CreateComparer 创建比较器实例
+// translated comment
 func CreateComparer(name string) (Comparer, error) {
 	comparerFactory.mu.RLock()
 	builder, exists := comparerFactory.builders[name]
@@ -232,7 +232,7 @@ func CreateComparer(name string) (Comparer, error) {
 	return builder()
 }
 
-// RegisterPluginBuilder 注册插件生成函数
+// translated comment
 func RegisterPluginBuilder(name string, builder func() (Plugin, error)) error {
 	pluginFactory.mu.Lock()
 	defer pluginFactory.mu.Unlock()
@@ -245,7 +245,7 @@ func RegisterPluginBuilder(name string, builder func() (Plugin, error)) error {
 	return nil
 }
 
-// CreatePlugin 创建插件实例
+// translated comment
 func CreatePlugin(name string) (Plugin, error) {
 	pluginFactory.mu.RLock()
 	builder, exists := pluginFactory.builders[name]
@@ -258,8 +258,8 @@ func CreatePlugin(name string) (Plugin, error) {
 	return builder()
 }
 
-// ExtensionBuilder 通用扩展构建器
-// 组合使用所有工厂来构建完整的扩展处理流程
+// translated comment
+// translated comment
 type ExtensionBuilder struct {
 	extType    ExtensionType
 	parser     Parser
@@ -269,7 +269,7 @@ type ExtensionBuilder struct {
 	validators []Validator
 }
 
-// NewExtensionBuilder 创建扩展构建器
+// translated comment
 func NewExtensionBuilder(extType ExtensionType) *ExtensionBuilder {
 	return &ExtensionBuilder{
 		extType:    extType,
@@ -280,13 +280,13 @@ func NewExtensionBuilder(extType ExtensionType) *ExtensionBuilder {
 	}
 }
 
-// WithParser 设置解析器
+// translated comment
 func (b *ExtensionBuilder) WithParser(parser Parser) *ExtensionBuilder {
 	b.parser = parser
 	return b
 }
 
-// WithAnalyzer 添加分析器
+// translated comment
 func (b *ExtensionBuilder) WithAnalyzer(analyzer Analyzer) *ExtensionBuilder {
 	if analyzer != nil {
 		b.analyzers = append(b.analyzers, analyzer)
@@ -294,7 +294,7 @@ func (b *ExtensionBuilder) WithAnalyzer(analyzer Analyzer) *ExtensionBuilder {
 	return b
 }
 
-// WithHandler 添加处理器
+// translated comment
 func (b *ExtensionBuilder) WithHandler(handler Handler) *ExtensionBuilder {
 	if handler != nil {
 		b.handlers = append(b.handlers, handler)
@@ -302,7 +302,7 @@ func (b *ExtensionBuilder) WithHandler(handler Handler) *ExtensionBuilder {
 	return b
 }
 
-// WithTransform 添加转换
+// translated comment
 func (b *ExtensionBuilder) WithTransform(transform Transform) *ExtensionBuilder {
 	if transform != nil {
 		b.transforms = append(b.transforms, transform)
@@ -310,7 +310,7 @@ func (b *ExtensionBuilder) WithTransform(transform Transform) *ExtensionBuilder 
 	return b
 }
 
-// WithValidator 添加验证器
+// translated comment
 func (b *ExtensionBuilder) WithValidator(validator Validator) *ExtensionBuilder {
 	if validator != nil {
 		b.validators = append(b.validators, validator)
@@ -318,38 +318,38 @@ func (b *ExtensionBuilder) WithValidator(validator Validator) *ExtensionBuilder 
 	return b
 }
 
-// GetExtensionType 获取扩展类型
+// translated comment
 func (b *ExtensionBuilder) GetExtensionType() ExtensionType {
 	return b.extType
 }
 
-// GetParser 获取解析器
+// translated comment
 func (b *ExtensionBuilder) GetParser() Parser {
 	return b.parser
 }
 
-// GetAnalyzers 获取所有分析器
+// translated comment
 func (b *ExtensionBuilder) GetAnalyzers() []Analyzer {
 	result := make([]Analyzer, len(b.analyzers))
 	copy(result, b.analyzers)
 	return result
 }
 
-// GetHandlers 获取所有处理器
+// translated comment
 func (b *ExtensionBuilder) GetHandlers() []Handler {
 	result := make([]Handler, len(b.handlers))
 	copy(result, b.handlers)
 	return result
 }
 
-// GetTransforms 获取所有转换
+// translated comment
 func (b *ExtensionBuilder) GetTransforms() []Transform {
 	result := make([]Transform, len(b.transforms))
 	copy(result, b.transforms)
 	return result
 }
 
-// GetValidators 获取所有验证器
+// translated comment
 func (b *ExtensionBuilder) GetValidators() []Validator {
 	result := make([]Validator, len(b.validators))
 	copy(result, b.validators)

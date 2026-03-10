@@ -1,4 +1,4 @@
-// Package tcpip IP 地理位置相关功能
+// translated comment
 package tcpip
 
 import (
@@ -10,14 +10,14 @@ import (
 	"sync"
 )
 
-// SimpleIPGeoDB 简单 IP 地理位置数据库实现
+// translated comment
 type SimpleIPGeoDB struct {
-	// IPv4 范围列表
+	// translated comment
 	ipv4Ranges []IPRange
 	mu         sync.RWMutex
 }
 
-// IPRange IP 范围与地理位置映射
+// translated comment
 type IPRange struct {
 	StartIP   uint32
 	EndIP     uint32
@@ -29,24 +29,24 @@ type IPRange struct {
 	Timezone  string
 }
 
-// NewSimpleIPGeoDB 创建简单 IP 地理位置数据库
+// translated comment
 func NewSimpleIPGeoDB() *SimpleIPGeoDB {
 	db := &SimpleIPGeoDB{
 		ipv4Ranges: []IPRange{},
 	}
-	// 加载一些常见范围的默认数据
+	// translated comment
 	db.loadDefaultRanges()
 	return db
 }
 
-// Lookup 查询 IP 地理位置
+// translated comment
 func (db *SimpleIPGeoDB) Lookup(ipStr string) (*GeoLocation, error) {
 	ip := net.ParseIP(ipStr)
 	if ip == nil {
 		return nil, fmt.Errorf("invalid IP address: %s", ipStr)
 	}
 	
-	// 转换为 IPv4
+	// translated comment
 	ip = ip.To4()
 	if ip == nil {
 		return nil, fmt.Errorf("not an IPv4 address: %s", ipStr)
@@ -57,7 +57,7 @@ func (db *SimpleIPGeoDB) Lookup(ipStr string) (*GeoLocation, error) {
 	db.mu.RLock()
 	defer db.mu.RUnlock()
 	
-	// 二分查找
+	// translated comment
 	for _, r := range db.ipv4Ranges {
 		if ipNum >= r.StartIP && ipNum <= r.EndIP {
 			return &GeoLocation{
@@ -75,12 +75,12 @@ func (db *SimpleIPGeoDB) Lookup(ipStr string) (*GeoLocation, error) {
 	return nil, fmt.Errorf("IP not found in database: %s", ipStr)
 }
 
-// GetRegionSignature 获取区域签名
+// translated comment
 func (db *SimpleIPGeoDB) GetRegionSignature(country, isp string) string {
 	return fmt.Sprintf("%s|%s", country, isp)
 }
 
-// LoadFromCSV 从 CSV 文件加载数据
+// translated comment
 func (db *SimpleIPGeoDB) LoadFromCSV(filepath string) error {
 	file, err := os.Open(filepath)
 	if err != nil {
@@ -97,7 +97,7 @@ func (db *SimpleIPGeoDB) LoadFromCSV(filepath string) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 	
-	// 跳过标题行
+	// translated comment
 	for i, record := range records {
 		if i == 0 {
 			continue
@@ -114,7 +114,7 @@ func (db *SimpleIPGeoDB) LoadFromCSV(filepath string) error {
 			Timezone: getField(record, 6),
 		}
 		
-		// 解析 IP 范围
+		// translated comment
 		if strings.Contains(record[0], "-") {
 			parts := strings.Split(record[0], "-")
 			if len(parts) == 2 {
@@ -122,7 +122,7 @@ func (db *SimpleIPGeoDB) LoadFromCSV(filepath string) error {
 				range_.EndIP = ipStrToUint32(strings.TrimSpace(parts[1]))
 			}
 		} else if strings.Contains(record[0], "/") {
-			// CIDR 格式
+			// translated comment
 			_, ipNet, err := net.ParseCIDR(record[0])
 			if err == nil {
 				range_.StartIP = ipToUint32(ipNet.IP)
@@ -139,11 +139,11 @@ func (db *SimpleIPGeoDB) LoadFromCSV(filepath string) error {
 	return nil
 }
 
-// loadDefaultRanges 加载默认 IP 范围
+// translated comment
 func (db *SimpleIPGeoDB) loadDefaultRanges() {
-	// 一些常见的 IP 范围示例
+	// translated comment
 	db.ipv4Ranges = []IPRange{
-		// 中国
+		// translated comment
 		{startIP("1.0.0.0"), endIP("1.0.255.255"), "China", "Guangdong", "Guangzhou", "China Telecom", 4134, "Asia/Shanghai"},
 		{startIP("1.1.0.0"), endIP("1.1.255.255"), "China", "Fujian", "Fuzhou", "China Telecom", 4134, "Asia/Shanghai"},
 		{startIP("14.16.0.0"), endIP("14.31.255.255"), "China", "Guangdong", "Shenzhen", "China Telecom", 4134, "Asia/Shanghai"},
@@ -189,7 +189,7 @@ func (db *SimpleIPGeoDB) loadDefaultRanges() {
 		{startIP("222.0.0.0"), endIP("222.255.255.255"), "China", "Beijing", "Beijing", "China Telecom", 4134, "Asia/Shanghai"},
 		{startIP("223.0.0.0"), endIP("223.255.255.255"), "China", "Beijing", "Beijing", "China Telecom", 4134, "Asia/Shanghai"},
 		
-		// 美国
+		// translated comment
 		{startIP("3.0.0.0"), endIP("3.255.255.255"), "United States", "Virginia", "Ashburn", "Amazon", 14618, "America/New_York"},
 		{startIP("8.0.0.0"), endIP("8.255.255.255"), "United States", "California", "San Jose", "Level 3", 3356, "America/Los_Angeles"},
 		{startIP("13.0.0.0"), endIP("13.255.255.255"), "United States", "Washington", "Redmond", "Microsoft", 8075, "America/Los_Angeles"},
@@ -240,7 +240,7 @@ func (db *SimpleIPGeoDB) loadDefaultRanges() {
 		{startIP("208.0.0.0"), endIP("208.255.255.255"), "United States", "Various", "Various", "Various", 0, "America/New_York"},
 		{startIP("209.0.0.0"), endIP("209.255.255.255"), "United States", "Various", "Various", "Various", 0, "America/New_York"},
 		
-		// 日本
+		// translated comment
 		{startIP("1.0.16.0"), endIP("1.0.31.255"), "Japan", "Tokyo", "Tokyo", "NTT", 4713, "Asia/Tokyo"},
 		{startIP("14.3.0.0"), endIP("14.15.255.255"), "Japan", "Tokyo", "Tokyo", "NTT", 4713, "Asia/Tokyo"},
 		{startIP("27.80.0.0"), endIP("27.95.255.255"), "Japan", "Tokyo", "Tokyo", "KDDI", 2516, "Asia/Tokyo"},
@@ -278,7 +278,7 @@ func (db *SimpleIPGeoDB) loadDefaultRanges() {
 		{startIP("222.0.0.0"), endIP("222.255.255.255"), "Japan", "Tokyo", "Tokyo", "NTT", 4713, "Asia/Tokyo"},
 		{startIP("223.0.0.0"), endIP("223.255.255.255"), "Japan", "Tokyo", "Tokyo", "NTT", 4713, "Asia/Tokyo"},
 		
-		// 新加坡
+		// translated comment
 		{startIP("8.128.0.0"), endIP("8.191.255.255"), "Singapore", "Singapore", "Singapore", "Alibaba", 45102, "Asia/Singapore"},
 		{startIP("43.224.0.0"), endIP("43.255.255.255"), "Singapore", "Singapore", "Singapore", "Various", 0, "Asia/Singapore"},
 		{startIP("43.245.32.0"), endIP("43.245.47.255"), "Singapore", "Singapore", "Singapore", "StarHub", 4657, "Asia/Singapore"},

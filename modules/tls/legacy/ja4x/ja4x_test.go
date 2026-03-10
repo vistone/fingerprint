@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// generateTestCert 生成测试证书
+// translated comment
 func generateTestCert(t *testing.T, template, parent *x509.Certificate, pub, priv interface{}) *x509.Certificate {
 	t.Helper()
 	certDER, err := x509.CreateCertificate(rand.Reader, template, parent, pub, priv)
@@ -26,7 +26,7 @@ func generateTestCert(t *testing.T, template, parent *x509.Certificate, pub, pri
 }
 
 func TestComputeJA4X(t *testing.T) {
-	// 生成测试密钥对
+	// translated comment
 	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
 		t.Fatalf("GenerateKey: %v", err)
@@ -70,12 +70,12 @@ func TestComputeJA4X(t *testing.T) {
 			t.Error("JA4Xc should not be empty")
 		}
 
-		// 自签名证书的 JA4Xa 和 JA4Xb 应该相同
+		// translated comment
 		if result.JA4Xa != result.JA4Xb {
 			t.Errorf("Self-signed cert should have JA4Xa == JA4Xb, got %s != %s", result.JA4Xa, result.JA4Xb)
 		}
 
-		// 检查异常标记
+		// translated comment
 		foundSelfSigned := false
 		for _, flag := range result.AnomalyFlags {
 			if flag == "SELF_SIGNED" {
@@ -354,7 +354,7 @@ func TestDeterministicHash(t *testing.T) {
 	}
 }
 
-// BenchmarkComputeJA4X 基准测试
+// translated comment
 func BenchmarkComputeJA4X(b *testing.B) {
 	data := CertificateData{
 		IssuerRDNs: []RDNField{

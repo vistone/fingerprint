@@ -1,11 +1,11 @@
-// Package plugins 定义指纹插件系统接口和类型
+// translated comment
 package plugins
 
 import (
 	tls "github.com/bogdanfinn/utls"
 )
 
-// FingerprintCategory 指纹分类
+// translated comment
 type FingerprintCategory string
 
 const (
@@ -16,36 +16,36 @@ const (
 	CategoryCommunity FingerprintCategory = "community"
 )
 
-// FingerprintMetadata 指纹元数据
+// translated comment
 type FingerprintMetadata struct {
-	Name           string              // 指纹ID
-	DisplayName    string              // 显示名称
-	Description    string              // 描述
-	Category       FingerprintCategory // 分类
-	Version        string              // 版本
-	Browser        string              // 浏览器名称
-	BrowserVersion string              // 浏览器版本
-	OS             string              // 操作系统
-	IsMobile       bool                // 是否移动设备
-	Author         string              // 作者
-	License        string              // 许可证
-	Tags           []string            // 标签
-	Verified       bool                // 是否验证
+	Name           string              // translated comment
+	DisplayName    string              // translated comment
+	Description    string              // translated comment
+	Category       FingerprintCategory // translated comment
+	Version        string              // translated comment
+	Browser        string              // translated comment
+	BrowserVersion string              // translated comment
+	OS             string              // translated comment
+	IsMobile       bool                // translated comment
+	Author         string              // translated comment
+	License        string              // translated comment
+	Tags           []string            // translated comment
+	Verified       bool                // translated comment
 }
 
-// ClientHelloSpec TLS ClientHello 规范
+// translated comment
 type ClientHelloSpec struct {
-	TLSVersion                uint16   // TLS版本
-	CipherSuites              []uint16 // 密码套件
-	Extensions                []uint16 // 扩展
-	EllipticCurves            []uint16 // 椭圆曲线
-	EllipticCurvePointFormats []uint8  // EC点格式
-	SignatureAlgorithms       []uint16 // 签名算法
-	SupportedVersions         []uint16 // 支持版本
-	KeyShareCurves            []uint16 // 密钥共享曲线
+	TLSVersion                uint16   // translated comment
+	CipherSuites              []uint16 // translated comment
+	Extensions                []uint16 // translated comment
+	EllipticCurves            []uint16 // translated comment
+	EllipticCurvePointFormats []uint8  // translated comment
+	SignatureAlgorithms       []uint16 // translated comment
+	SupportedVersions         []uint16 // translated comment
+	KeyShareCurves            []uint16 // translated comment
 }
 
-// FingerprintData 指纹数据（标准格式）
+// translated comment
 type FingerprintData struct {
 	Metadata    FingerprintMetadata    `json:"metadata"`
 	ClientHello *ClientHelloSpec       `json:"client_hello"`
@@ -53,7 +53,7 @@ type FingerprintData struct {
 	Extensions  map[string]interface{} `json:"extensions,omitempty"`
 }
 
-// Plugin 指纹插件接口
+// translated comment
 type Plugin interface {
 	Metadata() *FingerprintMetadata
 	Data() *FingerprintData
@@ -63,7 +63,7 @@ type Plugin interface {
 	Clone() Plugin
 }
 
-// PluginSource 插件来源
+// translated comment
 type PluginSource int
 
 const (
@@ -73,7 +73,7 @@ const (
 	SourceCommunity
 )
 
-// PluginInfo 插件信息
+// translated comment
 type PluginInfo struct {
 	ID      string
 	Version string
@@ -84,5 +84,5 @@ type PluginInfo struct {
 	Error   error
 }
 
-// ValidationRule 验证规则
+// translated comment
 type ValidationRule func(data *FingerprintData) error

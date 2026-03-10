@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// TestDefaultValidator_ValidateData 测试数据验证
+// translated comment
 func TestDefaultValidator_ValidateData(t *testing.T) {
 	validator := NewDefaultValidator()
 
@@ -76,7 +76,7 @@ func TestDefaultValidator_ValidateData(t *testing.T) {
 	}
 }
 
-// TestDefaultValidator_ValidateMetadata 测试元数据验证
+// translated comment
 func TestDefaultValidator_ValidateMetadata(t *testing.T) {
 	validator := NewDefaultValidator()
 	validatorStrict := NewDefaultValidator()
@@ -187,7 +187,7 @@ func TestDefaultValidator_ValidateMetadata(t *testing.T) {
 				Name:                  "test",
 				CompatibleTLSVersions: []uint16{},
 			},
-			wantErr: false, // 默认 StrictMode=true，不会返回警告
+			wantErr: false, // translated comment
 		},
 	}
 
@@ -219,7 +219,7 @@ func TestDefaultValidator_ValidateMetadata(t *testing.T) {
 	}
 }
 
-// TestDefaultValidator_ValidateConfig 测试配置验证
+// translated comment
 func TestDefaultValidator_ValidateConfig(t *testing.T) {
 	validator := NewDefaultValidator()
 	strictValidator := NewDefaultValidator()
@@ -464,11 +464,11 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 	}
 }
 
-// TestSimpleLogger_AllLevels 测试所有日志级别
+// translated comment
 func TestSimpleLogger_AllLevels(t *testing.T) {
 	logger := NewSimpleLogger("test")
 
-	// 测试每个级别可以正常调用（不panic）
+	// translated comment
 	logger.Debug("debug message")
 	logger.Info("info message")
 	logger.Warn("warning message")
@@ -476,7 +476,7 @@ func TestSimpleLogger_AllLevels(t *testing.T) {
 	logger.Fatal("fatal message")
 }
 
-// TestSimpleLogger_SetLevel 测试设置日志级别
+// translated comment
 func TestSimpleLogger_SetLevel(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -512,13 +512,13 @@ func TestSimpleLogger_SetLevel(t *testing.T) {
 		{
 			name:       "设置无效级别-负数",
 			setLevel:   -1,
-			wantLevel:  1, // 默认是1，不会改变
+			wantLevel:  1, // translated comment
 			expectFail: true,
 		},
 		{
 			name:       "设置无效级别-大于4",
 			setLevel:   5,
-			wantLevel:  1, // 默认是1，不会改变
+			wantLevel:  1, // translated comment
 			expectFail: true,
 		},
 	}
@@ -529,7 +529,7 @@ func TestSimpleLogger_SetLevel(t *testing.T) {
 			logger.SetLevel(tt.setLevel)
 
 			if tt.expectFail {
-				// 无效值不应该改变原有级别（默认是1）
+				// translated comment
 				if logger.level != 1 {
 					t.Errorf("SetLevel(%d) changed level to %d, expected 1 (unchanged)", tt.setLevel, logger.level)
 				}
@@ -542,13 +542,13 @@ func TestSimpleLogger_SetLevel(t *testing.T) {
 	}
 }
 
-// TestSimpleLogger_LevelFiltering 测试日志级别过滤
+// translated comment
 func TestSimpleLogger_LevelFiltering(t *testing.T) {
 	tests := []struct {
 		name     string
 		level    int
 		logFunc  func(*SimpleLogger)
-		expected string // 预期输出的级别前缀
+		expected string // translated comment
 	}{
 		{
 			name:  "Debug级别打印Debug日志",
@@ -572,7 +572,7 @@ func TestSimpleLogger_LevelFiltering(t *testing.T) {
 			logFunc: func(l *SimpleLogger) {
 				l.Debug("test debug")
 			},
-			expected: "", // 不输出
+			expected: "", // translated comment
 		},
 		{
 			name:  "Info级别打印Info日志",
@@ -588,7 +588,7 @@ func TestSimpleLogger_LevelFiltering(t *testing.T) {
 			logFunc: func(l *SimpleLogger) {
 				l.Info("test info")
 			},
-			expected: "", // 不输出
+			expected: "", // translated comment
 		},
 		{
 			name:  "Warn级别打印Warn日志",
@@ -604,7 +604,7 @@ func TestSimpleLogger_LevelFiltering(t *testing.T) {
 			logFunc: func(l *SimpleLogger) {
 				l.Warn("test warn")
 			},
-			expected: "", // 不输出
+			expected: "", // translated comment
 		},
 		{
 			name:  "Error级别打印Error日志",
@@ -628,7 +628,7 @@ func TestSimpleLogger_LevelFiltering(t *testing.T) {
 			logFunc: func(l *SimpleLogger) {
 				l.Error("test error", nil)
 			},
-			expected: "", // 不输出
+			expected: "", // translated comment
 		},
 	}
 
@@ -637,14 +637,14 @@ func TestSimpleLogger_LevelFiltering(t *testing.T) {
 			logger := NewSimpleLogger("test")
 			logger.SetLevel(tt.level)
 
-			// 这里只是验证调用不panic
-			// 实际输出无法捕获，因为直接打印到stdout
+			// translated comment
+			// translated comment
 			tt.logFunc(logger)
 		})
 	}
 }
 
-// TestInputSanitizer_SanitizeString 测试字符串清理
+// translated comment
 func TestInputSanitizer_SanitizeString(t *testing.T) {
 	sanitizer := NewInputSanitizer()
 
@@ -756,7 +756,7 @@ func TestInputSanitizer_SanitizeString(t *testing.T) {
 	}
 }
 
-// TestInputSanitizer_SanitizeBytes 测试字节数组清理
+// translated comment
 func TestInputSanitizer_SanitizeBytes(t *testing.T) {
 	sanitizer := NewInputSanitizer()
 
@@ -809,7 +809,7 @@ func TestInputSanitizer_SanitizeBytes(t *testing.T) {
 			input:   []byte("Hello\x00World"),
 			maxLen:  100,
 			want:    []byte("Hello\x00World"),
-			wantErr: false, // 空字节是允许的
+			wantErr: false, // translated comment
 		},
 		{
 			name:    "包含非法控制字符-BEL",
@@ -874,7 +874,7 @@ func TestInputSanitizer_SanitizeBytes(t *testing.T) {
 	}
 }
 
-// TestSafeParseInt 测试安全解析整数
+// translated comment
 func TestSafeParseInt(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -956,21 +956,21 @@ func TestSafeParseInt(t *testing.T) {
 			input:   "",
 			base:    10,
 			bitSize: 64,
-			wantErr: false, // 空字符串通过基本验证
+			wantErr: false, // translated comment
 		},
 		{
 			name:    "只有符号-负号",
 			input:   "-",
 			base:    10,
 			bitSize: 64,
-			wantErr: false, // 只有符号通过基本验证
+			wantErr: false, // translated comment
 		},
 		{
 			name:    "只有符号-正号",
 			input:   "+",
 			base:    10,
 			bitSize: 64,
-			wantErr: false, // 只有符号通过基本验证
+			wantErr: false, // translated comment
 		},
 		{
 			name:    "小数点",
@@ -1007,7 +1007,7 @@ func TestSafeParseInt(t *testing.T) {
 	}
 }
 
-// TestRecoveryManager_RegisterHandler 测试注册处理器
+// translated comment
 func TestRecoveryManager_RegisterHandler(t *testing.T) {
 	logger := NewSimpleLogger("test")
 
@@ -1032,7 +1032,7 @@ func TestRecoveryManager_RegisterHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// 为每个测试创建新的 RecoveryManager
+			// translated comment
 			testRm := NewRecoveryManager(logger)
 
 			err := testRm.RegisterHandler(tt.handler)
@@ -1053,7 +1053,7 @@ func TestRecoveryManager_RegisterHandler(t *testing.T) {
 				if err != nil {
 					t.Errorf("RegisterHandler() error = %v, wantErr %v", err, tt.wantErr)
 				}
-				// 验证处理器已注册
+				// translated comment
 				if len(testRm.handlers) != 1 {
 					t.Errorf("RegisterHandler() registered %d handlers, want 1", len(testRm.handlers))
 				}
@@ -1061,7 +1061,7 @@ func TestRecoveryManager_RegisterHandler(t *testing.T) {
 		})
 	}
 
-	// 测试注册多个处理器
+	// translated comment
 	t.Run("注册多个处理器", func(t *testing.T) {
 		multiRm := NewRecoveryManager(logger)
 		handler1 := NewPanicHandler()
@@ -1080,7 +1080,7 @@ func TestRecoveryManager_RegisterHandler(t *testing.T) {
 	})
 }
 
-// TestRecoveryManager_Handle 测试错误处理
+// translated comment
 func TestRecoveryManager_Handle(t *testing.T) {
 	logger := NewSimpleLogger("test")
 
@@ -1120,7 +1120,7 @@ func TestRecoveryManager_Handle(t *testing.T) {
 		{
 			name: "使用处理器处理",
 			setup: func(rm *RecoveryManager) {
-				// 注册一个能够处理所有错误的处理器
+				// translated comment
 				rm.RegisterHandler(&testErrorHandler{
 					name:    "test_handler",
 					handles: true,
@@ -1154,7 +1154,7 @@ func TestRecoveryManager_Handle(t *testing.T) {
 	}
 }
 
-// 测试用的标准错误类型
+// translated comment
 type testError struct {
 	msg string
 }
@@ -1163,7 +1163,7 @@ func (e *testError) Error() string {
 	return e.msg
 }
 
-// 测试用的错误处理器
+// translated comment
 type testErrorHandler struct {
 	name    string
 	handles bool
@@ -1181,7 +1181,7 @@ func (h *testErrorHandler) GetName() string {
 	return h.name
 }
 
-// TestRecoveryManager_IsRecoverable 测试错误可恢复性判断
+// translated comment
 func TestRecoveryManager_IsRecoverable(t *testing.T) {
 	logger := NewSimpleLogger("test")
 	rm := NewRecoveryManager(logger)
@@ -1261,7 +1261,7 @@ func TestRecoveryManager_IsRecoverable(t *testing.T) {
 	}
 }
 
-// TestErrorSeverity_String 测试错误严重级别的字符串输出
+// translated comment
 func TestErrorSeverity_String(t *testing.T) {
 	tests := []struct {
 		name string

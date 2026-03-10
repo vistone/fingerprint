@@ -9,50 +9,50 @@ import (
 )
 
 // ========================================================================
-// ParseStage: 解析扩展数据
+// translated comment
 // ========================================================================
 
-// ParseStage 解析扩展数据（从原始 TLS 数据解析为结构化格式）
+// translated comment
 type ParseStage struct {
 	registry RegistryPort
 }
 
-// NewParseStage 创建新的 ParseStage
+// translated comment
 func NewParseStage(registry RegistryPort) *ParseStage {
 	return &ParseStage{registry: registry}
 }
 
-// GetName 获取阶段名称
+// translated comment
 func (p *ParseStage) GetName() string {
 	return "parse"
 }
 
-// GetDependencies 获取依赖的前置阶段
+// translated comment
 func (p *ParseStage) GetDependencies() []string {
-	return []string{} // 解析是第一步，无依赖
+	return []string{} // translated comment
 }
 
-// Execute 执行阶段
+// translated comment
 func (p *ParseStage) Execute(ctx context.Context, data *pipeline.StageData) error {
-	// 从输入中获取请求信息
+	// translated comment
 	request, ok := data.Input.(*ProcessingRequest)
 	if !ok {
 		return fmt.Errorf("expected *ProcessingRequest, got %T", data.Input)
 	}
 
-	// 从注册表中获取解析器
+	// translated comment
 	parser, err := p.registry.GetParser(request.ExtensionType)
 	if err != nil {
 		return fmt.Errorf("failed to get parser: %w", err)
 	}
 
-	// 解析原始数据
+	// translated comment
 	parsedData, err := parser.Parse(request.RawData, ctx)
 	if err != nil {
 		return fmt.Errorf("parse error: %w", err)
 	}
 
-	// 将解析结果存储在 StageData 中
+	// translated comment
 	data.Context["parsed_data"] = parsedData
 	data.Output = map[string]interface{}{
 		"parsed_data": parsedData,
@@ -62,60 +62,60 @@ func (p *ParseStage) Execute(ctx context.Context, data *pipeline.StageData) erro
 }
 
 // ========================================================================
-// AnalyzeStage: 分析扩展数据
+// translated comment
 // ========================================================================
 
-// AnalyzeStage 分析扩展数据
+// translated comment
 type AnalyzeStage struct {
 	registry RegistryPort
 }
 
-// NewAnalyzeStage 创建新的 AnalyzeStage
+// translated comment
 func NewAnalyzeStage(registry RegistryPort) *AnalyzeStage {
 	return &AnalyzeStage{registry: registry}
 }
 
-// GetName 获取阶段名称
+// translated comment
 func (a *AnalyzeStage) GetName() string {
 	return "analyze"
 }
 
-// GetDependencies 获取依赖的前置阶段
+// translated comment
 func (a *AnalyzeStage) GetDependencies() []string {
-	return []string{"parse"} // 分析依赖于解析
+	return []string{"parse"} // translated comment
 }
 
-// Execute 执行阶段
+// translated comment
 func (a *AnalyzeStage) Execute(ctx context.Context, data *pipeline.StageData) error {
-	// 从输入中获取请求信息
+	// translated comment
 	request, ok := data.Input.(*ProcessingRequest)
 	if !ok {
 		return fmt.Errorf("expected *ProcessingRequest, got %T", data.Input)
 	}
 
-	// 从前一个阶段的输出中获取已解析的数据
+	// translated comment
 	parsedData, ok := data.Context["parsed_data"].(ExtensionData)
 	if !ok {
 		return fmt.Errorf("parsed_data not found or invalid in context")
 	}
 
-	// 从注册表中获取分析器
+	// translated comment
 	analyzer, err := a.registry.GetAnalyzer(request.ExtensionType)
 	if err != nil {
-		// 如果没有分析器，不当作错误返回（某些扩展类型可能没有分析器）
+		// translated comment
 		data.Output = map[string]interface{}{
 			"analysis_results": []interface{}{},
 		}
 		return nil
 	}
 
-	// 分析已解析的数据
+	// translated comment
 	analysisResult, err := analyzer.Analyze(parsedData, request.AnalysisConfig)
 	if err != nil {
 		return fmt.Errorf("analyze error: %w", err)
 	}
 
-	// 存储分析结果
+	// translated comment
 	data.Context["analysis_result"] = analysisResult
 	data.Output = map[string]interface{}{
 		"analysis_result": analysisResult,
@@ -125,44 +125,44 @@ func (a *AnalyzeStage) Execute(ctx context.Context, data *pipeline.StageData) er
 }
 
 // ========================================================================
-// TransformStage: 转换扩展数据
+// translated comment
 // ========================================================================
 
-// TransformStage 转换扩展数据为标准格式
+// translated comment
 type TransformStage struct {
 	registry RegistryPort
 }
 
-// NewTransformStage 创建新的 TransformStage
+// translated comment
 func NewTransformStage(registry RegistryPort) *TransformStage {
 	return &TransformStage{registry: registry}
 }
 
-// GetName 获取阶段名称
+// translated comment
 func (t *TransformStage) GetName() string {
 	return "transform"
 }
 
-// GetDependencies 获取依赖的前置阶段
+// translated comment
 func (t *TransformStage) GetDependencies() []string {
-	return []string{"parse"} // 转换依赖于解析
+	return []string{"parse"} // translated comment
 }
 
-// Execute 执行阶段
+// translated comment
 func (t *TransformStage) Execute(ctx context.Context, data *pipeline.StageData) error {
-	// 从输入中获取请求信息
+	// translated comment
 	request, ok := data.Input.(*ProcessingRequest)
 	if !ok {
 		return fmt.Errorf("expected *ProcessingRequest, got %T", data.Input)
 	}
 
-	// 从前一个阶段的输出中获取已解析的数据
+	// translated comment
 	parsedData, ok := data.Context["parsed_data"].(ExtensionData)
 	if !ok {
 		return fmt.Errorf("parsed_data not found in context")
 	}
 
-	// 如果没有分析配置，跳过转换
+	// translated comment
 	if request.AnalysisConfig == nil {
 		data.Output = map[string]interface{}{
 			"transformed_data": parsedData,
@@ -170,7 +170,7 @@ func (t *TransformStage) Execute(ctx context.Context, data *pipeline.StageData) 
 		return nil
 	}
 
-	// 从分析配置中获取转换列表
+	// translated comment
 	rawTransforms, ok := request.AnalysisConfig["transforms"]
 	if !ok {
 		data.Output = map[string]interface{}{
@@ -179,7 +179,7 @@ func (t *TransformStage) Execute(ctx context.Context, data *pipeline.StageData) 
 		return nil
 	}
 
-	// 解析转换名称列表
+	// translated comment
 	transformNames := make([]string, 0)
 	switch values := rawTransforms.(type) {
 	case []string:
@@ -196,7 +196,7 @@ func (t *TransformStage) Execute(ctx context.Context, data *pipeline.StageData) 
 		return fmt.Errorf("unexpected transforms type: %T", rawTransforms)
 	}
 
-	// 应用转换（这里简化为存储转换名称，实际实现可能需要调用注册表的转换器）
+	// translated comment
 	data.Context["transforms_applied"] = transformNames
 	data.Output = map[string]interface{}{
 		"transformed_data":   parsedData,
@@ -207,52 +207,52 @@ func (t *TransformStage) Execute(ctx context.Context, data *pipeline.StageData) 
 }
 
 // ========================================================================
-// HandleStage: 处理扩展
+// translated comment
 // ========================================================================
 
-// HandleStage 处理扩展的事件
+// translated comment
 type HandleStage struct {
 	registry RegistryPort
 }
 
-// NewHandleStage 创建新的 HandleStage
+// translated comment
 func NewHandleStage(registry RegistryPort) *HandleStage {
 	return &HandleStage{registry: registry}
 }
 
-// GetName 获取阶段名称
+// translated comment
 func (h *HandleStage) GetName() string {
 	return "handle"
 }
 
-// GetDependencies 获取依赖的前置阶段
+// translated comment
 func (h *HandleStage) GetDependencies() []string {
-	return []string{"parse"} // 处理依赖于解析
+	return []string{"parse"} // translated comment
 }
 
-// Execute 执行阶段
+// translated comment
 func (h *HandleStage) Execute(ctx context.Context, data *pipeline.StageData) error {
-	// 从输入中获取请求信息
+	// translated comment
 	request, ok := data.Input.(*ProcessingRequest)
 	if !ok {
 		return fmt.Errorf("expected *ProcessingRequest, got %T", data.Input)
 	}
 
-	// 从前一个阶段的输出中获取已解析的数据
+	// translated comment
 	parsedData, ok := data.Context["parsed_data"].(ExtensionData)
 	if !ok {
 		return fmt.Errorf("parsed_data not found in context")
 	}
 
-	// 从注册表中获取处理器
+	// translated comment
 	handlers := h.registry.GetHandlers(request.ExtensionType)
 
-	// 按优先级排序处理器
+	// translated comment
 	sort.Slice(handlers, func(i, j int) bool {
 		return handlers[i].GetPriority() > handlers[j].GetPriority()
 	})
 
-	// 执行所有处理器
+	// translated comment
 	events := make([]*ExtensionEvent, 0, len(handlers))
 	for _, handler := range handlers {
 		event := &ExtensionEvent{
@@ -270,13 +270,13 @@ func (h *HandleStage) Execute(ctx context.Context, data *pipeline.StageData) err
 
 		events = append(events, event)
 
-		// 如果处理器要求停止传递，则中断
+		// translated comment
 		if !handlerResult.ContinueProcessing {
 			break
 		}
 	}
 
-	// 存储处理事件
+	// translated comment
 	data.Context["events"] = events
 	data.Output = map[string]interface{}{
 		"events": events,

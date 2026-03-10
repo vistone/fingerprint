@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// TestNewLegacyFeatureAdapter 测试创建遗留特征适配器
+// translated comment
 func TestNewLegacyFeatureAdapter(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -54,7 +54,7 @@ func TestNewLegacyFeatureAdapter(t *testing.T) {
 	}
 }
 
-// TestDetectAnomalies 测试异常检测
+// translated comment
 func TestDetectAnomalies(t *testing.T) {
 	adapter := NewLegacyFeatureAdapter(nil)
 
@@ -110,7 +110,7 @@ func TestDetectAnomalies(t *testing.T) {
 	}
 }
 
-// TestHasLowEntropy 测试低熵检查
+// translated comment
 func TestHasLowEntropy(t *testing.T) {
 	adapter := NewLegacyFeatureAdapter(nil)
 
@@ -161,7 +161,7 @@ func TestHasLowEntropy(t *testing.T) {
 	}
 }
 
-// TestHasExcessiveEntropy 测试过高熵检查
+// translated comment
 func TestHasExcessiveEntropy(t *testing.T) {
 	adapter := NewLegacyFeatureAdapter(nil)
 
@@ -173,7 +173,7 @@ func TestHasExcessiveEntropy(t *testing.T) {
 		{
 			name:     "极高熵值二进制数据",
 			data:     []byte("\xff\xfe\xfd\xfc\xfb\xfa\xf9\xf8\xf7\xf6\xf5\xf4\xf3\xf2\xf1\xf0\xef\xee\xed\xec\xeb\xea\xe9\xe8\xe7\xe6\xe5\xe4\xe3\xe2\xe1\xe0\xdf\xde\xdd\xdc\xdb\xda\xd9\xd8\xd7\xd6\xd5\xd4\xd3\xd2\xd1\xd0"),
-			expected: false, // 此测试数据实际熵值未超过阈值
+			expected: false, // translated comment
 		},
 		{
 			name:     "正常熵值返回false",
@@ -207,7 +207,7 @@ func TestHasExcessiveEntropy(t *testing.T) {
 	}
 }
 
-// TestContainsSpoofingMarkers 测试欺骗标记检查
+// translated comment
 func TestContainsSpoofingMarkers(t *testing.T) {
 	adapter := NewLegacyFeatureAdapter(nil)
 
@@ -263,7 +263,7 @@ func TestContainsSpoofingMarkers(t *testing.T) {
 	}
 }
 
-// TestDetectHeadlessBrowser 测试无头浏览器检测
+// translated comment
 func TestDetectHeadlessBrowser(t *testing.T) {
 	adapter := NewLegacyFeatureAdapter(nil)
 
@@ -319,7 +319,7 @@ func TestDetectHeadlessBrowser(t *testing.T) {
 	}
 }
 
-// TestCheckContradictions 测试矛盾检查
+// translated comment
 func TestCheckContradictions(t *testing.T) {
 	adapter := NewLegacyFeatureAdapter(nil)
 
@@ -474,7 +474,7 @@ func TestCheckContradictions(t *testing.T) {
 	}
 }
 
-// TestRecognizeFromHeaders 测试从HTTP请求头识别
+// translated comment
 func TestRecognizeFromHeaders(t *testing.T) {
 	adapter := NewLegacyFeatureAdapter(nil)
 
@@ -677,7 +677,7 @@ func TestRecognizeFromHeaders(t *testing.T) {
 	}
 }
 
-// TestDetectBrowserFromUALegacy 测试浏览器检测
+// translated comment
 func TestDetectBrowserFromUALegacy(t *testing.T) {
 	tests := []struct {
 		name            string
@@ -730,7 +730,7 @@ func TestDetectBrowserFromUALegacy(t *testing.T) {
 		{
 			name:            "Chromium包含Chrome字符串",
 			ua:              "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chromium/90.0.4430.93 Chrome/90.0.4430.93 Safari/537.36",
-			wantBrowser:     "Safari", // 包含chromium会跳过Chrome检测，Safari检测到包含Safari/
+			wantBrowser:     "Safari", // translated comment
 			wantVersion:     "",
 		},
 		{
@@ -760,7 +760,7 @@ func TestDetectBrowserFromUALegacy(t *testing.T) {
 	}
 }
 
-// TestExtractVersionFromUALegacy 测试版本提取
+// translated comment
 func TestExtractVersionFromUALegacy(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -840,7 +840,7 @@ func TestExtractVersionFromUALegacy(t *testing.T) {
 	}
 }
 
-// TestDetectOSFromUALegacy 测试操作系统检测
+// translated comment
 func TestDetectOSFromUALegacy(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -899,7 +899,7 @@ func TestDetectOSFromUALegacy(t *testing.T) {
 	}
 }
 
-// TestCalculateConfidenceLegacy 测试置信度计算
+// translated comment
 func TestCalculateConfidenceLegacy(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -975,12 +975,12 @@ func TestCalculateConfidenceLegacy(t *testing.T) {
 	}
 }
 
-// TestLegacyFeatureAdapter_Integration 集成测试
+// translated comment
 func TestLegacyFeatureAdapter_Integration(t *testing.T) {
-	// 测试适配器整体工作流程
+	// translated comment
 	adapter := NewLegacyFeatureAdapter(nil)
 
-	// 测试场景：检测正常浏览器
+	// translated comment
 	t.Run("检测正常浏览器", func(t *testing.T) {
 		headers := map[string]string{
 			"User-Agent":      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
@@ -1001,7 +1001,7 @@ func TestLegacyFeatureAdapter_Integration(t *testing.T) {
 		}
 	})
 
-	// 测试场景：检测无头浏览器
+	// translated comment
 	t.Run("检测无头浏览器", func(t *testing.T) {
 		headers := map[string]string{
 			"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 HeadlessChrome/90.0.4430.93",
@@ -1018,7 +1018,7 @@ func TestLegacyFeatureAdapter_Integration(t *testing.T) {
 		}
 	})
 
-	// 测试场景：检测包含欺骗标记的数据
+	// translated comment
 	t.Run("检测欺骗标记数据", func(t *testing.T) {
 		data := []byte("User-Agent: selenium webdriver phantomjs puppeteer")
 
@@ -1030,7 +1030,7 @@ func TestLegacyFeatureAdapter_Integration(t *testing.T) {
 		}
 	})
 
-	// 测试场景：检测属性矛盾
+	// translated comment
 	t.Run("检测属性矛盾", func(t *testing.T) {
 		attrs := map[string]string{
 			"os":       "Windows 10",
@@ -1042,7 +1042,7 @@ func TestLegacyFeatureAdapter_Integration(t *testing.T) {
 		}
 	})
 
-	// 测试场景：使用自定义配置
+	// translated comment
 	t.Run("使用自定义配置", func(t *testing.T) {
 		customConfig := &FeatureConfig{
 			EntropyHighThreshold:  8.0,
@@ -1055,13 +1055,13 @@ func TestLegacyFeatureAdapter_Integration(t *testing.T) {
 
 		customAdapter := NewLegacyFeatureAdapter(customConfig)
 
-		// 测试自定义工具标记
+		// translated comment
 		data := []byte("This contains custom_tool marker")
 		if !customAdapter.ContainsSpoofingMarkers(data) {
 			t.Error("应检测到自定义工具标记")
 		}
 
-		// 测试普通工具标记不应被检测到（因为配置中移除了）
+		// translated comment
 		data2 := []byte("This contains selenium marker")
 		if customAdapter.ContainsSpoofingMarkers(data2) {
 			t.Error("不应检测到默认工具标记（配置已更改）")
@@ -1069,12 +1069,12 @@ func TestLegacyFeatureAdapter_Integration(t *testing.T) {
 	})
 }
 
-// TestEdgeCases 边界情况测试
+// translated comment
 func TestEdgeCases(t *testing.T) {
 	adapter := NewLegacyFeatureAdapter(nil)
 
 	t.Run("长文本工具标记检测", func(t *testing.T) {
-		// 测试大文本的处理
+		// translated comment
 		longText := strings.Repeat("Normal text content. ", 100) + "selenium" + strings.Repeat(" More text. ", 100)
 		if !adapter.ContainsSpoofingMarkers([]byte(longText)) {
 			t.Error("应在长文本中检测到工具标记")
@@ -1090,16 +1090,16 @@ func TestEdgeCases(t *testing.T) {
 
 	t.Run("Unicode内容处理", func(t *testing.T) {
 		unicode := []byte("Hello 世界 🌍 Привет мир")
-		// 足够长的unicode内容
+		// translated comment
 		longUnicode := append(unicode, []byte(strings.Repeat(" additional text ", 10))...)
-		_ = adapter.DetectAnomalies(longUnicode) // 不应panic
+		_ = adapter.DetectAnomalies(longUnicode) // translated comment
 	})
 
 	t.Run("矛盾检查-缺失字段", func(t *testing.T) {
-		// 只有部分字段，不应触发矛盾
+		// translated comment
 		attrs := map[string]string{
 			"os": "Windows 10",
-			// 缺少 platform 字段
+			// translated comment
 		}
 		if adapter.CheckContradictions(attrs) {
 			t.Error("缺少必要字段不应触发矛盾检测")

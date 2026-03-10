@@ -7,91 +7,91 @@ import (
 	"strings"
 )
 
-// JA4XResult JA4X 指纹结果（X.509 证书指纹）
+// translated comment
 type JA4XResult struct {
-	// JA4X 完整哈希
+	// translated comment
 	Hash string
 
-	// JA4X 原始字符串
+	// translated comment
 	RawString string
 
-	// JA4X_a: 颁发者 RDN（Distinguished Name）序列的 SHA256 前 12 字符
+	// translated comment
 	JA4Xa string
 
-	// JA4X_b: 主体 RDN 序列的 SHA256 前 12 字符
+	// translated comment
 	JA4Xb string
 
-	// JA4X_c: 扩展 OID 序列的 SHA256 前 12 字符
+	// translated comment
 	JA4Xc string
 
-	// 颁发者信息（可读形式）
+	// translated comment
 	Issuer string
 
-	// 主体信息（可读形式）
+	// translated comment
 	Subject string
 
-	// 异常标记
+	// translated comment
 	AnomalyFlags []string
 
-	// 风险评分 (0.0-1.0)
+	// translated comment
 	RiskScore float64
 }
 
-// CertificateData 证书数据（用于不依赖 x509.Certificate 的场景）
+// translated comment
 type CertificateData struct {
-	// 颁发者 RDN 字段（按顺序）
+	// translated comment
 	IssuerRDNs []RDNField
 
-	// 主体 RDN 字段（按顺序）
+	// translated comment
 	SubjectRDNs []RDNField
 
-	// 扩展 OID 列表（按顺序）
+	// translated comment
 	ExtensionOIDs []string
 
-	// 证书版本
+	// translated comment
 	Version int
 
-	// 签名算法 OID
+	// translated comment
 	SignatureAlgorithm string
 
-	// 有效期（天数）
+	// translated comment
 	ValidityDays int
 
-	// 是否自签名
+	// translated comment
 	IsSelfSigned bool
 
-	// 是否为 CA 证书
+	// translated comment
 	IsCA bool
 }
 
-// RDNField 证书 RDN 字段
+// translated comment
 type RDNField struct {
-	// OID (如 "2.5.4.3" 表示 CN)
+	// translated comment
 	OID string
 
-	// 值
+	// translated comment
 	Value string
 }
 
-// sha256Hash12 计算 SHA256 哈希并返回前 12 个字符
+// translated comment
 func sha256Hash12(input string) string {
 	hash := sha256.Sum256([]byte(input))
 	return fmt.Sprintf("%x", hash)[:12]
 }
 
-// ComputeJA4X 从 x509.Certificate 计算 JA4X 指纹
+// translated comment
 func ComputeJA4X(cert *x509.Certificate) *JA4XResult {
 	data := extractCertificateData(cert)
 	return ComputeJA4XFromData(data)
 }
 
-// ComputeJA4XFromData 从 CertificateData 计算 JA4X 指纹
+// translated comment
 func ComputeJA4XFromData(data CertificateData) *JA4XResult {
 	result := &JA4XResult{
 		AnomalyFlags: []string{},
 	}
 
-	// JA4X_a: 颁发者 RDN OID 序列
+	// translated comment
 	issuerOIDs := make([]string, len(data.IssuerRDNs))
 	for i, rdn := range data.IssuerRDNs {
 		issuerOIDs[i] = rdn.OID
@@ -99,14 +99,14 @@ func ComputeJA4XFromData(data CertificateData) *JA4XResult {
 	issuerStr := strings.Join(issuerOIDs, ",")
 	result.JA4Xa = sha256Hash12(issuerStr)
 
-	// 颁发者可读形式
+	// translated comment
 	issuerParts := make([]string, len(data.IssuerRDNs))
 	for i, rdn := range data.IssuerRDNs {
 		issuerParts[i] = fmt.Sprintf("%s=%s", oidName(rdn.OID), rdn.Value)
 	}
 	result.Issuer = strings.Join(issuerParts, ", ")
 
-	// JA4X_b: 主体 RDN OID 序列
+	// translated comment
 	subjectOIDs := make([]string, len(data.SubjectRDNs))
 	for i, rdn := range data.SubjectRDNs {
 		subjectOIDs[i] = rdn.OID
@@ -114,30 +114,30 @@ func ComputeJA4XFromData(data CertificateData) *JA4XResult {
 	subjectStr := strings.Join(subjectOIDs, ",")
 	result.JA4Xb = sha256Hash12(subjectStr)
 
-	// 主体可读形式
+	// translated comment
 	subjectParts := make([]string, len(data.SubjectRDNs))
 	for i, rdn := range data.SubjectRDNs {
 		subjectParts[i] = fmt.Sprintf("%s=%s", oidName(rdn.OID), rdn.Value)
 	}
 	result.Subject = strings.Join(subjectParts, ", ")
 
-	// JA4X_c: 扩展 OID 序列
+	// translated comment
 	extStr := strings.Join(data.ExtensionOIDs, ",")
 	result.JA4Xc = sha256Hash12(extStr)
 
-	// 原始字符串: issuerOIDs_subjectOIDs_extensionOIDs
+	// translated comment
 	result.RawString = fmt.Sprintf("%s_%s_%s", issuerStr, subjectStr, extStr)
 
-	// 完整哈希: JA4X_a_JA4X_b_JA4X_c
+	// translated comment
 	result.Hash = fmt.Sprintf("%s_%s_%s", result.JA4Xa, result.JA4Xb, result.JA4Xc)
 
-	// 异常检测
+	// translated comment
 	detectCertAnomalies(data, result)
 
 	return result
 }
 
-// ComputeJA4XChain 计算证书链的 JA4X 指纹列表
+// translated comment
 func ComputeJA4XChain(certs []*x509.Certificate) []*JA4XResult {
 	results := make([]*JA4XResult, len(certs))
 	for i, cert := range certs {
@@ -146,12 +146,12 @@ func ComputeJA4XChain(certs []*x509.Certificate) []*JA4XResult {
 	return results
 }
 
-// MatchJA4X 比较两个 JA4X 哈希是否匹配
+// translated comment
 func MatchJA4X(hash1, hash2 string) bool {
 	return hash1 != "" && hash2 != "" && hash1 == hash2
 }
 
-// extractCertificateData 从 x509.Certificate 提取数据
+// translated comment
 func extractCertificateData(cert *x509.Certificate) CertificateData {
 	data := CertificateData{
 		Version:      cert.Version,
@@ -159,21 +159,21 @@ func extractCertificateData(cert *x509.Certificate) CertificateData {
 		IsCA:         cert.IsCA,
 	}
 
-	// 签名算法
+	// translated comment
 	data.SignatureAlgorithm = cert.SignatureAlgorithm.String()
 
-	// 有效期
+	// translated comment
 	if !cert.NotBefore.IsZero() && !cert.NotAfter.IsZero() {
 		data.ValidityDays = int(cert.NotAfter.Sub(cert.NotBefore).Hours() / 24)
 	}
 
-	// 颁发者 RDN
+	// translated comment
 	data.IssuerRDNs = extractRDNs(cert.Issuer.String())
 
-	// 主体 RDN
+	// translated comment
 	data.SubjectRDNs = extractRDNs(cert.Subject.String())
 
-	// 扩展 OID
+	// translated comment
 	for _, ext := range cert.Extensions {
 		data.ExtensionOIDs = append(data.ExtensionOIDs, ext.Id.String())
 	}
@@ -181,7 +181,7 @@ func extractCertificateData(cert *x509.Certificate) CertificateData {
 	return data
 }
 
-// extractRDNs 从 DN 字符串中提取 RDN 字段
+// translated comment
 func extractRDNs(dn string) []RDNField {
 	var rdns []RDNField
 	if dn == "" {
@@ -204,7 +204,7 @@ func extractRDNs(dn string) []RDNField {
 	return rdns
 }
 
-// rdnKeyToOID 将 RDN 键名转换为 OID
+// translated comment
 func rdnKeyToOID(key string) string {
 	switch strings.ToUpper(key) {
 	case "CN":
@@ -226,7 +226,7 @@ func rdnKeyToOID(key string) string {
 	case "POSTALCODE":
 		return "2.5.4.17"
 	default:
-		// 如果已经是 OID 格式，直接返回
+		// translated comment
 		if strings.Contains(key, ".") {
 			return key
 		}
@@ -234,7 +234,7 @@ func rdnKeyToOID(key string) string {
 	}
 }
 
-// oidName 将 OID 转换为可读名称
+// translated comment
 func oidName(oid string) string {
 	switch oid {
 	case "2.5.4.3":
@@ -260,41 +260,41 @@ func oidName(oid string) string {
 	}
 }
 
-// detectCertAnomalies 检测证书异常
+// translated comment
 func detectCertAnomalies(data CertificateData, result *JA4XResult) {
 	baseScore := 0.0
 
-	// 异常 1: 自签名证书
+	// translated comment
 	if data.IsSelfSigned {
 		result.AnomalyFlags = append(result.AnomalyFlags, "SELF_SIGNED")
 		baseScore += 0.2
 	}
 
-	// 异常 2: 过长的有效期（超过 398 天，违反 CA/Browser Forum 要求）
+	// translated comment
 	if data.ValidityDays > 398 && !data.IsCA {
 		result.AnomalyFlags = append(result.AnomalyFlags, "LONG_VALIDITY")
 		baseScore += 0.15
 	}
 
-	// 异常 3: 证书版本不是 v3
+	// translated comment
 	if data.Version != 3 && data.Version != 0 {
 		result.AnomalyFlags = append(result.AnomalyFlags, "NON_V3_CERT")
 		baseScore += 0.1
 	}
 
-	// 异常 4: 无扩展
+	// translated comment
 	if len(data.ExtensionOIDs) == 0 {
 		result.AnomalyFlags = append(result.AnomalyFlags, "NO_EXTENSIONS")
 		baseScore += 0.15
 	}
 
-	// 异常 5: 主体为空
+	// translated comment
 	if len(data.SubjectRDNs) == 0 {
 		result.AnomalyFlags = append(result.AnomalyFlags, "EMPTY_SUBJECT")
 		baseScore += 0.1
 	}
 
-	// 异常 6: 颁发者为空
+	// translated comment
 	if len(data.IssuerRDNs) == 0 {
 		result.AnomalyFlags = append(result.AnomalyFlags, "EMPTY_ISSUER")
 		baseScore += 0.15

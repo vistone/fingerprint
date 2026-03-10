@@ -4,20 +4,20 @@ import (
 	"fmt"
 )
 
-// ConfigManager 配置管理器 - 提供统一的配置访问接口
-// 注意：ConfigManager 本身不需要锁，因为 ConfigCenter 已经有完整的锁机制
+// translated comment
+// translated comment
 type ConfigManager struct {
 	center *ConfigCenter
 }
 
-// NewConfigManager 创建配置管理器
+// translated comment
 func NewConfigManager(center *ConfigCenter) *ConfigManager {
 	return &ConfigManager{
 		center: center,
 	}
 }
 
-// GetBehaviorAnalysisConfig 获取行为分析配置
+// translated comment
 func (cm *ConfigManager) GetBehaviorAnalysisConfig() *BehaviorAnalysisConfig {
 	config := cm.center.Get()
 	if config.BehaviorAnalysis == nil {
@@ -26,7 +26,7 @@ func (cm *ConfigManager) GetBehaviorAnalysisConfig() *BehaviorAnalysisConfig {
 	return config.BehaviorAnalysis
 }
 
-// GetRiskScoringConfig 获取风险评分配置
+// translated comment
 func (cm *ConfigManager) GetRiskScoringConfig() *RiskScoringConfig {
 	config := cm.center.Get()
 	if config.RiskScoring == nil {
@@ -35,7 +35,7 @@ func (cm *ConfigManager) GetRiskScoringConfig() *RiskScoringConfig {
 	return config.RiskScoring
 }
 
-// GetFeatureExtractionConfig 获取特征提取配置
+// translated comment
 func (cm *ConfigManager) GetFeatureExtractionConfig() *FeatureExtractionConfig {
 	config := cm.center.Get()
 	if config.Features == nil {
@@ -44,7 +44,7 @@ func (cm *ConfigManager) GetFeatureExtractionConfig() *FeatureExtractionConfig {
 	return config.Features
 }
 
-// GetQUICConfig 获取 QUIC 配置
+// translated comment
 func (cm *ConfigManager) GetQUICConfig() *QUICConfig {
 	config := cm.center.Get()
 	if config.QUIC == nil {
@@ -53,7 +53,7 @@ func (cm *ConfigManager) GetQUICConfig() *QUICConfig {
 	return config.QUIC
 }
 
-// GetTLSConfig 获取 TLS 配置
+// translated comment
 func (cm *ConfigManager) GetTLSConfig() *TLSConfig {
 	config := cm.center.Get()
 	if config.TLS == nil {
@@ -62,7 +62,7 @@ func (cm *ConfigManager) GetTLSConfig() *TLSConfig {
 	return config.TLS
 }
 
-// GetGlobalConfig 获取全局配置
+// translated comment
 func (cm *ConfigManager) GetGlobalConfig() *GlobalConfig {
 	config := cm.center.Get()
 	if config.Global == nil {
@@ -71,7 +71,7 @@ func (cm *ConfigManager) GetGlobalConfig() *GlobalConfig {
 	return config.Global
 }
 
-// UpdateBehaviorAnalysisConfig 更新行为分析配置
+// translated comment
 func (cm *ConfigManager) UpdateBehaviorAnalysisConfig(newConfig *BehaviorAnalysisConfig, reason, changedBy string) error {
 	config := cm.center.Get()
 	config.BehaviorAnalysis = newConfig
@@ -79,7 +79,7 @@ func (cm *ConfigManager) UpdateBehaviorAnalysisConfig(newConfig *BehaviorAnalysi
 	return cm.center.Update(config, reason, changedBy)
 }
 
-// UpdateRiskScoringConfig 更新风险评分配置
+// translated comment
 func (cm *ConfigManager) UpdateRiskScoringConfig(newConfig *RiskScoringConfig, reason, changedBy string) error {
 	config := cm.center.Get()
 	config.RiskScoring = newConfig
@@ -87,7 +87,7 @@ func (cm *ConfigManager) UpdateRiskScoringConfig(newConfig *RiskScoringConfig, r
 	return cm.center.Update(config, reason, changedBy)
 }
 
-// UpdateFeatureExtractionConfig 更新特征提取配置
+// translated comment
 func (cm *ConfigManager) UpdateFeatureExtractionConfig(newConfig *FeatureExtractionConfig, reason, changedBy string) error {
 	config := cm.center.Get()
 	config.Features = newConfig
@@ -95,10 +95,10 @@ func (cm *ConfigManager) UpdateFeatureExtractionConfig(newConfig *FeatureExtract
 	return cm.center.Update(config, reason, changedBy)
 }
 
-// GetConfigValue 获取指定路径的配置值
+// translated comment
 func (cm *ConfigManager) GetConfigValue(path string) (interface{}, error) {
-	// 简化实现 - 支持基本的路径查询
-	// 实际应该使用反射或 JSON 路径库
+	// translated comment
+	// translated comment
 
 	switch path {
 	case "behavior_analysis.min_requests":
@@ -112,7 +112,7 @@ func (cm *ConfigManager) GetConfigValue(path string) (interface{}, error) {
 	}
 }
 
-// IsLoaded 检查配置是否已加载
+// translated comment
 func (cm *ConfigManager) IsLoaded() bool {
 	return cm.center.IsLoaded()
 }
