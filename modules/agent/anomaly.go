@@ -8,36 +8,36 @@ import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// AnomalyDetector 知识驱动的异常检测器
+// AnomalyDetector knowledge-driven anomaly detector
 //
-// 利用 KnowledgeBase 中的全球指纹蓝图，对每一次观测进行
-// 跨层一致性校验：TLS ↔ HTTP/2 ↔ HTTP 头 ↔ TCP/IP ↔ JS 特征
-// 是否共同指向同一个真实浏览器身份。
+// Leverages global fingerprint blueprints from KnowledgeBase to perform
+// cross-layer consistency validation on each observation: TLS ↔ HTTP/2 ↔ HTTP headers ↔ TCP/IP ↔ JS features
+// whether all point to the same real browser identity.
 //
-// 任何矛盾信号会被标记为 Contradiction，累积成 SuspicionScore。
+// Any contradictory signals are marked as Contradiction, accumulated into SuspicionScore.
 type AnomalyDetector struct {
 	kb *KnowledgeBase
 }
 
-// NewAnomalyDetector 创建知识驱动异常检测器
+// NewAnomalyDetector create knowledge-driven anomaly detector
 func NewAnomalyDetector(kb *KnowledgeBase) *AnomalyDetector {
 	return &AnomalyDetector{kb: kb}
 }
 
-// Analyze 对一次观测进行知识驱动的异常分析
+// Analyze perform knowledge-driven anomaly analysis on an observation
 //
-// 它会：
-//  1. 从 ML 分类结果取出声称的浏览器身份
-//  2. 用 KnowledgeBase 查找该身份的已知蓝图
-//  3. 逐层校验 TLS、HTTP/2、TCP/IP 等特征是否与蓝图一致
-//  4. 汇总矛盾信号，计算可疑度
+// It will:
+//  1. Extract claimed browser identity from ML classification result
+//  2. Use KnowledgeBase to find known blueprint for that identity
+//  3. Layer-by-layer validation: whether TLS, HTTP/2, TCP/IP features match blueprint
+//  4. Aggregate contradictory signals and calculate suspicion score
 func (ad *AnomalyDetector) Analyze(obs *Observation) *MatchResult {
 	result := &MatchResult{
 		MatchScore:     1.0,
 		SuspicionScore: 0.0,
 	}
 
-	// 无分类结果时无法进行知识校验
+	// Cannot perform knowledge validation without classification result
 	if obs.Classification == nil {
 		return result
 	}
@@ -49,7 +49,7 @@ func (ad *AnomalyDetector) Analyze(obs *Observation) *MatchResult {
 
 	bk := ad.kb.GetBrowserKnowledge(family)
 	if bk == nil {
-		// 未知浏览器家族，轻微可疑
+		// Unknown browser family, slightly suspicious
 		result.Contradictions = append(result.Contradictions, Contradiction{
 			Field: "browser_family", Expected: "known family", Actual: string(family), Severity: "low",
 		})
@@ -59,22 +59,22 @@ func (ad *AnomalyDetector) Analyze(obs *Observation) *MatchResult {
 
 	result.Known = true
 
-	// ---- TLS 层检验 ----
+	// ---- TLS layer validation ----
 	ad.checkTLS(obs, bk, result)
 
-	// ---- HTTP/2 层检验 ----
+	// ---- HTTP/2 layer validation ----
 	ad.checkHTTP2(obs, family, result)
 
-	// ---- TCP/IP 层检验 ----
+	// ---- TCP/IP layer validation ----
 	ad.checkTCPIP(obs, result)
 
-	// ---- 分类置信度检验 ----
+	// ---- Classification confidence validation ----
 	ad.checkClassificationConfidence(obs, result)
 
-	// ---- Headless / 自动化工具标记检验 ----
+	// ---- Headless / automation tool marker validation ----
 	ad.checkAutomationMarkers(obs, result)
 
-	// 汇总可疑度
+	// Aggregate suspicion score
 	result.SuspicionScore = ad.computeSuspicionScore(result.Contradictions)
 	result.MatchScore = math.Max(0, 1.0-result.SuspicionScore)
 
@@ -82,7 +82,7 @@ func (ad *AnomalyDetector) Analyze(obs *Observation) *MatchResult {
 }
 
 // ===================================================================
-// TLS 层检验
+// TLS layer validation
 // ===================================================================
 
 func (ad *AnomalyDetector) checkTLS(obs *Observation, bk *BrowserKnowledge, mr *MatchResult) {
@@ -90,7 +90,7 @@ func (ad *AnomalyDetector) checkTLS(obs *Observation, bk *BrowserKnowledge, mr *
 		return
 	}
 
-	// 密码套件数量校验
+	// Cipher suite count validation
 	cipherCount := obs.Features.Get(core.FeatureCipherSuites)
 	if cipherCount > 0 {
 		rangeInfo, ok := ad.kb.tls.CipherCountRange[bk.Family]
@@ -107,7 +107,7 @@ func (ad *AnomalyDetector) checkTLS(obs *Observation, bk *BrowserKnowledge, mr *
 		}
 	}
 
-	// 扩展数量校验
+	// Extension count validation
 	extCount := obs.Features.Get(core.FeatureExtensions)
 	if extCount > 0 {
 		rangeInfo, ok := ad.kb.tls.ExtensionCountRange[bk.Family]
@@ -126,7 +126,7 @@ func (ad *AnomalyDetector) checkTLS(obs *Observation, bk *BrowserKnowledge, mr *
 }
 
 // ===================================================================
-// HTTP/2 层检验
+// HTTP/2 layer validation
 // ===================================================================
 
 func (ad *AnomalyDetector) checkHTTP2(obs *Observation, family core.BrowserType, mr *MatchResult) {
@@ -144,16 +144,16 @@ func (ad *AnomalyDetector) checkHTTP2(obs *Observation, family core.BrowserType,
 		return
 	}
 
-	// FeatureVector 中 HTTP2Settings 是 hash 值，我们检查元数据中是否有详细信息
+	// FeatureVector HTTP2Settings is a hash value, check metadata for detailed info
 	if obs.Features.Metadata == nil {
 		return
 	}
 
-	// 检查 HTTP/2 InitialWindowSize（如果元数据中有）
+	// Check HTTP/2 InitialWindowSize (if available in metadata)
 	if ws, ok := obs.Features.Metadata["h2_initial_window_size"]; ok {
 		if wsVal, ok := ws.(float64); ok {
 			expectedWS := float64(expected.InitialWindowSize)
-			// 允许 10% 偏差
+			// Allow 10% deviation
 			if math.Abs(wsVal-expectedWS)/expectedWS > 0.1 {
 				mr.Contradictions = append(mr.Contradictions, Contradiction{
 					Field:    "h2_initial_window_size",
@@ -165,7 +165,7 @@ func (ad *AnomalyDetector) checkHTTP2(obs *Observation, family core.BrowserType,
 		}
 	}
 
-	// 检查 MaxConcurrentStreams
+	// check MaxConcurrentStreams
 	if mcs, ok := obs.Features.Metadata["h2_max_concurrent_streams"]; ok {
 		if mcsVal, ok := mcs.(float64); ok {
 			expectedMCS := float64(expected.MaxConcurrentStreams)
@@ -180,7 +180,7 @@ func (ad *AnomalyDetector) checkHTTP2(obs *Observation, family core.BrowserType,
 		}
 	}
 
-	// 检查 pseudo-header 顺序（Chrome vs Firefox vs Safari 各不同）
+	// Check pseudo-header order (Chrome vs Firefox vs Safari all different)
 	if pho, ok := obs.Features.Metadata["pseudo_header_order"]; ok {
 		if phoStr, ok := pho.(string); ok && len(expected.PseudoHeaderOrder) > 0 {
 			expectedOrder := strings.Join(expected.PseudoHeaderOrder, ",")
@@ -197,7 +197,7 @@ func (ad *AnomalyDetector) checkHTTP2(obs *Observation, family core.BrowserType,
 }
 
 // ===================================================================
-// TCP/IP 层检验
+// TCP/IP layer validation
 // ===================================================================
 
 func (ad *AnomalyDetector) checkTCPIP(obs *Observation, mr *MatchResult) {
@@ -215,13 +215,13 @@ func (ad *AnomalyDetector) checkTCPIP(obs *Observation, mr *MatchResult) {
 		return
 	}
 
-	// TTL 检验
+	// TTL validation
 	if ttlStr, ok := obs.Metadata["tcp_ttl"]; ok {
 		var ttl int
 		if _, err := fmt.Sscanf(ttlStr, "%d", &ttl); err == nil {
-			// TTL 会随着 hop 数递减，期望值 ± 一定范围
+			// TTL decrements with hop count, expected value ± certain range
 			expectedTTL := int(expected.TTL)
-			// 在 hot-path 中只检查是否与 OS 段匹配 (64段 vs 128段)
+			// In hot-path only check if matches OS segment (64 segment vs 128 segment)
 			if (expectedTTL > 100 && ttl <= 100) || (expectedTTL <= 100 && ttl > 100) {
 				mr.Contradictions = append(mr.Contradictions, Contradiction{
 					Field:    "tcp_ttl",
@@ -233,12 +233,12 @@ func (ad *AnomalyDetector) checkTCPIP(obs *Observation, mr *MatchResult) {
 		}
 	}
 
-	// TCP Window Size 检验
+	// TCP Window Size validation
 	if wsStr, ok := obs.Metadata["tcp_window_size"]; ok {
 		var ws int
 		if _, err := fmt.Sscanf(wsStr, "%d", &ws); err == nil {
 			expectedWS := int(expected.WindowSize)
-			// 允许 20% 偏差（网络条件可能影响）
+			// Allow 20% deviation (network conditions may affect)
 			diff := math.Abs(float64(ws-expectedWS)) / float64(expectedWS)
 			if diff > 0.3 {
 				mr.Contradictions = append(mr.Contradictions, Contradiction{
@@ -252,7 +252,7 @@ func (ad *AnomalyDetector) checkTCPIP(obs *Observation, mr *MatchResult) {
 	}
 }
 
-// normalizeOSFamily 将各种 OS 表述规范化为知识库使用的 key
+// normalizeOSFamily normalize various OS representations to knowledge base keys
 func normalizeOSFamily(raw string) string {
 	lower := strings.ToLower(raw)
 	switch {
@@ -272,14 +272,14 @@ func normalizeOSFamily(raw string) string {
 }
 
 // ===================================================================
-// 分类置信度检验
+// Classification confidence validation
 // ===================================================================
 
 func (ad *AnomalyDetector) checkClassificationConfidence(obs *Observation, mr *MatchResult) {
 	if obs.Classification == nil {
 		return
 	}
-	// 如果 ML 分类置信度过低，说明特征模式不典型
+	// If ML classification confidence too low, indicates feature pattern is atypical
 	if obs.Classification.Confidence < 0.5 {
 		mr.Contradictions = append(mr.Contradictions, Contradiction{
 			Field:    "classification_confidence",
@@ -291,7 +291,7 @@ func (ad *AnomalyDetector) checkClassificationConfidence(obs *Observation, mr *M
 }
 
 // ===================================================================
-// 自动化工具标记检验
+// Automation tool marker validation
 // ===================================================================
 
 func (ad *AnomalyDetector) checkAutomationMarkers(obs *Observation, mr *MatchResult) {
@@ -299,7 +299,7 @@ func (ad *AnomalyDetector) checkAutomationMarkers(obs *Observation, mr *MatchRes
 		return
 	}
 
-	// 检查 headless browser 特征
+	// check headless browser feature
 	headless := obs.Features.Get(core.FeatureHeadlessBrowser)
 	if headless > 0 {
 		mr.Contradictions = append(mr.Contradictions, Contradiction{
@@ -310,7 +310,7 @@ func (ad *AnomalyDetector) checkAutomationMarkers(obs *Observation, mr *MatchRes
 		})
 	}
 
-	// 检查自动化工具标记
+	// Check automation tool markers
 	toolMarker := obs.Features.Get(core.FeatureToolMarker)
 	if toolMarker > 0 {
 		mr.Contradictions = append(mr.Contradictions, Contradiction{
@@ -323,7 +323,7 @@ func (ad *AnomalyDetector) checkAutomationMarkers(obs *Observation, mr *MatchRes
 }
 
 // ===================================================================
-// 可疑度计算
+// Suspicion score calculation
 // ===================================================================
 
 var severityWeights = map[string]float64{
@@ -346,7 +346,7 @@ func (ad *AnomalyDetector) computeSuspicionScore(contradictions []Contradiction)
 		score += w
 	}
 
-	// 多重矛盾有叠加效应，但上限为 1.0
+	// Multiple contradictions have cumulative effect, but capped at 1.0
 	if score > 1.0 {
 		score = 1.0
 	}
