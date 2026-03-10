@@ -1,4 +1,4 @@
-// Package ml 提供三层分层分类器实现
+// Package ml provides three-layer hierarchical classifier implementation
 package ml
 
 import (
@@ -7,27 +7,27 @@ import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// HierarchicalClassifier 三层分层分类器
-// 移植自 Rust 版本的 ML 架构
-// Layer 1: 协议类型分类器 (TLS/HTTP/QUIC)
-// Layer 2: 浏览器家族分类器 (Chrome/Firefox/Safari)
-// Layer 3: 版本识别分类器 (Chrome 120/121/122)
+// HierarchicalClassifier three-layer hierarchical classifier
+// Ported from Rust version ML architecture
+// Layer 1: Protocol type classifier (TLS/HTTP/QUIC)
+// Layer 2: Browser family classifier (Chrome/Firefox/Safari)
+// Layer 3: Version recognition classifier (Chrome 120/121/122)
 type HierarchicalClassifier struct {
-	// Layer 1: 协议类型分类器
+	// Layer 1: Protocol type classifier
 	protocolClassifier *ProtocolClassifier
 
-	// Layer 2: 浏览器家族分类器，按协议类型索引
+	// Layer 2: Browser family classifiers, indexed by protocol type
 	familyClassifiers map[core.ProtocolType]*FamilyClassifier
 
-	// Layer 3: 版本识别分类器，按浏览器家族索引
+	// Layer 3: Version recognition classifiers, indexed by browser family
 	versionClassifiers map[core.BrowserType]*VersionClassifier
 
-	// 训练状态
+	// Training status
 	trained bool
 	mu      sync.RWMutex
 }
 
-// NewHierarchicalClassifier 创建新的三层分层分类器
+// NewHierarchicalClassifier create new three-layer hierarchical classifier
 func NewHierarchicalClassifier() *HierarchicalClassifier {
 	return &HierarchicalClassifier{
 		protocolClassifier: NewProtocolClassifier(),
@@ -37,12 +37,12 @@ func NewHierarchicalClassifier() *HierarchicalClassifier {
 	}
 }
 
-// Initialize 初始化分类器层次结构
+// Initialize initialize classifier hierarchy
 func (hc *HierarchicalClassifier) Initialize() {
 	hc.mu.Lock()
 	defer hc.mu.Unlock()
 
-	// 初始化 Layer 2: 为每种协议类型创建浏览器家族分类器
+	// Initialize Layer 2: create browser family classifier for each protocol type
 	protocols := []core.ProtocolType{
 		core.ProtocolTLS,
 		core.ProtocolHTTP,
@@ -55,7 +55,7 @@ func (hc *HierarchicalClassifier) Initialize() {
 		hc.familyClassifiers[proto] = NewFamilyClassifier(proto)
 	}
 
-	// 初始化 Layer 3: 为每种浏览器家族创建版本分类器
+	// Initialize Layer 3: create version classifier for each browser family
 	families := []core.BrowserType{
 		core.BrowserChrome,
 		core.BrowserFirefox,
@@ -69,7 +69,7 @@ func (hc *HierarchicalClassifier) Initialize() {
 	}
 }
 
-// TrainingData 训练数据结构
+// TrainingData training data structure
 type TrainingData struct {
 	ProtocolFeatures [][]float64
 	ProtocolLabels   []core.ProtocolType
@@ -81,17 +81,17 @@ type TrainingData struct {
 	VersionLabels   map[core.BrowserType][]string
 }
 
-// Train 训练三层分层分类器
+// Train train three-layer hierarchical classifier
 func (hc *HierarchicalClassifier) Train(data *TrainingData) error {
 	hc.mu.Lock()
 	defer hc.mu.Unlock()
 
-	// 训练 Layer 1: 协议分类器
+	// Train Layer 1: protocol classifier
 	if err := hc.protocolClassifier.Train(data.ProtocolFeatures, data.ProtocolLabels); err != nil {
 		return err
 	}
 
-	// 训练 Layer 2: 浏览器家族分类器
+	// Train Layer 2: browser family classifiers
 	for proto, features := range data.FamilyFeatures {
 		if classifier, ok := hc.familyClassifiers[proto]; ok {
 			labels := data.FamilyLabels[proto]
@@ -101,7 +101,7 @@ func (hc *HierarchicalClassifier) Train(data *TrainingData) error {
 		}
 	}
 
-	// 训练 Layer 3: 版本分类器
+	// Train Layer 3: version classifiers
 	for family, features := range data.VersionFeatures {
 		if classifier, ok := hc.versionClassifiers[family]; ok {
 			labels := data.VersionLabels[family]
@@ -115,7 +115,7 @@ func (hc *HierarchicalClassifier) Train(data *TrainingData) error {
 	return nil
 }
 
-// ClassificationResult 分类结果
+// ClassificationResult classification result
 type ClassificationResult struct {
 	Protocol   core.ProtocolType
 	Family     core.BrowserType
@@ -125,14 +125,14 @@ type ClassificationResult struct {
 	LayerScores
 }
 
-// LayerScores 各层分数
+// LayerScores scores for each layer
 type LayerScores struct {
 	ProtocolConfidence float64
 	FamilyConfidence   float64
 	VersionConfidence  float64
 }
 
-// Classify 执行分层分类
+// Classify perform hierarchical classification
 func (hc *HierarchicalClassifier) Classify(features *core.FeatureVector) *ClassificationResult {
 	hc.mu.RLock()
 	defer hc.mu.RUnlock()
@@ -147,14 +147,14 @@ func (hc *HierarchicalClassifier) Classify(features *core.FeatureVector) *Classi
 		Labels: make(map[string]string),
 	}
 
-	// Layer 1: 协议类型分类
+	// Layer 1: protocol type classification
 	protocolFeatures := hc.extractProtocolFeatures(features)
 	protocol, protocolConf := hc.protocolClassifier.Predict(protocolFeatures)
 	result.Protocol = protocol
 	result.ProtocolConfidence = protocolConf
 	result.Labels["protocol"] = string(protocol)
 
-	// Layer 2: 浏览器家族分类
+	// Layer 2: browser family classification
 	familyClassifier, ok := hc.familyClassifiers[protocol]
 	if !ok {
 		result.Confidence = protocolConf
@@ -167,10 +167,10 @@ func (hc *HierarchicalClassifier) Classify(features *core.FeatureVector) *Classi
 	result.FamilyConfidence = familyConf
 	result.Labels["family"] = string(family)
 
-	// Layer 3: 版本识别
+	// Layer 3: version recognition
 	versionClassifier, ok := hc.versionClassifiers[family]
 	if !ok {
-		// 只有两层时，加权平均
+		// When only two layers, use weighted average
 		result.Confidence = 0.5*protocolConf + 0.5*familyConf
 		return result
 	}
@@ -181,14 +181,14 @@ func (hc *HierarchicalClassifier) Classify(features *core.FeatureVector) *Classi
 	result.VersionConfidence = versionConf
 	result.Labels["version"] = version
 
-	// 综合置信度：使用加权平均避免指数衰减
-	// 协议权重 0.3，家族权重 0.3，版本权重 0.4
+	// Overall confidence: use weighted average to avoid exponential decay
+	// Protocol weight 0.3, family weight 0.3, version weight 0.4
 	result.Confidence = 0.3*protocolConf + 0.3*familyConf + 0.4*versionConf
 
 	return result
 }
 
-// ClassifyBatch 批量分类
+// ClassifyBatch batch classification
 func (hc *HierarchicalClassifier) ClassifyBatch(features []*core.FeatureVector) []*ClassificationResult {
 	results := make([]*ClassificationResult, len(features))
 	for i, fv := range features {
@@ -197,9 +197,9 @@ func (hc *HierarchicalClassifier) ClassifyBatch(features []*core.FeatureVector) 
 	return results
 }
 
-// extractProtocolFeatures 提取协议相关特征
+// extractProtocolFeatures extract protocol-related features
 func (hc *HierarchicalClassifier) extractProtocolFeatures(fv *core.FeatureVector) []float64 {
-	// 提取协议识别相关的特征
+	// Extract protocol recognition related features
 	features := []float64{
 		fv.Get(core.FeatureTLSVersion),
 		fv.Get(core.FeatureCipherSuites),
@@ -211,9 +211,9 @@ func (hc *HierarchicalClassifier) extractProtocolFeatures(fv *core.FeatureVector
 	return features
 }
 
-// extractFamilyFeatures 提取浏览器家族相关特征
+// extractFamilyFeatures extract browser family related features
 func (hc *HierarchicalClassifier) extractFamilyFeatures(fv *core.FeatureVector) []float64 {
-	// 提取浏览器识别相关的特征
+	// Extract browser recognition related features
 	features := []float64{
 		fv.Get(core.FeatureUserAgent),
 		fv.Get(core.FeatureHTTPHeaders),
@@ -227,9 +227,9 @@ func (hc *HierarchicalClassifier) extractFamilyFeatures(fv *core.FeatureVector) 
 	return features
 }
 
-// extractVersionFeatures 提取版本识别相关特征
+// extractVersionFeatures extract version recognition related features
 func (hc *HierarchicalClassifier) extractVersionFeatures(fv *core.FeatureVector) []float64 {
-	// 提取版本识别相关的特征
+	// Extract version recognition related features
 	features := []float64{
 		fv.Get(core.FeatureTLSVersion),
 		fv.Get(core.FeatureCipherSuites),
@@ -245,12 +245,12 @@ func (hc *HierarchicalClassifier) extractVersionFeatures(fv *core.FeatureVector)
 	return features
 }
 
-// GetConfidenceThresholds 获取各层置信度阈值
+// GetConfidenceThresholds get confidence thresholds for each layer
 func (hc *HierarchicalClassifier) GetConfidenceThresholds() (protocol, family, version float64) {
 	return 0.7, 0.8, 0.6
 }
 
-// IsHighConfidence 判断是否高置信度分类
+// IsHighConfidence determine if the classification is high confidence
 func (r *ClassificationResult) IsHighConfidence() bool {
 	return r.Confidence >= 0.8 &&
 		r.ProtocolConfidence >= 0.7 &&
@@ -258,38 +258,38 @@ func (r *ClassificationResult) IsHighConfidence() bool {
 		r.VersionConfidence >= 0.6
 }
 
-// FingerprintMatcher 指纹匹配器
+// FingerprintMatcher fingerprint matcher
 type FingerprintMatcher struct {
 	classifier *HierarchicalClassifier
 }
 
-// NewFingerprintMatcher 创建新的指纹匹配器
+// NewFingerprintMatcher create new fingerprint matcher
 func NewFingerprintMatcher() *FingerprintMatcher {
 	return &FingerprintMatcher{
 		classifier: NewHierarchicalClassifier(),
 	}
 }
 
-// Initialize 初始化匹配器
+// Initialize initialize matcher
 func (fm *FingerprintMatcher) Initialize() {
 	fm.classifier.Initialize()
 }
 
-// Train 训练匹配器
+// Train train matcher
 func (fm *FingerprintMatcher) Train(data *TrainingData) error {
 	return fm.classifier.Train(data)
 }
 
-// Match 匹配指纹
+// Match match fingerprint
 func (fm *FingerprintMatcher) Match(features *core.FeatureVector) *ClassificationResult {
 	return fm.classifier.Classify(features)
 }
 
-// MatchWithProfile 与已知配置进行匹配
+// MatchWithProfile match with known profiles
 func (fm *FingerprintMatcher) MatchWithProfile(features *core.FeatureVector, profiles []core.FingerprintSpec) *ClassificationResult {
 	result := fm.classifier.Classify(features)
 
-	// 在已知配置中查找最接近的匹配
+	// Find closest match in known profiles
 	bestMatch := ""
 	bestScore := 0.0
 
@@ -307,7 +307,7 @@ func (fm *FingerprintMatcher) MatchWithProfile(features *core.FeatureVector, pro
 	return result
 }
 
-// calculateMatchScore 计算匹配分数
+// calculateMatchScore calculate match score
 func (fm *FingerprintMatcher) calculateMatchScore(result *ClassificationResult, profile core.FingerprintSpec) float64 {
 	score := 0.0
 	if result.Family == profile.GetBrowserType() {
