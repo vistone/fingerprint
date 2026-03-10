@@ -7,66 +7,66 @@ import (
 	"strings"
 )
 
-// JA4SResult JA4S 指纹结果
+// JA4SResult JA4S fingerprint result
 type JA4SResult struct {
-	// 完整 JA4S SHA256 哈希
+	// Complete JA4S SHA256 hash
 	Hash string
 
-	// JA4S_a: TLS版本+密码套件+扩展特征
+	// JA4S_a: TLS version + cipher suite + extension features
 	JA4Sa string
 
-	// JA4S_r: 原始顺序版本（未排序的扩展列表）
+	// JA4S_r: raw-order version (unsorted extension list)
 	JA4Sr string
 
-	// 完整签名字符串（用于调试）
+	// Complete signature string (for debugging)
 	RawString string
 
-	// TLS 版本字符串（如 "1.2", "1.3"）
+	// TLS version string (e.g. "1.2", "1.3")
 	TLSVersion string
 
-	// 异常判定分数 (0.0-1.0)
+	// Anomaly score (0.0-1.0)
 	RiskScore float64
 
-	// 异常标记列表
+	// Anomaly flag list
 	AnomalyFlags []string
 
-	// 匹配的已知服务端指纹
+	// Matched known server fingerprints
 	MatchedProfiles []string
 }
 
-// JA4SAnalyzer JA4S 分析器
+// JA4SAnalyzer JA4S analyzer
 type JA4SAnalyzer struct {
-	// 已知的服务端指纹库（可后续扩展）
+	// Known server fingerprint library (extensible)
 	knownProfiles map[string]*ServerProfileInfo
 }
 
-// ServerProfileInfo 已知的服务端配置信息
+// ServerProfileInfo known server profile information
 type ServerProfileInfo struct {
-	Name        string   // 服务端名称
-	TLSVersions []string // 支持的 TLS 版本
-	Ciphers     []string // 常用密码套件
-	Extensions  []string // 常用扩展
-	RiskScore   float64  // 基线风险分数
+	Name        string   // Server name
+	TLSVersions []string // Supported TLS versions
+	Ciphers     []string // Common cipher suites
+	Extensions  []string // Common extensions
+	RiskScore   float64  // Baseline risk score
 }
 
-// NewJA4SAnalyzer 创建 JA4S 分析器
+// NewJA4SAnalyzer creates JA4S analyzer
 func NewJA4SAnalyzer() *JA4SAnalyzer {
 	return &JA4SAnalyzer{
 		knownProfiles: initKnownServerProfiles(),
 	}
 }
 
-// ServerHelloData 导出的 ServerHello 数据结构，用于从结构化数据计算 JA4S
+// ServerHelloData exported ServerHello structure for computing JA4S from structured data
 type ServerHelloData struct {
-	TLSVersion     uint16   // TLS 版本（如 0x0303=TLS1.2, 0x0304=TLS1.3）
-	CipherSuite    uint16   // 选择的密码套件
-	Extensions     []uint16 // 扩展列表
-	Compression    uint8    // 压缩方法
-	ServerName     string   // 服务器名称
-	SelectedALPN   string   // 选择的 ALPN 协议
+	TLSVersion     uint16   // TLS version (e.g. 0x0303=TLS1.2, 0x0304=TLS1.3)
+	CipherSuite    uint16   // Selected cipher suite
+	Extensions     []uint16 // Extension list
+	Compression    uint8    // Compression method
+	ServerName     string   // Server name
+	SelectedALPN   string   // Selected ALPN protocol
 }
 
-// AnalyzeServerHello 从结构化 ServerHello 数据分析指纹
+// AnalyzeServerHello analyzes fingerprint from structured ServerHello data
 func (a *JA4SAnalyzer) AnalyzeServerHello(data ServerHelloData) (*JA4SResult, error) {
 	sh := &serverHelloData{
 		Version:           data.TLSVersion,
@@ -110,27 +110,27 @@ func (a *JA4SAnalyzer) AnalyzeServerHello(data ServerHelloData) (*JA4SResult, er
 	return result, nil
 }
 
-// AnalyzeServerHelloBytes 分析 TLS ServerHello 数据包
-// serverHelloBytes: 完整的 ServerHello 字节数据
+// AnalyzeServerHelloBytes analyzes TLS ServerHello packet
+// serverHelloBytes: full ServerHello byte data
 func (a *JA4SAnalyzer) AnalyzeServerHelloBytes(serverHelloBytes []byte) (*JA4SResult, error) {
 	if len(serverHelloBytes) < 43 {
 		return nil, fmt.Errorf("ServerHello too short: %d bytes", len(serverHelloBytes))
 	}
 
-	// 解析 ServerHello 结构
+	// Parse ServerHello structure
 	sh, err := parseServerHello(serverHelloBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	// 构建签名字符串
+	// Build signature string
 	result := &JA4SResult{
 		RawString:    sh.String(),
 		TLSVersion:   tlsVersionString(sh.Version),
-		AnomalyFlags: make([]string, 0, 8), // 预分配容量
+		AnomalyFlags: make([]string, 0, 8), // Pre-allocate capacity
 	}
 
-	// 生成 JA4S_a: TLS版本,密码套件,扩展计数,压缩方法
+	// Generate JA4S_a: TLS version, cipher suite, extension count, compression method
 	tlsVersionCode := formatTLSVersion(sh.Version)
 	cipherCode := formatCipherCode(sh.CipherSuite)
 	extensionCount := fmt.Sprintf("%d", len(sh.Extensions))
@@ -143,7 +143,7 @@ func (a *JA4SAnalyzer) AnalyzeServerHelloBytes(serverHelloBytes []byte) (*JA4SRe
 		compressionCode,
 	)
 
-	// 生成 JA4S_r: 原始扩展列表（不排序，保持顺序）
+	// Generate JA4S_r: raw extension list (unsorted, keep order)
 	var extensionCodes []string
 	for _, ext := range sh.Extensions {
 		extensionCodes = append(extensionCodes, fmt.Sprintf("%d", ext))
@@ -153,18 +153,18 @@ func (a *JA4SAnalyzer) AnalyzeServerHelloBytes(serverHelloBytes []byte) (*JA4SRe
 		strings.Join(extensionCodes, ","),
 	)
 
-	// 计算 SHA256 哈希
+	// Calculate SHA256 hash
 	hash := sha256.Sum256([]byte(result.JA4Sr))
 	result.Hash = hex.EncodeToString(hash[:])
 
-	// 异常检测与评分
+	// Anomaly detection and scoring
 	a.detectAnomalies(result, sh)
 
 	return result, nil
 }
 
-// AnalyzeServerHelloProfile 从指纹 Profile 分析（对于客户端模拟）
-// 这用于生成与真实服务器高度一致的虚拟 ServerHello
+// AnalyzeServerHelloProfile analyzes from fingerprint profile (for client simulation)
+// Used to generate virtual ServerHello highly consistent with real servers
 func (a *JA4SAnalyzer) GenerateServerHelloSignature(
 	tlsVersion uint16,
 	cipherSuite uint16,
@@ -172,7 +172,7 @@ func (a *JA4SAnalyzer) GenerateServerHelloSignature(
 	compressionMethod uint8,
 ) (*JA4SResult, error) {
 
-	// 构建虚拟 ServerHello 结构
+	// Build virtual ServerHello structure
 	sh := &serverHelloData{
 		Version:           tlsVersion,
 		CipherSuite:       cipherSuite,
@@ -183,7 +183,7 @@ func (a *JA4SAnalyzer) GenerateServerHelloSignature(
 	result := &JA4SResult{
 		RawString:    sh.String(),
 		TLSVersion:   tlsVersionString(sh.Version),
-		AnomalyFlags: make([]string, 0, 8), // 预分配容量
+		AnomalyFlags: make([]string, 0, 8), // Pre-allocate capacity
 	}
 	tlsVersionCode := formatTLSVersion(sh.Version)
 	cipherCode := formatCipherCode(sh.CipherSuite)
@@ -214,13 +214,13 @@ func (a *JA4SAnalyzer) GenerateServerHelloSignature(
 	return result, nil
 }
 
-// detectAnomalies 检测异常特征
+// detectAnomalies detects anomaly characteristics
 func (a *JA4SAnalyzer) detectAnomalies(result *JA4SResult, sh *serverHelloData) {
 	baseScore := 0.0
 
-	// 异常检测 1: TLS 版本检查
+	// Anomaly check 1: TLS version check
 	if isDeprecatedTLSVersion(sh.Version) {
-		// TLS 1.0/1.1/SSL 3.0 已弃用（RFC 8996），存在安全风险
+		// TLS 1.0/1.1/SSL 3.0 are deprecated (RFC 8996) and pose security risks
 		result.AnomalyFlags = append(result.AnomalyFlags, "DEPRECATED_TLS_VERSION")
 		baseScore += 0.2
 	} else if !isSupportedTLSVersion(sh.Version) {
@@ -228,13 +228,13 @@ func (a *JA4SAnalyzer) detectAnomalies(result *JA4SResult, sh *serverHelloData) 
 		baseScore += 0.3
 	}
 
-	// 异常检测 2: 已知弱密码套件
+	// Anomaly check 2: known weak cipher suites
 	if isWeakCipherSuite(sh.CipherSuite) {
 		result.AnomalyFlags = append(result.AnomalyFlags, "WEAK_CIPHER_SUITE")
 		baseScore += 0.25
 	}
 
-	// 异常检测 3: 异常的扩展组合
+	// Anomaly check 3: abnormal extension combinations
 	if len(sh.Extensions) < 3 {
 		result.AnomalyFlags = append(result.AnomalyFlags, "MINIMAL_EXTENSIONS")
 		baseScore += 0.2
@@ -244,32 +244,32 @@ func (a *JA4SAnalyzer) detectAnomalies(result *JA4SResult, sh *serverHelloData) 
 		baseScore += 0.15
 	}
 
-	// 异常检测 4: 扩展列表异常（检测重复扩展）
+	// Anomaly check 4: extension list anomalies (detect duplicate extensions)
 	if !hasValidExtensionOrder(sh.Extensions) {
 		result.AnomalyFlags = append(result.AnomalyFlags, "DUPLICATE_EXTENSIONS")
 		baseScore += 0.2
 	}
 
-	// 异常检测 5: 压缩方法异常（TLS 压缩存在 CRIME 攻击风险，仅 null=0 是安全的）
+	// Anomaly check 5: compression method anomaly (TLS compression has CRIME risk; only null=0 is safe)
 	if sh.CompressionMethod != 0 {
 		result.AnomalyFlags = append(result.AnomalyFlags, "UNSAFE_COMPRESSION")
 		baseScore += 0.2
 	}
 
-	// 标准化评分
+	// Normalize score
 	if baseScore > 1.0 {
 		baseScore = 1.0
 	}
 	result.RiskScore = baseScore
 }
 
-// FindMatchingProfiles 查找匹配的已知服务端配置
+// FindMatchingProfiles finds matching known server profiles
 func (a *JA4SAnalyzer) FindMatchingProfiles(result *JA4SResult, maxResults int) []string {
-	// 简单的 hash 匹配（可后续扩展为相似度匹配）
+	// Simple hash matching (can be extended to similarity matching)
 	var matches []string
 
 	for name, profile := range a.knownProfiles {
-		// 计算相似度（当前为简单匹配，可改进）
+		// Calculate similarity (currently simple matching, can be improved)
 		if profile.RiskScore < result.RiskScore-0.1 {
 			matches = append(matches, name)
 		}
@@ -283,7 +283,7 @@ func (a *JA4SAnalyzer) FindMatchingProfiles(result *JA4SResult, maxResults int) 
 	return matches
 }
 
-// ============ 辅助函数 ============
+// ============ Helper functions ============
 
 type serverHelloData struct {
 	Version           uint16
@@ -305,7 +305,7 @@ func (sh *serverHelloData) String() string {
 	)
 }
 
-// parseServerHello 解析 ServerHello 字节数据
+// parseServerHello parses ServerHello byte data
 func parseServerHello(data []byte) (*serverHelloData, error) {
 	if len(data) < 43 {
 		return nil, fmt.Errorf("data too short")
@@ -313,16 +313,16 @@ func parseServerHello(data []byte) (*serverHelloData, error) {
 
 	sh := &serverHelloData{}
 
-	// 偏移量：HandshakeType(1) + Length(3) = 4 字节头部
-	// Version(2) 在偏移 4-5
+	// Offset: HandshakeType(1) + Length(3) = 4-byte header
+	// Version(2) at offset 4-5
 	sh.Version = uint16(data[4])<<8 | uint16(data[5])
 
-	// Random(32) 在偏移 6-37
-	// Session ID Length(1) 在偏移 38
+	// Random(32) at offset 6-37
+	// Session ID Length(1) at offset 38
 	sessionIDLen := int(data[38])
 	offset := 39 + sessionIDLen
 
-	// Cipher Suite(2) 紧跟在 Session ID 之后
+	// Cipher Suite(2) follows Session ID
 	if len(data) < offset+3 {
 		return nil, fmt.Errorf("data too short for cipher suite: need %d, have %d", offset+3, len(data))
 	}
@@ -333,7 +333,7 @@ func parseServerHello(data []byte) (*serverHelloData, error) {
 	sh.CompressionMethod = data[offset]
 	offset++
 
-	// 解析扩展列表
+	// Parse extension list
 	if len(data) > offset+2 {
 		extensionsLen := int(data[offset])<<8 | int(data[offset+1])
 		offset += 2
@@ -347,7 +347,7 @@ func parseServerHello(data []byte) (*serverHelloData, error) {
 			extType := uint16(data[offset])<<8 | uint16(data[offset+1])
 			extLen := int(data[offset+2])<<8 | int(data[offset+3])
 			if offset+4+extLen > endOffset {
-				break // 扩展数据被截断，停止解析
+				break // Extension data truncated, stop parsing
 			}
 			sh.Extensions = append(sh.Extensions, extType)
 			offset += 4 + extLen
@@ -384,8 +384,8 @@ func tlsVersionString(v uint16) string {
 }
 
 func formatCipherCode(cipher uint16) string {
-	// 返回简化的密码套件代码
-	// 可扩展为完整的映射表
+	// Return simplified cipher suite code
+	// Can be extended to a full mapping table
 	switch cipher {
 	case 0x002f:
 		return "1" // TLS_RSA_WITH_AES_128_CBC_SHA
@@ -396,7 +396,7 @@ func formatCipherCode(cipher uint16) string {
 	case 0x1302:
 		return "4" // TLS_AES_256_GCM_SHA384
 	default:
-		// 返回原始值作为后备方案
+		// Return raw value as fallback
 		return fmt.Sprintf("%d", cipher)
 	}
 }
@@ -416,7 +416,7 @@ func isSupportedTLSVersion(v uint16) bool {
 	return supportedVersions[v]
 }
 
-// isDeprecatedTLSVersion 检查是否为已弃用的 TLS 版本（RFC 8996）
+// isDeprecatedTLSVersion checks whether TLS version is deprecated (RFC 8996)
 func isDeprecatedTLSVersion(v uint16) bool {
 	deprecatedVersions := map[uint16]bool{
 		0x0300: true, // SSL 3.0
@@ -427,7 +427,7 @@ func isDeprecatedTLSVersion(v uint16) bool {
 }
 
 func isWeakCipherSuite(cipher uint16) bool {
-	// 已知弱密码的列表（RFC 7457, CRIME, BEAST, SWEET32 等攻击向量）
+	// Known weak ciphers list (RFC 7457, CRIME, BEAST, SWEET32 attack vectors, etc.)
 	weakCiphers := map[uint16]bool{
 		0x0000: true, // TLS_NULL_WITH_NULL_NULL
 		0x0001: true, // TLS_RSA_WITH_NULL_MD5
@@ -457,9 +457,9 @@ func isWeakCipherSuite(cipher uint16) bool {
 }
 
 func hasValidExtensionOrder(extensions []uint16) bool {
-	// ServerHello 扩展没有规范要求的排列顺序，
-	// 因此不应基于排序来判定异常。
-	// 仅检测重复扩展（重复扩展是不合法的）。
+	// ServerHello extensions have no spec-mandated ordering,
+	// so anomalies should not be judged by ordering.
+	// Only detect duplicate extensions (duplicates are invalid).
 	if len(extensions) < 2 {
 		return true
 	}
@@ -467,14 +467,14 @@ func hasValidExtensionOrder(extensions []uint16) bool {
 	seen := make(map[uint16]bool, len(extensions))
 	for _, ext := range extensions {
 		if seen[ext] {
-			return false // 重复扩展是异常的
+			return false // Duplicate extensions are anomalous
 		}
 		seen[ext] = true
 	}
 	return true
 }
 
-// initKnownServerProfiles 初始化已知的服务端配置库
+// initKnownServerProfiles initializes known server profile library
 func initKnownServerProfiles() map[string]*ServerProfileInfo {
 	return map[string]*ServerProfileInfo{
 		"nginx_default": {
@@ -501,24 +501,24 @@ func initKnownServerProfiles() map[string]*ServerProfileInfo {
 	}
 }
 
-// ComputeJA4S 便捷函数：从 ServerHelloData 结构计算 JA4S
+// ComputeJA4S convenience function: compute JA4S from ServerHelloData structure
 func ComputeJA4S(data ServerHelloData) (*JA4SResult, error) {
 	analyzer := NewJA4SAnalyzer()
 	return analyzer.AnalyzeServerHello(data)
 }
 
-// ComputeJA4SFromBytes 便捷函数：直接从字节数据计算 JA4S
+// ComputeJA4SFromBytes convenience function: compute JA4S directly from byte data
 func ComputeJA4SFromBytes(serverHelloBytes []byte) (*JA4SResult, error) {
 	analyzer := NewJA4SAnalyzer()
 	return analyzer.AnalyzeServerHelloBytes(serverHelloBytes)
 }
 
-// MatchJA4S 比较两个 JA4S 哈希值是否匹配
+// MatchJA4S compares whether two JA4S hashes match
 func MatchJA4S(hash1, hash2 string) bool {
 	return len(hash1) == 64 && len(hash2) == 64 && hash1 == hash2
 }
 
-// ComputeJA4SFromProfileData 从 Profile 数据计算 JA4S（用于客户端模拟）
+// ComputeJA4SFromProfileData computes JA4S from profile data (for client simulation)
 func ComputeJA4SFromProfileData(
 	tlsVersion uint16,
 	cipherSuite uint16,
