@@ -27,24 +27,24 @@ var (
 	health   = flag.Bool("health", false, "Run health check and exit")
 )
 
-// metricsMiddleware 记录请求指标的中间件
+// metricsMiddleware middleware to record request metrics
 func metricsMiddleware(next http.HandlerFunc, endpoint string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
-		// 创建一个响应记录器来捕获状态码
+		// create a response recorder to capture status code
 		rec := &responseRecorder{ResponseWriter: w, statusCode: http.StatusOK}
 
 		next(rec, r)
 
-		// 计算延迟
+		// calculate latency
 		latency := time.Since(start).Milliseconds()
 		success := rec.statusCode < 400
 
-		// 获取客户端 IP
+		// getclient IP
 		clientIP := getClientIP(r)
 
-		// 构建请求记录
+		// construct request record
 		req := web.RequestRecord{
 			Timestamp: time.Now(),
 			IP:        clientIP,
@@ -55,28 +55,28 @@ func metricsMiddleware(next http.HandlerFunc, endpoint string) http.HandlerFunc 
 			Status:    rec.statusCode,
 		}
 
-		// 记录指标
+		// record metrics
 		web.RecordAPIMetrics(req, success, "", "")
 	}
 }
 
-// getClientIP 获取客户端 IP
+// getClientIP getclient IP
 func getClientIP(r *http.Request) string {
-	// 检查 X-Forwarded-For 头
+	// check X-Forwarded-For header
 	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		// 取第一个 IP
+		// get first IP
 		if idx := strings.Index(xff, ","); idx != -1 {
 			return strings.TrimSpace(xff[:idx])
 		}
 		return xff
 	}
 
-	// 检查 X-Real-IP 头
+	// check X-Real-IP header
 	if xri := r.Header.Get("X-Real-IP"); xri != "" {
 		return xri
 	}
 
-	// 使用 RemoteAddr
+	// use RemoteAddr
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		return r.RemoteAddr
@@ -84,7 +84,7 @@ func getClientIP(r *http.Request) string {
 	return host
 }
 
-// responseRecorder 包装 http.ResponseWriter 以捕获状态码
+// responseRecorder wraps http.ResponseWriter to capture status code
 type responseRecorder struct {
 	http.ResponseWriter
 	statusCode int
@@ -109,7 +109,7 @@ func main() {
 
 	log.Printf("Starting Fingerprint Gateway %s", *version)
 
-	// 初始化日志捕获系统（将 log 输出存入缓冲区供前端实时查看）
+	// initialize log capture system (store log output in buffer for real-time frontend viewing)
 	web.InitLogCapture()
 
 	// Create gateway with custom config
@@ -154,7 +154,7 @@ func main() {
 	}
 	gw := gateway.NewGateway(&config)
 
-	// 写入启动日志
+	// write start log
 	web.WriteLog("INFO", "gateway", "Fingerprint Gateway %s starting", *version)
 	web.WriteLog("INFO", "gateway", "HTTP server will listen on port %d", *httpPort)
 	web.WriteLog("INFO", "gateway", "gRPC server will listen on port %d", *grpcPort)
@@ -185,12 +185,12 @@ func main() {
 	// JavaScript Fingerprint Detection Scanner
 	mux.HandleFunc("/api/v1/scan", gw.V8ScannerHandler)
 	// P3 Proxy mode (if proxy target configured)
-	// 访问 /proxy/* 会代理到目标服务并自动注入 P3 代码
+	// access /proxy/* will proxy to target service and automatically inject P3 code
 	mux.Handle("/proxy/", http.StripPrefix("/proxy", gw.InjectProxyHandler()))
 
 	// P3 Direct Proxy mode
-	// 启用后，客户端直接访问网关根路径即可被透明代理并自动注入。
-	// API 路由优先级高于 "/"，因此 /api/* 不受影响。
+	// after enable, client can directly access gateway root path and be transparently proxied and automatically injected.
+	// API routes have higher priority than "/", therefore /api/* are not affected.
 	if config.P3DirectProxy && config.P3ProxyTarget != "" {
 		mux.Handle("/", gw.InjectProxyHandler())
 		log.Printf("P3 direct proxy mode enabled, target: %s", config.P3ProxyTarget)
