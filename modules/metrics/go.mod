@@ -2,7 +2,7 @@ module github.com/vistone/fingerprint/modules/metrics
 
 go 1.25.7
 
-require github.com/vistone/fingerprint/modules/internal v1.0.5
+require github.com/vistone/fingerprint/modules/internal v1.0.6
 
 require (
 	github.com/andybalholm/brotli v1.1.1 // indirect
