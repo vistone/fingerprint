@@ -50,21 +50,43 @@ const (
 
 // HTTP2Settings HTTP/2 Settings
 type HTTP2Settings struct {
-	HeaderTableSize       uint32
-	EnablePush            uint32
-	MaxConcurrentStreams  uint32
-	InitialWindowSize     uint32
-	MaxFrameSize          uint32
-	MaxHeaderListSize     uint32
+	HeaderTableSize      uint32
+	EnablePush           uint32
+	MaxConcurrentStreams uint32
+	InitialWindowSize    uint32
+	MaxFrameSize         uint32
+	MaxHeaderListSize    uint32
 }
 
 // HTTP2Priority HTTP/2 Priority
 type HTTP2Priority struct {
-	StreamID uint32
-	Weight   uint8
+	StreamID  uint32
+	Weight    uint8
 	DependsOn uint32
 	Exclusive bool
 }
+
+// HTTP3Settings HTTP/3 (QUIC) Settings
+type HTTP3Settings struct {
+	QUICVersion            uint32 // QUIC 版本 (e.g., 0x00000001 for RFC 9000)
+	InitialMaxData         uint64 // 初始最大数据量
+	InitialMaxStreamData   uint64 // 初始最大流数据量
+	InitialMaxStreamsBidi  uint64 // 初始最大双向流数
+	InitialMaxStreamsUni   uint64 // 初始最大单向流数
+	MaxUDPPayloadSize      uint64 // 最大 UDP 负载大小
+	AckDelayExponent       uint8  // ACK 延迟指数
+	MaxAckDelay            uint16 // 最大 ACK 延迟 (ms)
+	DisableActiveMigration bool   // 禁用连接迁移
+}
+
+// QUICVersion 定义已知的 QUIC 版本
+const (
+	QUICVersion1       uint32 = 0x00000001 // RFC 9000
+	QUICVersionDraft29 uint32 = 0xff00001d // Draft 29
+	QUICVersionDraft30 uint32 = 0xff00001e // Draft 30
+	QUICVersionDraft31 uint32 = 0xff00001f // Draft 31
+	QUICVersionDraft32 uint32 = 0xff000020 // Draft 32
+)
 
 // FingerprintResult 指纹结果接口
 type FingerprintResult interface {
@@ -186,4 +208,21 @@ type RiskFactor struct {
 	Name        string
 	Weight      float64
 	Description string
+}
+
+// RiskLevelFromScore 根据风险分数计算风险等级
+// 分数范围: 0.0-1.0
+func RiskLevelFromScore(score float64) RiskLevel {
+	switch {
+	case score >= 0.9:
+		return RiskLevelCritical
+	case score >= 0.7:
+		return RiskLevelHigh
+	case score >= 0.4:
+		return RiskLevelMedium
+	case score >= 0.1:
+		return RiskLevelLow
+	default:
+		return RiskLevelNone
+	}
 }

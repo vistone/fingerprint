@@ -7,6 +7,7 @@ import (
 )
 
 // iOS Safari指纹
+
 var (
 	IOSSafari16 = ClientProfile{
 		ID: "ios_safari_16", Name: "iOS Safari 16",
@@ -32,6 +33,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 			SecFetchDest: "document", SecFetchMode: "navigate",
 		},
+		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
 
 	IOSSafari17 = ClientProfile{
@@ -46,6 +48,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
 
 	IOSSafari18 = ClientProfile{
@@ -60,6 +63,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
 
 	// iPad Safari
@@ -75,6 +79,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
 
 	IPadSafari17 = ClientProfile{
@@ -89,6 +94,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
 
 	IPadSafari18 = ClientProfile{
@@ -103,10 +109,12 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
 )
 
 // Android Chrome指纹
+
 var (
 	AndroidChrome115 = ClientProfile{
 		ID: "android_chrome_115", Name: "Android Chrome 115",
@@ -132,6 +140,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
 
 	AndroidChrome120 = ClientProfile{
@@ -146,6 +155,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
 
 	AndroidChrome125 = ClientProfile{
@@ -160,6 +170,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
 
 	AndroidChrome130 = ClientProfile{
@@ -174,6 +185,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
 
 	AndroidChrome131 = ClientProfile{
@@ -188,10 +200,12 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
 )
 
 // Android Firefox指纹
+
 var (
 	AndroidFirefox115 = ClientProfile{
 		ID: "android_firefox_115", Name: "Android Firefox 115",
@@ -205,6 +219,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
 
 	AndroidFirefox120 = ClientProfile{
@@ -219,6 +234,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
 
 	AndroidFirefox125 = ClientProfile{
@@ -233,6 +249,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
 
 	AndroidFirefox130 = ClientProfile{
@@ -247,10 +264,12 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
 )
 
 // Samsung Internet指纹
+
 var (
 	SamsungInternet22 = ClientProfile{
 		ID: "samsung_internet_22", Name: "Samsung Internet 22",
@@ -264,6 +283,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
 
 	SamsungInternet23 = ClientProfile{
@@ -278,6 +298,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
 
 	SamsungInternet24 = ClientProfile{
@@ -292,6 +313,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
 )
 

@@ -5,11 +5,11 @@
 [![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/vistone/fingerprint/releases/tag/v2.0.0)
 [![Go Version](https://img.shields.io/badge/go-1.25.7+-blue.svg)](https://golang.org)
 
-高性能浏览器 TLS 指纹库，提供 187+ 浏览器指纹配置和全面的指纹识别能力。
+高性能浏览器 TLS 指纹库，提供 150+ 浏览器指纹配置和全面的指纹识别能力。
 
 ## 核心特性
 
-- **187+ 真实浏览器指纹** - Chrome、Firefox、Safari、Edge、Opera、Brave 等
+- **150+ 真实浏览器指纹** - Chrome、Firefox、Safari、Edge、Opera、Brave 等
 - **TLS 指纹分析** - JA3/JA4 指纹生成与识别
 - **HTTP/2 签名** - 完整的帧分析和签名匹配
 - **机器学习分类** - 内置 ML 检测异常流量
@@ -42,7 +42,7 @@ func main() {
 ```
 modules/
 ├── core          # 核心类型 (零依赖)
-├── profiles      # 187+ 浏览器指纹
+├── profiles      # 150+ 浏览器指纹
 ├── tls           # TLS 指纹分析
 ├── http          # HTTP/2 分析
 ├── ml            # 机器学习分类器

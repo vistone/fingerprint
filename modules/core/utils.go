@@ -2,6 +2,7 @@
 package core
 
 import (
+	"crypto/md5"
 	"crypto/sha256"
 	"encoding/hex"
 	"math/rand"
@@ -50,8 +51,8 @@ func CalculateJA3Hash(tlsVersion uint16, cipherSuites, extensions, curves, point
 
 // CalculateMD5 计算 MD5 哈希
 func CalculateMD5(data []byte) string {
-	// 简化实现，实际使用 crypto/md5
-	return CalculateSHA256(data)[:32]
+	hash := md5.Sum(data)
+	return hex.EncodeToString(hash[:])
 }
 
 // RandomChoice 从切片中随机选择一个元素

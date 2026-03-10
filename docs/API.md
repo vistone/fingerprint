@@ -170,9 +170,6 @@ import "github.com/vistone/fingerprint/modules/tls"
 
 // 计算 JA3
 ja3 := tls.CalculateJA3(clientHello)
-
-// 计算 JA3 (legacy)
-ja3, err := tls.CalculateJA3Legacy(clientHello)
 ```
 
 ### JA4/JA4S (Legacy)
@@ -204,8 +201,8 @@ fp, err := ja4h.CalculateJA4H(req)
 ```go
 import "github.com/vistone/fingerprint/modules/http/legacy/clienthints"
 
-// 解析 Client Hints
-hints, err := clienthints.ParseClientHints(headers)
+// 创建 Client Hints 策略
+policy := clienthints.NewClientHintsPolicy(core.BrowserChrome)
 ```
 
 ## ML 模块 API
@@ -215,16 +212,15 @@ hints, err := clienthints.ParseClientHints(headers)
 ```go
 import "github.com/vistone/fingerprint/modules/ml"
 
-// 创建分类器
-classifier := ml.NewClassifier(ml.Config{
-    Threshold: 0.8,
-})
+// 创建层次分类器
+classifier := ml.NewHierarchicalClassifier()
 
-// 训练
-classifier.Train(dataset)
+// 创建特征提取器
+extractor := ml.NewFeatureExtractor()
 
-// 预测
-result := classifier.Predict(features)
+// 提取特征并分类
+features := extractor.ExtractFromProfile(profile)
+result := classifier.Classify(features)
 ```
 
 ## Defense 模块 API
@@ -249,41 +245,28 @@ score := detector.Analyze(fingerprint)
 import "github.com/vistone/fingerprint/modules/gateway"
 
 // 创建网关
-gw := gateway.New(gateway.Config{
+gw := gateway.NewGateway(&gateway.GatewayConfig{
     RateLimit: 1000,
 })
 
 // 启动
-gw.Start(":8080")
+gw.Start()
 ```
 
 ## Generator 模块 API
 
-### 指纹生成
+> **注意**: Generator 模块当前为预留接口，尚未实现。如需随机指纹，请使用 `profiles.GetRandom()` 或 `profiles.GetRandomByBrowser()`。
 
 ```go
-import "github.com/vistone/fingerprint/modules/generator"
+import "github.com/vistone/fingerprint/modules/profiles"
 
-// 生成随机指纹
-profile := generator.GenerateRandom()
-
-// 生成特定浏览器指纹
-profile := generator.GenerateForBrowser(core.BrowserChrome)
+profile := profiles.GetRandom()
+profile := profiles.GetRandomByBrowser(core.BrowserChrome)
 ```
 
 ## Network 模块 API
 
-### TCP/IP 分析
-
-```go
-import "github.com/vistone/fingerprint/modules/network"
-
-// 分析 TCP
-behavior := network.AnalyzeTCP(packet)
-
-// 分析 QUIC
-quicInfo := network.AnalyzeQUIC(packet)
-```
+> **注意**: Network 模块当前为预留接口，尚未实现。TCP/IP 指纹已集成在 `profiles.CreateTCPIP()` 和 `client.SmartTransport` 中。
 
 ## Internal 模块 API
 
@@ -312,12 +295,10 @@ metrics.RecordFingerprintGeneration("Chrome", "Windows", nil)
 ```go
 import "github.com/vistone/fingerprint/modules/config"
 
-// 加载配置
-cfg := config.Load("config.yaml")
-
-// 监听变更
-ch := make(chan config.Change)
-config.Watch(ch)
+// 通过 bridge 访问内部配置中心
+center := &config.ConfigCenter{}
+center.Load()
+cfg := center.Get()
 ```
 
 ## 完整示例

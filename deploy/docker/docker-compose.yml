@@ -5,7 +5,7 @@ services:
     build:
       context: ../..
       dockerfile: deploy/docker/Dockerfile
-    image: docker.io/vistone/fingerprint:v3.0.0
+    image: docker.io/vistone/fingerprint:v3.1.0
     container_name: fingerprint-gateway
     ports:
       - "8080:8080"
@@ -16,13 +16,29 @@ services:
       - FP_LOG_LEVEL=info
       - FP_RATE_LIMIT=1000
       - FP_CACHE_SIZE=10000
+      # P3 Anti-Detection Configuration
+      - FP_P3_ENABLED=true
+      - FP_P3_PROFILE=chrome_134_default
+      - FP_P3_CONFIG_DIR=/data/profiles
+      - FP_P3_INJECT_CONSISTENCY=true
+      # 设置后可启用代理注入目标，例如: http://nginx:80
+      - FP_P3_PROXY_TARGET=
+      # 客户端访问网关根路径时，直接透明代理并注入
+      - FP_P3_DIRECT_PROXY=false
+      # 扫描器浏览器执行配置（用于 JS 跳转与动态页面）
+      - FP_SCANNER_USE_BROWSER=true
+      - FP_SCANNER_BROWSER_WS=ws://browserless:3000
+      - FP_SCANNER_BROWSER_TIMEOUT_MS=25000
     volumes:
       - gateway-data:/data
+      - ./profiles:/data/profiles:ro
     networks:
       - fingerprint-network
+    depends_on:
+      - browserless
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "/fingerprint-gateway", "health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -30,11 +46,23 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
-          memory: 512M
+          cpus: '1.0'
+          memory: 1024M
         reservations:
-          cpus: '0.1'
-          memory: 128M
+          cpus: '0.2'
+          memory: 256M
+
+  browserless:
+    image: browserless/chrome:latest
+    container_name: fingerprint-browserless
+    environment:
+      - PREBOOT_CHROME=true
+      - MAX_CONCURRENT_SESSIONS=2
+      - MAX_QUEUE_LENGTH=10
+      - CONNECTION_TIMEOUT=300000
+    networks:
+      - fingerprint-network
+    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus:latest

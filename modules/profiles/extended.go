@@ -7,6 +7,7 @@ import (
 )
 
 // 扩展 Chrome 指纹
+
 var (
 	// Chrome 120-133 系列
 	Chrome120 = ClientProfile{
@@ -40,6 +41,7 @@ var (
 			SecFetchSite: "none", SecFetchMode: "navigate", SecFetchDest: "document",
 			SecCHUA: `"Google Chrome";v="120"`, SecCHUAMobile: "?0", SecCHUAPlatform: `"Windows"`,
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Chrome124 = ClientProfile{
@@ -64,6 +66,7 @@ var (
 			SecCHUA: `"Chromium";v="124", "Google Chrome";v="124"`,
 			SecCHUAMobile: "?0", SecCHUAPlatform: `"Windows"`,
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Chrome130 = ClientProfile{
@@ -82,6 +85,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 			SecCHUA: `"Chromium";v="130", "Google Chrome";v="130"`,
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Chrome132 = ClientProfile{
@@ -94,10 +98,12 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 )
 
 // Firefox 指纹系列
+
 var (
 	Firefox120 = ClientProfile{
 		ID: "firefox_120", Name: "Firefox 120",
@@ -125,6 +131,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 			UpgradeInsecureRequests: "1",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox125 = ClientProfile{
@@ -139,6 +146,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox130 = ClientProfile{
@@ -150,6 +158,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox132 = ClientProfile{
@@ -161,10 +170,12 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 )
 
 // Safari 指纹系列
+
 var (
 	Safari150 = ClientProfile{
 		ID: "safari_15_0", Name: "Safari 15.0",
@@ -187,6 +198,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Safari160 = ClientProfile{
@@ -198,6 +210,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Safari170 = ClientProfile{
@@ -209,6 +222,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Safari181 = ClientProfile{
@@ -220,10 +234,12 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 )
 
 // Opera 指纹系列
+
 var (
 	Opera105 = ClientProfile{
 		ID: "opera_105", Name: "Opera 105",
@@ -234,10 +250,12 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			SecCHUA: `"Opera";v="105", "Chromium";v="119"`,
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 )
 
 // 移动端指纹
+
 var (
 	// iOS Safari
 	SafariiOS170 = ClientProfile{
@@ -252,6 +270,7 @@ var (
 			SecCHUAMobile: "?1",
 			SecCHUAPlatform: `"iPhone"`,
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	SafariiOS181 = ClientProfile{
@@ -263,6 +282,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			SecCHUAMobile: "?1", SecCHUAPlatform: `"iPhone"`,
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	// Android Chrome
@@ -277,6 +297,7 @@ var (
 			SecCHUA: `"Android";v="14", "Chrome";v="120"`,
 			SecCHUAMobile: "?1", SecCHUAPlatform: `"Android"`,
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	ChromeAndroid130 = ClientProfile{
@@ -289,6 +310,7 @@ var (
 			SecCHUA: `"Android";v="14", "Chrome";v="130"`,
 			SecCHUAMobile: "?1", SecCHUAPlatform: `"Android"`,
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 )
 

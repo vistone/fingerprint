@@ -170,7 +170,8 @@ func (hc *HierarchicalClassifier) Classify(features *core.FeatureVector) *Classi
 	// Layer 3: 版本识别
 	versionClassifier, ok := hc.versionClassifiers[family]
 	if !ok {
-		result.Confidence = familyConf * protocolConf
+		// 只有两层时，加权平均
+		result.Confidence = 0.5*protocolConf + 0.5*familyConf
 		return result
 	}
 
@@ -180,8 +181,9 @@ func (hc *HierarchicalClassifier) Classify(features *core.FeatureVector) *Classi
 	result.VersionConfidence = versionConf
 	result.Labels["version"] = version
 
-	// 综合置信度
-	result.Confidence = protocolConf * familyConf * versionConf
+	// 综合置信度：使用加权平均避免指数衰减
+	// 协议权重 0.3，家族权重 0.3，版本权重 0.4
+	result.Confidence = 0.3*protocolConf + 0.3*familyConf + 0.4*versionConf
 
 	return result
 }

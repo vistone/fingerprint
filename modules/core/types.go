@@ -6,25 +6,27 @@ package core
 type BrowserType string
 
 const (
-	BrowserChrome   BrowserType = "chrome"
-	BrowserFirefox  BrowserType = "firefox"
-	BrowserSafari   BrowserType = "safari"
-	BrowserOpera    BrowserType = "opera"
-	BrowserEdge     BrowserType = "edge"
-	BrowserBrave    BrowserType = "brave"
-	BrowserSamsung  BrowserType = "samsung"
+	BrowserChrome  BrowserType = "chrome"
+	BrowserFirefox BrowserType = "firefox"
+	BrowserSafari  BrowserType = "safari"
+	BrowserOpera   BrowserType = "opera"
+	BrowserEdge    BrowserType = "edge"
+	BrowserBrave   BrowserType = "brave"
+	BrowserSamsung BrowserType = "samsung"
 )
 
 // OperatingSystem 操作系统类型
 type OperatingSystem string
 
 const (
-	OSWindows10   OperatingSystem = "Windows NT 10.0; Win64; x64"
-	OSWindows11   OperatingSystem = "Windows NT 10.0; Win64; x64"
-	OSMacOS13     OperatingSystem = "Macintosh; Intel Mac OS X 13_0_0"
-	OSMacOS14     OperatingSystem = "Macintosh; Intel Mac OS X 14_0_0"
-	OSMacOS15     OperatingSystem = "Macintosh; Intel Mac OS X 15_0_0"
-	OSLinux       OperatingSystem = "X11; Linux x86_64"
+	OSWindows10 OperatingSystem = "Windows NT 10.0; Win64; x64"
+	// OSWindows11 UA 与 Win10 相同（浏览器真实行为），通过 Sec-CH-UA-Platform-Version 区分
+	OSWindows11 OperatingSystem = "Windows NT 10.0; Win64; x64"
+	OSMacOS13   OperatingSystem = "Macintosh; Intel Mac OS X 13_0_0"
+	OSMacOS14   OperatingSystem = "Macintosh; Intel Mac OS X 14_0_0"
+	OSMacOS15   OperatingSystem = "Macintosh; Intel Mac OS X 15_0_0"
+	OSLinux     OperatingSystem = "X11; Linux x86_64"
+	// 以下 Linux 发行版 UA 相同（浏览器真实行为），保留别名用于语义区分
 	OSLinuxUbuntu OperatingSystem = "X11; Linux x86_64"
 	OSLinuxDebian OperatingSystem = "X11; Linux x86_64"
 	OSLinuxFedora OperatingSystem = "X11; Linux x86_64"
@@ -33,17 +35,13 @@ const (
 	OSAndroid     OperatingSystem = "Linux; Android 14"
 )
 
-// OperatingSystems 操作系统列表（用于随机选择）
+// OperatingSystems 操作系统列表（用于随机选择，已去重避免概率偏移）
 var OperatingSystems = []OperatingSystem{
 	OSWindows10,
-	OSWindows11,
 	OSMacOS13,
 	OSMacOS14,
 	OSMacOS15,
 	OSLinux,
-	OSLinuxUbuntu,
-	OSLinuxDebian,
-	OSLinuxFedora,
 	OSiOS,
 	OSiPadOS,
 	OSAndroid,

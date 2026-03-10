@@ -123,18 +123,7 @@ func (d *Detector) Detect(features *core.FeatureVector) *DetectionResult {
 
 // calculateRiskLevel 计算风险等级
 func (d *Detector) calculateRiskLevel(score float64) core.RiskLevel {
-	switch {
-	case score >= 0.9:
-		return core.RiskLevelCritical
-	case score >= 0.7:
-		return core.RiskLevelHigh
-	case score >= 0.4:
-		return core.RiskLevelMedium
-	case score >= 0.1:
-		return core.RiskLevelLow
-	default:
-		return core.RiskLevelNone
-	}
+	return core.RiskLevelFromScore(score)
 }
 
 // DetectionResult 检测结果
@@ -174,13 +163,13 @@ type FingerprintDatabase struct {
 
 // FingerprintRecord 指纹记录
 type FingerprintRecord struct {
-	ID          string
-	Features    *core.FeatureVector
-	Labels      map[string]string
-	RiskScore   float64
-	FirstSeen   int64
-	LastSeen    int64
-	SeenCount   int
+	ID        string
+	Features  *core.FeatureVector
+	Labels    map[string]string
+	RiskScore float64
+	FirstSeen int64
+	LastSeen  int64
+	SeenCount int
 }
 
 // NewPassiveDetector 创建新的被动检测器
@@ -249,11 +238,11 @@ func (ap *ActiveProtector) GenerateNoise(generatorName string, seed int64) inter
 
 // ProtectionConfig 防护配置
 type ProtectionConfig struct {
-	EnableCanvasNoise   bool
-	EnableAudioNoise    bool
-	EnableWebGLNoise    bool
-	EnableTimingNoise   bool
-	NoiseLevel          float64
+	EnableCanvasNoise bool
+	EnableAudioNoise  bool
+	EnableWebGLNoise  bool
+	EnableTimingNoise bool
+	NoiseLevel        float64
 }
 
 // DefaultProtectionConfig 默认防护配置
@@ -387,18 +376,7 @@ func (re *RiskEngine) generateSuggestions(detection *DetectionResult, classifica
 
 // calculateRiskLevel 计算风险等级
 func (re *RiskEngine) calculateRiskLevel(score float64) core.RiskLevel {
-	switch {
-	case score >= 0.9:
-		return core.RiskLevelCritical
-	case score >= 0.7:
-		return core.RiskLevelHigh
-	case score >= 0.4:
-		return core.RiskLevelMedium
-	case score >= 0.1:
-		return core.RiskLevelLow
-	default:
-		return core.RiskLevelNone
-	}
+	return core.RiskLevelFromScore(score)
 }
 
 // DefenseSystem 综合防护系统
@@ -442,11 +420,11 @@ func (ds *DefenseSystem) Analyze(features *core.FeatureVector, classification *m
 // generateProtectionConfig 根据风险生成防护配置
 func (ds *DefenseSystem) generateProtectionConfig(risk *core.RiskAssessment) *ProtectionConfig {
 	config := &ProtectionConfig{
-		EnableCanvasNoise:   true,
-		EnableAudioNoise:    true,
-		EnableWebGLNoise:    true,
-		EnableTimingNoise:   true,
-		NoiseLevel:          0.1,
+		EnableCanvasNoise: true,
+		EnableAudioNoise:  true,
+		EnableWebGLNoise:  true,
+		EnableTimingNoise: true,
+		NoiseLevel:        0.1,
 	}
 
 	// 根据风险等级调整配置

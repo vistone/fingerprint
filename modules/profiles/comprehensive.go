@@ -8,6 +8,70 @@ import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
+// createTCPIP 根据操作系统创建 TCP/IP 指纹
+func createTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
+	base := &TCPIPFingerprint{
+		IPVersion:        4,
+		DF:               true,
+		SYN:              true,
+		ACK:              false,
+		MSS:              1460,
+		SAckPermitted:    true,
+		Timestamps:       true,
+		EndOfOptions:     true,
+		OptionsSignature: "M,N,W,N,N,S,T,E",
+	}
+
+	osStr := string(osType)
+	
+	if strings.Contains(osStr, "Windows") {
+		base.TTL = 128
+		base.WindowSize = 64240
+		base.WindowScale = 8
+		base.NoOperation = 2
+		base.JA4T = "t13d1715h2_8daaf6152771_9e7c7c2f41aa"
+	} else if strings.Contains(osStr, "Macintosh") || strings.Contains(osStr, "Mac OS") {
+		base.TTL = 64
+		base.WindowSize = 65535
+		base.WindowScale = 6
+		base.NoOperation = 2
+		base.JA4T = "t13d1814h2_8daaf6152771_b0b889a3c9b7"
+	} else if strings.Contains(osStr, "Linux") || strings.Contains(osStr, "X11") {
+		base.TTL = 64
+		base.WindowSize = 64240
+		base.WindowScale = 7
+		base.NoOperation = 2
+		base.JA4T = "t13d1714h2_8daaf6152771_02713a6ec338"
+	} else if strings.Contains(osStr, "iPhone") || strings.Contains(osStr, "iPad") {
+		// iOS 特征
+		base.TTL = 64
+		base.WindowSize = 65535
+		base.WindowScale = 6
+		base.NoOperation = 2
+		base.JA4T = "t13d1814h2_8daaf6152771_b0b889a3c9b7"
+	} else if strings.Contains(osStr, "Android") {
+		// Android 特征
+		base.TTL = 64
+		base.WindowSize = 65535
+		base.WindowScale = 6
+		base.NoOperation = 2
+		base.JA4T = "t13d1814h2_8daaf6152771_b0b889a3c9b7"
+	} else {
+		base.TTL = 128
+		base.WindowSize = 64240
+		base.WindowScale = 8
+		base.NoOperation = 2
+		base.JA4T = "t13d1715h2_8daaf6152771_9e7c7c2f41aa"
+	}
+
+	return base
+}
+
+// createChromeTCPIP 创建 Chrome 浏览器的 TCP/IP 指纹
+func createChromeTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
+	return CreateTCPIP(osType)
+}
+
 // Chrome 全面配置 (30 profiles)
 func initChromeProfiles() {
 	chromeVersions := []struct {
@@ -67,6 +131,19 @@ func initChromeProfiles() {
 				HeaderTableSize: 65536, EnablePush: 0,
 				MaxConcurrentStreams: 1000, InitialWindowSize: 6291456,
 			},
+			// HTTP/3 (QUIC) 配置 - Chrome 已支持 HTTP/3
+			HTTP3Settings: &core.HTTP3Settings{
+				QUICVersion:            core.QUICVersion1,
+				InitialMaxData:         16777216,    // 16MB
+				InitialMaxStreamData:   6291456,     // 6MB
+				InitialMaxStreamsBidi:  100,
+				InitialMaxStreamsUni:   100,
+				MaxUDPPayloadSize:      1472,
+				AckDelayExponent:       3,
+				MaxAckDelay:            25,
+				DisableActiveMigration: false,
+			},
+			QUICVersions: []uint32{core.QUICVersion1},
 			Headers: &core.HTTPHeaders{
 				Accept:          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 				AcceptLanguage:  "en-US,en;q=0.9",
@@ -78,6 +155,7 @@ func initChromeProfiles() {
 				SecCHUAMobile:   "?0",
 				SecCHUAPlatform: platformString(v.os),
 			},
+			TCPIP: createChromeTCPIP(v.os),
 		}
 		Register(p)
 	}
@@ -135,6 +213,19 @@ func initFirefoxProfiles() {
 				HeaderTableSize: 65536, EnablePush: 0,
 				MaxConcurrentStreams: 100, InitialWindowSize: 131072,
 			},
+			// HTTP/3 (QUIC) 配置 - Firefox 已支持 HTTP/3
+			HTTP3Settings: &core.HTTP3Settings{
+				QUICVersion:            core.QUICVersion1,
+				InitialMaxData:         16777216,    // 16MB
+				InitialMaxStreamData:   6291456,     // 6MB
+				InitialMaxStreamsBidi:  100,
+				InitialMaxStreamsUni:   100,
+				MaxUDPPayloadSize:      1472,
+				AckDelayExponent:       3,
+				MaxAckDelay:            25,
+				DisableActiveMigration: false,
+			},
+			QUICVersions: []uint32{core.QUICVersion1},
 			PseudoHeaderOrder: []string{":method", ":path", ":authority", ":scheme"},
 			Headers: &core.HTTPHeaders{
 				Accept:          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -142,6 +233,7 @@ func initFirefoxProfiles() {
 				AcceptEncoding:  "gzip, deflate, br",
 				UpgradeInsecureRequests: "1",
 			},
+			TCPIP: createTCPIP(v.os),
 		}
 		Register(p)
 	}
@@ -193,12 +285,26 @@ func initSafariProfiles() {
 				HeaderTableSize: 4096, EnablePush: 1,
 				MaxConcurrentStreams: 100, InitialWindowSize: 2097152,
 			},
+			// HTTP/3 (QUIC) 配置 - Safari 已支持 HTTP/3
+			HTTP3Settings: &core.HTTP3Settings{
+				QUICVersion:            core.QUICVersion1,
+				InitialMaxData:         16777216,    // 16MB
+				InitialMaxStreamData:   6291456,     // 6MB
+				InitialMaxStreamsBidi:  100,
+				InitialMaxStreamsUni:   100,
+				MaxUDPPayloadSize:      1472,
+				AckDelayExponent:       3,
+				MaxAckDelay:            25,
+				DisableActiveMigration: false,
+			},
+			QUICVersions: []uint32{core.QUICVersion1},
 			PseudoHeaderOrder: []string{":method", ":scheme", ":path", ":authority"},
 			Headers: &core.HTTPHeaders{
 				Accept:          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 				AcceptLanguage:  "en-US,en;q=0.9",
 				AcceptEncoding:  "gzip, deflate, br",
 			},
+			TCPIP: createTCPIP(v.os),
 		}
 		Register(p)
 	}
@@ -231,19 +337,56 @@ func initiOSProfiles() {
 
 	for _, v := range iosVersions {
 		p := ClientProfile{
-			ID:          v.id,
-			Name:        "Safari iOS " + v.version,
-			BrowserType: core.BrowserSafari,
+			ID:             v.id,
+			Name:           "Safari iOS " + v.version,
+			BrowserType:    core.BrowserSafari,
 			BrowserVersion: v.version,
-			OS:          core.OSMacOS15, // 使用标准 OS 类型
-			OSVersion:   v.osVer,
+			OS:             core.OSMacOS15,
+			OSVersion:      v.osVer,
+			TLSVersion:     0x0303, // TLS 1.2
+			CipherSuites: []uint16{
+				0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030,
+				0xcca9, 0xcca8, 0xc013, 0xc014,
+			},
+			Extensions: []core.TLSExtension{
+				{Type: 0x0000}, {Type: 0x0017}, {Type: 0xff01},
+				{Type: 0x000a}, {Type: 0x000b}, {Type: 0x0023},
+				{Type: 0x0016}, {Type: 0x000d}, {Type: 0x002b},
+				{Type: 0x002d}, {Type: 0x0033},
+			},
+			SupportedCurves: []core.CurveID{core.CurveX25519, core.CurveP256, core.CurveP384},
+			HTTP2Settings: core.HTTP2Settings{
+				HeaderTableSize:      65536,
+				EnablePush:           0,
+				MaxConcurrentStreams: 1000,
+				InitialWindowSize:    6291456,
+				MaxFrameSize:         16384,
+				MaxHeaderListSize:    262144,
+			},
+			// HTTP/3 (QUIC) 配置 - iOS Safari 已支持 HTTP/3
+			HTTP3Settings: &core.HTTP3Settings{
+				QUICVersion:            core.QUICVersion1,
+				InitialMaxData:         16777216,
+				InitialMaxStreamData:   6291456,
+				InitialMaxStreamsBidi:  100,
+				InitialMaxStreamsUni:   100,
+				MaxUDPPayloadSize:      1472,
+				AckDelayExponent:       3,
+				MaxAckDelay:            25,
+				DisableActiveMigration: false,
+			},
+			QUICVersions: []uint32{core.QUICVersion1},
+			PseudoHeaderOrder: []string{":method", ":scheme", ":authority", ":path"},
+			ConnectionFlow:    15663105,
 			Headers: &core.HTTPHeaders{
 				Accept:          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 				AcceptLanguage:  "en-US,en;q=0.9",
+				AcceptEncoding:  "gzip, deflate, br",
 				SecCHUA:         "",
 				SecCHUAMobile:   "?1",
 				SecCHUAPlatform: `"iPhone"`,
 			},
+			TCPIP: createTCPIP(core.OSiOS),
 		}
 		Register(p)
 	}
@@ -281,15 +424,52 @@ func initAndroidProfiles() {
 			Name:           "Chrome Android " + v.version,
 			BrowserType:    core.BrowserChrome,
 			BrowserVersion: v.version,
-			OS:             core.OSLinux, // 使用标准 OS 类型
+			OS:             core.OSLinux,
 			OSVersion:      v.android,
+			TLSVersion:     0x0303, // TLS 1.2
+			CipherSuites: []uint16{
+				0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030,
+				0xcca9, 0xcca8, 0xc013, 0xc014, 0x002f, 0x0035, 0x000a,
+			},
+			Extensions: []core.TLSExtension{
+				{Type: 0x0000}, {Type: 0x0017}, {Type: 0xff01},
+				{Type: 0x000a}, {Type: 0x000b}, {Type: 0x0023},
+				{Type: 0x0016}, {Type: 0x000d}, {Type: 0x002b},
+				{Type: 0x002d}, {Type: 0x0033}, {Type: 0x001c},
+			},
+			SupportedCurves: []core.CurveID{core.CurveX25519, core.CurveP256, core.CurveP384},
+			HTTP2Settings: core.HTTP2Settings{
+				HeaderTableSize:      65536,
+				EnablePush:           0,
+				MaxConcurrentStreams: 1000,
+				InitialWindowSize:    6291456,
+				MaxFrameSize:         16384,
+				MaxHeaderListSize:    262144,
+			},
+			// HTTP/3 (QUIC) 配置 - Android Chrome 已支持 HTTP/3
+			HTTP3Settings: &core.HTTP3Settings{
+				QUICVersion:            core.QUICVersion1,
+				InitialMaxData:         16777216,
+				InitialMaxStreamData:   6291456,
+				InitialMaxStreamsBidi:  100,
+				InitialMaxStreamsUni:   100,
+				MaxUDPPayloadSize:      1472,
+				AckDelayExponent:       3,
+				MaxAckDelay:            25,
+				DisableActiveMigration: false,
+			},
+			QUICVersions: []uint32{core.QUICVersion1},
+			PseudoHeaderOrder: []string{":method", ":authority", ":scheme", ":path"},
+			ConnectionFlow:    15663105,
 			Headers: &core.HTTPHeaders{
 				Accept:          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 				AcceptLanguage:  "en-US,en;q=0.9",
+				AcceptEncoding:  "gzip, deflate, br",
 				SecCHUA:         `"Android";v="` + v.android + `", "Chrome";v="` + safeSliceVersion(v.version) + `"`,
 				SecCHUAMobile:   "?1",
 				SecCHUAPlatform: `"Android"`,
 			},
+			TCPIP: createTCPIP(core.OSAndroid),
 		}
 		Register(p)
 	}
@@ -320,10 +500,51 @@ func initEdgeProfiles() {
 			BrowserType:    core.BrowserEdge,
 			BrowserVersion: v.version,
 			OS:             core.OSWindows11,
-			Headers: &core.HTTPHeaders{
-				Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-				SecCHUA: `"Microsoft Edge";v="` + safeSliceVersion(v.version) + `", "Chromium";v="` + safeSliceVersion(v.version) + `"`,
+			OSVersion:      "10.0.22621",
+			TLSVersion:     0x0303, // TLS 1.2
+			CipherSuites: []uint16{
+				0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030,
+				0xcca9, 0xcca8, 0xc013, 0xc014, 0x002f, 0x0035, 0x000a,
 			},
+			Extensions: []core.TLSExtension{
+				{Type: 0x0000}, {Type: 0x0017}, {Type: 0xff01},
+				{Type: 0x000a}, {Type: 0x000b}, {Type: 0x0023},
+				{Type: 0x0016}, {Type: 0x000d}, {Type: 0x002b},
+				{Type: 0x002d}, {Type: 0x0033},
+			},
+			SupportedCurves: []core.CurveID{core.CurveX25519, core.CurveP256, core.CurveP384},
+			HTTP2Settings: core.HTTP2Settings{
+				HeaderTableSize:      65536,
+				EnablePush:           0,
+				MaxConcurrentStreams: 1000,
+				InitialWindowSize:    6291456,
+				MaxFrameSize:         16384,
+				MaxHeaderListSize:    262144,
+			},
+			// HTTP/3 (QUIC) 配置 - Edge 已支持 HTTP/3
+			HTTP3Settings: &core.HTTP3Settings{
+				QUICVersion:            core.QUICVersion1,
+				InitialMaxData:         16777216,
+				InitialMaxStreamData:   6291456,
+				InitialMaxStreamsBidi:  100,
+				InitialMaxStreamsUni:   100,
+				MaxUDPPayloadSize:      1472,
+				AckDelayExponent:       3,
+				MaxAckDelay:            25,
+				DisableActiveMigration: false,
+			},
+			QUICVersions: []uint32{core.QUICVersion1},
+			PseudoHeaderOrder: []string{":method", ":authority", ":scheme", ":path"},
+			ConnectionFlow:    15663105,
+			Headers: &core.HTTPHeaders{
+				Accept:          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+				AcceptLanguage:  "en-US,en;q=0.9",
+				AcceptEncoding:  "gzip, deflate, br",
+				SecCHUA:         `"Microsoft Edge";v="` + safeSliceVersion(v.version) + `", "Chromium";v="` + safeSliceVersion(v.version) + `"`,
+				SecCHUAMobile:   "?0",
+				SecCHUAPlatform: `"Windows"`,
+			},
+			TCPIP: createTCPIP(core.OSWindows11),
 		}
 		Register(p)
 	}
@@ -350,10 +571,51 @@ func initOperaProfiles() {
 			BrowserType:    core.BrowserOpera,
 			BrowserVersion: v.version,
 			OS:             core.OSWindows10,
-			Headers: &core.HTTPHeaders{
-				Accept:  "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-				SecCHUA: `"Opera";v="` + safeSliceVersion(v.version) + `"`,
+			OSVersion:      "10.0.19045",
+			TLSVersion:     0x0303, // TLS 1.2
+			CipherSuites: []uint16{
+				0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030,
+				0xcca9, 0xcca8, 0xc013, 0xc014,
 			},
+			Extensions: []core.TLSExtension{
+				{Type: 0x0000}, {Type: 0x0017}, {Type: 0xff01},
+				{Type: 0x000a}, {Type: 0x000b}, {Type: 0x0023},
+				{Type: 0x0016}, {Type: 0x000d}, {Type: 0x002b},
+				{Type: 0x002d}, {Type: 0x0033},
+			},
+			SupportedCurves: []core.CurveID{core.CurveX25519, core.CurveP256, core.CurveP384},
+			HTTP2Settings: core.HTTP2Settings{
+				HeaderTableSize:      65536,
+				EnablePush:           0,
+				MaxConcurrentStreams: 1000,
+				InitialWindowSize:    6291456,
+				MaxFrameSize:         16384,
+				MaxHeaderListSize:    262144,
+			},
+			// HTTP/3 (QUIC) 配置 - Opera 已支持 HTTP/3
+			HTTP3Settings: &core.HTTP3Settings{
+				QUICVersion:            core.QUICVersion1,
+				InitialMaxData:         16777216,
+				InitialMaxStreamData:   6291456,
+				InitialMaxStreamsBidi:  100,
+				InitialMaxStreamsUni:   100,
+				MaxUDPPayloadSize:      1472,
+				AckDelayExponent:       3,
+				MaxAckDelay:            25,
+				DisableActiveMigration: false,
+			},
+			QUICVersions: []uint32{core.QUICVersion1},
+			PseudoHeaderOrder: []string{":method", ":authority", ":scheme", ":path"},
+			ConnectionFlow:    15663105,
+			Headers: &core.HTTPHeaders{
+				Accept:          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+				AcceptLanguage:  "en-US,en;q=0.9",
+				AcceptEncoding:  "gzip, deflate, br",
+				SecCHUA:         `"Opera";v="` + safeSliceVersion(v.version) + `"`,
+				SecCHUAMobile:   "?0",
+				SecCHUAPlatform: `"Windows"`,
+			},
+			TCPIP: createTCPIP(core.OSWindows10),
 		}
 		Register(p)
 	}

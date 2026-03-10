@@ -13,6 +13,7 @@ import (
 
 	"github.com/vistone/fingerprint/modules/core"
 	"github.com/vistone/fingerprint/modules/ml"
+	"github.com/vistone/fingerprint/modules/profiles"
 )
 
 // SDK 前端 SDK 管理器
@@ -63,7 +64,7 @@ var DefaultSDKConfig = &SDKConfig{
 	CollectHardware: true,
 	CollectTiming:   true,
 
-	SessionTimeout: 30 * time.Minute,
+	SessionTimeout: core.DefaultSessionTimeout,
 }
 
 // NewSDK 创建新的 SDK 管理器
@@ -93,17 +94,17 @@ func (sdk *SDK) GenerateJSCore() string {
 // Fingerprint SDK Core v1.0
 (function(global) {
     'use strict';
-    
+
     const CONFIG = %s;
     const SESSION_ID = '%s';
-    
+
     // 噪声生成器
     class NoiseGenerator {
         constructor(level) {
             this.level = level;
             this.seed = Math.random();
         }
-        
+
         generateCanvasNoise() {
             if (!CONFIG.EnableCanvasNoise) return null;
             return {
@@ -113,25 +114,25 @@ func (sdk *SDK) GenerateJSCore() string {
                 a: 0
             };
         }
-        
+
         generateAudioNoise() {
             if (!CONFIG.EnableAudioNoise) return null;
             return (Math.random() - 0.5) * this.level * 0.001;
         }
-        
+
         generateTimingNoise() {
             if (!CONFIG.EnableTimingNoise) return null;
             return Math.floor(Math.random() * this.level * 10);
         }
     }
-    
+
     // 指纹收集器
     class FingerprintCollector {
         constructor() {
             this.noiseGen = new NoiseGenerator(CONFIG.NoiseLevel);
             this.data = {};
         }
-        
+
         async collectAll() {
             return {
                 canvas: CONFIG.CollectCanvas ? await this.collectCanvas() : null,
@@ -146,14 +147,14 @@ func (sdk *SDK) GenerateJSCore() string {
                 sessionId: SESSION_ID
             };
         }
-        
+
         async collectCanvas() {
             try {
                 const canvas = document.createElement('canvas');
                 canvas.width = 200;
                 canvas.height = 50;
                 const ctx = canvas.getContext('2d');
-                
+
                 // 绘制
                 ctx.textBaseline = 'alphabetic';
                 ctx.fillStyle = '#f60';
@@ -161,7 +162,7 @@ func (sdk *SDK) GenerateJSCore() string {
                 ctx.fillStyle = '#069';
                 ctx.font = '11pt "Times New Roman"';
                 ctx.fillText('Fingerprint v1.0', 2, 15);
-                
+
                 // 添加噪声
                 const noise = this.noiseGen.generateCanvasNoise();
                 if (noise) {
@@ -174,7 +175,7 @@ func (sdk *SDK) GenerateJSCore() string {
                     }
                     ctx.putImageData(imageData, 0, 0);
                 }
-                
+
                 const dataURL = canvas.toDataURL();
                 return {
                     hash: this.hashString(dataURL),
@@ -184,18 +185,18 @@ func (sdk *SDK) GenerateJSCore() string {
                 return { error: e.message };
             }
         }
-        
+
         async collectWebGL() {
             try {
                 const canvas = document.createElement('canvas');
                 const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
                 if (!gl) return { error: 'WebGL not supported' };
-                
+
                 const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
                 const vendor = debugInfo ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : 'unknown';
                 const renderer = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : 'unknown';
                 const extensions = gl.getSupportedExtensions() || [];
-                
+
                 return {
                     vendor: vendor,
                     renderer: renderer,
@@ -206,33 +207,33 @@ func (sdk *SDK) GenerateJSCore() string {
                 return { error: e.message };
             }
         }
-        
+
         async collectAudio() {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 if (!AudioContext) return { error: 'AudioContext not supported' };
-                
+
                 const ctx = new AudioContext();
                 const oscillator = ctx.createOscillator();
                 const analyser = ctx.createAnalyser();
                 const gainNode = ctx.createGain();
-                
+
                 oscillator.type = 'triangle';
                 oscillator.frequency.value = 10000;
-                
+
                 gainNode.gain.value = 0;
-                
+
                 oscillator.connect(analyser);
                 analyser.connect(gainNode);
                 gainNode.connect(ctx.destination);
-                
+
                 oscillator.start();
-                
+
                 const buffer = new Float32Array(analyser.frequencyBinCount);
                 analyser.getFloatFrequencyData(buffer);
-                
+
                 oscillator.stop();
-                
+
                 // 添加噪声
                 const noise = this.noiseGen.generateAudioNoise();
                 if (noise) {
@@ -240,9 +241,9 @@ func (sdk *SDK) GenerateJSCore() string {
                         buffer[i] += noise;
                     }
                 }
-                
+
                 const hash = this.hashBuffer(buffer);
-                
+
                 return {
                     sampleRate: ctx.sampleRate,
                     hash: hash,
@@ -252,41 +253,41 @@ func (sdk *SDK) GenerateJSCore() string {
                 return { error: e.message };
             }
         }
-        
+
         async collectFonts() {
             const baseFonts = ['monospace', 'sans-serif', 'serif'];
             const testFonts = [
                 'Arial', 'Courier New', 'Georgia', 'Times New Roman',
                 'Verdana', 'Helvetica', 'Tahoma', 'Trebuchet MS'
             ];
-            
+
             const available = [];
             const testString = 'mmmmmmmmmwwwwwww';
             const testSize = '72px';
-            
+
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            
+
             for (const base of baseFonts) {
                 ctx.font = testSize + ' ' + base;
                 const baseWidth = ctx.measureText(testString).width;
-                
+
                 for (const font of testFonts) {
                     ctx.font = testSize + ' "' + font + '", ' + base;
                     const width = ctx.measureText(testString).width;
-                    
+
                     if (width !== baseWidth) {
                         available.push(font);
                     }
                 }
             }
-            
+
             return {
                 list: available,
                 count: available.length
             };
         }
-        
+
         collectStorage() {
             try {
                 return {
@@ -298,19 +299,19 @@ func (sdk *SDK) GenerateJSCore() string {
                 return { error: e.message };
             }
         }
-        
+
         async collectWebRTC() {
             try {
                 const pc = new RTCPeerConnection({
                     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
                 });
-                
+
                 const ips = [];
                 pc.createDataChannel('');
-                
+
                 const offer = await pc.createOffer();
                 await pc.setLocalDescription(offer);
-                
+
                 return new Promise((resolve) => {
                     setTimeout(() => {
                         const lines = offer.sdp.split('\n');
@@ -322,7 +323,7 @@ func (sdk *SDK) GenerateJSCore() string {
                                 }
                             }
                         }
-                        
+
                         pc.close();
                         resolve({
                             localIPs: ips,
@@ -334,7 +335,7 @@ func (sdk *SDK) GenerateJSCore() string {
                 return { error: e.message };
             }
         }
-        
+
         collectHardware() {
             return {
                 cores: navigator.hardwareConcurrency || 'unknown',
@@ -344,25 +345,25 @@ func (sdk *SDK) GenerateJSCore() string {
                 userAgent: navigator.userAgent
             };
         }
-        
+
         collectTiming() {
             const noise = this.noiseGen.generateTimingNoise();
             const start = performance.now() + noise;
-            
+
             // 执行一些计算
             let sum = 0;
             for (let i = 0; i < 1000000; i++) {
                 sum += i;
             }
-            
+
             const end = performance.now() + noise;
-            
+
             return {
                 precision: end - start,
                 timestamp: Date.now()
             };
         }
-        
+
         hashString(str) {
             let hash = 0;
             for (let i = 0; i < str.length; i++) {
@@ -372,7 +373,7 @@ func (sdk *SDK) GenerateJSCore() string {
             }
             return hash.toString(16);
         }
-        
+
         hashBuffer(buffer) {
             let hash = 0;
             for (let i = 0; i < Math.min(buffer.length, 1000); i++) {
@@ -381,13 +382,13 @@ func (sdk *SDK) GenerateJSCore() string {
             }
             return hash.toString(16);
         }
-        
+
         calculateEntropy(str) {
             const freq = {};
             for (const char of str) {
                 freq[char] = (freq[char] || 0) + 1;
             }
-            
+
             let entropy = 0;
             const len = str.length;
             for (const count of Object.values(freq)) {
@@ -396,14 +397,14 @@ func (sdk *SDK) GenerateJSCore() string {
             }
             return entropy;
         }
-        
+
         calculateBufferEntropy(buffer) {
             const freq = {};
             for (const val of buffer) {
                 const key = Math.floor(val * 10) / 10;
                 freq[key] = (freq[key] || 0) + 1;
             }
-            
+
             let entropy = 0;
             const len = buffer.length;
             for (const count of Object.values(freq)) {
@@ -413,16 +414,16 @@ func (sdk *SDK) GenerateJSCore() string {
             return entropy;
         }
     }
-    
+
     // 主 API
     global.FingerprintSDK = {
         version: '1.0.0',
-        
+
         collect: async function() {
             const collector = new FingerprintCollector();
             return await collector.collectAll();
         },
-        
+
         send: async function(url, data) {
             const response = await fetch(url, {
                 method: 'POST',
@@ -434,7 +435,7 @@ func (sdk *SDK) GenerateJSCore() string {
             });
             return response.json();
         },
-        
+
         init: function() {
             // 自动收集并发送
             this.collect().then(data => {
@@ -444,7 +445,7 @@ func (sdk *SDK) GenerateJSCore() string {
             });
         }
     };
-    
+
 })(window);
 `, sdk.toJSON(), sdk.generateSessionID())
 }
@@ -570,4 +571,17 @@ func (sdk *SDK) Combine(server *ml.ServerFingerprintData, frontend *ml.FrontendF
 		Frontend: frontend,
 		Combined: combined,
 	}
+}
+
+// GenerateAntiDetectionCode 生成完整的 JavaScript 反检测代码（P3 高熵）
+// 包括 WebGPU, MediaDevices, Permissions, Automation 对抗点
+func (sdk *SDK) GenerateAntiDetectionCode(profile *profiles.ClientProfile) string {
+	generator := NewJSAntiDetectCodeGenerator(profile)
+	return generator.GenerateFullAntiDetectionCode()
+}
+
+// GenerateConsistencyValidationCode 生成跨层一致性校验代码
+func (sdk *SDK) GenerateConsistencyValidationCode(profile *profiles.ClientProfile) string {
+	generator := NewJSAntiDetectCodeGenerator(profile)
+	return generator.GenerateCrossLayerConsistencyCode()
 }

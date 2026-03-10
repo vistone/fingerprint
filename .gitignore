@@ -44,3 +44,11 @@ Thumbs.db
 debug
 __debug_bin
 
+# Local build artifacts (do not commit)
+cmd/gateway/gateway
+/gateway
+/profile_matrix_check
+/verify_complete
+/verify_fingerprint_packet
+/verify_profile_observed
+

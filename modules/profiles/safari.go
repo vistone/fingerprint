@@ -3,8 +3,28 @@
 package profiles
 
 import (
+	"strings"
+	
 	"github.com/vistone/fingerprint/modules/core"
 )
+
+// safariTCPIP 返回 Safari 浏览器的 TCP/IP 指纹 (macOS)
+func safariTCPIP() *TCPIPFingerprint {
+	return &TCPIPFingerprint{
+		IPVersion:        4,
+		TTL:              64,
+		DF:               true,
+		WindowSize:       65535,
+		MSS:              1460,
+		WindowScale:      6,
+		SAckPermitted:    true,
+		Timestamps:       true,
+		NoOperation:      2,
+		EndOfOptions:     true,
+		OptionsSignature: "M,N,W,N,N,S,T,E",
+		JA4T:             "t13d1814h2_8daaf6152771_b0b889a3c9b7",
+	}
+}
 
 // Safari浏览器指纹 (16-18版本)
 var (
@@ -33,6 +53,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: safariTCPIP(),
 	}
 
 	Safari16_1 = ClientProfile{
@@ -47,6 +68,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: safariTCPIP(),
 	}
 
 	Safari16_2 = ClientProfile{
@@ -61,6 +83,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: safariTCPIP(),
 	}
 
 	Safari16_3 = ClientProfile{
@@ -75,6 +98,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: safariTCPIP(),
 	}
 
 	Safari16_4 = ClientProfile{
@@ -89,6 +113,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: safariTCPIP(),
 	}
 
 	Safari16_5 = ClientProfile{
@@ -103,6 +128,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: safariTCPIP(),
 	}
 
 	Safari16_6 = ClientProfile{
@@ -117,6 +143,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: safariTCPIP(),
 	}
 
 	// Safari 17.x 系列 - macOS Sonoma
@@ -132,6 +159,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: safariTCPIP(),
 	}
 
 	Safari17_1 = ClientProfile{
@@ -146,6 +174,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: safariTCPIP(),
 	}
 
 	Safari17_2 = ClientProfile{
@@ -160,6 +189,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: safariTCPIP(),
 	}
 
 	Safari17_3 = ClientProfile{
@@ -174,6 +204,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: safariTCPIP(),
 	}
 
 	Safari17_4 = ClientProfile{
@@ -188,6 +219,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: safariTCPIP(),
 	}
 
 	Safari17_5 = ClientProfile{
@@ -202,6 +234,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: safariTCPIP(),
 	}
 
 	Safari17_6 = ClientProfile{
@@ -216,6 +249,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: safariTCPIP(),
 	}
 
 	// Safari 18.x 系列 - macOS Sequoia
@@ -231,6 +265,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: safariTCPIP(),
 	}
 
 	Safari18_1 = ClientProfile{
@@ -245,6 +280,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: safariTCPIP(),
 	}
 
 	Safari18_2 = ClientProfile{
@@ -259,6 +295,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: safariTCPIP(),
 	}
 )
 
@@ -269,8 +306,75 @@ func init() {
 		Safari17_0, Safari17_1, Safari17_2, Safari17_3, Safari17_4, Safari17_5, Safari17_6,
 		Safari18_0, Safari18_1, Safari18_2,
 	}
-	for _, p := range profiles {
-		Register(p)
+	
+	// 为每个 profile 填充缺失的 HTTP/2 和 HTTP/3 配置
+	for i := range profiles {
+		p := &profiles[i]
+		
+		// 填充 HTTP/2 配置（如果缺失）
+		if p.HTTP2Settings.HeaderTableSize == 0 && p.HTTP2Settings.InitialWindowSize == 0 {
+			p.HTTP2Settings = core.HTTP2Settings{
+				HeaderTableSize:      4096,
+				EnablePush:           1,
+				MaxConcurrentStreams: 100,
+				InitialWindowSize:    2097152,
+				MaxFrameSize:         16384,
+				MaxHeaderListSize:    262144,
+			}
+			p.PseudoHeaderOrder = []string{":method", ":scheme", ":path", ":authority"}
+		}
+		
+		// 填充 ConnectionFlow（如果缺失）
+		if p.ConnectionFlow == 0 {
+			p.ConnectionFlow = 15663105
+		}
+		
+		// 填充 HTTP/3 (QUIC) 配置（如果缺失）
+		if p.HTTP3Settings == nil {
+			p.HTTP3Settings = &core.HTTP3Settings{
+				QUICVersion:            core.QUICVersion1,
+				InitialMaxData:         16777216,
+				InitialMaxStreamData:   6291456,
+				InitialMaxStreamsBidi:  100,
+				InitialMaxStreamsUni:   100,
+				MaxUDPPayloadSize:      1472,
+				AckDelayExponent:       3,
+				MaxAckDelay:            25,
+				DisableActiveMigration: false,
+			}
+			p.QUICVersions = []uint32{core.QUICVersion1}
+		}
+		
+		// 填充 Headers（如果缺失）
+		if p.Headers == nil {
+			p.Headers = &core.HTTPHeaders{}
+		}
+		h := p.Headers
+		if h.Accept == "" {
+			h.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+		}
+		if h.AcceptLanguage == "" {
+			h.AcceptLanguage = "en-US,en;q=0.9"
+		}
+		if h.AcceptEncoding == "" {
+			h.AcceptEncoding = "gzip, deflate, br"
+		}
+		if h.UserAgent == "" {
+			h.UserAgent = buildSafariUserAgent(p.BrowserVersion, p.OS)
+		}
+		
+		Register(*p)
+	}
+}
+
+// buildSafariUserAgent 构建 Safari User-Agent
+func buildSafariUserAgent(version string, os core.OperatingSystem) string {
+	osStr := string(os)
+	switch {
+	case strings.Contains(osStr, "Mac OS") || strings.Contains(osStr, "Macintosh"):
+		return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/" + version + " Safari/605.1.15"
+	default:
+		return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/" + version + " Safari/605.1.15"
 	}
 }
 

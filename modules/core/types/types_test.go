@@ -3,7 +3,7 @@ package types
 import (
 	"testing"
 
-	"github.com/vistone/fingerprint/modules/profiles/legacy"
+	profiles "github.com/vistone/fingerprint/modules/profiles/legacy"
 )
 
 // TestBrowserTypeConstants 测试所有 BrowserType 常量值正确
@@ -115,18 +115,14 @@ func TestOperatingSystemsSlice(t *testing.T) {
 		expectedItems []OperatingSystem
 	}{
 		{
-			name:        "OperatingSystems切片应包含12个操作系统",
-			expectedLen: 12,
+			name:        "OperatingSystems切片应包含8个去重操作系统",
+			expectedLen: 8,
 			expectedItems: []OperatingSystem{
 				OSWindows10,
-				OSWindows11,
 				OSMacOS13,
 				OSMacOS14,
 				OSMacOS15,
 				OSLinux,
-				OSLinuxUbuntu,
-				OSLinuxDebian,
-				OSLinuxFedora,
 				OSiOS,
 				OSiPadOS,
 				OSAndroid,
@@ -165,9 +161,9 @@ func TestFingerprintResult(t *testing.T) {
 				UserAgent:     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.0",
 				HelloClientID: "chrome_120",
 				Headers: &HTTPHeaders{
-					Accept:     "text/html",
-					UserAgent:  "Mozilla/5.0",
-					SecCHUA:    "\"Chromium\";v=\"120\"",
+					Accept:        "text/html",
+					UserAgent:     "Mozilla/5.0",
+					SecCHUA:       "\"Chromium\";v=\"120\"",
 					SecCHUAMobile: "?0",
 				},
 			},
@@ -211,11 +207,11 @@ func TestFingerprintResult(t *testing.T) {
 // TestHTTPHeadersCreation 测试 HTTPHeaders 结构体的创建
 func TestHTTPHeadersCreation(t *testing.T) {
 	tests := []struct {
-		name         string
-		headers      HTTPHeaders
-		wantAccept   string
-		wantLang     string
-		wantEncoding string
+		name          string
+		headers       HTTPHeaders
+		wantAccept    string
+		wantLang      string
+		wantEncoding  string
 		wantCustomLen int
 	}{
 		{
@@ -243,11 +239,11 @@ func TestHTTPHeadersCreation(t *testing.T) {
 			wantCustomLen: 1,
 		},
 		{
-			name:         "创建空的HTTPHeaders",
-			headers:      HTTPHeaders{},
-			wantAccept:   "",
-			wantLang:     "",
-			wantEncoding: "",
+			name:          "创建空的HTTPHeaders",
+			headers:       HTTPHeaders{},
+			wantAccept:    "",
+			wantLang:      "",
+			wantEncoding:  "",
 			wantCustomLen: 0,
 		},
 	}
@@ -284,8 +280,8 @@ func TestHTTPHeadersClone(t *testing.T) {
 				Accept:         "text/html",
 				AcceptLanguage: "en-US",
 				Custom: map[string]string{
-					"Cookie":     "session=abc",
-					"X-API-Key":  "key123",
+					"Cookie":    "session=abc",
+					"X-API-Key": "key123",
 				},
 			},
 			wantNil:  false,
@@ -555,12 +551,12 @@ func TestHTTPHeadersSetHeaders(t *testing.T) {
 // TestHTTPHeadersMerge 测试 HTTPHeaders.Merge 方法
 func TestHTTPHeadersMerge(t *testing.T) {
 	tests := []struct {
-		name            string
-		headers         *HTTPHeaders
-		customHeaders   map[string]string
-		wantNil         bool
-		checkStandard   map[string]string
-		checkCustom     map[string]string
+		name          string
+		headers       *HTTPHeaders
+		customHeaders map[string]string
+		wantNil       bool
+		checkStandard map[string]string
+		checkCustom   map[string]string
 	}{
 		{
 			name:          "合并nil接收者应返回nil",
@@ -575,9 +571,9 @@ func TestHTTPHeadersMerge(t *testing.T) {
 				AcceptLanguage: "en-US",
 			},
 			customHeaders: map[string]string{
-				"Accept":         "application/json",
+				"Accept":          "application/json",
 				"Accept-Language": "zh-CN",
-				"Cookie":         "session=abc",
+				"Cookie":          "session=abc",
 			},
 			wantNil: false,
 			checkStandard: map[string]string{
@@ -622,19 +618,19 @@ func TestHTTPHeadersMerge(t *testing.T) {
 				UpgradeInsecureRequests: "old-upgrade",
 			},
 			customHeaders: map[string]string{
-				"Accept":                   "new-accept",
-				"Accept-Language":          "new-lang",
-				"Accept-Encoding":          "new-encoding",
-				"User-Agent":               "new-ua",
-				"Sec-Fetch-Site":           "new-site",
-				"Sec-Fetch-Mode":           "new-mode",
-				"Sec-Fetch-User":           "new-user",
-				"Sec-Fetch-Dest":           "new-dest",
-				"Sec-CH-UA":                "new-chua",
-				"Sec-CH-UA-Mobile":         "new-mobile",
-				"Sec-CH-UA-Platform":       "new-platform",
+				"Accept":                    "new-accept",
+				"Accept-Language":           "new-lang",
+				"Accept-Encoding":           "new-encoding",
+				"User-Agent":                "new-ua",
+				"Sec-Fetch-Site":            "new-site",
+				"Sec-Fetch-Mode":            "new-mode",
+				"Sec-Fetch-User":            "new-user",
+				"Sec-Fetch-Dest":            "new-dest",
+				"Sec-CH-UA":                 "new-chua",
+				"Sec-CH-UA-Mobile":          "new-mobile",
+				"Sec-CH-UA-Platform":        "new-platform",
 				"Upgrade-Insecure-Requests": "new-upgrade",
-				"Custom-Header":            "custom-value",
+				"Custom-Header":             "custom-value",
 			},
 			wantNil: false,
 			checkStandard: map[string]string{
@@ -801,8 +797,8 @@ func TestHTTPHeadersToMap(t *testing.T) {
 			headers: &HTTPHeaders{
 				Accept: "text/html",
 				Custom: map[string]string{
-					"Cookie":        "session=abc",
-					"EmptyHeader":   "",
+					"Cookie":      "session=abc",
+					"EmptyHeader": "",
 				},
 			},
 			wantCount: 2,
@@ -854,7 +850,7 @@ func TestHTTPHeadersToMapWithCustom(t *testing.T) {
 		wantValues    map[string]string
 	}{
 		{
-			name: "合并nil headers和custom headers",
+			name:          "合并nil headers和custom headers",
 			headers:       nil,
 			customHeaders: map[string]string{"Cookie": "session=abc"},
 			wantCount:     1,
@@ -867,8 +863,8 @@ func TestHTTPHeadersToMapWithCustom(t *testing.T) {
 				AcceptLanguage: "en-US",
 			},
 			customHeaders: map[string]string{
-				"Accept":         "application/json",
-				"Cookie":         "session=abc",
+				"Accept": "application/json",
+				"Cookie": "session=abc",
 			},
 			wantCount: 3,
 			wantValues: map[string]string{

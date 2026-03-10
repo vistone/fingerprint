@@ -99,42 +99,53 @@ func NewConfigCenter(configPath string) *ConfigCenter {
 
 // Load 从文件加载配置
 func (cc *ConfigCenter) Load() error {
-	cc.mu.Lock()
-	defer cc.mu.Unlock()
+	// 检查配置路径
+	cc.mu.RLock()
+	configPath := cc.configPath
+	validationEnabled := cc.validationEnabled
+	cc.mu.RUnlock()
 
-	data, err := os.ReadFile(cc.configPath)
+	if configPath == "" {
+		return fmt.Errorf("config path not set")
+	}
+
+	// 1. 无锁读取文件（IO 操作）
+	data, err := os.ReadFile(configPath)
 	if err != nil {
 		return fmt.Errorf("failed to read config file: %w", err)
 	}
 
-	// 验证 JSON 格式
+	// 2. 解析 JSON（CPU 操作，无需锁）
 	var config ManagedConfig
 	if err := json.Unmarshal(data, &config); err != nil {
 		return fmt.Errorf("failed to parse config JSON: %w", err)
 	}
 
-	// 验证配置
-	if cc.validationEnabled {
+	// 3. 验证配置
+	if validationEnabled {
 		if errs := cc.validateConfig(&config); len(errs) > 0 {
 			return fmt.Errorf("config validation failed: %v", errs)
 		}
 	}
 
-	// 初始化元数据
+	// 4. 获取文件修改时间
+	fileInfo, err := os.Stat(configPath)
+	if err != nil {
+		return fmt.Errorf("failed to stat config file: %w", err)
+	}
+
+	// 5. 初始化元数据
 	if config.Metadata == nil {
 		config.Metadata = &ConfigMetadata{}
 	}
+	config.Metadata.LastModified = fileInfo.ModTime()
 
-	// 获取文件修改时间
-	fileInfo, _ := os.Stat(cc.configPath)
-	if fileInfo != nil {
-		cc.lastModTime = fileInfo.ModTime()
-		config.Metadata.LastModified = cc.lastModTime
-	}
+	// 6. 获取锁，更新状态
+	cc.mu.Lock()
+	defer cc.mu.Unlock()
 
-	// 保存到历史
+	cc.lastModTime = fileInfo.ModTime()
 	cc.recordVersion(&config, "initial_load", "system")
-
 	cc.current = &config
 	cc.loaded = true
 
@@ -237,7 +248,7 @@ func (cc *ConfigCenter) saveToFileLocked() error {
 func (cc *ConfigCenter) RegisterListener(listener ConfigChangeListener) {
 	cc.mu.Lock()
 	defer cc.mu.Unlock()
-	
+
 	cc.listeners = append(cc.listeners, listener)
 }
 

@@ -3,8 +3,60 @@
 package profiles
 
 import (
+	"strings"
+
 	"github.com/vistone/fingerprint/modules/core"
 )
+
+// getChromeTCPIP 返回 Chrome 浏览器对应操作系统的 TCP/IP 指纹
+func getChromeTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
+	base := &TCPIPFingerprint{
+		IPVersion:        4,
+		DF:               true,
+		SYN:              true,
+		ACK:              false,
+		MSS:              1460,
+		SAckPermitted:    true,
+		Timestamps:       true,
+		EndOfOptions:     true,
+		OptionsSignature: "M,N,W,N,N,S,T,E",
+	}
+
+	// 使用字符串包含判断，因为某些 OS 常量值相同（如 OSWindows10 和 OSWindows11）
+	osStr := string(osType)
+	
+	if strings.Contains(osStr, "Windows") {
+		// Windows 特征
+		base.TTL = 128
+		base.WindowSize = 64240
+		base.WindowScale = 8
+		base.NoOperation = 2
+		base.JA4T = "t13d1715h2_8daaf6152771_9e7c7c2f41aa"
+	} else if strings.Contains(osStr, "Macintosh") || strings.Contains(osStr, "Mac OS") {
+		// macOS 特征
+		base.TTL = 64
+		base.WindowSize = 65535
+		base.WindowScale = 6
+		base.NoOperation = 2
+		base.JA4T = "t13d1814h2_8daaf6152771_b0b889a3c9b7"
+	} else if strings.Contains(osStr, "Linux") || strings.Contains(osStr, "X11") {
+		// Linux 特征
+		base.TTL = 64
+		base.WindowSize = 64240
+		base.WindowScale = 7
+		base.NoOperation = 2
+		base.JA4T = "t13d1714h2_8daaf6152771_02713a6ec338"
+	} else {
+		// 默认 Windows 特征
+		base.TTL = 128
+		base.WindowSize = 64240
+		base.WindowScale = 8
+		base.NoOperation = 2
+		base.JA4T = "t13d1715h2_8daaf6152771_9e7c7c2f41aa"
+	}
+
+	return base
+}
 
 // Chrome浏览器指纹 (115-140版本)
 var (
@@ -39,6 +91,7 @@ var (
 			SecCHUAMobile: "?0", SecCHUAPlatform: `"Windows"`,
 			UpgradeInsecureRequests: "1",
 		},
+		TCPIP: getChromeTCPIP(core.OSWindows10),
 	}
 
 	Chrome116 = ClientProfile{
@@ -54,6 +107,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 			SecCHUA: `"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"`,
 		},
+		TCPIP: getChromeTCPIP(core.OSWindows10),
 	}
 
 	Chrome117 = ClientProfile{
@@ -69,6 +123,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 			SecCHUA: `"Google Chrome";v="117", "Not;A=Brand";v="8", "Chromium";v="117"`,
 		},
+		TCPIP: getChromeTCPIP(core.OSWindows11),
 	}
 
 	Chrome118 = ClientProfile{
@@ -84,6 +139,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 			SecCHUA: `"Chromium";v="118", "Google Chrome";v="118", "Not=A?Brand";v="99"`,
 		},
+		TCPIP: getChromeTCPIP(core.OSMacOS14),
 	}
 
 	Chrome119 = ClientProfile{
@@ -98,6 +154,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSLinuxUbuntu),
 	}
 
 	// Chrome 121-129
@@ -113,12 +170,13 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSLinuxUbuntu),
 	}
 
 	Chrome122 = ClientProfile{
 		ID: "chrome_122", Name: "Chrome 122",
 		BrowserType: core.BrowserChrome, BrowserVersion: "122.0.6261.112",
-		OS: core.OSMacOS14, OSVersion: "14.3",
+		OS: core.OSMacOS14, OSVersion: "14.0",
 		TLSVersion: 0x0303,
 		CipherSuites: []uint16{
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
@@ -127,6 +185,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSLinuxUbuntu),
 	}
 
 	Chrome123 = ClientProfile{
@@ -141,6 +200,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSLinuxDebian),
 	}
 
 	Chrome125 = ClientProfile{
@@ -155,12 +215,13 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSLinuxFedora),
 	}
 
 	Chrome126 = ClientProfile{
 		ID: "chrome_126", Name: "Chrome 126",
 		BrowserType: core.BrowserChrome, BrowserVersion: "126.0.6478.126",
-		OS: core.OSMacOS14, OSVersion: "14.5",
+		OS: core.OSMacOS14, OSVersion: "14.0",
 		TLSVersion: 0x0303,
 		CipherSuites: []uint16{
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
@@ -169,6 +230,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSLinuxFedora),
 	}
 
 	Chrome127 = ClientProfile{
@@ -183,6 +245,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSLinuxUbuntu),
 	}
 
 	Chrome128 = ClientProfile{
@@ -197,6 +260,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSLinuxUbuntu),
 	}
 
 	Chrome129 = ClientProfile{
@@ -211,6 +275,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSLinuxUbuntu),
 	}
 
 	// Chrome 134-140
@@ -226,6 +291,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSWindows10),
 	}
 
 	Chrome135 = ClientProfile{
@@ -240,12 +306,13 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSWindows10),
 	}
 
 	Chrome136 = ClientProfile{
 		ID: "chrome_136", Name: "Chrome 136",
 		BrowserType: core.BrowserChrome, BrowserVersion: "136.0.7103.92",
-		OS: core.OSMacOS15, OSVersion: "15.3",
+		OS: core.OSMacOS15, OSVersion: "15.0",
 		TLSVersion: 0x0303,
 		CipherSuites: []uint16{
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
@@ -254,6 +321,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSWindows10),
 	}
 
 	Chrome137 = ClientProfile{
@@ -268,6 +336,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSWindows10),
 	}
 
 	Chrome138 = ClientProfile{
@@ -282,12 +351,13 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSWindows10),
 	}
 
 	Chrome139 = ClientProfile{
 		ID: "chrome_139", Name: "Chrome 139",
 		BrowserType: core.BrowserChrome, BrowserVersion: "139.0.7258.1",
-		OS: core.OSMacOS15, OSVersion: "15.4",
+		OS: core.OSMacOS15, OSVersion: "15.0",
 		TLSVersion: 0x0303,
 		CipherSuites: []uint16{
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
@@ -296,6 +366,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSWindows10),
 	}
 
 	Chrome140 = ClientProfile{
@@ -310,6 +381,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSWindows10),
 	}
 
 	Chrome141 = ClientProfile{
@@ -324,12 +396,13 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSWindows10),
 	}
 
 	Chrome142 = ClientProfile{
 		ID: "chrome_142", Name: "Chrome 142",
 		BrowserType: core.BrowserChrome, BrowserVersion: "142.0.0.0",
-		OS: core.OSMacOS15, OSVersion: "15.5",
+		OS: core.OSMacOS15, OSVersion: "15.0",
 		TLSVersion: 0x0303,
 		CipherSuites: []uint16{
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
@@ -338,6 +411,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSWindows10),
 	}
 
 	Chrome143 = ClientProfile{
@@ -352,6 +426,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSWindows10),
 	}
 
 	Chrome144 = ClientProfile{
@@ -366,6 +441,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: getChromeTCPIP(core.OSWindows10),
 	}
 )
 
@@ -377,8 +453,100 @@ func init() {
 		Chrome134, Chrome135, Chrome136, Chrome137, Chrome138, Chrome139, Chrome140,
 		Chrome141, Chrome142, Chrome143, Chrome144,
 	}
-	for _, p := range profiles {
-		Register(p)
+	
+	// 为每个 profile 填充缺失的 HTTP/2 和 HTTP/3 配置
+	for i := range profiles {
+		p := &profiles[i]
+		
+		// 填充 HTTP/2 配置（如果缺失）
+		if p.HTTP2Settings.HeaderTableSize == 0 && p.HTTP2Settings.InitialWindowSize == 0 {
+			p.HTTP2Settings = core.HTTP2Settings{
+				HeaderTableSize:      65536,
+				EnablePush:           0,
+				MaxConcurrentStreams: 1000,
+				InitialWindowSize:    6291456,
+				MaxFrameSize:         16384,
+				MaxHeaderListSize:    262144,
+			}
+			p.PseudoHeaderOrder = []string{":method", ":authority", ":scheme", ":path"}
+		}
+		
+		// 填充 ConnectionFlow（如果缺失）
+		if p.ConnectionFlow == 0 {
+			p.ConnectionFlow = 15663105
+		}
+		
+		// 填充 HTTP/3 (QUIC) 配置（如果缺失）
+		if p.HTTP3Settings == nil {
+			p.HTTP3Settings = &core.HTTP3Settings{
+				QUICVersion:            core.QUICVersion1,
+				InitialMaxData:         16777216,
+				InitialMaxStreamData:   6291456,
+				InitialMaxStreamsBidi:  100,
+				InitialMaxStreamsUni:   100,
+				MaxUDPPayloadSize:      1472,
+				AckDelayExponent:       3,
+				MaxAckDelay:            25,
+				DisableActiveMigration: false,
+			}
+			p.QUICVersions = []uint32{core.QUICVersion1}
+		}
+		
+		// 填充 Headers（如果缺失）
+		if p.Headers == nil {
+			p.Headers = &core.HTTPHeaders{}
+		}
+		h := p.Headers
+		if h.Accept == "" {
+			h.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+		}
+		if h.AcceptLanguage == "" {
+			h.AcceptLanguage = "en-US,en;q=0.9"
+		}
+		if h.AcceptEncoding == "" {
+			h.AcceptEncoding = "gzip, deflate, br"
+		}
+		if h.UserAgent == "" {
+			h.UserAgent = buildChromeUserAgent(p.BrowserVersion, p.OS)
+		}
+		if h.SecFetchSite == "" {
+			h.SecFetchSite = "none"
+		}
+		if h.SecFetchMode == "" {
+			h.SecFetchMode = "navigate"
+		}
+		if h.SecFetchDest == "" {
+			h.SecFetchDest = "document"
+		}
+		if h.SecCHUA == "" {
+			h.SecCHUA = `"Chromium";v="` + safeSliceVersion(p.BrowserVersion) + `", "Google Chrome";v="` + safeSliceVersion(p.BrowserVersion) + `"`
+		}
+		if h.SecCHUAMobile == "" {
+			h.SecCHUAMobile = "?0"
+		}
+		if h.SecCHUAPlatform == "" {
+			h.SecCHUAPlatform = platformString(p.OS)
+		}
+		if h.UpgradeInsecureRequests == "" {
+			h.UpgradeInsecureRequests = "1"
+		}
+		
+		Register(*p)
+	}
+}
+
+// buildChromeUserAgent 构建 Chrome User-Agent
+func buildChromeUserAgent(version string, os core.OperatingSystem) string {
+	osStr := string(os)
+	switch {
+	case strings.Contains(osStr, "Windows"):
+		return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" + version + " Safari/537.36"
+	case strings.Contains(osStr, "Mac OS") || strings.Contains(osStr, "Macintosh"):
+		return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" + version + " Safari/537.36"
+	case strings.Contains(osStr, "Linux"):
+		return "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" + version + " Safari/537.36"
+	default:
+		return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" + version + " Safari/537.36"
 	}
 }
 

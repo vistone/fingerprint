@@ -313,11 +313,11 @@ test_deployment() {
         failed=$((failed + 1))
     fi
 
-    # Test API endpoint
+    # Test API endpoint (TLS 1.3 = 772)
     echo -n "Testing classify endpoint... "
     if curl -sf -X POST "$base_url/api/v1/classify" \
         -H "Content-Type: application/json" \
-        -d '{"tls_version":"1.3","cipher_suites":[49195]}' > /dev/null; then
+        -d '{"tls_version":772,"cipher_suites":[49195]}' > /dev/null; then
         echo "OK"
     else
         echo "FAILED"

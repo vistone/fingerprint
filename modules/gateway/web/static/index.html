@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fingerprint Gateway - Admin Console</title>
-    <link rel="stylesheet" href="/admin/static/css/style.css">
+    <link rel="stylesheet" href="/admin/static/css/style.css?v=9">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
 </head>
 <body>
@@ -18,27 +18,63 @@
             <nav class="sidebar-nav">
                 <a href="#dashboard" class="nav-item active" data-page="dashboard">
                     <span class="icon">📊</span>
-                    <span>Dashboard</span>
+                    <span data-i18n="nav.dashboard">Dashboard</span>
                 </a>
                 <a href="#profiles" class="nav-item" data-page="profiles">
                     <span class="icon">🌐</span>
-                    <span>Profiles</span>
+                    <span data-i18n="nav.profiles">Profiles</span>
                 </a>
                 <a href="#analytics" class="nav-item" data-page="analytics">
                     <span class="icon">📈</span>
-                    <span>Analytics</span>
+                    <span data-i18n="nav.analytics">Analytics</span>
                 </a>
                 <a href="#requests" class="nav-item" data-page="requests">
                     <span class="icon">🔍</span>
-                    <span>Requests</span>
+                    <span data-i18n="nav.requests">Requests</span>
                 </a>
                 <a href="#config" class="nav-item" data-page="config">
                     <span class="icon">⚙️</span>
-                    <span>Config</span>
+                    <span data-i18n="nav.config">Config</span>
                 </a>
                 <a href="#logs" class="nav-item" data-page="logs">
                     <span class="icon">📋</span>
-                    <span>Logs</span>
+                    <span data-i18n="nav.logs">Logs</span>
+                </a>
+                <a href="#agent" class="nav-item" data-page="agent">
+                    <span class="icon">🤖</span>
+                    <span data-i18n="nav.agent">Agent</span>
+                </a>
+                <a href="#client-test" class="nav-item" data-page="client-test">
+                    <span class="icon">🧪</span>
+                    <span data-i18n="nav.clientTest">Client Test</span>
+                </a>
+
+                <div class="nav-divider"></div>
+                <div class="nav-section-title" data-i18n="nav.advanced">Advanced</div>
+
+                <a href="#analyze" class="nav-item" data-page="analyze">
+                    <span class="icon">🔬</span>
+                    <span data-i18n="nav.analyze">Analyze</span>
+                </a>
+                <a href="#ml-engine" class="nav-item" data-page="ml-engine">
+                    <span class="icon">🧠</span>
+                    <span data-i18n="nav.mlEngine">ML Engine</span>
+                </a>
+                <a href="#defense" class="nav-item" data-page="defense">
+                    <span class="icon">🛡️</span>
+                    <span data-i18n="nav.defense">Defense</span>
+                </a>
+                <a href="#antidetect" class="nav-item" data-page="antidetect">
+                    <span class="icon">🔒</span>
+                    <span data-i18n="nav.antidetect">Anti-Detection</span>
+                </a>
+                <a href="#plugins" class="nav-item" data-page="plugins">
+                    <span class="icon">🔌</span>
+                    <span data-i18n="nav.plugins">Plugins</span>
+                </a>
+                <a href="#tools" class="nav-item" data-page="tools">
+                    <span class="icon">🔧</span>
+                    <span data-i18n="nav.tools">Tools</span>
                 </a>
             </nav>
             <div class="sidebar-footer">
@@ -53,21 +89,22 @@
             <header class="header">
                 <div class="header-left">
                     <button class="menu-toggle" id="menuToggle">☰</button>
-                    <h2 id="pageTitle">Dashboard</h2>
+                    <h2 id="pageTitle" data-i18n="nav.dashboard">Dashboard</h2>
                 </div>
                 <div class="header-right">
                     <div class="search-box">
-                        <input type="text" placeholder="Search..." id="globalSearch">
+                        <input type="text" data-i18n-placeholder="header.search" placeholder="Search..." id="globalSearch">
                         <button>🔍</button>
                     </div>
+                    <button class="lang-switch-btn" id="langSwitchBtn" onclick="I18N.toggle()" title="Switch Language">中</button>
                     <div class="notifications">
                         <button class="icon-btn">🔔</button>
-                        <span class="badge">3</span>
+                        <span class="notification-badge">3</span>
                     </div>
                     <div class="user-menu">
                         <button class="user-btn">
                             <span class="avatar">👤</span>
-                            <span>Admin</span>
+                            <span data-i18n="header.admin">Admin</span>
                         </button>
                     </div>
                 </div>
@@ -81,33 +118,33 @@
                         <div class="stat-card">
                             <div class="stat-icon">🌐</div>
                             <div class="stat-info">
-                                <h3>Total Profiles</h3>
+                                <h3 data-i18n="dash.totalProfiles">Total Profiles</h3>
                                 <p class="stat-value" id="totalProfiles">-</p>
-                                <span class="stat-change positive">+80 this month</span>
+                                <span class="stat-change positive" data-i18n="dash.thisMonth">+80 this month</span>
                             </div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-icon">📊</div>
                             <div class="stat-info">
-                                <h3>Requests/sec</h3>
+                                <h3 data-i18n="dash.requestsPerMin">Requests/min</h3>
                                 <p class="stat-value" id="requestsPerSec">-</p>
-                                <span class="stat-change positive">+12% vs last hour</span>
+                                <span class="stat-change" data-i18n="dash.last60s">last 60 seconds</span>
                             </div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-icon">⏱️</div>
                             <div class="stat-info">
-                                <h3>Avg Latency</h3>
+                                <h3 data-i18n="dash.avgLatency">Avg Latency</h3>
                                 <p class="stat-value" id="avgLatency">-</p>
-                                <span class="stat-change positive">-5ms vs last hour</span>
+                                <span class="stat-change" data-i18n="dash.sinceStart">since start</span>
                             </div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-icon">✅</div>
                             <div class="stat-info">
-                                <h3>Success Rate</h3>
+                                <h3 data-i18n="dash.successRate">Success Rate</h3>
                                 <p class="stat-value" id="successRate">-</p>
-                                <span class="stat-change positive">99.9% uptime</span>
+                                <span class="stat-change" id="uptime">-</span>
                             </div>
                         </div>
                     </div>
@@ -115,11 +152,11 @@
                     <div class="dashboard-grid">
                         <div class="card chart-card">
                             <div class="card-header">
-                                <h3>Request Volume</h3>
+                                <h3 data-i18n="dash.requestVolume">Request Volume</h3>
                                 <select class="time-range" title="Request volume time range" aria-label="Request volume time range">
-                                    <option>Last 1 hour</option>
-                                    <option>Last 6 hours</option>
-                                    <option>Last 24 hours</option>
+                                    <option data-i18n="dash.last1h">Last 1 hour</option>
+                                    <option data-i18n="dash.last6h">Last 6 hours</option>
+                                    <option data-i18n="dash.last24h">Last 24 hours</option>
                                 </select>
                             </div>
                             <div class="chart-container">
@@ -129,7 +166,7 @@
 
                         <div class="card chart-card">
                             <div class="card-header">
-                                <h3>Classification Distribution</h3>
+                                <h3 data-i18n="dash.classDist">Classification Distribution</h3>
                             </div>
                             <div class="chart-container">
                                 <canvas id="classificationChart"></canvas>
@@ -140,49 +177,32 @@
                     <div class="dashboard-grid">
                         <div class="card">
                             <div class="card-header">
-                                <h3>Recent Classifications</h3>
-                                <a href="#requests" class="link">View All</a>
+                                <h3 data-i18n="dash.recentClass">Recent Classifications</h3>
+                                <a href="#requests" class="link" data-i18n="dash.viewAll">View All</a>
                             </div>
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Time</th>
-                                        <th>JA3 Hash</th>
-                                        <th>Browser</th>
-                                        <th>Confidence</th>
-                                        <th>Status</th>
+                                        <th data-i18n="th.time">Time</th>
+                                        <th data-i18n="th.ja3Hash">JA3 Hash</th>
+                                        <th data-i18n="th.browser">Browser</th>
+                                        <th data-i18n="th.confidence">Confidence</th>
+                                        <th data-i18n="th.status">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="recentClassifications">
-                                    <tr><td colspan="5" class="loading">Loading...</td></tr>
+                                    <tr><td colspan="5" class="loading" data-i18n="loading">Loading...</td></tr>
                                 </tbody>
                             </table>
                         </div>
 
                         <div class="card">
                             <div class="card-header">
-                                <h3>System Status</h3>
+                                <h3 data-i18n="dash.systemStatus">System Status</h3>
                             </div>
-                            <div class="status-list">
+                            <div class="status-list" id="systemStatusList">
                                 <div class="status-item">
-                                    <span class="status-label">API Server</span>
-                                    <span class="status-badge online">Running</span>
-                                </div>
-                                <div class="status-item">
-                                    <span class="status-label">gRPC Server</span>
-                                    <span class="status-badge online">Running</span>
-                                </div>
-                                <div class="status-item">
-                                    <span class="status-label">ML Classifier</span>
-                                    <span class="status-badge online">Active</span>
-                                </div>
-                                <div class="status-item">
-                                    <span class="status-label">Cache</span>
-                                    <span class="status-badge online">Connected</span>
-                                </div>
-                                <div class="status-item">
-                                    <span class="status-label">Database</span>
-                                    <span class="status-badge online">Connected</span>
+                                    <span class="status-label" data-i18n="loading">Loading...</span>
                                 </div>
                             </div>
                         </div>
@@ -193,11 +213,11 @@
                 <div class="page" id="profiles">
                     <div class="card">
                         <div class="card-header">
-                            <h3>Browser Profiles</h3>
+                            <h3 data-i18n="profiles.title">Browser Profiles</h3>
                             <div class="header-actions">
-                                <input type="text" placeholder="Search profiles..." id="profileSearch" class="search-input">
+                                <input type="text" data-i18n-placeholder="profiles.search" placeholder="Search profiles..." id="profileSearch" class="search-input">
                                 <select id="browserFilter" title="Browser filter" aria-label="Browser filter">
-                                    <option value="">All Browsers</option>
+                                    <option value="" data-i18n="profiles.allBrowsers">All Browsers</option>
                                     <option value="chrome">Chrome</option>
                                     <option value="firefox">Firefox</option>
                                     <option value="safari">Safari</option>
@@ -205,39 +225,42 @@
                                     <option value="opera">Opera</option>
                                 </select>
                                 <select id="osFilter" title="Operating system filter" aria-label="Operating system filter">
-                                    <option value="">All OS</option>
+                                    <option value="" data-i18n="profiles.allOS">All OS</option>
                                     <option value="windows">Windows</option>
                                     <option value="macos">macOS</option>
                                     <option value="linux">Linux</option>
                                     <option value="ios">iOS</option>
                                     <option value="android">Android</option>
                                 </select>
-                                <button class="btn btn-primary">+ Add Profile</button>
+                                <button class="btn btn-primary" data-i18n="profiles.addProfile">+ Add Profile</button>
                             </div>
                         </div>
                         <div class="table-container">
                             <table class="data-table" id="profilesTable">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                        <th>Browser</th>
-                                        <th>Version</th>
-                                        <th>OS</th>
-                                        <th>TLS Version</th>
-                                        <th>Actions</th>
+                                        <th data-i18n="th.id">ID</th>
+                                        <th data-i18n="th.name">Name</th>
+                                        <th data-i18n="th.browser">Browser</th>
+                                        <th data-i18n="th.version">Version</th>
+                                        <th data-i18n="th.os">OS</th>
+                                        <th data-i18n="th.tls">TLS</th>
+                                        <th data-i18n="th.cipher">Cipher</th>
+                                        <th data-i18n="th.ext">Ext</th>
+                                        <th data-i18n="th.tcpip">TCP/IP</th>
+                                        <th data-i18n="th.actions">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="profilesTableBody">
-                                    <tr><td colspan="7" class="loading">Loading profiles...</td></tr>
+                                    <tr><td colspan="10" class="loading" data-i18n="loading.profiles">Loading profiles...</td></tr>
                                 </tbody>
                             </table>
                         </div>
                         <div class="pagination">
                             <span id="profileCount">0 profiles</span>
                             <div class="page-buttons">
-                                <button class="btn btn-sm" disabled>← Prev</button>
-                                <button class="btn btn-sm">Next →</button>
+                                <button class="btn btn-sm" disabled data-i18n="profiles.prev">← Prev</button>
+                                <button class="btn btn-sm" data-i18n="profiles.next">Next →</button>
                             </div>
                         </div>
                     </div>
@@ -248,11 +271,11 @@
                     <div class="analytics-grid">
                         <div class="card chart-card wide">
                             <div class="card-header">
-                                <h3>Traffic Overview</h3>
+                                <h3 data-i18n="analytics.trafficOverview">Traffic Overview</h3>
                                 <select class="time-range" title="Traffic overview time range" aria-label="Traffic overview time range">
-                                    <option>Last 24 hours</option>
-                                    <option>Last 7 days</option>
-                                    <option>Last 30 days</option>
+                                    <option data-i18n="dash.last24h">Last 24 hours</option>
+                                    <option data-i18n="analytics.last7d">Last 7 days</option>
+                                    <option data-i18n="analytics.last30d">Last 30 days</option>
                                 </select>
                             </div>
                             <div class="chart-container large">
@@ -264,7 +287,7 @@
                     <div class="analytics-grid">
                         <div class="card">
                             <div class="card-header">
-                                <h3>Browser Distribution</h3>
+                                <h3 data-i18n="analytics.browserDist">Browser Distribution</h3>
                             </div>
                             <div class="chart-container">
                                 <canvas id="browserChart"></canvas>
@@ -272,7 +295,7 @@
                         </div>
                         <div class="card">
                             <div class="card-header">
-                                <h3>OS Distribution</h3>
+                                <h3 data-i18n="analytics.osDist">OS Distribution</h3>
                             </div>
                             <div class="chart-container">
                                 <canvas id="osChart"></canvas>
@@ -283,28 +306,28 @@
                     <div class="analytics-grid">
                         <div class="card">
                             <div class="card-header">
-                                <h3>Top Fingerprints</h3>
+                                <h3 data-i18n="analytics.tcpipDist">TCP/IP Fingerprint Distribution</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="tcpipChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 data-i18n="analytics.topFP">Top Fingerprints</h3>
                             </div>
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>JA3 Hash</th>
-                                        <th>Count</th>
-                                        <th>%</th>
+                                        <th data-i18n="th.ja3Hash">JA3 Hash</th>
+                                        <th data-i18n="th.count">Count</th>
+                                        <th data-i18n="th.percent">%</th>
                                     </tr>
                                 </thead>
                                 <tbody id="topFingerprints">
-                                    <tr><td colspan="3" class="loading">Loading...</td></tr>
+                                    <tr><td colspan="3" class="loading" data-i18n="loading">Loading...</td></tr>
                                 </tbody>
                             </table>
-                        </div>
-                        <div class="card">
-                            <div class="card-header">
-                                <h3>Geographic Distribution</h3>
-                            </div>
-                            <div class="geo-placeholder">
-                                🗺️ World Map Placeholder
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -313,28 +336,28 @@
                 <div class="page" id="requests">
                     <div class="card">
                         <div class="card-header">
-                            <h3>Request Log</h3>
+                            <h3 data-i18n="requests.title">Request Log</h3>
                             <div class="header-actions">
-                                <input type="text" placeholder="Search by IP, JA3, or User-Agent..." class="search-input">
+                                <input type="text" data-i18n-placeholder="requests.search" placeholder="Search by IP, JA3, or User-Agent..." class="search-input">
                                 <button class="btn">🔍</button>
-                                <button class="btn btn-secondary">Export</button>
+                                <button class="btn btn-secondary" data-i18n="requests.export">Export</button>
                             </div>
                         </div>
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Timestamp</th>
-                                    <th>IP</th>
-                                    <th>Method</th>
-                                    <th>Path</th>
+                                    <th data-i18n="th.timestamp">Timestamp</th>
+                                    <th data-i18n="th.ip">IP</th>
+                                    <th data-i18n="th.method">Method</th>
+                                    <th data-i18n="th.path">Path</th>
                                     <th>JA3</th>
-                                    <th>Classification</th>
-                                    <th>Latency</th>
-                                    <th>Status</th>
+                                    <th data-i18n="th.classification">Classification</th>
+                                    <th data-i18n="th.latency">Latency</th>
+                                    <th data-i18n="th.status">Status</th>
                                 </tr>
                             </thead>
                             <tbody id="requestsTable">
-                                <tr><td colspan="8" class="loading">Loading requests...</td></tr>
+                                <tr><td colspan="8" class="loading" data-i18n="loading.requests">Loading requests...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -344,102 +367,131 @@
                 <div class="page" id="config">
                     <div class="config-grid">
                         <div class="card">
-                            <div class="card-header">
-                                <h3>Server Configuration</h3>
-                            </div>
+                            <div class="card-header"><h3 data-i18n="config.server">Server Configuration</h3></div>
                             <div class="config-form">
                                 <div class="form-group">
-                                    <label>HTTP Port</label>
-                                    <input type="number" value="8080" class="form-control" title="HTTP Port" aria-label="HTTP Port">
+                                    <label data-i18n="config.endpoint">Endpoint</label>
+                                    <input type="text" id="cfg-server-endpoint" class="form-control" title="Endpoint" aria-label="Endpoint" readonly>
                                 </div>
                                 <div class="form-group">
-                                    <label>gRPC Port</label>
-                                    <input type="number" value="9090" class="form-control" title="gRPC Port" aria-label="gRPC Port">
-                                </div>
-                                <div class="form-group">
-                                    <label>Read Timeout (s)</label>
-                                    <input type="number" value="30" class="form-control" title="Read Timeout" aria-label="Read Timeout seconds">
-                                </div>
-                                <div class="form-group">
-                                    <label>Write Timeout (s)</label>
-                                    <input type="number" value="30" class="form-control" title="Write Timeout" aria-label="Write Timeout seconds">
+                                    <label data-i18n="config.port">Port</label>
+                                    <input type="number" id="cfg-server-port" class="form-control" title="Port" aria-label="Port" readonly>
                                 </div>
                             </div>
                         </div>
 
                         <div class="card">
-                            <div class="card-header">
-                                <h3>Rate Limiting</h3>
-                            </div>
+                            <div class="card-header"><h3 data-i18n="config.rateLimit">Rate Limiting</h3></div>
                             <div class="config-form">
                                 <div class="form-group">
-                                    <label>Enabled</label>
-                                    <label class="toggle">
-                                        <input type="checkbox" checked title="Enable rate limiting" aria-label="Enable rate limiting">
-                                        <span class="toggle-slider"></span>
-                                    </label>
+                                    <label data-i18n="config.rps">Requests per Second</label>
+                                    <input type="number" id="cfg-rl-rps" class="form-control" title="RPS" aria-label="RPS">
                                 </div>
                                 <div class="form-group">
-                                    <label>Requests per second</label>
-                                    <input type="number" value="1000" class="form-control" title="Requests per second" aria-label="Requests per second">
-                                </div>
-                                <div class="form-group">
-                                    <label>Burst size</label>
-                                    <input type="number" value="1500" class="form-control" title="Burst size" aria-label="Burst size">
+                                    <label data-i18n="config.burst">Burst Size</label>
+                                    <input type="number" id="cfg-rl-burst" class="form-control" title="Burst" aria-label="Burst">
                                 </div>
                             </div>
                         </div>
 
                         <div class="card">
-                            <div class="card-header">
-                                <h3>Cache Configuration</h3>
-                            </div>
+                            <div class="card-header"><h3 data-i18n="config.cache">Cache Configuration</h3></div>
                             <div class="config-form">
                                 <div class="form-group">
-                                    <label>Enabled</label>
-                                    <label class="toggle">
-                                        <input type="checkbox" checked title="Enable cache" aria-label="Enable cache">
-                                        <span class="toggle-slider"></span>
-                                    </label>
+                                    <label data-i18n="config.enabled">Enabled</label>
+                                    <label class="toggle"><input type="checkbox" id="cfg-cache-enabled" title="Enable cache" aria-label="Enable cache"><span class="toggle-slider"></span></label>
                                 </div>
                                 <div class="form-group">
-                                    <label>Max size</label>
-                                    <input type="number" value="10000" class="form-control" title="Cache max size" aria-label="Cache max size">
+                                    <label data-i18n="config.maxSize">Max Size</label>
+                                    <input type="number" id="cfg-cache-size" class="form-control" title="Cache size" aria-label="Cache size">
                                 </div>
                                 <div class="form-group">
-                                    <label>TTL (minutes)</label>
-                                    <input type="number" value="5" class="form-control" title="Cache TTL" aria-label="Cache TTL minutes">
+                                    <label data-i18n="config.ttl">TTL (minutes)</label>
+                                    <input type="number" id="cfg-cache-ttl" class="form-control" title="Cache TTL" aria-label="Cache TTL">
                                 </div>
                             </div>
                         </div>
 
                         <div class="card">
-                            <div class="card-header">
-                                <h3>ML Configuration</h3>
-                            </div>
+                            <div class="card-header"><h3 data-i18n="config.ml">ML Configuration</h3></div>
                             <div class="config-form">
                                 <div class="form-group">
-                                    <label>Classifier Enabled</label>
-                                    <label class="toggle">
-                                        <input type="checkbox" checked title="Enable classifier" aria-label="Enable classifier">
-                                        <span class="toggle-slider"></span>
-                                    </label>
+                                    <label data-i18n="config.riskThreshold">Risk Threshold</label>
+                                    <input type="number" id="cfg-ml-risk" class="form-control" step="0.01" min="0" max="1" title="Risk Threshold" aria-label="Risk Threshold">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header"><h3 data-i18n="config.antidetect">🛡️ Anti-Detection</h3></div>
+                            <div class="config-form">
+                                <div class="form-group">
+                                    <label data-i18n="config.enabled">Enabled</label>
+                                    <label class="toggle"><input type="checkbox" id="cfg-p3-enabled" title="Enable Anti-Detection" aria-label="Enable Anti-Detection"><span class="toggle-slider"></span></label>
                                 </div>
                                 <div class="form-group">
-                                    <label>Min Confidence</label>
-                                    <input type="number" value="0.85" step="0.01" min="0" max="1" class="form-control" title="Minimum confidence" aria-label="Minimum confidence">
+                                    <label data-i18n="config.defaultProfile">Default Profile ID</label>
+                                    <input type="text" id="cfg-p3-profileId" class="form-control" title="Profile ID" aria-label="Profile ID">
                                 </div>
                                 <div class="form-group">
-                                    <label>Prediction Cache Size</label>
-                                    <input type="number" value="5000" class="form-control" title="Prediction cache size" aria-label="Prediction cache size">
+                                    <label data-i18n="config.proxyTarget">Proxy Target</label>
+                                    <input type="text" id="cfg-p3-proxyTarget" class="form-control" placeholder="https://target.com" title="Proxy Target" aria-label="Proxy Target">
+                                </div>
+                                <div class="form-group">
+                                    <label data-i18n="config.directProxy">Direct Proxy</label>
+                                    <label class="toggle"><input type="checkbox" id="cfg-p3-directProxy" title="Direct Proxy" aria-label="Direct Proxy"><span class="toggle-slider"></span></label>
+                                </div>
+                                <div class="form-group">
+                                    <label data-i18n="config.injectConsistency">Inject Consistency</label>
+                                    <label class="toggle"><input type="checkbox" id="cfg-p3-injectConsist" title="Inject Consistency" aria-label="Inject Consistency"><span class="toggle-slider"></span></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header"><h3 data-i18n="config.scanner">🔍 Scanner</h3></div>
+                            <div class="config-form">
+                                <div class="form-group">
+                                    <label data-i18n="config.useBrowser">Use Browser</label>
+                                    <label class="toggle"><input type="checkbox" id="cfg-scanner-useBrowser" title="Use Browser" aria-label="Use Browser"><span class="toggle-slider"></span></label>
+                                </div>
+                                <div class="form-group">
+                                    <label data-i18n="config.chromeWS">Chrome DevTools WS</label>
+                                    <input type="text" id="cfg-scanner-browserWS" class="form-control" placeholder="ws://..." title="Browser WS" aria-label="Browser WS">
+                                </div>
+                                <div class="form-group">
+                                    <label data-i18n="config.timeout">Timeout (seconds)</label>
+                                    <input type="number" id="cfg-scanner-timeout" class="form-control" title="Timeout" aria-label="Timeout">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header"><h3 data-i18n="config.agent">🤖 Agent Configuration</h3></div>
+                            <div class="config-form">
+                                <div class="form-group">
+                                    <label data-i18n="config.agentEnabled">Agent Enabled</label>
+                                    <label class="toggle"><input type="checkbox" id="cfg-agent-enabled" title="Enable Agent" aria-label="Enable Agent"><span class="toggle-slider"></span></label>
+                                </div>
+                                <div class="form-group">
+                                    <label data-i18n="config.sessionWindow">Session Window (min)</label>
+                                    <input type="number" id="cfg-agent-sessionWindow" class="form-control" readonly title="Session Window" aria-label="Session Window">
+                                </div>
+                                <div class="form-group">
+                                    <label data-i18n="config.fpThreshold">FP Switch Rate Threshold</label>
+                                    <input type="number" id="cfg-agent-fpThreshold" class="form-control" step="0.1" readonly title="FP Threshold" aria-label="FP Threshold">
+                                </div>
+                                <div class="form-group">
+                                    <label data-i18n="config.consThreshold">Consistency Threshold</label>
+                                    <input type="number" id="cfg-agent-consThreshold" class="form-control" step="0.01" readonly title="Consistency Threshold" aria-label="Consistency Threshold">
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="config-actions">
-                        <button class="btn btn-primary">💾 Save Changes</button>
-                        <button class="btn btn-secondary">↩️ Reset</button>
+                        <button class="btn btn-primary" onclick="saveConfig()" data-i18n="config.save">💾 Save Changes</button>
+                        <button class="btn btn-secondary" onclick="loadConfig()" data-i18n="config.reset">↩️ Reset</button>
                     </div>
                 </div>
 
@@ -447,30 +499,437 @@
                 <div class="page" id="logs">
                     <div class="card">
                         <div class="card-header">
-                            <h3>System Logs</h3>
+                            <h3 data-i18n="logs.title">System Logs</h3>
                             <div class="header-actions">
-                                <select class="log-level" title="Log level filter" aria-label="Log level filter">
-                                    <option>All Levels</option>
-                                    <option>DEBUG</option>
-                                    <option>INFO</option>
-                                    <option>WARNING</option>
-                                    <option>ERROR</option>
+                                <select class="log-level" id="logLevelFilter" title="Log level filter" aria-label="Log level filter" onchange="filterLogs()">
+                                    <option value="all" data-i18n="logs.allLevels">All Levels</option>
+                                    <option value="DEBUG">DEBUG</option>
+                                    <option value="INFO">INFO</option>
+                                    <option value="WARN">WARN</option>
+                                    <option value="ERROR">ERROR</option>
                                 </select>
-                                <button class="btn">🔄 Refresh</button>
-                                <button class="btn btn-secondary">📥 Download</button>
+                                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:13px;">
+                                    <input type="checkbox" id="logAutoScroll" checked style="width:14px;height:14px;">
+                                    <span data-i18n="logs.autoScroll">Auto-scroll</span>
+                                </label>
+                                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:13px;">
+                                    <input type="checkbox" id="logStreamToggle" onchange="toggleLogStream()" style="width:14px;height:14px;">
+                                    <span data-i18n="logs.live">🔴 Live</span>
+                                </label>
+                                <button class="btn" onclick="loadLogs()" data-i18n="logs.refresh">🔄 Refresh</button>
+                                <button class="btn btn-secondary" onclick="clearLogs()" data-i18n="logs.clear">🗑️ Clear</button>
                             </div>
                         </div>
                         <div class="log-container">
-                            <pre class="log-output" id="logOutput">Loading logs...</pre>
+                            <pre class="log-output" id="logOutput" style="max-height:600px;overflow-y:auto;" data-i18n="loading.logs">Loading logs...</pre>
+                        </div>
+                        <div style="padding:8px 16px;font-size:12px;color:var(--gray-500);">
+                            <span id="logCount">0 entries</span> |
+                            <span id="logStreamStatus" data-i18n="logs.streamDisconnected">Stream: Disconnected</span>
                         </div>
                     </div>
                 </div>
+
+                <!-- Agent Page -->
+                <div class="page" id="agent">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">🤖</div>
+                            <div class="stat-info">
+                                <h3 data-i18n="agent.status">Agent Status</h3>
+                                <p class="stat-value" id="agentStatus">-</p>
+                                <span class="stat-change" id="agentStatusDetail">-</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">👁️</div>
+                            <div class="stat-info">
+                                <h3 data-i18n="agent.observations">Observations</h3>
+                                <p class="stat-value" id="agentObservations">0</p>
+                                <span class="stat-change" data-i18n="agent.totalProcessed">total processed</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🧠</div>
+                            <div class="stat-info">
+                                <h3 data-i18n="agent.activeSessions">Active Sessions</h3>
+                                <p class="stat-value" id="agentSessions">0</p>
+                                <span class="stat-change" data-i18n="agent.clientSessions">client sessions</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📐</div>
+                            <div class="stat-info">
+                                <h3 data-i18n="agent.strategies">Strategies</h3>
+                                <p class="stat-value" id="agentStrategies">0</p>
+                                <span class="stat-change" id="agentLearnedPatterns">0 learned</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 data-i18n="agent.activeStrategies">Active Strategies</h3>
+                                <button class="btn" onclick="loadAgentData()" data-i18n="logs.refresh">🔄 Refresh</button>
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th data-i18n="th.name">Name</th>
+                                        <th data-i18n="th.threatClass">Threat Class</th>
+                                        <th data-i18n="th.action">Action</th>
+                                        <th data-i18n="th.hits">Hits</th>
+                                        <th data-i18n="th.source">Source</th>
+                                        <th data-i18n="th.status">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="agentStrategiesTable">
+                                    <tr><td colspan="6" class="loading" data-i18n="loading">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 data-i18n="agent.knowledgeBase">🧬 Knowledge Base</h3>
+                            </div>
+                            <div id="knowledgeBaseSummary" style="padding: 16px;">
+                                <div class="loading" data-i18n="loading.knowledgeBase">Loading knowledge base...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-header">
+                            <h3 data-i18n="agent.fpKnowledge">Browser Fingerprint Knowledge</h3>
+                        </div>
+                        <div id="knowledgeBaseDetail" style="padding: 16px;">
+                            <div style="color: var(--gray-500); text-align: center;" data-i18n="agent.clickToView">
+                                Click a browser family above to view details
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Client Test Page -->
+                <div class="page" id="client-test">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 data-i18n="ct.title">🧪 Browser Profile Client Test</h3>
+                            <p data-i18n="ct.desc">Use browser fingerprint profiles to access websites</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label data-i18n="ct.selectProfile">Select Profile</label>
+                                <select id="testProfileSelect" class="form-control">
+                                    <option value="" data-i18n="loading.profiles">Loading profiles...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="ct.targetUrl">Target URL</label>
+                                <input type="url" id="testUrl" class="form-control" placeholder="https://example.com" value="https://httpbin.org/get">
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="ct.httpMethod">HTTP Method</label>
+                                <select id="testMethod" class="form-control">
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="DELETE">DELETE</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="ct.requestBody">Request Body (optional)</label>
+                                <textarea id="testBody" class="form-control" rows="3" placeholder='{"key": "value"}'></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" id="testEnableScanning" style="width: 16px; height: 16px;">
+                                    <span data-i18n="ct.scanCode">🔍 Scan for Fingerprint Detection Code</span>
+                                </label>
+                                <small style="color: #888; display: block; margin-top: 4px;" data-i18n="ct.scanDesc">Analyze the website to detect if it contains fingerprinting detection code (WebGPU, MediaDevices, Permissions, Automation, etc.)</small>
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn btn-primary" onclick="runClientTest()" data-i18n="ct.send">🚀 Send Request</button>
+                                <button class="btn btn-secondary" onclick="clearTestResult()" data-i18n="ct.clear">Clear</button>
+                            </div>
+                            <div id="testResult" class="test-result" style="margin-top: 20px; display: none;">
+                                <div class="trace-section" id="requestTraceSection">
+                                    <h4 data-i18n="ct.reqFP">📤 Request Fingerprint (Sent to Server)</h4>
+                                    <div class="trace-tabs">
+                                        <button class="trace-tab active" onclick="switchTraceTab('tcpip')">TCP/IP</button>
+                                        <button class="trace-tab" onclick="switchTraceTab('tls')">TLS/JA3</button>
+                                        <button class="trace-tab" onclick="switchTraceTab('http')">HTTP</button>
+                                        <button class="trace-tab" onclick="switchTraceTab('scanner')">🔍 Scanner</button>
+                                    </div>
+                                    <div class="trace-content" id="tcpip-content">
+                                        <div class="trace-block">
+                                            <h5 data-i18n="ct.tcpipLayer">TCP/IP Layer Fingerprint</h5>
+                                            <table class="trace-table" id="tcpip-table"></table>
+                                        </div>
+                                    </div>
+                                    <div class="trace-content" id="tls-content" style="display: none;">
+                                        <div class="trace-block">
+                                            <h5 data-i18n="ct.tlsHello">TLS ClientHello</h5>
+                                            <table class="trace-table" id="tls-table"></table>
+                                            <div class="ja3-block">
+                                                <label data-i18n="ct.ja3FP">JA3 Fingerprint:</label>
+                                                <code id="ja3-string"></code>
+                                            </div>
+                                            <div class="ja3-block">
+                                                <label data-i18n="ct.ja3Hash">JA3 Hash:</label>
+                                                <code id="ja3-hash"></code>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="trace-content" id="http-content" style="display: none;">
+                                        <div class="trace-block">
+                                            <h5 data-i18n="ct.httpHeaders">HTTP Headers</h5>
+                                            <table class="trace-table" id="http-headers-table"></table>
+                                        </div>
+                                        <div class="trace-block">
+                                            <h5 data-i18n="ct.http2Settings">HTTP/2 Settings</h5>
+                                            <table class="trace-table" id="http2-settings-table"></table>
+                                        </div>
+                                    </div>
+                                    <div class="trace-content" id="scanner-content" style="display: none;">
+                                        <div class="trace-block">
+                                            <h5 data-i18n="ct.scanAnalysis">🔍 Fingerprint Detection Analysis</h5>
+                                            <div id="scannerResults" style="margin-top: 12px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="trace-section" id="responseTraceSection">
+                                    <h4 data-i18n="ct.serverResp">📥 Server Response</h4>
+                                    <div class="result-status"></div>
+                                    <div class="trace-block">
+                                        <h5 data-i18n="ct.respHeaders">Response Headers</h5>
+                                        <table class="trace-table" id="response-headers-table"></table>
+                                    </div>
+                                    <div class="trace-block">
+                                        <h5 data-i18n="ct.respBody">Response Body</h5>
+                                        <pre class="result-body"></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ====== Analyze Page ====== -->
+                <div class="page" id="analyze">
+                    <div class="page-header">
+                        <h3 data-i18n="analyze.title">🔬 Fingerprint Analysis Engine</h3>
+                        <p class="page-desc" data-i18n="analyze.desc">Select Profile to run full analysis pipeline: Feature Extraction → ML Classification → Risk Assessment → JA3/JA4 → Agent Decision</p>
+                    </div>
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div class="card-header"><h4 data-i18n="analyze.run">Run Analysis</h4></div>
+                        <div class="card-body">
+                            <label data-i18n="analyze.selectProfile">Select Profile</label>
+                            <select id="analyzeProfileSelect" class="form-control" style="width:100%;padding:8px;margin:8px 0 12px;border:1px solid var(--gray-200);border-radius:6px;"></select>
+                            <button class="btn btn-primary" onclick="runAnalyzeProfile()" data-i18n="analyze.execute">▶ Run Analysis</button>
+                        </div>
+                    </div>
+                    <div id="analyzeResult" style="display:none;">
+                        <div class="stats-grid" id="analyzeStats"></div>
+                        <div class="grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+                            <div class="card"><div class="card-header"><h4 data-i18n="analyze.classification">Classification Result</h4></div><div class="card-body" id="analyzeClassification"></div></div>
+                            <div class="card"><div class="card-header"><h4 data-i18n="analyze.risk">Risk Assessment</h4></div><div class="card-body" id="analyzeRisk"></div></div>
+                        </div>
+                        <div class="grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+                            <div class="card"><div class="card-header"><h4 data-i18n="analyze.fingerprints">JA3/JA4/JA4H Fingerprints</h4></div><div class="card-body" id="analyzeFingerprints"></div></div>
+                            <div class="card"><div class="card-header"><h4 data-i18n="analyze.findings">Detection Findings & Defense Suggestions</h4></div><div class="card-body" id="analyzeFindings"></div></div>
+                        </div>
+                        <div class="card" style="margin-top:16px;" id="analyzeAgentCard"><div class="card-header"><h4 data-i18n="analyze.agentDecision">🤖 Agent Decision</h4></div><div class="card-body" id="analyzeAgent"></div></div>
+                    </div>
+                </div>
+
+                <!-- ====== ML Engine Page ====== -->
+                <div class="page" id="ml-engine">
+                    <div class="page-header">
+                        <h3 data-i18n="ml.title">🧠 ML Hierarchical Classification Engine</h3>
+                        <p class="page-desc" data-i18n="ml.desc">3-layer hierarchical classifier: Protocol → Family → Version | 18-dim feature vector | Batch classification</p>
+                    </div>
+                    <div id="mlModelInfo"></div>
+                    <div class="card" style="margin-top:20px;">
+                        <div class="card-header"><h4 data-i18n="ml.featureExtract">Feature Extraction & Classification</h4></div>
+                        <div class="card-body">
+                            <label data-i18n="ml.selectProfile">Select Profile</label>
+                            <select id="mlProfileSelect" class="form-control" style="width:100%;padding:8px;margin:8px 0 12px;border:1px solid var(--gray-200);border-radius:6px;"></select>
+                            <div style="display:flex;gap:10px;">
+                                <button class="btn btn-primary" onclick="runMLExtract()" data-i18n="ml.extract">📐 Extract Features</button>
+                                <button class="btn btn-primary" onclick="runMLClassify()" data-i18n="ml.classify">🏷️ ML Classify</button>
+                                <button class="btn" onclick="runMLBatch()" data-i18n="ml.batchAll">📊 Batch Classify All</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="mlExtractResult" class="card" style="margin-top:16px;display:none;">
+                        <div class="card-header"><h4 data-i18n="ml.featureVector">Feature Vector</h4></div>
+                        <div class="card-body"><div id="mlFeaturesList"></div></div>
+                    </div>
+                    <div id="mlClassifyResult" class="card" style="margin-top:16px;display:none;">
+                        <div class="card-header"><h4 data-i18n="ml.classResult">Classification Result</h4></div>
+                        <div class="card-body"><div id="mlClassifyDetail"></div></div>
+                    </div>
+                    <div id="mlBatchResult" class="card" style="margin-top:16px;display:none;">
+                        <div class="card-header"><h4 data-i18n="ml.batchResult">Batch Classification Result</h4></div>
+                        <div class="card-body"><div id="mlBatchDetail"></div></div>
+                    </div>
+                </div>
+
+                <!-- ====== Defense Page ====== -->
+                <div class="page" id="defense">
+                    <div class="page-header">
+                        <h3 data-i18n="defense.title">🛡️ Defense System</h3>
+                        <p class="page-desc" data-i18n="defense.desc">Detection Rules / Threat Detection / Risk Assessment / Defense Suggestions / Agent Strategies</p>
+                    </div>
+                    <div id="defenseRulesSection"></div>
+                    <div class="card" style="margin-top:20px;">
+                        <div class="card-header"><h4 data-i18n="defense.threatDetect">Threat Detection</h4></div>
+                        <div class="card-body">
+                            <label data-i18n="defense.selectProfile">Select Profile</label>
+                            <select id="defenseProfileSelect" class="form-control" style="width:100%;padding:8px;margin:8px 0 12px;border:1px solid var(--gray-200);border-radius:6px;"></select>
+                            <button class="btn btn-primary" onclick="runDefenseDetect()" data-i18n="defense.runDetect">🔍 Run Detection</button>
+                        </div>
+                    </div>
+                    <div id="defenseDetectResult" style="display:none;margin-top:16px;">
+                        <div class="grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                            <div class="card"><div class="card-header"><h4 data-i18n="defense.detectResult">Detection Result</h4></div><div class="card-body" id="defenseDetection"></div></div>
+                            <div class="card"><div class="card-header"><h4 data-i18n="defense.riskAssess">Risk Assessment</h4></div><div class="card-body" id="defenseRiskAssess"></div></div>
+                        </div>
+                        <div class="card" style="margin-top:16px;"><div class="card-header"><h4 data-i18n="defense.defenseAdvice">Defense Suggestions</h4></div><div class="card-body" id="defenseAdvice"></div></div>
+                    </div>
+                </div>
+
+                <!-- ====== Anti-Detection Engine Page ====== -->
+                <div class="page" id="antidetect">
+                    <div class="page-header">
+                        <h3 data-i18n="ad.title">🔒 Anti-Detection Engine</h3>
+                        <p class="page-desc" data-i18n="ad.desc">6 code generators / JS injection preview / HTML injection test / SDK preview</p>
+                    </div>
+                    <div id="adStatusSection"></div>
+                    <div class="card" style="margin-top:20px;">
+                        <div class="card-header"><h4 data-i18n="ad.codePreview">Code Preview</h3></div>
+                        <div class="card-body">
+                            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+                                <label data-i18n="ad.profile">Profile</label>
+                                <select id="adProfileSelect" class="form-control" style="flex:1;padding:8px;border:1px solid var(--gray-200);border-radius:6px;"></select>
+                                <label data-i18n="ad.generator">Generator</label>
+                                <select id="adGeneratorSelect" class="form-control" style="flex:1;padding:8px;border:1px solid var(--gray-200);border-radius:6px;">
+                                    <option value="full" data-i18n="ad.genFull">Full Anti-Detection</option>
+                                    <option value="webgpu" data-i18n="ad.genWebgpu">WebGPU Override</option>
+                                    <option value="media_devices" data-i18n="ad.genMedia">MediaDevices Override</option>
+                                    <option value="permissions" data-i18n="ad.genPerm">Permissions API</option>
+                                    <option value="automation" data-i18n="ad.genAuto">Automation Hiding</option>
+                                    <option value="cross_layer" data-i18n="ad.genCross">Cross-Layer Consistency</option>
+                                </select>
+                            </div>
+                            <div style="display:flex;gap:10px;">
+                                <button class="btn btn-primary" onclick="runAntiDetectPreview()" data-i18n="ad.preview">👁️ Preview Code</button>
+                                <button class="btn" onclick="runAntiDetectInjectTest()" data-i18n="ad.inject">💉 HTML Injection Test</button>
+                                <button class="btn" onclick="runAntiDetectSDKPreview()" data-i18n="ad.sdkPreview">📦 SDK Preview</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="adCodePreview" class="card" style="margin-top:16px;display:none;">
+                        <div class="card-header"><h4 id="adPreviewTitle" data-i18n="ad.codePreview">Code Preview</h4><span class="badge" id="adCodeLength"></span></div>
+                        <div class="card-body"><pre class="code-block" id="adCodeContent" style="max-height:500px;overflow:auto;padding:16px;border-radius:8px;font-size:12px;line-height:1.5;"></pre></div>
+                    </div>
+                    <div id="adInjectResult" class="card" style="margin-top:16px;display:none;">
+                        <div class="card-header"><h4 data-i18n="ad.injectResult">HTML Injection Result</h4></div>
+                        <div class="card-body"><div id="adInjectStats"></div><pre class="code-block" id="adInjectContent" style="max-height:400px;overflow:auto;padding:16px;border-radius:8px;font-size:12px;line-height:1.5;"></pre></div>
+                    </div>
+                    <div id="adSDKResult" class="card" style="margin-top:16px;display:none;">
+                        <div class="card-header"><h4 data-i18n="ad.sdkJS">SDK JavaScript</h4></div>
+                        <div class="card-body">
+                            <div style="display:flex;gap:10px;margin-bottom:12px;">
+                                <button class="btn btn-sm active" onclick="showSDKTab('core',this)" data-i18n="ad.coreJS">Core JS</button>
+                                <button class="btn btn-sm" onclick="showSDKTab('injector',this)" data-i18n="ad.injectorJS">Injector JS</button>
+                            </div>
+                            <pre class="code-block" id="adSDKContent" style="max-height:400px;overflow:auto;padding:16px;border-radius:8px;font-size:12px;line-height:1.5;"></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ====== Plugins Page ====== -->
+                <div class="page" id="plugins">
+                    <div class="page-header">
+                        <h3 data-i18n="plugins.title">🔌 Plugin System</h3>
+                        <p class="page-desc" data-i18n="plugins.desc">Extension Registry / 4 Plugin Types / 3-Stage Pipeline Architecture / Registration API</p>
+                    </div>
+                    <div id="pluginsInfoSection"></div>
+                </div>
+
+                <!-- ====== Tools Page ====== -->
+                <div class="page" id="tools">
+                    <div class="page-header">
+                        <h3 data-i18n="tools.title">🔧 Fingerprint Toolbox</h3>
+                        <p class="page-desc" data-i18n="tools.desc">JA3/JA4 Calculator / Profile Validator / Profile Compare</p>
+                    </div>
+                    <div class="grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                        <div class="card">
+                            <div class="card-header"><h4 data-i18n="tools.ja3Calc">JA3/JA4 Calculator</h4></div>
+                            <div class="card-body">
+                                <label data-i18n="tools.selectProfile">Select Profile</label>
+                                <select id="toolsJA3ProfileSelect" class="form-control" style="width:100%;padding:8px;margin:8px 0 12px;border:1px solid var(--gray-200);border-radius:6px;"></select>
+                                <button class="btn btn-primary" onclick="runToolsJA3()" data-i18n="tools.calcFP">🔑 Calculate Fingerprint</button>
+                                <div id="toolsJA3Result" style="margin-top:12px;"></div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><h4 data-i18n="tools.validator">Profile Validator</h4></div>
+                            <div class="card-body">
+                                <label data-i18n="tools.selectProfile">Select Profile</label>
+                                <select id="toolsValidateProfileSelect" class="form-control" style="width:100%;padding:8px;margin:8px 0 12px;border:1px solid var(--gray-200);border-radius:6px;"></select>
+                                <button class="btn btn-primary" onclick="runToolsValidate()" data-i18n="tools.validate">✅ Validate Profile</button>
+                                <div id="toolsValidateResult" style="margin-top:12px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top:20px;">
+                        <div class="card-header"><h4 data-i18n="tools.compare">Profile Compare</h4></div>
+                        <div class="card-body">
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                                <div>
+                                    <label data-i18n="tools.profileA">Profile A</label>
+                                    <select id="toolsCompareA" class="form-control" style="width:100%;padding:8px;margin:8px 0;border:1px solid var(--gray-200);border-radius:6px;"></select>
+                                </div>
+                                <div>
+                                    <label data-i18n="tools.profileB">Profile B</label>
+                                    <select id="toolsCompareB" class="form-control" style="width:100%;padding:8px;margin:8px 0;border:1px solid var(--gray-200);border-radius:6px;"></select>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="runToolsCompare()" style="margin-top:8px;" data-i18n="tools.compareBtn">🔍 Compare Profiles</button>
+                            <div id="toolsCompareResult" style="margin-top:12px;"></div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </main>
     </div>
 
-    <script src="/admin/static/js/app.js"></script>
-    <script src="/admin/static/js/charts.js"></script>
-    <script src="/admin/static/js/api.js"></script>
+    <!-- Profile Detail Modal -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="profileModalTitle" data-i18n="modal.title">Profile Detail</h3>
+                <button class="modal-close" onclick="closeProfileModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="profileModalBody">
+                <div class="loading" data-i18n="loading">Loading...</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeProfileModal()" data-i18n="modal.close">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/admin/static/js/i18n.js?v=1"></script>
+    <script src="/admin/static/js/app.js?v=21"></script>
+    <script src="/admin/static/js/charts.js?v=2"></script>
+    <script src="/admin/static/js/api.js?v=3"></script>
 </body>
 </html>

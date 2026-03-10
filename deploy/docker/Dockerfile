@@ -19,7 +19,7 @@ COPY examples examples/
 COPY modules modules/
 
 # Download dependencies (now all go.mod files are present)
-RUN go mod download
+RUN go work sync && go mod download
 
 # Copy remaining source code
 COPY . .

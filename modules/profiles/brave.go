@@ -7,6 +7,11 @@ import (
 )
 
 // Brave浏览器指纹 (1.6x-1.7x版本)
+// braveTCPIP 返回 Brave 的 TCP/IP 指纹
+func braveTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
+	return CreateTCPIP(osType)
+}
+
 var (
 	Brave1_60 = ClientProfile{
 		ID: "brave_1_60", Name: "Brave 1.60",
@@ -32,6 +37,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: braveTCPIP(core.OSWindows10),
 	}
 
 	Brave1_62 = ClientProfile{
@@ -46,6 +52,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: braveTCPIP(core.OSWindows10),
 	}
 
 	Brave1_64 = ClientProfile{
@@ -60,6 +67,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: braveTCPIP(core.OSWindows10),
 	}
 
 	Brave1_66 = ClientProfile{
@@ -74,6 +82,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: braveTCPIP(core.OSWindows10),
 	}
 
 	Brave1_68 = ClientProfile{
@@ -88,6 +97,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: braveTCPIP(core.OSWindows10),
 	}
 
 	Brave1_70 = ClientProfile{
@@ -102,6 +112,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: braveTCPIP(core.OSWindows10),
 	}
 
 	Brave1_72 = ClientProfile{
@@ -116,6 +127,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: braveTCPIP(core.OSWindows10),
 	}
 )
 
@@ -124,8 +136,85 @@ func init() {
 	profiles := []ClientProfile{
 		Brave1_60, Brave1_62, Brave1_64, Brave1_66, Brave1_68, Brave1_70, Brave1_72,
 	}
-	for _, p := range profiles {
-		Register(p)
+	
+	// 为每个 profile 填充缺失的 HTTP/2 和 HTTP/3 配置
+	for i := range profiles {
+		p := &profiles[i]
+		
+		// 填充 HTTP/2 配置（如果缺失）
+		if p.HTTP2Settings.HeaderTableSize == 0 && p.HTTP2Settings.InitialWindowSize == 0 {
+			p.HTTP2Settings = core.HTTP2Settings{
+				HeaderTableSize:      65536,
+				EnablePush:           0,
+				MaxConcurrentStreams: 1000,
+				InitialWindowSize:    6291456,
+				MaxFrameSize:         16384,
+				MaxHeaderListSize:    262144,
+			}
+			p.PseudoHeaderOrder = []string{":method", ":authority", ":scheme", ":path"}
+		}
+		
+		// 填充 ConnectionFlow（如果缺失）
+		if p.ConnectionFlow == 0 {
+			p.ConnectionFlow = 15663105
+		}
+		
+		// 填充 HTTP/3 (QUIC) 配置（如果缺失）
+		if p.HTTP3Settings == nil {
+			p.HTTP3Settings = &core.HTTP3Settings{
+				QUICVersion:            core.QUICVersion1,
+				InitialMaxData:         16777216,
+				InitialMaxStreamData:   6291456,
+				InitialMaxStreamsBidi:  100,
+				InitialMaxStreamsUni:   100,
+				MaxUDPPayloadSize:      1472,
+				AckDelayExponent:       3,
+				MaxAckDelay:            25,
+				DisableActiveMigration: false,
+			}
+			p.QUICVersions = []uint32{core.QUICVersion1}
+		}
+		
+		// 填充 Headers（如果缺失）
+		if p.Headers == nil {
+			p.Headers = &core.HTTPHeaders{}
+		}
+		h := p.Headers
+		if h.Accept == "" {
+			h.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+		}
+		if h.AcceptLanguage == "" {
+			h.AcceptLanguage = "en-US,en;q=0.9"
+		}
+		if h.AcceptEncoding == "" {
+			h.AcceptEncoding = "gzip, deflate, br"
+		}
+		if h.UserAgent == "" {
+			h.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" + p.BrowserVersion + " Safari/537.36"
+		}
+		if h.SecFetchSite == "" {
+			h.SecFetchSite = "none"
+		}
+		if h.SecFetchMode == "" {
+			h.SecFetchMode = "navigate"
+		}
+		if h.SecFetchDest == "" {
+			h.SecFetchDest = "document"
+		}
+		if h.SecCHUA == "" {
+			h.SecCHUA = `"Brave";v="` + safeSliceVersion(p.BrowserVersion) + `", "Chromium";v="` + safeSliceVersion(p.BrowserVersion) + `"`
+		}
+		if h.SecCHUAMobile == "" {
+			h.SecCHUAMobile = "?0"
+		}
+		if h.SecCHUAPlatform == "" {
+			h.SecCHUAPlatform = `"Windows"`
+		}
+		if h.UpgradeInsecureRequests == "" {
+			h.UpgradeInsecureRequests = "1"
+		}
+		
+		Register(*p)
 	}
 }
 

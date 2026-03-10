@@ -6,10 +6,12 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strings"
 
 	"github.com/vistone/fingerprint/modules/core"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
 )
 
@@ -25,7 +27,7 @@ func NewGRPCServer(gateway *Gateway) *GRPCServer {
 	s := grpc.NewServer(
 		grpc.UnaryInterceptor(rateLimitInterceptor(gateway)),
 	)
-	
+
 	return &GRPCServer{
 		server:  s,
 		gateway: gateway,
@@ -37,20 +39,29 @@ func rateLimitInterceptor(gateway *Gateway) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		// 从上下文中获取客户端 IP
 		clientIP := extractClientIP(ctx)
-		
+
 		// 检查限流
 		if !gateway.limiter.Allow(clientIP) {
 			return nil, status.Errorf(codes.ResourceExhausted, "rate limit exceeded")
 		}
-		
+
 		return handler(ctx, req)
 	}
 }
 
 // extractClientIP 从 gRPC 上下文中提取客户端 IP
 func extractClientIP(ctx context.Context) string {
-	// 简化实现，实际应该解析 peer 信息
-	return "unknown"
+	p, ok := peer.FromContext(ctx)
+	if !ok || p == nil || p.Addr == nil {
+		return "unknown"
+	}
+	addr := p.Addr.String()
+	host, _, err := net.SplitHostPort(addr)
+	if err == nil && host != "" {
+		return host
+	}
+	// 兼容无端口地址
+	return strings.TrimSpace(addr)
 }
 
 // Start 启动 gRPC 服务器
@@ -59,7 +70,7 @@ func (s *GRPCServer) Start(port int) error {
 	if err != nil {
 		return fmt.Errorf("failed to listen: %w", err)
 	}
-	
+
 	fmt.Printf("gRPC server starting on port %d\n", port)
 	return s.server.Serve(listener)
 }
@@ -84,17 +95,17 @@ type GRPCAnalyzeRequest struct {
 
 // GRPCAnalyzeResponse gRPC 格式的分析响应
 type GRPCAnalyzeResponse struct {
-	FingerprintHash string
-	Protocol        string
-	BrowserFamily   string
-	BrowserVersion  string
-	Confidence      float64
-	RiskLevel       string
-	RiskScore       float64
-	JA3Hash         string
-	JA4Fingerprint  string
-	DefenseHints    []string
-	Cached          bool
+	FingerprintHash  string
+	Protocol         string
+	BrowserFamily    string
+	BrowserVersion   string
+	Confidence       float64
+	RiskLevel        string
+	RiskScore        float64
+	JA3Hash          string
+	JA4Fingerprint   string
+	DefenseHints     []string
+	Cached           bool
 	ProcessingTimeMs int64
 }
 
@@ -105,17 +116,17 @@ func ConvertToGatewayRequest(req *GRPCAnalyzeRequest) *AnalyzeRequest {
 	for i, v := range req.CipherSuites {
 		cipherSuites[i] = uint16(v)
 	}
-	
+
 	extensions := make([]core.TLSExtension, len(req.Extensions))
 	for i, v := range req.Extensions {
 		extensions[i] = core.TLSExtension{Type: uint16(v)}
 	}
-	
+
 	curves := make([]core.CurveID, len(req.SupportedCurves))
 	for i, v := range req.SupportedCurves {
 		curves[i] = core.CurveID(v)
 	}
-	
+
 	// 构建 HTTP 头
 	headers := &core.HTTPHeaders{
 		UserAgent:      req.Headers["user-agent"],
@@ -123,7 +134,7 @@ func ConvertToGatewayRequest(req *GRPCAnalyzeRequest) *AnalyzeRequest {
 		AcceptLanguage: req.Headers["accept-language"],
 		AcceptEncoding: req.Headers["accept-encoding"],
 	}
-	
+
 	return &AnalyzeRequest{
 		TLSVersion:      uint16(req.TLSVersion),
 		CipherSuites:    cipherSuites,
@@ -174,7 +185,7 @@ func ConvertFromGatewayResponse(resp *AnalyzeResponse) *GRPCAnalyzeResponse {
 
 // GRPCClient gRPC 客户端
 type GRPCClient struct {
-	conn   *grpc.ClientConn
+	conn *grpc.ClientConn
 }
 
 // NewGRPCClient 创建 gRPC 客户端
@@ -184,7 +195,7 @@ func NewGRPCClient(address string) (*GRPCClient, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect: %w", err)
 	}
-	
+
 	return &GRPCClient{conn: conn}, nil
 }
 
@@ -202,7 +213,7 @@ func (c *GRPCClient) Connection() *grpc.ClientConn {
 
 // HybridServer HTTP + gRPC 混合服务器
 type HybridServer struct {
-	gateway *Gateway
+	gateway  *Gateway
 	httpPort int
 	grpcPort int
 }
@@ -225,7 +236,7 @@ func (s *HybridServer) Start() error {
 			fmt.Printf("gRPC server error: %v\n", err)
 		}
 	}()
-	
+
 	// 启动 HTTP 服务器（阻塞）
 	return s.gateway.Start()
 }

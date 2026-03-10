@@ -1,17 +1,19 @@
 package gateway
 
 import (
+	"context"
+	"net"
 	"testing"
 
 	"github.com/vistone/fingerprint/modules/internal/testhelpers"
-	
+	"google.golang.org/grpc/peer"
 )
 
 func TestConvertToGatewayRequest(t *testing.T) {
 	tests := []struct {
-		name     string
-		grpcReq  *GRPCAnalyzeRequest
-		wantErr  bool
+		name    string
+		grpcReq *GRPCAnalyzeRequest
+		wantErr bool
 	}{
 		{
 			name: "valid request conversion",
@@ -79,7 +81,7 @@ func TestGRPCServer(t *testing.T) {
 	t.Run("create gRPC server", func(t *testing.T) {
 		// Create a minimal gateway for testing
 		gateway := &Gateway{}
-		
+
 		server := NewGRPCServer(gateway)
 		testhelpers.AssertNotNil(t, server)
 		testhelpers.AssertNotNil(t, server.server)
@@ -90,7 +92,7 @@ func TestGRPCServer(t *testing.T) {
 func TestHybridServer(t *testing.T) {
 	t.Run("create hybrid server", func(t *testing.T) {
 		gateway := &Gateway{}
-		
+
 		hybrid := NewHybridServer(gateway, 8080, 9090)
 		testhelpers.AssertNotNil(t, hybrid)
 		testhelpers.AssertEqual(t, hybrid.httpPort, 8080)
@@ -99,7 +101,7 @@ func TestHybridServer(t *testing.T) {
 
 	t.Run("get server info", func(t *testing.T) {
 		gateway := &Gateway{}
-		
+
 		hybrid := NewHybridServer(gateway, 8080, 9090)
 		info := hybrid.GetServerInfo()
 
@@ -158,9 +160,15 @@ func TestServerInfo(t *testing.T) {
 		Status:      "running",
 		Connections: 42,
 	}
-	
+
 	testhelpers.AssertEqual(t, info.Protocol, ProtocolHTTP)
 	testhelpers.AssertEqual(t, info.Port, 8080)
 	testhelpers.AssertEqual(t, info.Status, "running")
 	testhelpers.AssertEqual(t, info.Connections, 42)
+}
+
+func TestExtractClientIP(t *testing.T) {
+	ctx := peer.NewContext(context.Background(), &peer.Peer{Addr: &net.TCPAddr{IP: net.ParseIP("10.0.0.8"), Port: 44321}})
+	ip := extractClientIP(ctx)
+	testhelpers.AssertEqual(t, ip, "10.0.0.8")
 }

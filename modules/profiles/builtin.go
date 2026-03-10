@@ -6,6 +6,11 @@ import (
 )
 
 // 内置 Chrome 指纹配置
+// builtinTCPIP 返回 TCP/IP 指纹
+func builtinTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
+	return CreateTCPIP(osType)
+}
+
 var (
 	// Chrome 133
 	Chrome133 = ClientProfile{
@@ -70,6 +75,7 @@ var (
 			SecCHUAPlatform:         `"Windows"`,
 			UpgradeInsecureRequests: "1",
 		},
+		TCPIP: builtinTCPIP(core.OSWindows10),
 	}
 
 	// Chrome 131
@@ -122,6 +128,7 @@ var (
 			SecCHUAMobile:   "?0",
 			SecCHUAPlatform: `"Windows"`,
 		},
+		TCPIP: builtinTCPIP(core.OSWindows10),
 	}
 
 	// Firefox 133
@@ -173,6 +180,7 @@ var (
 			SecFetchSite:            "none",
 			SecFetchUser:            "?1",
 		},
+		TCPIP: builtinTCPIP(core.OSWindows10),
 	}
 
 	// Safari 18.0
@@ -216,25 +224,84 @@ var (
 		},
 		ConnectionFlow: 10485760,
 		Headers: &core.HTTPHeaders{
-			Accept:          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-			AcceptLanguage:  "en-US,en;q=0.9",
-			AcceptEncoding:  "gzip, deflate, br",
-			SecFetchDest:    "document",
-			SecFetchMode:    "navigate",
-			SecFetchSite:    "none",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			AcceptLanguage: "en-US,en;q=0.9",
+			AcceptEncoding: "gzip, deflate, br",
+			SecFetchDest:   "document",
+			SecFetchMode:   "navigate",
+			SecFetchSite:   "none",
 		},
+		TCPIP: builtinTCPIP(core.OSWindows10),
 	}
 )
 
 // init 初始化默认指纹注册表
 func init() {
-	// 注册 Chrome 指纹
-	Register(Chrome133)
-	Register(Chrome131)
-	
-	// 注册 Firefox 指纹
-	Register(Firefox133)
-	
-	// 注册 Safari 指纹
-	Register(Safari180)
+	profiles := []*ClientProfile{
+		&Chrome133,
+		&Chrome131,
+		&Firefox133,
+		&Safari180,
+	}
+
+	// 为每个 profile 填充缺失的 UserAgent
+	for _, p := range profiles {
+		if p.Headers == nil {
+			p.Headers = &core.HTTPHeaders{}
+		}
+
+		// 自动构建 UserAgent（如果未设置）
+		if p.Headers.UserAgent == "" {
+			p.Headers.UserAgent = buildUserAgent(p)
+		}
+
+		// 确保 TCP/IP 指纹存在
+		if p.TCPIP == nil {
+			p.TCPIP = builtinTCPIP(p.OS)
+		}
+
+		Register(*p)
+	}
+}
+
+// buildUserAgent 根据浏览器类型和版本构建 User-Agent 字符串
+func buildUserAgent(p *ClientProfile) string {
+	osStr := string(p.OS)
+
+	switch p.BrowserType {
+	case core.BrowserChrome:
+		// Chrome User-Agent 格式
+		return "Mozilla/5.0 (" + osStr + ") AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" +
+			p.BrowserVersion + " Safari/537.36"
+
+	case core.BrowserFirefox:
+		// Firefox User-Agent 格式
+		version := p.BrowserVersion
+		return "Mozilla/5.0 (" + osStr + "; rv:" + version + ") Gecko/20100101 Firefox/" + version
+
+	case core.BrowserSafari:
+		// Safari User-Agent 格式
+		return "Mozilla/5.0 (" + osStr + ") AppleWebKit/605.1.15 (KHTML, like Gecko) Version/" +
+			p.BrowserVersion + " Safari/605.1.15"
+
+	case core.BrowserEdge:
+		// Edge User-Agent 格式
+		return "Mozilla/5.0 (" + osStr + ") AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" +
+			p.BrowserVersion + " Safari/537.36 Edg/" + p.BrowserVersion
+
+	case core.BrowserBrave:
+		// Brave User-Agent 格式（类似Chrome）
+		return "Mozilla/5.0 (" + osStr + ") AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" +
+			p.BrowserVersion + " Safari/537.36"
+
+	case core.BrowserOpera:
+		// Opera User-Agent 格式
+		return "Mozilla/5.0 (" + osStr + ") AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" +
+			p.BrowserVersion + " Safari/537.36 OPR/" + p.BrowserVersion
+
+	default:
+		// 默认 User-Agent
+		return "Mozilla/5.0 (" + osStr + ") AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" +
+			p.BrowserVersion + " Safari/537.36"
+	}
 }

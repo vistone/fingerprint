@@ -250,16 +250,16 @@ func (p *Pipeline) executeStageWithMiddleware(ctx context.Context, stage Stage, 
 
 // LoggingMiddleware 日志中间件
 type LoggingMiddleware struct {
-	logger interface { // 接收任意实现了 Info/Error 的日志器
-		Info(msg string, fields ...interface{})
-		Error(msg string, fields ...interface{})
-	}
+	logger Logger
 }
 
-func NewLoggingMiddleware(logger interface {
-	Info(msg string, fields ...interface{})
-	Error(msg string, fields ...interface{})
-}) *LoggingMiddleware {
+// Logger 日志接口（别名，避免循环导入）
+type Logger interface {
+	Info(msg string, keysAndValues ...interface{})
+	Error(msg string, keysAndValues ...interface{})
+}
+
+func NewLoggingMiddleware(logger Logger) *LoggingMiddleware {
 	return &LoggingMiddleware{logger: logger}
 }
 
@@ -285,16 +285,17 @@ func (lm *LoggingMiddleware) Process(ctx context.Context, stageName string, data
 	return nil
 }
 
-// MetricsMiddleware 指标中间件
-type MetricsMiddleware struct {
-	metrics interface { // 接收实现了 Record 的指标收集器
-		Record(stage string, duration time.Duration, success bool)
-	}
+// MetricsRecorder 指标记录器接口
+type MetricsRecorder interface {
+	Record(stage string, duration time.Duration, success bool)
 }
 
-func NewMetricsMiddleware(metrics interface {
-	Record(stage string, duration time.Duration, success bool)
-}) *MetricsMiddleware {
+// MetricsMiddleware 指标中间件
+type MetricsMiddleware struct {
+	metrics MetricsRecorder
+}
+
+func NewMetricsMiddleware(metrics MetricsRecorder) *MetricsMiddleware {
 	return &MetricsMiddleware{metrics: metrics}
 }
 

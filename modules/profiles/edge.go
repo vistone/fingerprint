@@ -3,10 +3,17 @@
 package profiles
 
 import (
+	"strings"
+	
 	"github.com/vistone/fingerprint/modules/core"
 )
 
 // Edge浏览器指纹 (115-130版本)
+// edgeTCPIP 返回 Edge 的 TCP/IP 指纹
+func edgeTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
+	return CreateTCPIP(osType)
+}
+
 var (
 	// Edge 115-119
 	Edge115 = ClientProfile{
@@ -36,6 +43,7 @@ var (
 			UpgradeInsecureRequests: "1", SecFetchDest: "document",
 			SecFetchMode: "navigate", SecFetchSite: "none",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Edge116 = ClientProfile{
@@ -51,6 +59,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 			UpgradeInsecureRequests: "1",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Edge117 = ClientProfile{
@@ -65,6 +74,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Edge118 = ClientProfile{
@@ -79,6 +89,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Edge119 = ClientProfile{
@@ -93,6 +104,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	// Edge 120-124
@@ -108,6 +120,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Edge121 = ClientProfile{
@@ -122,6 +135,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Edge122 = ClientProfile{
@@ -136,6 +150,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Edge123 = ClientProfile{
@@ -150,6 +165,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Edge124 = ClientProfile{
@@ -164,6 +180,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	// Edge 126-130
@@ -179,6 +196,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Edge128 = ClientProfile{
@@ -193,6 +211,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Edge130 = ClientProfile{
@@ -207,6 +226,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Edge131 = ClientProfile{
@@ -221,6 +241,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Edge132 = ClientProfile{
@@ -235,6 +256,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Edge133 = ClientProfile{
@@ -249,6 +271,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Edge134 = ClientProfile{
@@ -263,6 +286,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 )
 
@@ -273,8 +297,98 @@ func init() {
 		Edge120, Edge121, Edge122, Edge123, Edge124,
 		Edge126, Edge128, Edge130, Edge131, Edge132, Edge133, Edge134,
 	}
-	for _, p := range profiles {
-		Register(p)
+	
+	// 为每个 profile 填充缺失的 HTTP/2 和 HTTP/3 配置
+	for i := range profiles {
+		p := &profiles[i]
+		
+		// 填充 HTTP/2 配置（如果缺失）
+		if p.HTTP2Settings.HeaderTableSize == 0 && p.HTTP2Settings.InitialWindowSize == 0 {
+			p.HTTP2Settings = core.HTTP2Settings{
+				HeaderTableSize:      65536,
+				EnablePush:           0,
+				MaxConcurrentStreams: 1000,
+				InitialWindowSize:    6291456,
+				MaxFrameSize:         16384,
+				MaxHeaderListSize:    262144,
+			}
+			p.PseudoHeaderOrder = []string{":method", ":authority", ":scheme", ":path"}
+		}
+		
+		// 填充 ConnectionFlow（如果缺失）
+		if p.ConnectionFlow == 0 {
+			p.ConnectionFlow = 15663105
+		}
+		
+		// 填充 HTTP/3 (QUIC) 配置（如果缺失）
+		if p.HTTP3Settings == nil {
+			p.HTTP3Settings = &core.HTTP3Settings{
+				QUICVersion:            core.QUICVersion1,
+				InitialMaxData:         16777216,
+				InitialMaxStreamData:   6291456,
+				InitialMaxStreamsBidi:  100,
+				InitialMaxStreamsUni:   100,
+				MaxUDPPayloadSize:      1472,
+				AckDelayExponent:       3,
+				MaxAckDelay:            25,
+				DisableActiveMigration: false,
+			}
+			p.QUICVersions = []uint32{core.QUICVersion1}
+		}
+		
+		// 填充 Headers（如果缺失）
+		if p.Headers == nil {
+			p.Headers = &core.HTTPHeaders{}
+		}
+		h := p.Headers
+		if h.Accept == "" {
+			h.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+		}
+		if h.AcceptLanguage == "" {
+			h.AcceptLanguage = "en-US,en;q=0.9"
+		}
+		if h.AcceptEncoding == "" {
+			h.AcceptEncoding = "gzip, deflate, br"
+		}
+		if h.UserAgent == "" {
+			h.UserAgent = buildEdgeUserAgent(p.BrowserVersion, p.OS)
+		}
+		if h.SecFetchSite == "" {
+			h.SecFetchSite = "none"
+		}
+		if h.SecFetchMode == "" {
+			h.SecFetchMode = "navigate"
+		}
+		if h.SecFetchDest == "" {
+			h.SecFetchDest = "document"
+		}
+		if h.SecCHUA == "" {
+			h.SecCHUA = `"Microsoft Edge";v="` + safeSliceVersion(p.BrowserVersion) + `", "Chromium";v="` + safeSliceVersion(p.BrowserVersion) + `"`
+		}
+		if h.SecCHUAMobile == "" {
+			h.SecCHUAMobile = "?0"
+		}
+		if h.SecCHUAPlatform == "" {
+			h.SecCHUAPlatform = platformString(p.OS)
+		}
+		if h.UpgradeInsecureRequests == "" {
+			h.UpgradeInsecureRequests = "1"
+		}
+		
+		Register(*p)
+	}
+}
+
+// buildEdgeUserAgent 构建 Edge User-Agent
+func buildEdgeUserAgent(version string, os core.OperatingSystem) string {
+	osStr := string(os)
+	switch {
+	case strings.Contains(osStr, "Windows"):
+		return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" + version + " Safari/537.36 Edg/" + version
+	case strings.Contains(osStr, "Mac OS") || strings.Contains(osStr, "Macintosh"):
+		return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" + version + " Safari/537.36 Edg/" + version
+	default:
+		return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" + version + " Safari/537.36 Edg/" + version
 	}
 }
 

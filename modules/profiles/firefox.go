@@ -3,10 +3,17 @@
 package profiles
 
 import (
+	"strings"
+	
 	"github.com/vistone/fingerprint/modules/core"
 )
 
 // Firefox浏览器指纹 (115-135版本)
+// firefoxTCPIP 返回 Firefox 的 TCP/IP 指纹
+func firefoxTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
+	return CreateTCPIP(osType)
+}
+
 var (
 	// Firefox 115-119 ESR系列
 	Firefox115 = ClientProfile{
@@ -34,6 +41,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 			UpgradeInsecureRequests: "1",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox116 = ClientProfile{
@@ -48,6 +56,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox117 = ClientProfile{
@@ -62,6 +71,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox118 = ClientProfile{
@@ -76,6 +86,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox119 = ClientProfile{
@@ -90,6 +101,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	// Firefox 121-124
@@ -105,6 +117,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox122 = ClientProfile{
@@ -119,6 +132,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox123 = ClientProfile{
@@ -133,6 +147,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox124 = ClientProfile{
@@ -147,6 +162,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	// Firefox 126-129
@@ -162,6 +178,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox127 = ClientProfile{
@@ -176,6 +193,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox128 = ClientProfile{
@@ -190,6 +208,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox129 = ClientProfile{
@@ -204,6 +223,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	// Firefox 131, 134-135
@@ -219,6 +239,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox134 = ClientProfile{
@@ -233,6 +254,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox135 = ClientProfile{
@@ -247,6 +269,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox136 = ClientProfile{
@@ -261,6 +284,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox137 = ClientProfile{
@@ -275,6 +299,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox138 = ClientProfile{
@@ -289,6 +314,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox139 = ClientProfile{
@@ -303,6 +329,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 
 	Firefox140 = ClientProfile{
@@ -317,6 +344,7 @@ var (
 			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
+		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
 )
 
@@ -328,8 +356,78 @@ func init() {
 		Firefox126, Firefox127, Firefox128, Firefox129,
 		Firefox131, Firefox134, Firefox135, Firefox136, Firefox137, Firefox138, Firefox139, Firefox140,
 	}
-	for _, p := range profiles {
-		Register(p)
+	
+	// 为每个 profile 填充缺失的 HTTP/2 和 HTTP/3 配置
+	for i := range profiles {
+		p := &profiles[i]
+		
+		// 填充 HTTP/2 配置（如果缺失）
+		if p.HTTP2Settings.HeaderTableSize == 0 && p.HTTP2Settings.InitialWindowSize == 0 {
+			p.HTTP2Settings = core.HTTP2Settings{
+				HeaderTableSize:      65536,
+				EnablePush:           0,
+				MaxConcurrentStreams: 100,
+				InitialWindowSize:    131072,
+				MaxFrameSize:         16384,
+				MaxHeaderListSize:    262144,
+			}
+			p.PseudoHeaderOrder = []string{":method", ":path", ":authority", ":scheme"}
+			p.ConnectionFlow = 15663105
+		}
+		
+		// 填充 HTTP/3 (QUIC) 配置（如果缺失）
+		if p.HTTP3Settings == nil {
+			p.HTTP3Settings = &core.HTTP3Settings{
+				QUICVersion:            core.QUICVersion1,
+				InitialMaxData:         16777216,
+				InitialMaxStreamData:   6291456,
+				InitialMaxStreamsBidi:  100,
+				InitialMaxStreamsUni:   100,
+				MaxUDPPayloadSize:      1472,
+				AckDelayExponent:       3,
+				MaxAckDelay:            25,
+				DisableActiveMigration: false,
+			}
+			p.QUICVersions = []uint32{core.QUICVersion1}
+		}
+		
+		// 填充 Headers（如果缺失）
+		if p.Headers == nil {
+			p.Headers = &core.HTTPHeaders{}
+		}
+		h := p.Headers
+		if h.Accept == "" {
+			h.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+		}
+		if h.AcceptLanguage == "" {
+			h.AcceptLanguage = "en-US,en;q=0.5"
+		}
+		if h.AcceptEncoding == "" {
+			h.AcceptEncoding = "gzip, deflate, br"
+		}
+		if h.UserAgent == "" {
+			h.UserAgent = buildFirefoxUserAgent(p.BrowserVersion, p.OS)
+		}
+		if h.UpgradeInsecureRequests == "" {
+			h.UpgradeInsecureRequests = "1"
+		}
+		
+		Register(*p)
+	}
+}
+
+// buildFirefoxUserAgent 构建 Firefox User-Agent
+func buildFirefoxUserAgent(version string, os core.OperatingSystem) string {
+	osStr := string(os)
+	switch {
+	case strings.Contains(osStr, "Windows"):
+		return "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:" + version + ") Gecko/20100101 Firefox/" + version
+	case strings.Contains(osStr, "Mac OS") || strings.Contains(osStr, "Macintosh"):
+		return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:" + version + ") Gecko/20100101 Firefox/" + version
+	case strings.Contains(osStr, "Linux"):
+		return "Mozilla/5.0 (X11; Linux x86_64; rv:" + version + ") Gecko/20100101 Firefox/" + version
+	default:
+		return "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:" + version + ") Gecko/20100101 Firefox/" + version
 	}
 }
 
