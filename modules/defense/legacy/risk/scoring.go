@@ -1,6 +1,6 @@
 package risk
 
-// Phase 3: 本模块已完成基础迁移，待深度优化（详见 docs/5-process/modularization/PHASE_3_PLAN.md）
+// Phase 3: This module has completed basic migration, pending deep optimization (see docs/5-process/modularization/PHASE_3_PLAN.md)
 import (
 	"fmt"
 	"math"
@@ -12,149 +12,149 @@ import (
 	"github.com/vistone/fingerprint/modules/tls/legacy/ja4s"
 )
 
-// RiskScore 综合风险评分结果
+// RiskScore represents comprehensive risk scoring result
 type RiskScore struct {
-	// 总体风险分数 (0.0-1.0)
+	// Overall risk score (0.0-1.0)
 	TotalScore float64
 
-	// 威胁等级
+	// Threat level
 	ThreatLevel string // "safe", "low", "medium", "high", "critical"
 
-	// 各维度风险分数
+	// Risk scores by dimensions
 	Dimensions RiskDimensions
 
-	// 风险因素详情
+	// Risk factor details
 	RiskFactors []RiskFactor
 
-	// 异常指标
+	// Anomalous metrics
 	AnomalyCount int
 
-	// 置信度 (0.0-1.0)
+	// Confidence (0.0-1.0)
 	Confidence float64
 
-	// 建议措施
+	// Recommended actions
 	Recommendations []string
 }
 
-// RiskDimensions 风险维度评分
+// RiskDimensions represents risk dimension scores
 type RiskDimensions struct {
-	// TLS 指纹风险 (JA3/JA4)
+	// TLS fingerprint risk (JA3/JA4)
 	TLSFingerprint float64
 
-	// 服务端风险 (JA4S)
+	// Server-side risk (JA4S)
 	ServerBehavior float64
 
-	// HTTP/2 风险
+	// HTTP/2 risk
 	HTTP2Signature float64
 
-	// HTTP 请求头风险 (JA4H)
+	// HTTP request header risk (JA4H)
 	HTTPHeaders float64
 
-	// QUIC 风险
+	// QUIC risk
 	QUICSignature float64
 
-	// Client Hints 不一致性
+	// Client Hints inconsistency
 	ClientHints float64
 
-	// ECH 影响
+	// ECH impact
 	ECHImpact float64
 
-	// 行为异常
+	// behaviorexception
 	BehaviorAnomaly float64
 }
 
-// RiskFactor 风险因素
+// RiskFactor represents a risk factor
 type RiskFactor struct {
-	// 因素类型
+	// Factor type
 	Type string
 
-	// 严重程度 (0.0-1.0)
+	// Severity (0.0-1.0)
 	Severity float64
 
-	// 描述
+	// Description
 	Description string
 
-	// 证据
+	// Evidence
 	Evidence string
 
-	// 权重
+	// Weight
 	Weight float64
 
-	// 置信度
+	// Confidence
 	Confidence float64
 }
 
-// RiskInput 风险评分输入
+// RiskInput represents risk scoring input
 type RiskInput struct {
-	// JA3/JA4 指纹数据
+	// JA3/JA4 fingerprint data
 	JA3Hash string
 	JA4Hash string
 
-	// JA4S 结果
+	// JA4S result
 	JA4SResult *ja4s.JA4SResult
 
-	// HTTP/2 签名结果
+	// HTTP/2 signature result
 	HTTP2Result *http2.HTTP2SignatureResult
 
-	// JA4H 结果
+	// JA4H result
 	JA4HResult *ja4h.JA4HResult
 
-	// QUIC 签名结果
+	// QUIC signature result
 	QUICResult *quic.QUICSignatureResult
 
-	// ECH 分析结果
+	// ECH analyzeresult
 	ECHResult *ech.ECHAnalysisResult
 
-	// 额外上下文
+	// Additional context
 	Context RiskContext
 }
 
-// RiskContext 风险评估上下文
+// RiskContext represents risk assessment context
 type RiskContext struct {
-	// IP 信誉分数 (可选)
+	// IP reputation score (optional)
 	IPReputation float64
 
-	// 地理位置风险 (可选)
+	// Geolocation risk (optional)
 	GeoRisk float64
 
-	// 历史行为评分 (可选)
+	// Historical behavior score (optional)
 	HistoricalScore float64
 
-	// 请求频率 (可选)
+	// Request frequency (optional)
 	RequestRate float64
 
-	// 是否已知客户端
+	// Whether it's a known client
 	IsKnownClient bool
 }
 
-// ScoringConfig 评分配置
+// ScoringConfig represents scoring configuration
 type ScoringConfig struct {
-	// 各维度权重
+	// Dimension weights
 	Weights DimensionWeights
 
-	// 威胁等级阈值
+	// Threat level thresholds
 	Thresholds ThreatThresholds
 
-	// 是否启用严格模式
+	// Whether strict mode is enabled
 	StrictMode bool
 
-	// 最小置信度要求
+	// Minimum confidence requirement
 	MinConfidence float64
 }
 
-// DimensionWeights 维度权重
+// DimensionWeights represents dimension weights
 type DimensionWeights struct {
-	TLSFingerprint  float64 // 默认 0.20
-	ServerBehavior  float64 // 默认 0.15
-	HTTP2Signature  float64 // 默认 0.15
-	HTTPHeaders     float64 // 默认 0.15
-	QUICSignature   float64 // 默认 0.10
-	ClientHints     float64 // 默认 0.10
-	ECHImpact       float64 // 默认 0.05
-	BehaviorAnomaly float64 // 默认 0.10
+	TLSFingerprint  float64 // Default 0.20
+	ServerBehavior  float64 // Default 0.15
+	HTTP2Signature  float64 // Default 0.15
+	HTTPHeaders     float64 // Default 0.15
+	QUICSignature   float64 // Default 0.10
+	ClientHints     float64 // Default 0.10
+	ECHImpact       float64 // Default 0.05
+	BehaviorAnomaly float64 // Default 0.10
 }
 
-// ThreatThresholds 威胁等级阈值
+// ThreatThresholds represents threat level thresholds
 type ThreatThresholds struct {
 	Safe     float64 // <= 0.2
 	Low      float64 // <= 0.4
@@ -163,29 +163,29 @@ type ThreatThresholds struct {
 	Critical float64 // > 0.8
 }
 
-// MaliciousFingerprintEntry 恶意指纹条目
+// MaliciousFingerprintEntry represents malicious fingerprint entry
 type MaliciousFingerprintEntry struct {
-	// 指纹哈希 (JA3 或 JA4)
+	// Fingerprint hash (JA3 or JA4)
 	Hash string
-	// 指纹类型 ("JA3" 或 "JA4")
+	// Fingerprint type ("JA3" or "JA4")
 	Type string
-	// 威胁类型 (e.g., "botnet", "scanner", "exploit_kit")
+	// Threat type (e.g., "botnet", "scanner", "exploit_kit")
 	ThreatType string
-	// 严重程度 (0.0-1.0)
+	// Severity (0.0-1.0)
 	Severity float64
-	// 描述
+	// Description
 	Description string
-	// 最后发现时间 (可选)
+	// Last seen time (optional)
 	LastSeen string
 }
 
-// RiskScorer 风险评分器
+// RiskScorer is risk scorer
 type RiskScorer struct {
 	config                ScoringConfig
 	maliciousFingerprints map[string]MaliciousFingerprintEntry
 }
 
-// NewRiskScorer 创建风险评分器
+// NewRiskScorer creates a risk scorer
 func NewRiskScorer(config *ScoringConfig) *RiskScorer {
 	if config == nil {
 		config = DefaultScoringConfig()
@@ -196,7 +196,7 @@ func NewRiskScorer(config *ScoringConfig) *RiskScorer {
 	}
 }
 
-// DefaultScoringConfig 默认评分配置
+// DefaultScoringConfig returns default scoring configuration
 func DefaultScoringConfig() *ScoringConfig {
 	return &ScoringConfig{
 		Weights: DimensionWeights{
@@ -221,7 +221,7 @@ func DefaultScoringConfig() *ScoringConfig {
 	}
 }
 
-// CalculateRisk 计算综合风险评分
+// CalculateRisk calculates comprehensive risk score
 func (s *RiskScorer) CalculateRisk(input RiskInput) (*RiskScore, error) {
 	result := &RiskScore{
 		Dimensions:      RiskDimensions{},
@@ -229,7 +229,7 @@ func (s *RiskScorer) CalculateRisk(input RiskInput) (*RiskScore, error) {
 		Recommendations: []string{},
 	}
 
-	// 1. 计算各维度风险
+	// 1. Calculate risk by dimensions
 	s.calculateTLSRisk(input, result)
 	s.calculateServerRisk(input, result)
 	s.calculateHTTP2Risk(input, result)
@@ -239,52 +239,52 @@ func (s *RiskScorer) CalculateRisk(input RiskInput) (*RiskScore, error) {
 	s.calculateECHRisk(input, result)
 	s.calculateBehaviorRisk(input, result)
 
-	// 2. 计算加权总分
+	// 2. Calculate weighted total score
 	result.TotalScore = s.calculateWeightedScore(result.Dimensions)
 
-	// 3. 应用上下文调整
+	// 3. Apply context adjustment
 	result.TotalScore = s.applyContextAdjustment(result.TotalScore, input.Context)
 
-	// 4. 确保分数在合理范围
+	// 4. Ensure score is in reasonable range
 	result.TotalScore = math.Max(0.0, math.Min(1.0, result.TotalScore))
 
-	// 5. 判定威胁等级
+	// 5. Determine threat level
 	result.ThreatLevel = s.determineThreatLevel(result.TotalScore)
 
-	// 6. 计算置信度
+	// 6. Calculate confidence
 	result.Confidence = s.calculateConfidence(input)
 
-	// 7. 统计异常数量
+	// 7. statisticsexceptionquantity
 	result.AnomalyCount = s.countAnomalies(input)
 
-	// 8. 生成建议措施
+	// 8. Generate recommended actions
 	result.Recommendations = s.generateRecommendations(result)
 
 	return result, nil
 }
 
-// calculateTLSRisk 计算 TLS 指纹风险
+// calculateTLSRisk calculates TLS fingerprint risk
 func (s *RiskScorer) calculateTLSRisk(input RiskInput, result *RiskScore) {
 	score := 0.0
 
-	// 基于 JA3/JA4 哈希的已知度判断
+	// Based on known JA3/JA4 hash assessment
 	if input.JA3Hash == "" && input.JA4Hash == "" {
-		score = 0.3 // 缺少 TLS 指纹
+		score = 0.3 // Missing TLS fingerprint
 		result.RiskFactors = append(result.RiskFactors, RiskFactor{
 			Type:        "TLS_FINGERPRINT_MISSING",
 			Severity:    0.3,
-			Description: "缺少 TLS 指纹数据",
+			Description: "Missing TLS fingerprint data",
 			Weight:      s.config.Weights.TLSFingerprint,
 			Confidence:  0.9,
 		})
 	} else {
-		// 检查是否匹配已知恶意指纹数据库
+		// Check whether match known malicious fingerprint database
 		if entry, found := s.checkMaliciousFingerprint(input.JA3Hash, "JA3"); found {
 			score = entry.Severity
 			result.RiskFactors = append(result.RiskFactors, RiskFactor{
 				Type:        "MALICIOUS_TLS_FINGERPRINT",
 				Severity:    entry.Severity,
-				Description: fmt.Sprintf("检测到恶意指纹: %s (%s)", entry.ThreatType, entry.Description),
+				Description: fmt.Sprintf("Malicious fingerprint detected: %s (%s)", entry.ThreatType, entry.Description),
 				Weight:      s.config.Weights.TLSFingerprint,
 				Confidence:  0.95,
 			})
@@ -293,7 +293,7 @@ func (s *RiskScorer) calculateTLSRisk(input RiskInput, result *RiskScore) {
 			result.RiskFactors = append(result.RiskFactors, RiskFactor{
 				Type:        "MALICIOUS_TLS_FINGERPRINT",
 				Severity:    entry.Severity,
-				Description: fmt.Sprintf("检测到恶意指纹: %s (%s)", entry.ThreatType, entry.Description),
+				Description: fmt.Sprintf("Malicious fingerprint detected: %s (%s)", entry.ThreatType, entry.Description),
 				Weight:      s.config.Weights.TLSFingerprint,
 				Confidence:  0.95,
 			})
@@ -303,7 +303,7 @@ func (s *RiskScorer) calculateTLSRisk(input RiskInput, result *RiskScore) {
 	result.Dimensions.TLSFingerprint = score
 }
 
-// calculateServerRisk 计算服务端行为风险
+// calculateServerRisk calculates server-side behavior risk
 func (s *RiskScorer) calculateServerRisk(input RiskInput, result *RiskScore) {
 	if input.JA4SResult == nil {
 		result.Dimensions.ServerBehavior = 0.0
@@ -312,12 +312,12 @@ func (s *RiskScorer) calculateServerRisk(input RiskInput, result *RiskScore) {
 
 	score := input.JA4SResult.RiskScore
 
-	// 添加风险因素
+	// Add risk factor
 	for _, anomaly := range input.JA4SResult.AnomalyFlags {
 		result.RiskFactors = append(result.RiskFactors, RiskFactor{
 			Type:        fmt.Sprintf("JA4S_%s", anomaly),
 			Severity:    0.5,
-			Description: fmt.Sprintf("服务端异常: %s", anomaly),
+			Description: fmt.Sprintf("Server-side anomaly: %s", anomaly),
 			Evidence:    input.JA4SResult.Hash,
 			Weight:      s.config.Weights.ServerBehavior,
 			Confidence:  0.8,
@@ -327,7 +327,7 @@ func (s *RiskScorer) calculateServerRisk(input RiskInput, result *RiskScore) {
 	result.Dimensions.ServerBehavior = score
 }
 
-// calculateHTTP2Risk 计算 HTTP/2 风险
+// calculateHTTP2Risk calculates HTTP/2 risk
 func (s *RiskScorer) calculateHTTP2Risk(input RiskInput, result *RiskScore) {
 	if input.HTTP2Result == nil {
 		result.Dimensions.HTTP2Signature = 0.0
@@ -340,7 +340,7 @@ func (s *RiskScorer) calculateHTTP2Risk(input RiskInput, result *RiskScore) {
 		result.RiskFactors = append(result.RiskFactors, RiskFactor{
 			Type:        fmt.Sprintf("HTTP2_%s", anomaly),
 			Severity:    0.4,
-			Description: fmt.Sprintf("HTTP/2 异常: %s", anomaly),
+			Description: fmt.Sprintf("HTTP/2 exception: %s", anomaly),
 			Weight:      s.config.Weights.HTTP2Signature,
 			Confidence:  0.7,
 		})
@@ -349,7 +349,7 @@ func (s *RiskScorer) calculateHTTP2Risk(input RiskInput, result *RiskScore) {
 	result.Dimensions.HTTP2Signature = score
 }
 
-// calculateHTTPHeadersRisk 计算 HTTP 请求头风险
+// calculateHTTPHeadersRisk calculates HTTP request header risk
 func (s *RiskScorer) calculateHTTPHeadersRisk(input RiskInput, result *RiskScore) {
 	if input.JA4HResult == nil {
 		result.Dimensions.HTTPHeaders = 0.0
@@ -367,7 +367,7 @@ func (s *RiskScorer) calculateHTTPHeadersRisk(input RiskInput, result *RiskScore
 		result.RiskFactors = append(result.RiskFactors, RiskFactor{
 			Type:        fmt.Sprintf("JA4H_%s", anomaly),
 			Severity:    severity,
-			Description: fmt.Sprintf("HTTP 请求头异常: %s", anomaly),
+			Description: fmt.Sprintf("HTTP header anomaly: %s", anomaly),
 			Weight:      s.config.Weights.HTTPHeaders,
 			Confidence:  0.85,
 		})
@@ -376,7 +376,7 @@ func (s *RiskScorer) calculateHTTPHeadersRisk(input RiskInput, result *RiskScore
 	result.Dimensions.HTTPHeaders = score
 }
 
-// calculateQUICRisk 计算 QUIC 风险
+// calculateQUICRisk calculates QUIC risk
 func (s *RiskScorer) calculateQUICRisk(input RiskInput, result *RiskScore) {
 	if input.QUICResult == nil {
 		result.Dimensions.QUICSignature = 0.0
@@ -389,7 +389,7 @@ func (s *RiskScorer) calculateQUICRisk(input RiskInput, result *RiskScore) {
 		result.RiskFactors = append(result.RiskFactors, RiskFactor{
 			Type:        fmt.Sprintf("QUIC_%s", anomaly),
 			Severity:    0.4,
-			Description: fmt.Sprintf("QUIC 异常: %s", anomaly),
+			Description: fmt.Sprintf("QUIC exception: %s", anomaly),
 			Weight:      s.config.Weights.QUICSignature,
 			Confidence:  0.75,
 		})
@@ -398,18 +398,18 @@ func (s *RiskScorer) calculateQUICRisk(input RiskInput, result *RiskScore) {
 	result.Dimensions.QUICSignature = score
 }
 
-// calculateClientHintsRisk 计算 Client Hints 风险
+// calculateClientHintsRisk calculates Client Hints risk
 func (s *RiskScorer) calculateClientHintsRisk(input RiskInput, result *RiskScore) {
 	if input.JA4HResult == nil {
 		result.Dimensions.ClientHints = 0.0
 		return
 	}
 
-	// Client Hints 不一致性检测在 JA4H 中完成
-	// 通过异常标记识别 Client Hints 相关问题
+	// Client Hints inconsistency detection is completed in JA4H
+	// Identify Client Hints related issues through anomaly markers
 	score := 0.0
 
-	// 如果有 Client Hints 相关的异常标记
+	// If there are Client Hints related anomaly markers
 	for _, anomaly := range input.JA4HResult.AnomalyFlags {
 		if anomaly == "CLIENT_HINTS_UA_MISMATCH" ||
 			anomaly == "CLIENT_HINTS_MOBILE_MISMATCH" ||
@@ -422,7 +422,7 @@ func (s *RiskScorer) calculateClientHintsRisk(input RiskInput, result *RiskScore
 	result.Dimensions.ClientHints = math.Min(score, 1.0)
 }
 
-// calculateECHRisk 计算 ECH 影响
+// calculateECHRisk calculates ECH impact
 func (s *RiskScorer) calculateECHRisk(input RiskInput, result *RiskScore) {
 	if input.ECHResult == nil {
 		result.Dimensions.ECHImpact = 0.0
@@ -431,25 +431,25 @@ func (s *RiskScorer) calculateECHRisk(input RiskInput, result *RiskScore) {
 
 	score := input.ECHResult.RiskScore
 
-	// ECH 本身不是风险，但会影响检测能力
+	// ECH itself is not a risk, but affects detection capability
 	if input.ECHResult.ECHPresent && input.ECHResult.Impact.ImpactLevel == "high" {
 		result.RiskFactors = append(result.RiskFactors, RiskFactor{
 			Type:        "ECH_HIGH_IMPACT",
 			Severity:    0.3,
-			Description: "ECH 高影响：SNI 不可见，需使用替代检测方法",
+			Description: "High ECH impact: SNI invisible, need to use alternative detection methods",
 			Evidence:    input.ECHResult.VisibleFieldsSignature,
 			Weight:      s.config.Weights.ECHImpact,
 			Confidence:  0.9,
 		})
 	}
 
-	// ECH 配置错误是真实风险
+	// ECH configuration error is a real risk
 	for _, anomaly := range input.ECHResult.AnomalyFlags {
 		if anomaly != "GREASE_ECH" {
 			result.RiskFactors = append(result.RiskFactors, RiskFactor{
 				Type:        fmt.Sprintf("ECH_%s", anomaly),
 				Severity:    0.6,
-				Description: fmt.Sprintf("ECH 异常: %s", anomaly),
+				Description: fmt.Sprintf("ECH exception: %s", anomaly),
 				Weight:      s.config.Weights.ECHImpact,
 				Confidence:  0.85,
 			})
@@ -459,17 +459,17 @@ func (s *RiskScorer) calculateECHRisk(input RiskInput, result *RiskScore) {
 	result.Dimensions.ECHImpact = score
 }
 
-// calculateBehaviorRisk 计算行为异常风险
+// calculateBehaviorRisk calculates behavior anomaly risk
 func (s *RiskScorer) calculateBehaviorRisk(input RiskInput, result *RiskScore) {
 	score := 0.0
 
-	// 基于上下文的行为分析
+	// Behavior analysis based on context
 	if input.Context.RequestRate > 100 {
 		score += 0.3
 		result.RiskFactors = append(result.RiskFactors, RiskFactor{
 			Type:        "HIGH_REQUEST_RATE",
 			Severity:    0.3,
-			Description: "异常高的请求频率",
+			Description: "Anomalously high request frequency",
 			Evidence:    fmt.Sprintf("%.0f req/min", input.Context.RequestRate),
 			Weight:      s.config.Weights.BehaviorAnomaly,
 			Confidence:  0.7,
@@ -479,7 +479,7 @@ func (s *RiskScorer) calculateBehaviorRisk(input RiskInput, result *RiskScore) {
 	result.Dimensions.BehaviorAnomaly = math.Min(score, 1.0)
 }
 
-// calculateWeightedScore 计算加权总分
+// calculateWeightedScore calculates weighted total score
 func (s *RiskScorer) calculateWeightedScore(dims RiskDimensions) float64 {
 	w := s.config.Weights
 
@@ -495,27 +495,27 @@ func (s *RiskScorer) calculateWeightedScore(dims RiskDimensions) float64 {
 	return score
 }
 
-// applyContextAdjustment 应用上下文调整
+// applyContextAdjustment applies context adjustment
 func (s *RiskScorer) applyContextAdjustment(score float64, ctx RiskContext) float64 {
 	adjustment := 0.0
 
-	// IP 信誉调整
+	// IP reputation adjustment
 	if ctx.IPReputation > 0 {
 		adjustment += (1.0 - ctx.IPReputation) * 0.1
 	}
 
-	// 地理位置风险
+	// Geolocation risk
 	if ctx.GeoRisk > 0 {
 		adjustment += ctx.GeoRisk * 0.05
 	}
 
-	// 历史行为
+	// Historical behavior
 	if ctx.HistoricalScore > 0 {
-		// 历史良好可以降低风险
+		// Good history can reduce risk
 		adjustment -= (1.0 - ctx.HistoricalScore) * 0.1
 	}
 
-	// 已知客户端降低风险
+	// Known client reduces risk
 	if ctx.IsKnownClient {
 		adjustment -= 0.1
 	}
@@ -523,7 +523,7 @@ func (s *RiskScorer) applyContextAdjustment(score float64, ctx RiskContext) floa
 	return score + adjustment
 }
 
-// determineThreatLevel 判定威胁等级
+// determineThreatLevel determines threat level
 func (s *RiskScorer) determineThreatLevel(score float64) string {
 	t := s.config.Thresholds
 
@@ -539,12 +539,12 @@ func (s *RiskScorer) determineThreatLevel(score float64) string {
 	return "critical"
 }
 
-// calculateConfidence 计算置信度
+// calculateConfidence calculates confidence
 func (s *RiskScorer) calculateConfidence(input RiskInput) float64 {
 	confidence := 0.0
 	count := 0
 
-	// 根据可用数据量计算置信度
+	// Calculate confidence based on available data
 	if input.JA3Hash != "" || input.JA4Hash != "" {
 		confidence += 0.15
 		count++
@@ -570,7 +570,7 @@ func (s *RiskScorer) calculateConfidence(input RiskInput) float64 {
 		count++
 	}
 
-	// 上下文数据增加置信度
+	// Context data increases confidence
 	if input.Context.IPReputation > 0 {
 		confidence += 0.10
 	}
@@ -581,7 +581,7 @@ func (s *RiskScorer) calculateConfidence(input RiskInput) float64 {
 	return math.Min(confidence, 1.0)
 }
 
-// countAnomalies 统计异常数量
+// countAnomalies statisticsexceptionquantity
 func (s *RiskScorer) countAnomalies(input RiskInput) int {
 	count := 0
 
@@ -604,58 +604,58 @@ func (s *RiskScorer) countAnomalies(input RiskInput) int {
 	return count
 }
 
-// generateRecommendations 生成建议措施
+// generateRecommendations generates recommended actions
 func (s *RiskScorer) generateRecommendations(result *RiskScore) []string {
 	recommendations := []string{}
 
 	switch result.ThreatLevel {
 	case "safe":
-		recommendations = append(recommendations, "无需特殊处理，继续正常监控")
+		recommendations = append(recommendations, "No special handling needed, continue normal monitoring")
 
 	case "low":
-		recommendations = append(recommendations, "启用基础监控，记录请求特征")
+		recommendations = append(recommendations, "Enable basic monitoring, log request features")
 		if result.Dimensions.TLSFingerprint > 0.2 {
-			recommendations = append(recommendations, "关注 TLS 指纹变化")
+			recommendations = append(recommendations, "Monitor TLS fingerprint changes")
 		}
 
 	case "medium":
-		recommendations = append(recommendations, "增强监控频率，分析行为模式")
-		recommendations = append(recommendations, "考虑启用额外验证（如 CAPTCHA）")
+		recommendations = append(recommendations, "Increase monitoring frequency, analyze behavior patterns")
+		recommendations = append(recommendations, "Consider enabling additional verification (e.g., CAPTCHA)")
 		if result.AnomalyCount > 3 {
-			recommendations = append(recommendations, "多个异常指标，建议详细检查")
+			recommendations = append(recommendations, "Multiple anomalous metrics, detailed inspection recommended")
 		}
 
 	case "high":
-		recommendations = append(recommendations, "限制访问频率，启用严格验证")
-		recommendations = append(recommendations, "记录完整请求上下文用于分析")
-		recommendations = append(recommendations, "考虑临时阻断，人工审核")
+		recommendations = append(recommendations, "Limit access frequency, enable strict verification")
+		recommendations = append(recommendations, "Log complete request context for analysis")
+		recommendations = append(recommendations, "Consider temporary blocking, manual review")
 		if result.Dimensions.HTTPHeaders > 0.6 {
-			recommendations = append(recommendations, "HTTP 请求头高度可疑，可能存在伪造")
+			recommendations = append(recommendations, "HTTP headers highly suspicious, possible forgery")
 		}
 
 	case "critical":
-		recommendations = append(recommendations, "立即阻断该请求")
-		recommendations = append(recommendations, "记录所有相关特征用于威胁情报")
-		recommendations = append(recommendations, "触发安全告警，通知管理员")
-		recommendations = append(recommendations, "检查是否存在关联攻击")
+		recommendations = append(recommendations, "Block this request immediately")
+		recommendations = append(recommendations, "Log all related features for threat intelligence")
+		recommendations = append(recommendations, "Trigger security alert, notify administrator")
+		recommendations = append(recommendations, "Check for correlated attacks")
 	}
 
-	// 针对 ECH 高影响的建议
+	// Recommendations for high ECH impact
 	if result.Dimensions.ECHImpact > 0.2 {
-		recommendations = append(recommendations, "检测到 ECH，建议使用可见字段指纹和行为分析")
+		recommendations = append(recommendations, "ECH detected, recommend using visible field fingerprinting and behavior analysis")
 	}
 
-	// 针对置信度的建议
+	// Recommendations for confidence
 	if result.Confidence < s.config.MinConfidence {
-		recommendations = append(recommendations, "置信度不足，建议收集更多指纹数据")
+		recommendations = append(recommendations, "Insufficient confidence, recommend collecting more fingerprint data")
 	}
 
 	return recommendations
 }
 
-// GetSummary 获取风险摘要
+// GetSummary gets risk summary
 func (r *RiskScore) GetSummary() string {
-	return fmt.Sprintf("威胁等级: %s, 风险分数: %.2f, 置信度: %.2f, 异常数: %d",
+	return fmt.Sprintf("Threat level: %s, Risk score: %.2f, Confidence: %.2f, Anomalies: %d",
 		r.ThreatLevel,
 		r.TotalScore,
 		r.Confidence,
@@ -663,13 +663,13 @@ func (r *RiskScore) GetSummary() string {
 	)
 }
 
-// CalculateRisk 便捷函数：使用默认配置计算风险
+// CalculateRisk convenience function: calculate risk using default configuration
 func CalculateRisk(input RiskInput) (*RiskScore, error) {
 	scorer := NewRiskScorer(nil)
 	return scorer.CalculateRisk(input)
 }
 
-// checkMaliciousFingerprint 检查指纹是否在恶意指纹数据库中
+// checkMaliciousFingerprint checks whether fingerprint is in malicious fingerprint database
 func (s *RiskScorer) checkMaliciousFingerprint(hash, fingerprintType string) (MaliciousFingerprintEntry, bool) {
 	if hash == "" {
 		return MaliciousFingerprintEntry{}, false
@@ -680,21 +680,21 @@ func (s *RiskScorer) checkMaliciousFingerprint(hash, fingerprintType string) (Ma
 	return entry, found
 }
 
-// initMaliciousFingerprintDatabase 初始化恶意指纹数据库
-// 这里包含一些已知的恶意指纹示例，实际使用中应该从外部数据源加载
+// initMaliciousFingerprintDatabase initializes malicious fingerprint database
+// This contains some known malicious fingerprint examples, in actual use should load from external data sources
 func initMaliciousFingerprintDatabase() map[string]MaliciousFingerprintEntry {
 	db := make(map[string]MaliciousFingerprintEntry)
 
-	// 示例：已知的恶意指纹条目
-	// 注意：这些是示例数据，实际部署时应该使用真实的威胁情报数据
+	// Example: Known malicious fingerprint entries
+	// Note: These are example data, actual deployment should use real threat intelligence data
 
-	// Mirai 僵尸网络
+	// Mirai botnet
 	db["JA3:6734f37431670b3ab4292b8f60f29984"] = MaliciousFingerprintEntry{
 		Hash:        "6734f37431670b3ab4292b8f60f29984",
 		Type:        "JA3",
 		ThreatType:  "botnet",
 		Severity:    0.9,
-		Description: "Mirai 僵尸网络变种",
+		Description: "Mirai botnet variant",
 		LastSeen:    "2024-01",
 	}
 
@@ -704,7 +704,7 @@ func initMaliciousFingerprintDatabase() map[string]MaliciousFingerprintEntry {
 		Type:        "JA3",
 		ThreatType:  "exploit_framework",
 		Severity:    0.85,
-		Description: "Metasploit 默认配置",
+		Description: "Metasploit default configuration",
 		LastSeen:    "2024-02",
 	}
 
@@ -714,7 +714,7 @@ func initMaliciousFingerprintDatabase() map[string]MaliciousFingerprintEntry {
 		Type:        "JA3",
 		ThreatType:  "scanner",
 		Severity:    0.7,
-		Description: "Nmap 网络扫描器",
+		Description: "Nmap network scanner",
 		LastSeen:    "2024-03",
 	}
 
@@ -724,7 +724,7 @@ func initMaliciousFingerprintDatabase() map[string]MaliciousFingerprintEntry {
 		Type:        "JA3",
 		ThreatType:  "injection_tool",
 		Severity:    0.95,
-		Description: "SQLMap SQL 注入工具",
+		Description: "SQLMap SQL injection tool",
 		LastSeen:    "2024-02",
 	}
 
@@ -734,17 +734,17 @@ func initMaliciousFingerprintDatabase() map[string]MaliciousFingerprintEntry {
 		Type:        "JA3",
 		ThreatType:  "scanner",
 		Severity:    0.65,
-		Description: "ZGrab 安全扫描器",
+		Description: "ZGrab security scanner",
 		LastSeen:    "2024-01",
 	}
 
-	// JA4 示例：恶意爬虫
+	// JA4 example: Malicious crawler
 	db["JA4:t13d1516h2_8daaf6152771_b0da82dd1658"] = MaliciousFingerprintEntry{
 		Hash:        "t13d1516h2_8daaf6152771_b0da82dd1658",
 		Type:        "JA4",
 		ThreatType:  "malicious_crawler",
 		Severity:    0.75,
-		Description: "恶意数据采集爬虫",
+		Description: "Malicious data collection crawler",
 		LastSeen:    "2024-03",
 	}
 
