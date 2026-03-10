@@ -1,6 +1,6 @@
 package clienthints
 
-// Phase 3: 本模块已完成基础迁移，待深度优化（详见 docs/5-process/modularization/PHASE_3_PLAN.md）
+// Phase 3: This module has completed basic migration, awaiting deep optimization (see docs/5-process/modularization/PHASE_3_PLAN.md)
 import (
 	"fmt"
 	"strings"
@@ -9,50 +9,50 @@ import (
 	"github.com/vistone/fingerprint/modules/core/types"
 )
 
-// ClientHintsPolicy Client Hints 策略配置
+// ClientHintsPolicy Client Hints policy configuration
 type ClientHintsPolicy struct {
-	// 低熵提示（默认发送）
+	// Low entropy hints (sent by default)
 	SendLowEntropyHints bool
 
-	// 高熵提示（需服务器 Accept-CH 请求）
+	// High entropy hints (require Accept-CH request from server)
 	HighEntropyHints []string
 
-	// 是否支持委托跨源
+	// Cross-origin delegation support
 	SupportsCrossOriginDelegation bool
 
-	// Permissions-Policy 配置
+	// Permissions-Policy configuration
 	PermissionsPolicy map[string]string
 }
 
-// ClientHintsData 完整的 Client Hints 数据
+// ClientHintsData complete Client Hints data
 type ClientHintsData struct {
-	// 低熵提示（总是可用）
+	// Low entropy hints (always available)
 	SecCHUA         string // "Google Chrome";v="120", "Chromium";v="120"
-	SecCHUAMobile   string // ?0 或 ?1
+	SecCHUAMobile   string // ?0 or ?1
 	SecCHUAPlatform string // "Windows", "macOS", "Linux", "Android", "iOS"
 
-	// 高熵提示（需 Accept-CH 授权）
+	// High entropy hints (require Accept-CH authorization)
 	SecCHUAArch               string // "x86", "arm"
 	SecCHUABitness            string // "64", "32"
-	SecCHUAFullVersionList    string // 完整版本列表
-	SecCHUAModel              string // 设备型号（移动端）
-	SecCHUAPlatformVersion    string // 平台版本号
-	SecCHUAWoW64              string // Windows 64 位仿真标记
+	SecCHUAFullVersionList    string // Full version list
+	SecCHUAModel              string // Device model (mobile)
+	SecCHUAPlatformVersion    string // Platform version number
+	SecCHUAWoW64              string // Windows 64-bit emulation marker
 	SecCHUAFormFactor         string // "Desktop", "Mobile", "Tablet", "VR"
 	SecCHPreferredColorScheme string // "dark", "light"
 	SecCHPrefersReducedMotion string // "reduce", "no-preference"
 
-	// 视口和网络提示
-	ViewportWidth string // 视口宽度
-	DeviceMemory  string // 设备内存（GB）
-	DPR           string // 设备像素比
-	DownlinkSpeed string // 下行带宽（Mbps）
-	ECT           string // 有效连接类型："slow-2g", "2g", "3g", "4g"
-	RTT           string // 往返时间（ms）
+	// Viewport and network hints
+	ViewportWidth string // Viewport width
+	DeviceMemory  string // Device memory (GB)
+	DPR           string // Device pixel ratio
+	DownlinkSpeed string // Downlink bandwidth (Mbps)
+	ECT           string // Effective connection type: "slow-2g", "2g", "3g", "4g"
+	RTT           string // Round-trip time (ms)
 	SaveData      string // "on"/"off"
 }
 
-// NewClientHintsPolicy 创建默认策略
+// NewClientHintsPolicy creates default policy
 func NewClientHintsPolicy(browserType types.BrowserType) *ClientHintsPolicy {
 	policy := &ClientHintsPolicy{
 		SendLowEntropyHints:           true,
@@ -60,7 +60,7 @@ func NewClientHintsPolicy(browserType types.BrowserType) *ClientHintsPolicy {
 		PermissionsPolicy:             make(map[string]string),
 	}
 
-	// 根据浏览器配置高熵提示
+	// Configure high entropy hints based on browser type
 	switch browserType {
 	case types.BrowserChrome:
 		policy.HighEntropyHints = []string{
@@ -89,14 +89,14 @@ func NewClientHintsPolicy(browserType types.BrowserType) *ClientHintsPolicy {
 		policy.PermissionsPolicy["ch-ua"] = "self"
 
 	case types.BrowserFirefox, types.BrowserSafari:
-		// Firefox 和 Safari 目前不支持 Client Hints
+		// Firefox and Safari currently do not support Client Hints
 		policy.HighEntropyHints = []string{}
 	}
 
 	return policy
 }
 
-// GenerateClientHintsFromProfile 从 profile 生成 Client Hints
+// GenerateClientHintsFromProfile generates Client Hints from profile
 func GenerateClientHintsFromProfile(profile *profiles.ClientProfile, policy *ClientHintsPolicy) *ClientHintsData {
 	hints := &ClientHintsData{}
 
@@ -104,12 +104,12 @@ func GenerateClientHintsFromProfile(profile *profiles.ClientProfile, policy *Cli
 		return hints
 	}
 
-	// 低熵提示（总是发送）
+	// Low entropy hints (always sent)
 	hints.SecCHUA = generateSecCHUA(profile)
 	hints.SecCHUAMobile = generateSecCHUAMobile(profile)
 	hints.SecCHUAPlatform = generateSecCHUAPlatform(profile)
 
-	// 高熵提示（仅当策略允许时）
+	// High entropy hints (only when policy allows)
 	if contains(policy.HighEntropyHints, "Sec-CH-UA-Arch") {
 		hints.SecCHUAArch = `"` + profile.OSArch + `"`
 	}
@@ -132,13 +132,13 @@ func GenerateClientHintsFromProfile(profile *profiles.ClientProfile, policy *Cli
 	return hints
 }
 
-// ProcessAcceptCH 处理服务器的 Accept-CH 响应头
+// ProcessAcceptCH processes the server's Accept-CH response header
 func (p *ClientHintsPolicy) ProcessAcceptCH(acceptCHValue string) {
 	if acceptCHValue == "" {
 		return
 	}
 
-	// 解析 Accept-CH 头
+	// Parse Accept-CH header
 	hints := strings.Split(acceptCHValue, ",")
 	for _, hint := range hints {
 		hint = strings.TrimSpace(hint)
@@ -146,14 +146,14 @@ func (p *ClientHintsPolicy) ProcessAcceptCH(acceptCHValue string) {
 			continue
 		}
 
-		// 只添加我们支持的高熵提示
+		// Only add high entropy hints that we support
 		if isSupportedHighEntropyHint(hint) && !contains(p.HighEntropyHints, hint) {
 			p.HighEntropyHints = append(p.HighEntropyHints, hint)
 		}
 	}
 }
 
-// ApplyToHeaders 将 Client Hints 应用到 HTTP 头
+// ApplyToHeaders applies Client Hints to HTTP headers
 func (hints *ClientHintsData) ApplyToHeaders(headers map[string]string) {
 	if hints.SecCHUA != "" {
 		headers["Sec-CH-UA"] = hints.SecCHUA
@@ -205,11 +205,11 @@ func (hints *ClientHintsData) ApplyToHeaders(headers map[string]string) {
 	}
 }
 
-// ============ 辅助函数 ============
+// ============ Helper functions ============
 
 func generateSecCHUA(profile *profiles.ClientProfile) string {
-	// 格式: "Brand";v="major", "Brand";v="major"
-	// Chrome 示例: "Not A(Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"
+	// Format: "Brand";v="major", "Brand";v="major"
+	// Chrome example: "Not A(Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"
 
 	version := profile.BrowserVersion
 	majorVersion := strings.Split(version, ".")[0]
@@ -236,7 +236,7 @@ func generateSecCHUAMobile(profile *profiles.ClientProfile) string {
 }
 
 func generateSecCHUAPlatform(profile *profiles.ClientProfile) string {
-	// 根据操作系统返回标准平台名
+	// Return standard platform name based on operating system
 	os := strings.ToLower(profile.OS)
 
 	switch {
@@ -256,7 +256,7 @@ func generateSecCHUAPlatform(profile *profiles.ClientProfile) string {
 }
 
 func generateFullVersionList(profile *profiles.ClientProfile) string {
-	// 格式: "Brand";v="full.version", "Brand";v="full.version"
+	// Format: "Brand";v="full.version", "Brand";v="full.version"
 	version := profile.BrowserVersion
 
 	browserType := strings.ToLower(profile.BrowserType)
@@ -299,7 +299,7 @@ func isSupportedHighEntropyHint(hint string) bool {
 	return false
 }
 
-// contains 检查字符串切片是否包含指定的值
+// contains checks if a string slice contains a specific value
 func contains(slice []string, item string) bool {
 	for _, v := range slice {
 		if strings.EqualFold(v, item) {
