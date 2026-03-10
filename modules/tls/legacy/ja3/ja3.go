@@ -12,25 +12,25 @@ import (
 	tls "github.com/bogdanfinn/utls"
 )
 
-// JA3Result JA3 指纹结果
+// JA3Result JA3 fingerprint result
 type JA3Result struct {
 	// JA3 fingerprint hash (MD5)
 	Hash string
-	// JA3 原始字符串（可读形式）
+	// JA3 raw string (readable form)
 	RawString string
-	// TLS 版本
+	// TLS version
 	TLSVersion uint16
-	// 密码套件列表（已过滤 GREASE）
+	// Cipher suite list (GREASE filtered)
 	CipherSuites []uint16
-	// 扩展列表（已过滤 GREASE）
+	// Extension list (GREASE filtered)
 	Extensions []uint16
-	// 椭圆曲线列表（已过滤 GREASE）
+	// Elliptic curve list (GREASE filtered)
 	EllipticCurves []tls.CurveID
-	// 椭圆曲线点格式列表
+	// Elliptic curve point format list
 	EllipticCurvePointFormats []uint8
 }
 
-// ClientProfile 客户端指纹配置
+// ClientProfile client fingerprint configuration
 type ClientProfile interface {
 	GetClientHelloSpec() (tls.ClientHelloSpec, error)
 }
@@ -41,14 +41,14 @@ var (
 	MappedTLSClients    map[string]ClientProfile
 )
 
-// InitMappedTLSClients 由根包调用以初始化客户端映射表
-// 使用 interface{} 避免类型匹配问题
+// InitMappedTLSClients is called by the root package to initialize client mapping
+// Use interface{} to avoid type matching issues
 func InitMappedTLSClients(clients interface{}) {
 	if m, ok := clients.(map[string]ClientProfile); ok {
 		MappedTLSClients = m
 		return
 	}
-	// 尝试转换为 map[string]interface{}
+	// Try converting to map[string]interface{}
 	if m, ok := clients.(map[string]interface{}); ok {
 		MappedTLSClients = make(map[string]ClientProfile)
 		for k, v := range m {
@@ -59,33 +59,33 @@ func InitMappedTLSClients(clients interface{}) {
 	}
 }
 
-// InitMappedTLSClientsRaw 从根包接收任何 ClientProfile map 并进行类型转换
+// InitMappedTLSClientsRaw receives any ClientProfile map from root package and converts types
 func InitMappedTLSClientsRaw(clients interface{}) {
-	// 使用反射来导出和转换底层 map
+	// Use reflection to export and convert underlying map
 	clientsVal := reflect.ValueOf(clients)
 	if clientsVal.Kind() != reflect.Map {
 		return
 	}
 
-	// 创建新的 map
+	// Create new map
 	MappedTLSClients = make(map[string]ClientProfile)
 
-	// 遍历原始 map 的所有键值对
+	// Iterate over all key-value pairs in original map
 	for _, keyVal := range clientsVal.MapKeys() {
 		key := fmt.Sprintf("%v", keyVal.Interface())
 		valInterface := clientsVal.MapIndex(keyVal).Interface()
 
-		// 尝试将值转换为 ClientProfile
-		// 由于值实现了 GetClientHelloSpec 方法，它应该满足 ClientProfile 接口
+		// Try converting value to ClientProfile
+		// Since value implements GetClientHelloSpec, it should satisfy ClientProfile interface
 		if cp, ok := valInterface.(ClientProfile); ok {
 			MappedTLSClients[key] = cp
 		} else {
-			// 如果直接转换不成功，使用类型断言来获取 Getter 方法
-			// 这里我们检查该值是否有 GetClientHelloSpec 方法
+			// If direct conversion fails, use type assertion to obtain getter method
+			// Check whether the value has GetClientHelloSpec method here
 			refVal := reflect.ValueOf(valInterface)
 			method := refVal.MethodByName("GetClientHelloSpec")
 			if method.IsValid() {
-				// 创建一个包装器来实现 ClientProfile 接口
+				// Create a wrapper to implement ClientProfile interface
 				wrapper := &dynamicClientProfile{value: valInterface}
 				MappedTLSClients[key] = wrapper
 			}
@@ -93,12 +93,12 @@ func InitMappedTLSClientsRaw(clients interface{}) {
 	}
 }
 
-// dynamicClientProfile 动态包装器，用于实现 ClientProfile 接口
+// dynamicClientProfile dynamic wrapper implementing ClientProfile interface
 type dynamicClientProfile struct {
 	value interface{}
 }
 
-// GetClientHelloSpec 实现 ClientProfile 接口
+// GetClientHelloSpec implements ClientProfile interface
 func (d *dynamicClientProfile) GetClientHelloSpec() (tls.ClientHelloSpec, error) {
 	refVal := reflect.ValueOf(d.value)
 	method := refVal.MethodByName("GetClientHelloSpec")
@@ -144,8 +144,8 @@ func buildJA3ProfileIndex() {
 	ja3ProfileIndex = index
 }
 
-// findProfileByJA3NoCopy 根据 JA3 哈希查找匹配 Profile（内部零拷贝路径）
-// 返回值直接引用内部缓存，仅供只读场景使用。
+// findProfileByJA3NoCopy finds matching profiles by JA3 hash (internal zero-copy path)
+// Return value directly references internal cache, for read-only scenarios only.
 func findProfileByJA3NoCopy(ja3Hash string) []string {
 	ja3ProfileIndexOnce.Do(buildJA3ProfileIndex)
 	if ja3ProfileIndex == nil {
@@ -154,13 +154,13 @@ func findProfileByJA3NoCopy(ja3Hash string) []string {
 	return ja3ProfileIndex[strings.ToLower(ja3Hash)]
 }
 
-// isGREASEValue 检查是否为 GREASE 值（RFC 8701）
-// GREASE 值格式：0xXAXA（十六进制）
+// isGREASEValue checks whether value is GREASE (RFC 8701)
+// GREASE value format: 0xXAXA (hex)
 func isGREASEValue(v uint16) bool {
 	return v&0x0f0f == 0x0a0a && (v>>8) == (v&0x00ff)
 }
 
-// filterGREASEUint16 过滤 GREASE 值（uint16 切片）
+// filterGREASEUint16 filters GREASE values (uint16 slice)
 func filterGREASEUint16(values []uint16) []uint16 {
 	result := make([]uint16, 0, len(values))
 	for _, v := range values {
@@ -171,7 +171,7 @@ func filterGREASEUint16(values []uint16) []uint16 {
 	return result
 }
 
-// filterGREASECurveID 过滤 GREASE 值（CurveID 切片）
+// filterGREASECurveID filters GREASE values (CurveID slice)
 func filterGREASECurveID(curves []tls.CurveID) []tls.CurveID {
 	result := make([]tls.CurveID, 0, len(curves))
 	for _, c := range curves {
@@ -182,7 +182,7 @@ func filterGREASECurveID(curves []tls.CurveID) []tls.CurveID {
 	return result
 }
 
-// uint16SliceToString 将 uint16 切片转换为逗号分隔字符串
+// uint16SliceToString converts uint16 slice to dash-separated string
 func uint16SliceToString(values []uint16) string {
 	parts := make([]string, len(values))
 	for i, v := range values {
@@ -191,7 +191,7 @@ func uint16SliceToString(values []uint16) string {
 	return strings.Join(parts, "-")
 }
 
-// curveIDSliceToString 将 CurveID 切片转换为逗号分隔字符串
+// curveIDSliceToString converts CurveID slice to dash-separated string
 func curveIDSliceToString(curves []tls.CurveID) string {
 	parts := make([]string, len(curves))
 	for i, c := range curves {
@@ -200,7 +200,7 @@ func curveIDSliceToString(curves []tls.CurveID) string {
 	return strings.Join(parts, "-")
 }
 
-// uint8SliceToString 将 uint8 切片转换为逗号分隔字符串
+// uint8SliceToString converts uint8 slice to dash-separated string
 func uint8SliceToString(values []uint8) string {
 	parts := make([]string, len(values))
 	for i, v := range values {
@@ -209,45 +209,45 @@ func uint8SliceToString(values []uint8) string {
 	return strings.Join(parts, "-")
 }
 
-// ComputeJA3FromSpec 从 TLS ClientHello 规范计算 JA3 指纹
-// JA3 算法：MD5(TLSVersion,Ciphers,Extensions,EllipticCurves,EllipticCurvePointFormats)
+// ComputeJA3FromSpec computes JA3 fingerprint from TLS ClientHello spec
+// JA3 algorithm: MD5(TLSVersion,Ciphers,Extensions,EllipticCurves,EllipticCurvePointFormats)
 func ComputeJA3FromSpec(spec tls.ClientHelloSpec) (*JA3Result, error) {
-	// 输入验证：检查 spec 是否为空
+	// Input validation: check whether spec is empty
 	if err := validateClientHelloSpec(spec); err != nil {
 		return nil, err
 	}
 
 	result := &JA3Result{}
 
-	// 提取 TLS 版本（默认为 TLS 1.2）
+	// Extract TLS version (defaults to TLS 1.2)
 	result.TLSVersion = tls.VersionTLS12
 
-	// 提取密码套件（过滤 GREASE）
+	// Extract cipher suites (GREASE filtered)
 	ciphers := filterGREASEUint16(spec.CipherSuites)
 	
-	// 验证密码套件列表
+	// Validate cipher suite list
 	if len(ciphers) == 0 {
 		return nil, fmt.Errorf("%w: no valid cipher suites", ErrInvalidClientHelloSpec)
 	}
 	result.CipherSuites = ciphers
 
-	// 提取扩展信息
+	// Extract extension information
 	extensions := make([]uint16, 0)
 	var curves []tls.CurveID
 	var pointFormats []uint8
 
 	for _, ext := range spec.Extensions {
 		if ext == nil {
-			continue // 跳过空扩展
+			continue // Skip nil extension
 		}
 		
 		switch e := ext.(type) {
 		case *tls.SupportedVersionsExtension:
-			// 验证扩展数据
+			// Validate extension data
 			if e.Versions == nil {
 				continue
 			}
-			// 提取最高 TLS 版本
+			// Extract highest TLS version
 			for _, v := range e.Versions {
 				if !isGREASEValue(v) && v > result.TLSVersion {
 					result.TLSVersion = v
@@ -309,21 +309,21 @@ func ComputeJA3FromSpec(spec tls.ClientHelloSpec) (*JA3Result, error) {
 			extensions = append(extensions, 17613) // extension_type_application_settings_new
 
 		case *tls.UtlsGREASEExtension:
-			// 跳过 GREASE 扩展
+			// Skip GREASE extensions
 
 		default:
-			// 对于未知扩展，忽略
+			// Ignore unknown extensions
 			_ = e
 		}
 	}
 
-	// 过滤扩展中的 GREASE 值
+	// Filter GREASE values in extensions
 	result.Extensions = filterGREASEUint16(extensions)
 	result.EllipticCurves = curves
 	result.EllipticCurvePointFormats = pointFormats
 
-	// 构建 JA3 原始字符串
-	// 格式：TLSVersion,CipherSuites,Extensions,EllipticCurves,EllipticCurvePointFormats
+	// Build JA3 raw string
+	// Format: TLSVersion,CipherSuites,Extensions,EllipticCurves,EllipticCurvePointFormats
 	rawParts := []string{
 		strconv.Itoa(int(result.TLSVersion)),
 		uint16SliceToString(result.CipherSuites),
@@ -333,16 +333,16 @@ func ComputeJA3FromSpec(spec tls.ClientHelloSpec) (*JA3Result, error) {
 	}
 	result.RawString = strings.Join(rawParts, ",")
 
-	// 计算 MD5 哈希
+	// Calculate MD5 hash
 	hash := md5.Sum([]byte(result.RawString))
 	result.Hash = fmt.Sprintf("%x", hash)
 
 	return result, nil
 }
 
-// validateClientHelloSpec 验证 ClientHello 规范的有效性
+// validateClientHelloSpec validates ClientHello spec validity
 func validateClientHelloSpec(spec tls.ClientHelloSpec) error {
-	// 检查密码套件列表长度
+	// Check cipher suite list length
 	if len(spec.CipherSuites) == 0 {
 		return fmt.Errorf("%w: cipher suites list is empty", ErrInvalidClientHelloSpec)
 	}
@@ -350,7 +350,7 @@ func validateClientHelloSpec(spec tls.ClientHelloSpec) error {
 		return fmt.Errorf("%w: cipher suites list too long (%d > 255)", ErrInvalidClientHelloSpec, len(spec.CipherSuites))
 	}
 
-	// 检查扩展列表长度
+	// Check extension list length
 	if len(spec.Extensions) == 0 {
 		return fmt.Errorf("%w: extensions list is empty", ErrInvalidClientHelloSpec)
 	}
@@ -358,7 +358,7 @@ func validateClientHelloSpec(spec tls.ClientHelloSpec) error {
 		return fmt.Errorf("%w: extensions list too long (%d > 255)", ErrInvalidClientHelloSpec, len(spec.Extensions))
 	}
 
-	// 检查每个密码套件值的有效性
+	// Check validity of each cipher suite value
 	for i, cipher := range spec.CipherSuites {
 		if cipher == 0 {
 			return fmt.Errorf("%w: cipher suite at index %d is zero", ErrInvalidClientHelloSpec, i)
@@ -368,7 +368,7 @@ func validateClientHelloSpec(spec tls.ClientHelloSpec) error {
 	return nil
 }
 
-// ComputeJA3FromProfile 从 ClientProfile 计算 JA3 指纹
+// ComputeJA3FromProfile computes JA3 fingerprint from ClientProfile
 func ComputeJA3FromProfile(profile ClientProfile) (*JA3Result, error) {
 	spec, err := profile.GetClientHelloSpec()
 	if err != nil {
@@ -377,7 +377,7 @@ func ComputeJA3FromProfile(profile ClientProfile) (*JA3Result, error) {
 	return ComputeJA3FromSpec(spec)
 }
 
-// ComputeJA3ByProfileName 根据指纹名称计算 JA3 指纹
+// ComputeJA3ByProfileName computes JA3 by profile name
 func ComputeJA3ByProfileName(profileName string) (*JA3Result, error) {
 	profile, ok := MappedTLSClients[profileName]
 	if !ok {
@@ -386,13 +386,13 @@ func ComputeJA3ByProfileName(profileName string) (*JA3Result, error) {
 	return ComputeJA3FromProfile(profile)
 }
 
-// MatchJA3 检查两个 JA3 哈希是否匹配
+// MatchJA3 checks whether two JA3 hashes match
 func MatchJA3(hash1, hash2 string) bool {
 	return strings.EqualFold(hash1, hash2)
 }
 
-// FindProfileByJA3 根据 JA3 哈希查找匹配的 ClientProfile 名称
-// 返回所有匹配的 profile 名称列表（可能有多个）
+// FindProfileByJA3 finds matching ClientProfile names by JA3 hash
+// Returns all matching profile names (can be multiple)
 func FindProfileByJA3(ja3Hash string) []string {
 	matches := findProfileByJA3NoCopy(ja3Hash)
 	if len(matches) == 0 {
