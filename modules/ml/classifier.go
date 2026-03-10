@@ -1,5 +1,5 @@
-// Package ml 提供机器学习指纹分类功能
-// 实现三层分层分类器架构，移植自 Rust 版本的 ML 设计
+// Package ml provides machine learning fingerprint classification functionality
+// Implements three-layer hierarchical classifier architecture, ported from Rust version ML design
 package ml
 
 import (
@@ -10,31 +10,31 @@ import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// Classifier 分类器接口
+// Classifier classifier interface
 type Classifier interface {
-	// Train 训练分类器
+	// Train train classifier
 	Train(features [][]float64, labels []string) error
-	// Predict 预测标签
+	// Predict predict label
 	Predict(features []float64) (string, float64)
-	// PredictTopK 返回 TopK 预测结果
+	// PredictTopK return top-K prediction results
 	PredictTopK(features []float64, k int) []Prediction
 }
 
-// Prediction 预测结果
+// Prediction prediction result
 type Prediction struct {
 	Label      string
 	Confidence float64
 }
 
-// SimpleClassifier 简单分类器（基于距离）
+// SimpleClassifier simple classifier (distance-based)
 type SimpleClassifier struct {
-	classes    map[string][]float64 // 类别中心点
-	weights    []float64            // 特征权重
+	classes    map[string][]float64 // Class centroids
+	weights    []float64            // Feature weights
 	classCount int
 	mu         sync.RWMutex
 }
 
-// NewSimpleClassifier 创建新的简单分类器
+// NewSimpleClassifier create new simple classifier
 func NewSimpleClassifier(featureCount int) *SimpleClassifier {
 	weights := make([]float64, featureCount)
 	for i := range weights {
@@ -47,12 +47,12 @@ func NewSimpleClassifier(featureCount int) *SimpleClassifier {
 	}
 }
 
-// Train 训练分类器
+// Train train classifier
 func (c *SimpleClassifier) Train(features [][]float64, labels []string) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	// 计算每个类别的中心点
+	// Calculate centroid for each class
 	classSums := make(map[string][]float64)
 	classCounts := make(map[string]int)
 
@@ -67,7 +67,7 @@ func (c *SimpleClassifier) Train(features [][]float64, labels []string) error {
 		classCounts[label]++
 	}
 
-	// 计算平均值
+	// Calculate average
 	for label, sum := range classSums {
 		count := classCounts[label]
 		center := make([]float64, len(sum))
@@ -81,7 +81,7 @@ func (c *SimpleClassifier) Train(features [][]float64, labels []string) error {
 	return nil
 }
 
-// Predict 预测标签
+// Predict predict label
 func (c *SimpleClassifier) Predict(features []float64) (string, float64) {
 	predictions := c.PredictTopK(features, 1)
 	if len(predictions) == 0 {
@@ -90,7 +90,7 @@ func (c *SimpleClassifier) Predict(features []float64) (string, float64) {
 	return predictions[0].Label, predictions[0].Confidence
 }
 
-// PredictTopK 返回 TopK 预测结果
+// PredictTopK return top-K prediction results
 func (c *SimpleClassifier) PredictTopK(features []float64, k int) []Prediction {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -100,22 +100,22 @@ func (c *SimpleClassifier) PredictTopK(features []float64, k int) []Prediction {
 		distance float64
 	}
 
-	// 计算到每个类别的加权距离
+	// Calculate weighted distance to each class
 	results := make([]distanceResult, 0, len(c.classes))
 	for label, center := range c.classes {
 		dist := c.weightedDistance(features, center)
 		results = append(results, distanceResult{label: label, distance: dist})
 	}
 
-	// 按距离排序（距离越小越相似）
+	// Sort by distance (smaller distance = more similar)
 	sort.Slice(results, func(i, j int) bool {
 		return results[i].distance < results[j].distance
 	})
 
-	// 转换为置信度
+	// Convert to confidence scores
 	predictions := make([]Prediction, 0, min(k, len(results)))
 	for i := 0; i < k && i < len(results); i++ {
-		// 将距离转换为置信度（距离越小置信度越高）
+		// Convert distance to confidence (smaller distance = higher confidence)
 		confidence := 1.0 / (1.0 + results[i].distance)
 		predictions = append(predictions, Prediction{
 			Label:      results[i].label,
@@ -126,7 +126,7 @@ func (c *SimpleClassifier) PredictTopK(features []float64, k int) []Prediction {
 	return predictions
 }
 
-// weightedDistance 计算加权欧氏距离
+// weightedDistance calculate weighted Euclidean distance
 func (c *SimpleClassifier) weightedDistance(a, b []float64) float64 {
 	if len(a) != len(b) {
 		return math.MaxFloat64
@@ -141,19 +141,19 @@ func (c *SimpleClassifier) weightedDistance(a, b []float64) float64 {
 	return math.Sqrt(sum)
 }
 
-// ProtocolClassifier 协议类型分类器（第一层）
+// ProtocolClassifier protocol type classifier (layer 1)
 type ProtocolClassifier struct {
 	classifier *SimpleClassifier
 }
 
-// NewProtocolClassifier 创建新的协议分类器
+// NewProtocolClassifier create new protocol classifier
 func NewProtocolClassifier() *ProtocolClassifier {
 	return &ProtocolClassifier{
-		classifier: NewSimpleClassifier(10), // 10 个协议相关特征
+		classifier: NewSimpleClassifier(10), // 10 protocol-related features
 	}
 }
 
-// Train 训练协议分类器
+// Train train protocol classifier
 func (pc *ProtocolClassifier) Train(features [][]float64, labels []core.ProtocolType) error {
 	strLabels := make([]string, len(labels))
 	for i, l := range labels {
@@ -162,27 +162,27 @@ func (pc *ProtocolClassifier) Train(features [][]float64, labels []core.Protocol
 	return pc.classifier.Train(features, strLabels)
 }
 
-// Predict 预测协议类型
+// Predict predict protocol type
 func (pc *ProtocolClassifier) Predict(features []float64) (core.ProtocolType, float64) {
 	label, conf := pc.classifier.Predict(features)
 	return core.ProtocolType(label), conf
 }
 
-// FamilyClassifier 浏览器家族分类器（第二层）
+// FamilyClassifier browser family classifier (layer 2)
 type FamilyClassifier struct {
 	classifier *SimpleClassifier
 	protocol   core.ProtocolType
 }
 
-// NewFamilyClassifier 创建新的浏览器家族分类器
+// NewFamilyClassifier create new browser family classifier
 func NewFamilyClassifier(protocol core.ProtocolType) *FamilyClassifier {
 	return &FamilyClassifier{
-		classifier: NewSimpleClassifier(15), // 15 个浏览器相关特征
+		classifier: NewSimpleClassifier(15), // 15 browser-related features
 		protocol:   protocol,
 	}
 }
 
-// Train 训练浏览器家族分类器
+// Train train browser family classifier
 func (fc *FamilyClassifier) Train(features [][]float64, labels []core.BrowserType) error {
 	strLabels := make([]string, len(labels))
 	for i, l := range labels {
@@ -191,32 +191,32 @@ func (fc *FamilyClassifier) Train(features [][]float64, labels []core.BrowserTyp
 	return fc.classifier.Train(features, strLabels)
 }
 
-// Predict 预测浏览器家族
+// Predict predict browser family
 func (fc *FamilyClassifier) Predict(features []float64) (core.BrowserType, float64) {
 	label, conf := fc.classifier.Predict(features)
 	return core.BrowserType(label), conf
 }
 
-// VersionClassifier 版本识别分类器（第三层）
+// VersionClassifier version recognition classifier (layer 3)
 type VersionClassifier struct {
 	classifier    *SimpleClassifier
 	browserFamily core.BrowserType
 }
 
-// NewVersionClassifier 创建新的版本分类器
+// NewVersionClassifier create new version classifier
 func NewVersionClassifier(family core.BrowserType) *VersionClassifier {
 	return &VersionClassifier{
-		classifier:    NewSimpleClassifier(20), // 20 个版本相关特征
+		classifier:    NewSimpleClassifier(20), // 20 version-related features
 		browserFamily: family,
 	}
 }
 
-// Train 训练版本分类器
+// Train train version classifier
 func (vc *VersionClassifier) Train(features [][]float64, labels []string) error {
 	return vc.classifier.Train(features, labels)
 }
 
-// Predict 预测版本
+// Predict predict version
 func (vc *VersionClassifier) Predict(features []float64) (string, float64) {
 	return vc.classifier.Predict(features)
 }
