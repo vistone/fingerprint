@@ -54,52 +54,52 @@ func parseYAMLFile(path string) (*YAMLProfile, error) {
 	if strings.Contains(path, "..") {
 		return nil, fmt.Errorf("path contains illegal characters '..': %s", path)
 	}
-	
+
 	// security check 2: verify if file path is within allowed directory
 	allowedDirs := []string{"profiles/specs", "cmd/profilegen/extract"}
 	isAllowed := false
-	
+
 	// cleanup path and convert to absolute path
 	cleanPath := filepath.Clean(path)
 	absPath, err := filepath.Abs(cleanPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get absolute path %s: %w", path, err)
 	}
-	
+
 	for _, allowedDir := range allowedDirs {
 		absAllowedDir, err := filepath.Abs(allowedDir)
 		if err != nil {
 			continue
 		}
-		
+
 		// check if path starts with allowed directory
 		if strings.HasPrefix(absPath, absAllowedDir) {
 			isAllowed = true
 			break
 		}
 	}
-	
+
 	if !isAllowed {
 		return nil, fmt.Errorf("path not in allowed range: %s (allowed directories: %v)", path, allowedDirs)
 	}
-	
+
 	// security check 3: check file size (maximum 10MB)
 	const maxFileSize = 10 * 1024 * 1024 // 10MB
 	fileInfo, err := os.Stat(path)
 	if err != nil {
 		return nil, fmt.Errorf("getfileinfofailed %s: %w", path, err)
 	}
-	
+
 	if fileInfo.Size() > maxFileSize {
 		return nil, fmt.Errorf("file size exceeds limit (%d > %d bytes): %s", fileInfo.Size(), maxFileSize, path)
 	}
-	
+
 	// read file content
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file %s: %w", path, err)
 	}
-	
+
 	// security check 4: verify read data size again
 	if len(data) > maxFileSize {
 		return nil, fmt.Errorf("file data size exceeds limit: %s", path)
@@ -118,29 +118,29 @@ func parseAllProfiles(dir string) ([]ProfileSpec, []string, error) {
 	// security check: verify directory path
 	allowedBaseDirs := []string{"profiles/specs", "cmd/profilegen/extract"}
 	isAllowed := false
-	
+
 	cleanDir := filepath.Clean(dir)
 	absDir, err := filepath.Abs(cleanDir)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get directory absolute path: %w", err)
 	}
-	
+
 	for _, allowedDir := range allowedBaseDirs {
 		absAllowedDir, err := filepath.Abs(allowedDir)
 		if err != nil {
 			continue
 		}
-		
+
 		if strings.HasPrefix(absDir, absAllowedDir) || absDir == absAllowedDir {
 			isAllowed = true
 			break
 		}
 	}
-	
+
 	if !isAllowed {
 		return nil, nil, fmt.Errorf("directory not in allowed range: %s (allowed directories: %v)", dir, allowedBaseDirs)
 	}
-	
+
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to read directory: %w", err)
@@ -155,7 +155,7 @@ func parseAllProfiles(dir string) ([]ProfileSpec, []string, error) {
 			fmt.Printf("warning: skipping symbolic link %s\n", entry.Name())
 			continue
 		}
-		
+
 		if entry.IsDir() {
 			continue
 		}
@@ -164,14 +164,14 @@ func parseAllProfiles(dir string) ([]ProfileSpec, []string, error) {
 		}
 
 		path := filepath.Join(dir, entry.Name())
-		
+
 		// double check: ensure joined path is still within allowed directory
 		absPath, err := filepath.Abs(path)
 		if err != nil {
 			fmt.Printf("warning: skipping file %s (cannot get absolute path)\n", entry.Name())
 			continue
 		}
-		
+
 		validPath := false
 		for _, allowedDir := range allowedBaseDirs {
 			absAllowedDir, _ := filepath.Abs(allowedDir)
@@ -180,12 +180,12 @@ func parseAllProfiles(dir string) ([]ProfileSpec, []string, error) {
 				break
 			}
 		}
-		
+
 		if !validPath {
 			fmt.Printf("warning: skipping file %s (path not in allowed range)\n", entry.Name())
 			continue
 		}
-		
+
 		yamlProfile, err := parseYAMLFile(path)
 		if err != nil {
 			return nil, nil, err
