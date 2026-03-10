@@ -1,15 +1,15 @@
-# Contributing Guide
+# 贡献指南
 
-Thank you for contributing code! Please follow these guidelines.
+欢迎贡献代码！请参考以下指南。
 
-## Required Reading
+## 必读文档
 
-- **[Developer Guide](./DEVELOPER_GUIDE.md)** - Version control rules, coding standards, module development
-- **[Development Guide](./DEVELOPER_GUIDE.md)** - Complete reference
+- **[开发指南](./DEVELOPER_GUIDE.md)** - 版本控制规则、编码规范、模块开发
+- **[提交检查清单](../COMMIT_CHECKLIST.md)** - 5 分钟快速参考
 
-## Development Workflow
+## 开发流程
 
-### 1. Clone the Repository
+### 1. 克隆项目
 
 ```bash
 git clone https://github.com/vistone/fingerprint.git
@@ -17,7 +17,7 @@ cd fingerprint && go work sync
 git checkout -b feature/your-feature
 ```
 
-### 2. Development and Testing
+### 2. 开发测试
 
 ```bash
 go test ./modules/... -race
@@ -25,7 +25,7 @@ go fmt ./...
 golangci-lint run
 ```
 
-### 3. Commit Message Format
+### 3. 提交信息
 
 ```
 <type>(<scope>): <subject>
@@ -35,26 +35,26 @@ golangci-lint run
 
 **Type:** `feat` / `fix` / `docs` / `refactor` / `test` / `chore`
 
-**Example:** `feat(profiles): add Chrome 140 support`
+**示例:** `feat(profiles): add Chrome 140 support`
 
-### 4. Version Control (Mandatory)
+### 4. 版本控制（强制）
 
-See [Developer Guide - Version Control Rules](./DEVELOPER_GUIDE.md#version-control-rules-mandatory)
+详见 [开发指南 - 版本控制规则](./DEVELOPER_GUIDE.md#-版本控制规则强制执行)
 
-**7-Step Process:**
-1. Code changes + tests pass
-2. Update CHANGELOG.md
-3. Update version number (minor +1)
-4. Create version commit
-5. Create version Tags
-6. Push to GitHub
-7. Verify compliance
+**7 步流程：**
+1. 代码修改 + 测试通过
+2. 更新 CHANGELOG.md
+3. 更新版本号（minor +1）
+4. 提交版本更新
+5. 创建版本 Tags
+6. 推送到 GitHub
+7. 验证规范
 
-**Must follow!** Violations result in commit rejection or rollback.
+**必须遵守！** 违反规则导致提交被拒或回滚。
 
-## Code Standards
+## 代码规范
 
-### Error Handling
+### 错误处理
 
 ```go
 if err != nil {
@@ -64,7 +64,7 @@ if err != nil {
 var ErrInvalidProfile = errors.New("invalid profile")
 ```
 
-### Concurrency Safety
+### 并发安全
 
 ```go
 type Registry struct {
@@ -80,7 +80,7 @@ func (r *Registry) Get(id string) (Profile, bool) {
 }
 ```
 
-### Logging
+### 日志
 
 ```go
 import "github.com/vistone/fingerprint/modules/internal/logger"
@@ -88,9 +88,9 @@ import "github.com/vistone/fingerprint/modules/internal/logger"
 logger.Debug("request", "profile", name)
 ```
 
-## Testing
+## 测试
 
-### Unit Tests
+### 单元测试
 
 ```go
 func TestGet(t *testing.T) {
@@ -114,16 +114,16 @@ func TestGet(t *testing.T) {
 }
 ```
 
-### Coverage
+### 覆盖率
 
 ```bash
 go test -coverprofile=coverage.out ./modules/...
 go tool cover -html=coverage.out
 ```
 
-## Module Development
+## 模块开发
 
-### Create New Module
+### 创建新模块
 
 ```bash
 mkdir modules/newmod
@@ -132,7 +132,7 @@ cd modules/newmod
 cat > go.mod << 'EOF'
 module github.com/vistone/fingerprint/modules/newmod
 go 1.25.7
-require github.com/vistone/fingerprint/modules/core v1.0.8
+require github.com/vistone/fingerprint/modules/core v1.0.7
 replace github.com/vistone/fingerprint/modules/core => ../core
 EOF
 
@@ -141,33 +141,33 @@ echo "./modules/newmod" >> go.work
 go work sync
 ```
 
-### Dependency Rules
+### 依赖规则
 
-- No circular dependencies
-- core is a zero-dependency module
-- Other modules can depend on core
+- 禁止循环依赖
+- core 是零依赖模块
+- 其他模块可依赖 core
 
-## Pre-Submit Checklist
+## 检查清单
 
-Before submitting:
+提交前：
 
 - [ ] `go test ./modules/... -race` ✓
 - [ ] `go fmt ./...` ✓
 - [ ] `golangci-lint run` ✓
-- [ ] CHANGELOG.md updated
-- [ ] Version number updated (sed)
-- [ ] Version commit created
-- [ ] Tags created (main project + 18 modules)
-- [ ] Version audit passed
+- [ ] CHANGELOG.md 已更新
+- [ ] 版本号已更新（sed）
+- [ ] 版本提交已创建
+- [ ] Tags 已创建（主项目 + 19 模块）
+- [ ] 版本审计通过
 
-## Documentation
+## 文档
 
-- [Developer Guide](./DEVELOPER_GUIDE.md)
-- [Version Management](./VERSION_MANAGEMENT.md)
+- [开发指南](./DEVELOPER_GUIDE.md)
+- [版本管理](./VERSION_MANAGEMENT.md)
 - [API](./API.md)
-- [Architecture](./ARCHITECTURE.md)
-- [Changelog](./CHANGELOG.md)
+- [架构](./ARCHITECTURE.md)
+- [变更日志](./CHANGELOG.md)
 
-## Thank You
+## 感谢
 
-Thanks for contributing!
+感谢贡献！

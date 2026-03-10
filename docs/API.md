@@ -1,16 +1,16 @@
-# API 文档
+# API Documentation
 
-本文档描述 fingerprint 库的公共 API 使用方式（Go Workspace 版本）。
+This document describes the public API usage of the fingerprint library (Go Workspace version).
 
-## 快速开始
+## Quick Start
 
-### 安装
+### Installation
 
 ```bash
 go get github.com/vistone/fingerprint/modules/fingerprint
 ```
 
-### 基本使用
+### Basic Usage
 
 ```go
 package main
@@ -21,18 +21,18 @@ import (
 )
 
 func main() {
-    // 获取指纹
+    // Get fingerprint
     profile, _ := profiles.Get("chrome_133")
     
-    // 使用 TLS 模块
+    // Use TLS module
     ja3 := tls.CalculateJA3(clientHello)
 }
 ```
 
-## 导入路径对照表
+## Import Path Reference
 
-| 旧路径 (废弃) | 新路径 |
-|--------------|--------|
+| Old Path (Deprecated) | New Path |
+|----------------------|----------|
 | `github.com/vistone/fingerprint` | `github.com/vistone/fingerprint/modules/fingerprint` |
 | `github.com/vistone/fingerprint/profiles` | `github.com/vistone/fingerprint/modules/profiles` |
 | `github.com/vistone/fingerprint/tls/ja3` | `github.com/vistone/fingerprint/modules/tls` |
@@ -41,14 +41,14 @@ func main() {
 | `github.com/vistone/fingerprint/internal/tcpip` | `github.com/vistone/fingerprint/modules/internal/tcpip` |
 | `github.com/vistone/fingerprint/types` | `github.com/vistone/fingerprint/modules/core/types` |
 
-## Core 模块 API
+## Core Module API
 
-### 基础类型
+### Basic Types
 
 ```go
 import "github.com/vistone/fingerprint/modules/core"
 
-// 浏览器类型
+// Browser types
 const (
     BrowserChrome  = core.BrowserChrome
     BrowserFirefox = core.BrowserFirefox
@@ -58,7 +58,7 @@ const (
     BrowserBrave   = core.BrowserBrave
 )
 
-// 操作系统类型
+// Operating system types
 const (
     OSWindows10   = core.OSWindows10
     OSWindows11   = core.OSWindows11
@@ -69,321 +69,439 @@ const (
     OSiOS         = core.OSiOS
     OSAndroid     = core.OSAndroid
 )
+
+// Error codes
+const (
+    CodeOK              = 0
+    CodeInvalidInput    = 400
+    CodeNotFound        = 404
+    CodeInternalError   = 500
+    CodeTimeout         = 503
+)
 ```
 
-## Profiles 模块 API
+## Profiles Module API
 
-### 获取指纹
+### Get Fingerprint
 
 ```go
 import "github.com/vistone/fingerprint/modules/profiles"
 
-// 通过 ID 获取
+// Get by ID
 profile, ok := profiles.Get("chrome_133")
 if !ok {
     log.Fatal("profile not found")
 }
 
-// 获取随机指纹
+// Get random fingerprint
 profile := profiles.GetRandom()
 
-// 按浏览器类型获取
+// Get by browser type
 chromeProfiles := profiles.GetByBrowser(core.BrowserChrome)
 
-// 获取所有指纹
+// Get all profiles
 allProfiles := profiles.GetAll()
+
+// Count profiles
+count := profiles.Count()
 ```
 
-### 预定义指纹变量
+### Profile Structure
 
 ```go
-// Chrome 系列
-profiles.Chrome115, profiles.Chrome116, ... profiles.Chrome140
-profiles.Chrome131, profiles.Chrome133  // 内置
-
-// Firefox 系列  
-profiles.Firefox115, ... profiles.Firefox135
-
-// Safari 系列
-profiles.Safari16_0, ... profiles.Safari18_2
-
-// Edge 系列
-profiles.Edge115, ... profiles.Edge130
-
-// Opera 系列
-profiles.Opera100, ... profiles.Opera110
-
-// Brave 系列
-profiles.Brave1_60, ... profiles.Brave1_72
-
-// 移动端
-profiles.IOSSafari16, profiles.IOSSafari17, profiles.IOSSafari18
-profiles.AndroidChrome115, ... profiles.AndroidChrome131
-profiles.AndroidFirefox115, ... profiles.AndroidFirefox130
-```
-
-### 注册自定义指纹
-
-```go
-myProfile := profiles.ClientProfile{
-    ID:             "my_custom",
-    Name:           "My Custom Profile",
-    BrowserType:    core.BrowserChrome,
-    BrowserVersion: "120.0",
-    OS:             core.OSWindows11,
-    OSVersion:      "10.0.22631",
-    TLSVersion:     0x0303,
-    CipherSuites:   []uint16{0x1301, 0x1302, 0x1303},
-    Headers: &core.HTTPHeaders{
-        Accept:         "text/html,*/*",
-        AcceptLanguage: "en-US,en;q=0.9",
-    },
+type Profile struct {
+    ID              string
+    BrowserType     string
+    Version         string
+    
+    // TLS fingerprint
+    TLSVersion      string
+    CipherSuites    []uint16
+    Extensions      []uint16
+    
+    // HTTP/2 settings
+    Settings        []http.Setting
+    SettingsOrder   []http.SettingID
+    
+    // TCP/IP
+    TTL             int
+    WindowSize      int
+    
+    // Metadata
+    CreatedAt       time.Time
+    UpdatedAt       time.Time
 }
-
-profiles.Register(myProfile)
 ```
 
-## Fingerprint Facade API
+## TLS Module API
 
-### 统一入口
-
-```go
-import "github.com/vistone/fingerprint/modules/fingerprint"
-
-// 获取随机指纹
-profile := fingerprint.GetRandom()
-
-// 按浏览器获取
-chrome := fingerprint.GetRandomByBrowser(fingerprint.BrowserChrome)
-
-// 分析请求
-analyzer := fingerprint.NewAnalyzer()
-result := analyzer.Analyze(request)
-```
-
-## TLS 模块 API
-
-### JA3 指纹
+### JA3 Fingerprint
 
 ```go
 import "github.com/vistone/fingerprint/modules/tls"
 
-// 计算 JA3
-ja3 := tls.CalculateJA3(clientHello)
+// Calculate JA3 from ClientHello
+ja3String := tls.CalculateJA3(clientHello)
+
+// Parse TLS handshake
+analyzer := tls.NewAnalyzer(conn)
+fingerprint := analyzer.Analyze()
+
+// Get JA3 hash
+ja3Hash := tls.CalculateJA3Hash(clientHello)
 ```
 
-### JA4/JA4S (Legacy)
+### Supported Algorithms
+
+- JA3: MD5 hash of TLS fingerprint
+- JA4: Compact TLS fingerprint representation
+- JA4S: Server-side JA4 variant
+
+## HTTP Module API
+
+### HTTP/2 Signature
 
 ```go
-import "github.com/vistone/fingerprint/modules/tls/legacy/ja4"
-import "github.com/vistone/fingerprint/modules/tls/legacy/ja4s"
+import "github.com/vistone/fingerprint/modules/http"
 
-// JA4
-fp, err := ja4.CalculateJA4(clientHello)
+// Analyze HTTP/2 connection
+sig := http.AnalyzeHTTP2(conn)
 
-// JA4S
-result, err := ja4s.ComputeJA4S(serverHelloData)
+// Get settings order
+settings := http.GetSettingsOrder()
+
+// Validate pseudo-header order
+err := http.ValidatePseudoHeaderOrder(headers)
 ```
 
-## HTTP 模块 API
+## Gateway Module API
 
-### JA4H (Legacy)
-
-```go
-import "github.com/vistone/fingerprint/modules/http/legacy/ja4h"
-
-// 计算 JA4H
-fp, err := ja4h.CalculateJA4H(req)
-```
-
-### Client Hints (Legacy)
-
-```go
-import "github.com/vistone/fingerprint/modules/http/legacy/clienthints"
-
-// 创建 Client Hints 策略
-policy := clienthints.NewClientHintsPolicy(core.BrowserChrome)
-```
-
-## ML 模块 API
-
-### 分类器
-
-```go
-import "github.com/vistone/fingerprint/modules/ml"
-
-// 创建层次分类器
-classifier := ml.NewHierarchicalClassifier()
-
-// 创建特征提取器
-extractor := ml.NewFeatureExtractor()
-
-// 提取特征并分类
-features := extractor.ExtractFromProfile(profile)
-result := classifier.Classify(features)
-```
-
-## Defense 模块 API
-
-### 异常检测
-
-```go
-import "github.com/vistone/fingerprint/modules/defense"
-
-// 创建检测器
-detector := defense.NewDetector()
-
-// 分析
-score := detector.Analyze(fingerprint)
-```
-
-## Gateway 模块 API
-
-### API 网关
+### Profile Manager
 
 ```go
 import "github.com/vistone/fingerprint/modules/gateway"
 
-// 创建网关
-gw := gateway.NewGateway(&gateway.GatewayConfig{
-    RateLimit: 1000,
-})
+// Create manager
+manager := gateway.NewProfileManager()
 
-// 启动
-gw.Start()
+// Load profiles
+err := manager.LoadProfiles(profileDir)
+
+// Get profile
+profile, err := manager.GetProfile("chrome_133")
+
+// List profiles
+profiles := manager.ListProfiles()
+
+// Reload
+err := manager.ReloadAll()
 ```
 
-## Generator 模块 API
-
-> **注意**: Generator 模块当前为预留接口，尚未实现。如需随机指纹，请使用 `profiles.GetRandom()` 或 `profiles.GetRandomByBrowser()`。
+### Analysis
 
 ```go
-import "github.com/vistone/fingerprint/modules/profiles"
+// Analyze request
+result := gateway.Analyze(request, profile)
 
-profile := profiles.GetRandom()
-profile := profiles.GetRandomByBrowser(core.BrowserChrome)
+// Get risk score
+score := result.RiskScore
+
+// Get threat type
+threat := result.ThreatType
 ```
 
-## Network 模块 API
+## Generator Module API
 
-> **注意**: Network 模块当前为预留接口，尚未实现。TCP/IP 指纹已集成在 `profiles.CreateTCPIP()` 和 `client.SmartTransport` 中。
-
-## Internal 模块 API
-
-### 工具函数
+### Random Fingerprint
 
 ```go
-import "github.com/vistone/fingerprint/modules/internal/utils"
+import "github.com/vistone/fingerprint/modules/generator"
 
-// 随机选择
-choice := utils.RandomChoice(items)
+// Generate random fingerprint
+profile := generator.GenerateRandom()
+
+// Generate by browser type
+chromeProfile := generator.GenerateByBrowser(core.BrowserChrome)
+
+// Generate with constraints
+profile := generator.GenerateWithConstraints(opts)
 ```
 
-### 指标
+## ML Module API
+
+### Classification
 
 ```go
-import "github.com/vistone/fingerprint/modules/internal/metrics"
+import "github.com/vistone/fingerprint/modules/ml"
 
-// 记录指标
-metrics.RecordFingerprintGeneration("Chrome", "Windows", nil)
+// Create classifier
+clf := ml.NewClassifier()
+
+// Load model
+err := clf.LoadModel(modelPath)
+
+// Classify
+result := clf.Classify(features)
+
+// Get confidence scores
+scores := result.Scores
 ```
 
-## Config 模块 API
+## Defense Module API
 
-### 配置管理
+### Risk Scoring
+
+```go
+import "github.com/vistone/fingerprint/modules/defense"
+
+// Create analyzer
+analyzer := defense.NewRiskAnalyzer()
+
+// Analyze request
+risk := analyzer.Analyze(request, profile)
+
+// Get risk level
+level := risk.Level
+
+// Get risk reasons
+reasons := risk.Reasons
+```
+
+### Detection Rules
+
+```go
+// Check for anomalies
+anomalies := defense.DetectAnomalies(fingerprint)
+
+// Check for known bots
+isBot := defense.IsKnownBot(ua)
+
+// Check headless browser indicators
+isHeadless := defense.IsHeadlessBrowser(fingerprint)
+```
+
+## Agent Module API
+
+### Decision Making
+
+```go
+import "github.com/vistone/fingerprint/modules/agent"
+
+// Create agent
+agent := agent.NewAgent(config)
+
+// Process request
+decision := agent.Process(request, profile)
+
+// Get decision
+action := decision.Action // Allow, Monitor, Challenge, Throttle, Block
+
+// Get threat classification
+threat := decision.ThreatType
+```
+
+## Config Module API
+
+### Configuration Management
 
 ```go
 import "github.com/vistone/fingerprint/modules/config"
 
-// 通过 bridge 访问内部配置中心
-center := &config.ConfigCenter{}
-center.Load()
-cfg := center.Get()
+// Load configuration
+cfg, err := config.Load("config.yaml")
+
+// Update configuration
+err = cfg.Update(newConfig)
+
+// Get specific setting
+value := cfg.Get("key")
+
+// Register listener
+cfg.RegisterListener(func(old, new interface{}) {
+    // Handle configuration change
+})
 ```
 
-## 完整示例
+## Internal Module API
 
-### 使用 Facade 模块
+### Logger
 
 ```go
-package main
+import "github.com/vistone/fingerprint/modules/internal/logger"
 
-import (
-    "log"
-    "github.com/vistone/fingerprint/modules/fingerprint"
+// Structured logging
+logger.Debug("message", "key", value)
+logger.Info("message", "key", value)
+logger.Warn("message", "key", value)
+logger.Error("message", "err", err)
+```
+
+### Connection Pool
+
+```go
+// Create connection pool
+pool := internal.NewConnPool(opts)
+
+// Get connection
+conn, err := pool.Get()
+
+// Return connection
+pool.Put(conn)
+
+// Close pool
+pool.Close()
+```
+
+## Error Handling
+
+### Error Codes
+
+```go
+const (
+    CodeOK                 = 0      // Success
+    CodeBadRequest         = 400    // Invalid input
+    CodeUnauthorized       = 401    // Authentication failed
+    CodeForbidden          = 403    // Access denied
+    CodeNotFound           = 404    // Resource not found
+    CodeConflict           = 409    // Resource conflict
+    CodeInternalError      = 500    // Internal server error
+    CodeServiceUnavailable = 503    // Service unavailable
+)
+```
+
+### Error Types
+
+```go
+// Custom error types
+var (
+    ErrProfileNotFound    = errors.New("profile not found")
+    ErrInvalidInput       = errors.New("invalid input")
+    ErrConnectionFailed   = errors.New("connection failed")
+    ErrTimeoutError       = errors.New("request timeout")
 )
 
-func main() {
-    // 获取随机 Chrome 指纹
-    profile := fingerprint.GetRandomByBrowser(fingerprint.BrowserChrome)
-    log.Printf("Selected: %s", profile.Name)
+// Detailed error information
+type DetailedError struct {
+    Code    int
+    Message string
+    Details map[string]interface{}
 }
 ```
 
-### 直接使用子模块
+## Examples
+
+### Get Browser Fingerprint
 
 ```go
 package main
 
 import (
-    "log"
-    "github.com/vistone/fingerprint/modules/core"
+    "fmt"
     "github.com/vistone/fingerprint/modules/profiles"
+    "github.com/vistone/fingerprint/modules/core"
+)
+
+func main() {
+    // Get Chrome 133 profile
+    profile, ok := profiles.Get("chrome_133")
+    if !ok {
+        panic("profile not found")
+    }
+    
+    fmt.Printf("Profile: %+v\n", profile)
+}
+```
+
+### Analyze TLS Handshake
+
+```go
+package main
+
+import (
+    "fmt"
     "github.com/vistone/fingerprint/modules/tls"
 )
 
 func main() {
-    // 获取指纹
-    profile, ok := profiles.Get("chrome_133")
-    if !ok {
-        log.Fatal("not found")
-    }
+    // Create TLS analyzer
+    analyzer := tls.NewAnalyzer(conn)
     
-    // 计算 JA3
-    ja3 := tls.CalculateJA3(clientHello)
-    log.Printf("JA3: %s", ja3)
+    // Analyze connection
+    fingerprint := analyzer.Analyze()
+    
+    // Print JA3
+    fmt.Println("JA3:", fingerprint.JA3)
 }
 ```
 
-## 错误处理
+### Risk Assessment
 
 ```go
+package main
+
 import (
-    "errors"
-    "github.com/vistone/fingerprint/modules/profiles"
+    "fmt"
+    "github.com/vistone/fingerprint/modules/gateway"
+    "github.com/vistone/fingerprint/modules/defense"
 )
 
-profile, err := profiles.Get("unknown")
-if err != nil {
-    if errors.Is(err, profiles.ErrNotFound) {
-        // 使用默认指纹
-        profile = profiles.Chrome133
-    }
-}
-```
-
-## 性能优化
-
-### Profile 缓存
-
-```go
-var cache = sync.Map{}
-
-func GetCached(id string) (profiles.ClientProfile, bool) {
-    if v, ok := cache.Load(id); ok {
-        return v.(profiles.ClientProfile), true
-    }
+func main() {
+    // Create analyzer
+    analyzer := defense.NewRiskAnalyzer()
     
-    profile, ok := profiles.Get(id)
-    if ok {
-        cache.Store(id, profile)
+    // Assess risk
+    risk := analyzer.Analyze(request, profile)
+    
+    // Check risk level
+    if risk.Score > 70 {
+        fmt.Println("High risk:", risk.Reasons)
     }
-    return profile, ok
 }
 ```
 
-## 版本兼容性
+## Migration Guide
 
-- **v0.x.x**: 当前版本，Go Workspace 架构
-- **legacy 包**: 向后兼容的旧代码
-- **核心 API**: 稳定，不会破坏性变更
+### From v1.0.7 to v1.0.8
+
+1. Update imports
+   ```go
+   // Old
+   import "github.com/vistone/fingerprint"
+   
+   // New
+   import fp "github.com/vistone/fingerprint/modules/fingerprint"
+   ```
+
+2. Update function calls
+   ```go
+   // Old
+   fingerprint.GetProfile()
+   
+   // New
+   fp.GetProfile()
+   ```
+
+3. Run tests
+   ```bash
+   go test ./modules/...
+   ```
+
+## FAQ
+
+**Q: Which module should I import?**
+A: Start with `modules/fingerprint` for the facade API, or import specific modules like `modules/profiles`, `modules/tls`, etc.
+
+**Q: How do I handle errors?**
+A: Check error types and use error sentinel values. Use `errors.Is()` for error comparisons.
+
+**Q: How do I integrate with my application?**
+A: Use the Gateway module's `Analyze()` method to get risk scores and threat classifications.
+
+**Q: Is the API thread-safe?**
+A: Yes, all public APIs are thread-safe. Use sync.RWMutex for concurrent access.
+
+## References
+
+- [Developer Guide](./DEVELOPER_GUIDE.md)
+- [Architecture](./ARCHITECTURE.md)
+- [Changelog](./CHANGELOG.md)

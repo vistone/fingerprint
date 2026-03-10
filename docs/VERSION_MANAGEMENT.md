@@ -1,189 +1,308 @@
-# 版本管理策略 / Version Management Strategy
+# Version Management Strategy
 
-## 📋 概述 / Overview
+## 📋 Overview
 
-本文档规定 Fingerprint 项目的版本控制流程，确保所有模块版本统一、可追溯。
+This document defines the version control workflow for the Fingerprint project, ensuring all modules are versioned consistently and traceably.
 
-## 🔄 版本号规范 / Versioning Scheme
+## 🔄 Versioning Scheme
 
-采用 **语义化版本 (Semantic Versioning)**：`MAJOR.MINOR.PATCH`
+Uses **Semantic Versioning (Semantic Versioning)**: `MAJOR.MINOR.PATCH`
 
-### 版本号含义
+### Version Number Meaning
 
-| 位置 | 名称 | 变化规则 | 示例 |
-|------|------|---------|------|
-| Major | 主版本号 | 重大功能变化、不兼容更新 | v2.0.0 |
-| Minor | 次版本号 | **每次 GitHub 提交时递增** | v1.0.3 → v1.0.4 |
-| Patch | 修补版本号 | 仅内部构建/热修复 | v1.0.3-1 |
+| Position | Name | Change Rule | Example |
+|----------|------|------------|---------|
+| Major | Major version | Breaking changes, incompatible updates | v2.0.0 |
+| Minor | Minor version | **Incremented on each GitHub commit** | v1.0.7 → v1.0.8 |
+| Patch | Patch version | Internal build/hotfix only | v1.0.8-1 |
 
-### 当前版本
+### Current Version
 
-- **主项目**: v1.0.3
-- **所有模块**: v1.0.3（统一）
+- **Main project**: v1.0.8
+- **All modules**: v1.0.8 (unified)
 
-## 📤 提交与 Tag 工作流 / Commit & Tagging Workflow
+## 📤 Commit & Tagging Workflow
 
-### Step 1: 提交代码
+### Step 1: Commit Code
 
 ```bash
 cd /media/stone/data1/fingerprint
 
-# 添加所有改动
+# Add all changes
 git add -A
 
-# 编写有意义的提交信息
-# 格式: feat/fix: [模块] 功能描述
+# Write meaningful commit message
+# Format: feat/fix: [module] feature description
 git commit -m "feat: [frontend] Add i18n support for English/Chinese language switching"
 ```
 
-### Step 2: 创建主项目 Tag
+### Step 2: Create Main Project Tag
 
 ```bash
-# 为主项目打 tag（格式: v版本号）
-git tag -a v1.0.4 -m "Release v1.0.4"
+# Tag main project (format: v<version>)
+git tag -a v1.0.8 -m "Release v1.0.8"
 ```
 
-### Step 3: 创建模块 Tags
+### Step 3: Create Module Tags
 
-**仅需要为有改动的模块创建 tag**
+**Only create tags for modified modules**
 
 ```bash
-# 格式: modules/[模块名]/v版本号
+# Module tag format: modules/<module>/v<version>
+git tag -a modules/core/v1.0.8 -m "Release modules/core v1.0.8"
+git tag -a modules/profiles/v1.0.8 -m "Release modules/profiles v1.0.8"
+git tag -a modules/gateway/v1.0.8 -m "Release modules/gateway v1.0.8"
+git tag -a modules/ml/v1.0.8 -m "Release modules/ml v1.0.8"
 
-# 例如：只有 frontend/gateway 有改动
-git tag -a modules/frontend/v1.0.4 -m "Release modules/frontend v1.0.4"
-git tag -a modules/gateway/v1.0.4 -m "Release modules/gateway v1.0.4"
+# ... repeat for all modified modules
 ```
 
-### Step 4: 推送到 GitHub
+### Step 4: Push to GitHub
 
 ```bash
-# 推送主分支
+# Push commits and tags to main branch
 git push origin main
-
-# 推送所有 tags
 git push origin --tags
 ```
 
-### Step 5: 验证
+### Step 5: Verify Version Consistency
 
 ```bash
-# 列出所有 v1.0.4 tags
-git tag -l | grep v1.0.4
+# 1. Verify all go.mod files have correct version
+grep "require github.com/vistone/fingerprint/modules" \
+    modules/*/go.mod | grep v1.0.8
 
-# 查看 tag 详情
-git show v1.0.4
+# 2. Verify tags exist
+git tag | grep v1.0.8
+
+# 3. Verify CHANGELOG is updated
+grep "## \[v1.0.8\]" docs/CHANGELOG.md
+
+# 4. Verify all modules are versioned
+find . -name "go.mod" -type f -exec grep "^go 1" {} \;
 ```
 
-## 📝 更新 CHANGELOG 规范
+## 📝 CHANGELOG Management
 
-每次发布必须更新 `docs/CHANGELOG.md`：
+### Update CHANGELOG Before Release
+
+1. **Add new section** at the top:
+   ```markdown
+   ## [v1.0.8] - YYYY-MM-DD
+
+   ### Added
+   - New feature description
+
+   ### Changed
+   - Modified feature description
+
+   ### Fixed
+   - Bug fixes
+   ```
+
+2. **Move unreleased changes** from `[Unreleased]` section
+
+3. **Keep historical versions** for reference
+
+4. **Format**: Follow [Keep a Changelog](https://keepachangelog.com/) specification
+
+## 🔑 Key Rules
+
+### MUST DO ✅
+
+- [ ] Update CHANGELOG before every release
+- [ ] Increment MINOR version in all go.mod files
+- [ ] Create tags for every release
+- [ ] Push tags immediately after commits
+- [ ] Verify version consistency before release
+- [ ] Document changes in CHANGELOG
+
+### NEVER DO ❌
+
+- [ ] Create tags without version bumps
+- [ ] Bump version without updating CHANGELOG
+- [ ] Create tags without commits
+- [ ] Manually edit CHANGELOG without version update
+- [ ] Skip module tags for releases
+- [ ] Create tags out of order
+
+## ⚙️ Version Sync Across Modules
+
+### All Modules Stay in Sync
+
+```plaintext
+Main project version = All module versions
+
+v1.0.8 (main)
+    ├── modules/core/v1.0.8
+    ├── modules/profiles/v1.0.8
+    ├── modules/tls/v1.0.8
+    ├── modules/http/v1.0.8
+    ├── modules/ml/v1.0.8
+    ├── modules/gateway/v1.0.8
+    └── ... (all 18 modules)
+```
+
+### Rational
+
+- Simplifies dependency management
+- Clear version history
+- Easy to track which features are in which version
+- Prevents version mismatch bugs
+
+## 📊 Version History
+
+```
+v1.0.0 → v1.0.1 → v1.0.2 → ... → v1.0.8
+```
+
+Each version increment represents a set of changes committed to main branch.
+
+## 🚀 Release Process
+
+### Complete Release Checklist
+
+```bash
+# 1. Create feature branch
+git checkout -b feature/your-feature
+
+# 2. Make changes
+# ... code changes here ...
+git add -A
+git commit -m "feat: [module] description"
+
+# 3. Update CHANGELOG.md
+# ... edit CHANGELOG.md ...
+
+# 4. Update version in all go.mod files
+find . -name "go.mod" -type f | while read file; do
+    sed -i 's/v1\.0\.7/v1.0.8/g' "$file"
+done
+
+# 5. Create version commit
+git add docs/CHANGELOG.md $(find . -name "go.mod" -type f)
+git commit -m "chore: bump version to v1.0.8"
+
+# 6. Create main project tag
+git tag -a v1.0.8 -m "Release v1.0.8"
+
+# 7. Create module tags (18 modules)
+for module in core profiles tls http ml defense frontend gateway \
+              generator network internal config plugin fingerprint \
+              agent errors kit metrics scanner client tracer; do
+    git tag -a modules/$module/v1.0.8 -m "Release modules/$module v1.0.8"
+done
+
+# 8. Push everything
+git push origin main --tags
+
+# 9. Verify
+git tag | grep v1.0.8 | wc -l  # Should show 19 tags
+```
+
+## 🔍 Verification Commands
+
+### Check Current Version
+
+```bash
+# Check repository version
+git describe --tags
+
+# Check go.mod versions
+grep "require github.com/vistone/fingerprint" go.mod
+
+# Check all module versions
+find . -name "go.mod" -type f -exec grep "^module" {} \;
+```
+
+### Check Release Status
+
+```bash
+# List all tags
+git tag -l | grep v1.0.8
+
+# Show tag details
+git show v1.0.8
+
+# Compare versions
+git log v1.0.7..v1.0.8 --oneline
+```
+
+### Validate Version Consistency
+
+```bash
+# Verify all modules have matching version
+for file in $(find . -name "go.mod" -type f); do
+    version=$(grep "require github.com/vistone/fingerprint" "$file" | grep -o "v[0-9.]*$")
+    echo "$file: $version"
+done
+
+# Verify CHANGELOG matches version
+grep "^\## \\[v1.0.8\\]" docs/CHANGELOG.md
+```
+
+## 📌 Module List (18 Modules)
+
+1. core - Core types (zero dependencies)
+2. profiles - Fingerprint profiles
+3. tls - TLS fingerprint analysis
+4. http - HTTP fingerprint analysis
+5. ml - Machine learning classifier
+6. defense - Security defense system
+7. frontend - Frontend SDK
+8. gateway - API Gateway
+9. generator - Fingerprint generator
+10. network - Network layer analysis
+11. internal - Internal utilities
+12. config - Configuration management
+13. plugin - Plugin system
+14. agent - Autonomous security agent
+15. errors - Error handling
+16. kit - Utility toolkit
+17. metrics - Prometheus metrics
+18. scanner - Security scanner
+
+## 🎯 GitHub Release Notes
+
+When creating a GitHub Release:
+
+1. **Title**: `Release v1.0.8`
+2. **Target**: Select tag `v1.0.8`
+3. **Description**: Copy from CHANGELOG.md
+4. **Binary**: Attach compiled binaries
 
 ```markdown
-## [v1.0.4] - 2026-03-10
+# Release v1.0.8
 
-### Added
-- **功能标题**: 功能描述
-  - 更新项 A
-  - 更新项 B
+## Changes
 
-### Fixed
-- **Bug 标题**: Bug 修复描述
+- Simplify CONTRIBUTING.md and SECURITY.md documentation
+- Update version control rules
+- Enhance version management consistency
 
-### Changed
-- 改进项
+See [CHANGELOG.md](./docs/CHANGELOG.md) for full details.
 ```
 
-**规则**：
-- 日期格式：YYYY-MM-DD
-- 分类：Added / Changed / Fixed / Removed / Deprecated / Security
-- 描述：中文 (description) 或 English (description)
+## 🔗 Related Documents
 
-## 🔍 版本一致性检查
+- [Developer Guide](./DEVELOPER_GUIDE.md) - Development workflow
+- [Contributing Guide](./CONTRIBUTING.md) - Contributing guidelines
+- [Changelog](./CHANGELOG.md) - Version history
+- [Architecture](./ARCHITECTURE.md) - Project architecture
 
-### 检查本地版本
+## ❓ FAQ
 
-```bash
-# 检查所有 go.mod 中的模块版本
-grep "github.com/vistone/fingerprint/modules" modules/*/go.mod | grep -o "v[0-9.]*" | sort | uniq
+**Q: How often should we release?**
+A: With each meaningful commit to main branch.
 
-# 应该全部输出: v1.0.4（或当前版本）
-```
+**Q: Should patch version be used?**
+A: Only for internal builds and hotfixes outside release cycle.
 
-### 检查 GitHub Tags
+**Q: What if a module hasn't changed?**
+A: Still create a tag to keep versions in sync.
 
-```bash
-# 列出所有 tags
-git tag -l | head -50
+**Q: How do I revert a version?**
+A: Create a new version with revert commits, don't delete tags.
 
-# 列出特定版本的所有 tags
-git tag -l | grep "v1.0.4"
-```
-
-## 🚀 版本升级步骤
-
-### 场景 1：优先修复 (Patch 升级)
-
-```bash
-# v1.0.3 → v1.0.3-1
-git commit -m "fix: [core] Fix critical bug in XYZ"
-```
-
-### 场景 2：新功能发布 (Minor 升级)
-
-```bash
-# v1.0.3 → v1.0.4（下一个版本）
-git commit -m "feat: [frontend] Add i18n multi-language support"
-
-# 更新 go.mod 中所有模块版本为 v1.0.4
-sed -i 's/v1.0.3/v1.0.4/g' go.mod modules/*/go.mod
-
-git add -A
-git commit -m "chore: Bump version to v1.0.4"
-```
-
-### 场景 3：重大改变 (Major 升级)
-
-```bash
-# v1.0.4 → v2.0.0
-# 修改 go.mod 中所有版本为 v2.0.0
-# 更新 CHANGELOG 中的 [Unreleased] 为 [v2.0.0]
-# 执行完整的提交和 tag 流程
-```
-
-## ⚠️ 常见陷阱 / Common Pitfalls
-
-| 问题 | 原因 | 解决 |
-|------|------|------|
-| Docker 构建时显示 v0.0.0 | GitHub 上没有对应的 tag | 创建并推送 tags 到 GitHub |
-| 模块版本不一致 | go.mod 文件未统一更新 | 使用 sed 批量更新所有文件 |
-| tag 推送失败 | 未使用 `git push origin --tags` | 显式推送 tags：`git push origin [tag-name]` |
-| replace 指令被忽略 | Docker 构建中的 go.work 配置 | 在 Dockerfile 后复制 go.work 和完整源代码 |
-
-## 📌 快速参考 / Quick Reference
-
-```bash
-# 完整的发布流程（3 分钟）
-git add -A
-git commit -m "feat: [模块] 功能描述"
-
-# 创建 main tag
-git tag -a vX.Y.Z -m "Release vX.Y.Z"
-
-# 创建受影响模块的 tags
-git tag -a modules/frontend/vX.Y.Z -m "Release modules/frontend vX.Y.Z"
-git tag -a modules/gateway/vX.Y.Z -m "Release modules/gateway vX.Y.Z"
-
-# 推送
-git push origin main
-git push origin --tags
-
-# 验证
-git tag -l | grep vX.Y.Z
-```
-
----
-
-**最后更新**: 2026-03-10
-**负责人**: DevOps Team
-**生效日期**: 2026-03-10
+**Q: Can I skip a version number?**
+A: No, versions must be sequential: v1.0.7 → v1.0.8 → v1.0.9
