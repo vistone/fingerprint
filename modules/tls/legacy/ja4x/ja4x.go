@@ -7,91 +7,91 @@ import (
 	"strings"
 )
 
-// JA4XResult JA4X 指纹结果（X.509 证书指纹）
+// JA4XResult JA4X fingerprint result (X.509 certificate fingerprint)
 type JA4XResult struct {
-	// JA4X 完整哈希
+	// JA4X full hash
 	Hash string
 
-	// JA4X 原始字符串
+	// JA4X raw string
 	RawString string
 
-	// JA4X_a: 颁发者 RDN（Distinguished Name）序列的 SHA256 前 12 字符
+	// JA4X_a: first 12 characters of SHA256 of issuer RDN (Distinguished Name) sequence
 	JA4Xa string
 
-	// JA4X_b: 主体 RDN 序列的 SHA256 前 12 字符
+	// JA4X_b: first 12 characters of SHA256 of subject RDN sequence
 	JA4Xb string
 
-	// JA4X_c: 扩展 OID 序列的 SHA256 前 12 字符
+	// JA4X_c: first 12 characters of SHA256 of extension OID sequence
 	JA4Xc string
 
-	// 颁发者信息（可读形式）
+	// Issuer info (human-readable form)
 	Issuer string
 
-	// 主体信息（可读形式）
+	// Subject info (human-readable form)
 	Subject string
 
-	// 异常标记
+	// Anomaly flags
 	AnomalyFlags []string
 
-	// 风险评分 (0.0-1.0)
+	// Risk score (0.0-1.0)
 	RiskScore float64
 }
 
-// CertificateData 证书数据（用于不依赖 x509.Certificate 的场景）
+// CertificateData certificate data (for scenarios not depending on x509.Certificate)
 type CertificateData struct {
-	// 颁发者 RDN 字段（按顺序）
+	// Issuer RDN fields (in order)
 	IssuerRDNs []RDNField
 
-	// 主体 RDN 字段（按顺序）
+	// Subject RDN fields (in order)
 	SubjectRDNs []RDNField
 
-	// 扩展 OID 列表（按顺序）
+	// Extension OID list (in order)
 	ExtensionOIDs []string
 
-	// 证书版本
+	// Certificate version
 	Version int
 
-	// 签名算法 OID
+	// Signature algorithm OID
 	SignatureAlgorithm string
 
-	// 有效期（天数）
+	// Validity period (days)
 	ValidityDays int
 
-	// 是否自签名
+	// Whether self-signed
 	IsSelfSigned bool
 
-	// 是否为 CA 证书
+	// Whether it is a CA certificate
 	IsCA bool
 }
 
-// RDNField 证书 RDN 字段
+// RDNField certificate RDN field
 type RDNField struct {
-	// OID (如 "2.5.4.3" 表示 CN)
+	// OID (e.g. "2.5.4.3" for CN)
 	OID string
 
-	// 值
+	// Value
 	Value string
 }
 
-// sha256Hash12 计算 SHA256 哈希并返回前 12 个字符
+// sha256Hash12 computes SHA256 hash and returns the first 12 characters
 func sha256Hash12(input string) string {
 	hash := sha256.Sum256([]byte(input))
 	return fmt.Sprintf("%x", hash)[:12]
 }
 
-// ComputeJA4X 从 x509.Certificate 计算 JA4X 指纹
+// ComputeJA4X computes JA4X fingerprint from x509.Certificate
 func ComputeJA4X(cert *x509.Certificate) *JA4XResult {
 	data := extractCertificateData(cert)
 	return ComputeJA4XFromData(data)
 }
 
-// ComputeJA4XFromData 从 CertificateData 计算 JA4X 指纹
+// ComputeJA4XFromData computes JA4X fingerprint from CertificateData
 func ComputeJA4XFromData(data CertificateData) *JA4XResult {
 	result := &JA4XResult{
 		AnomalyFlags: []string{},
 	}
 
-	// JA4X_a: 颁发者 RDN OID 序列
+	// JA4X_a: issuer RDN OID sequence
 	issuerOIDs := make([]string, len(data.IssuerRDNs))
 	for i, rdn := range data.IssuerRDNs {
 		issuerOIDs[i] = rdn.OID
@@ -99,14 +99,14 @@ func ComputeJA4XFromData(data CertificateData) *JA4XResult {
 	issuerStr := strings.Join(issuerOIDs, ",")
 	result.JA4Xa = sha256Hash12(issuerStr)
 
-	// 颁发者可读形式
+	// Issuer human-readable form
 	issuerParts := make([]string, len(data.IssuerRDNs))
 	for i, rdn := range data.IssuerRDNs {
 		issuerParts[i] = fmt.Sprintf("%s=%s", oidName(rdn.OID), rdn.Value)
 	}
 	result.Issuer = strings.Join(issuerParts, ", ")
 
-	// JA4X_b: 主体 RDN OID 序列
+	// JA4X_b: subject RDN OID sequence
 	subjectOIDs := make([]string, len(data.SubjectRDNs))
 	for i, rdn := range data.SubjectRDNs {
 		subjectOIDs[i] = rdn.OID
@@ -114,30 +114,30 @@ func ComputeJA4XFromData(data CertificateData) *JA4XResult {
 	subjectStr := strings.Join(subjectOIDs, ",")
 	result.JA4Xb = sha256Hash12(subjectStr)
 
-	// 主体可读形式
+	// Subject human-readable form
 	subjectParts := make([]string, len(data.SubjectRDNs))
 	for i, rdn := range data.SubjectRDNs {
 		subjectParts[i] = fmt.Sprintf("%s=%s", oidName(rdn.OID), rdn.Value)
 	}
 	result.Subject = strings.Join(subjectParts, ", ")
 
-	// JA4X_c: 扩展 OID 序列
+	// JA4X_c: extension OID sequence
 	extStr := strings.Join(data.ExtensionOIDs, ",")
 	result.JA4Xc = sha256Hash12(extStr)
 
-	// 原始字符串: issuerOIDs_subjectOIDs_extensionOIDs
+	// Raw string: issuerOIDs_subjectOIDs_extensionOIDs
 	result.RawString = fmt.Sprintf("%s_%s_%s", issuerStr, subjectStr, extStr)
 
-	// 完整哈希: JA4X_a_JA4X_b_JA4X_c
+	// Full hash: JA4X_a_JA4X_b_JA4X_c
 	result.Hash = fmt.Sprintf("%s_%s_%s", result.JA4Xa, result.JA4Xb, result.JA4Xc)
 
-	// 异常检测
+	// Anomaly detection
 	detectCertAnomalies(data, result)
 
 	return result
 }
 
-// ComputeJA4XChain 计算证书链的 JA4X 指纹列表
+// ComputeJA4XChain computes JA4X fingerprint list for certificate chain
 func ComputeJA4XChain(certs []*x509.Certificate) []*JA4XResult {
 	results := make([]*JA4XResult, len(certs))
 	for i, cert := range certs {
@@ -146,12 +146,12 @@ func ComputeJA4XChain(certs []*x509.Certificate) []*JA4XResult {
 	return results
 }
 
-// MatchJA4X 比较两个 JA4X 哈希是否匹配
+// MatchJA4X compares whether two JA4X hashes match
 func MatchJA4X(hash1, hash2 string) bool {
 	return hash1 != "" && hash2 != "" && hash1 == hash2
 }
 
-// extractCertificateData 从 x509.Certificate 提取数据
+// extractCertificateData extracts data from x509.Certificate
 func extractCertificateData(cert *x509.Certificate) CertificateData {
 	data := CertificateData{
 		Version:      cert.Version,
@@ -159,21 +159,21 @@ func extractCertificateData(cert *x509.Certificate) CertificateData {
 		IsCA:         cert.IsCA,
 	}
 
-	// 签名算法
+	// Signature algorithm
 	data.SignatureAlgorithm = cert.SignatureAlgorithm.String()
 
-	// 有效期
+	// Validity period
 	if !cert.NotBefore.IsZero() && !cert.NotAfter.IsZero() {
 		data.ValidityDays = int(cert.NotAfter.Sub(cert.NotBefore).Hours() / 24)
 	}
 
-	// 颁发者 RDN
+	// Issuer RDN
 	data.IssuerRDNs = extractRDNs(cert.Issuer.String())
 
-	// 主体 RDN
+	// Subject RDN
 	data.SubjectRDNs = extractRDNs(cert.Subject.String())
 
-	// 扩展 OID
+	// Extension OID
 	for _, ext := range cert.Extensions {
 		data.ExtensionOIDs = append(data.ExtensionOIDs, ext.Id.String())
 	}
@@ -181,7 +181,7 @@ func extractCertificateData(cert *x509.Certificate) CertificateData {
 	return data
 }
 
-// extractRDNs 从 DN 字符串中提取 RDN 字段
+// extractRDNs extracts RDN fields from DN string
 func extractRDNs(dn string) []RDNField {
 	var rdns []RDNField
 	if dn == "" {
@@ -204,7 +204,7 @@ func extractRDNs(dn string) []RDNField {
 	return rdns
 }
 
-// rdnKeyToOID 将 RDN 键名转换为 OID
+// rdnKeyToOID converts RDN key name to OID
 func rdnKeyToOID(key string) string {
 	switch strings.ToUpper(key) {
 	case "CN":
@@ -226,7 +226,7 @@ func rdnKeyToOID(key string) string {
 	case "POSTALCODE":
 		return "2.5.4.17"
 	default:
-		// 如果已经是 OID 格式，直接返回
+		// If already in OID format, return directly
 		if strings.Contains(key, ".") {
 			return key
 		}
@@ -234,7 +234,7 @@ func rdnKeyToOID(key string) string {
 	}
 }
 
-// oidName 将 OID 转换为可读名称
+// oidName converts OID to human-readable name
 func oidName(oid string) string {
 	switch oid {
 	case "2.5.4.3":
@@ -260,41 +260,41 @@ func oidName(oid string) string {
 	}
 }
 
-// detectCertAnomalies 检测证书异常
+// detectCertAnomalies detects certificate anomalies
 func detectCertAnomalies(data CertificateData, result *JA4XResult) {
 	baseScore := 0.0
 
-	// 异常 1: 自签名证书
+	// Anomaly 1: self-signed certificate
 	if data.IsSelfSigned {
 		result.AnomalyFlags = append(result.AnomalyFlags, "SELF_SIGNED")
 		baseScore += 0.2
 	}
 
-	// 异常 2: 过长的有效期（超过 398 天，违反 CA/Browser Forum 要求）
+	// Anomaly 2: excessive validity period (over 398 days, violates CA/Browser Forum requirements)
 	if data.ValidityDays > 398 && !data.IsCA {
 		result.AnomalyFlags = append(result.AnomalyFlags, "LONG_VALIDITY")
 		baseScore += 0.15
 	}
 
-	// 异常 3: 证书版本不是 v3
+	// Anomaly 3: certificate version is not v3
 	if data.Version != 3 && data.Version != 0 {
 		result.AnomalyFlags = append(result.AnomalyFlags, "NON_V3_CERT")
 		baseScore += 0.1
 	}
 
-	// 异常 4: 无扩展
+	// Anomaly 4: no extensions
 	if len(data.ExtensionOIDs) == 0 {
 		result.AnomalyFlags = append(result.AnomalyFlags, "NO_EXTENSIONS")
 		baseScore += 0.15
 	}
 
-	// 异常 5: 主体为空
+	// Anomaly 5: empty subject
 	if len(data.SubjectRDNs) == 0 {
 		result.AnomalyFlags = append(result.AnomalyFlags, "EMPTY_SUBJECT")
 		baseScore += 0.1
 	}
 
-	// 异常 6: 颁发者为空
+	// Anomaly 6: empty issuer
 	if len(data.IssuerRDNs) == 0 {
 		result.AnomalyFlags = append(result.AnomalyFlags, "EMPTY_ISSUER")
 		baseScore += 0.15

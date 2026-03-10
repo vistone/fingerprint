@@ -8,24 +8,24 @@ import (
 )
 
 // ============================================================================
-// JA3 子包错误定义
+// JA3 subpackage error definitions
 // ============================================================================
 
 var (
-	// ErrInvalidClientHelloSpec 表示无效的 ClientHello 规范
+	// ErrInvalidClientHelloSpec indicates an invalid ClientHello spec
 	ErrInvalidClientHelloSpec = fmt.Errorf("%w: invalid client hello spec", errs.ErrInvalidFingerprint)
 
-	// ErrProfileNotFound 表示 JA3 指纹配置不存在
+	// ErrProfileNotFound indicates the JA3 fingerprint profile was not found
 	ErrProfileNotFound = fmt.Errorf("%w: ja3 profile", errs.ErrProfileNotFound)
 
-	// ErrEmptyProfile 表示 JA3 指纹为空
+	// ErrEmptyProfile indicates the JA3 fingerprint is empty
 	ErrEmptyProfile = fmt.Errorf("%w: empty ja3 profile", errs.ErrInvalidFingerprint)
 
-	// ErrClientHelloIDNotImplemented 表示 ClientHello ID 不支持 Spec 导出
+	// ErrClientHelloIDNotImplemented indicates the ClientHello ID does not support Spec export
 	ErrClientHelloIDNotImplemented = fmt.Errorf("%w: ja3 client hello id", errs.ErrClientHelloSpecNotImplemented)
 )
 
-// IsInvalidClientHelloSpec 检查错误是否为无效的 ClientHello 规范
+// IsInvalidClientHelloSpec checks if the error is an invalid ClientHello spec
 func IsInvalidClientHelloSpec(err error) bool {
 	if err == nil {
 		return false
@@ -33,7 +33,7 @@ func IsInvalidClientHelloSpec(err error) bool {
 	return errors.Is(err, ErrInvalidClientHelloSpec)
 }
 
-// IsJA3ProfileNotFound 检查错误是否为 JA3 指纹不存在
+// IsJA3ProfileNotFound checks if the error is a JA3 fingerprint not found
 func IsJA3ProfileNotFound(err error) bool {
 	if err == nil {
 		return false
@@ -41,7 +41,7 @@ func IsJA3ProfileNotFound(err error) bool {
 	return errors.Is(err, ErrProfileNotFound)
 }
 
-// IsEmptyProfile 检查错误是否为空指纹
+// IsEmptyProfile checks if the error is an empty fingerprint
 func IsEmptyProfile(err error) bool {
 	if err == nil {
 		return false
@@ -49,7 +49,7 @@ func IsEmptyProfile(err error) bool {
 	return errors.Is(err, ErrEmptyProfile)
 }
 
-// IsClientHelloIDNotImplemented 检查错误是否为 ClientHello ID 不支持
+// IsClientHelloIDNotImplemented checks if the error is a ClientHello ID not implemented
 func IsClientHelloIDNotImplemented(err error) bool {
 	if err == nil {
 		return false

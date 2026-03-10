@@ -8,27 +8,27 @@ import (
 )
 
 // ============================================================================
-// JA4 子包错误定义
+// JA4 subpackage error definitions
 // ============================================================================
 
 var (
-	// ErrInvalidClientHelloSpec 表示无效的 ClientHello 规范
+	// ErrInvalidClientHelloSpec indicates an invalid ClientHello spec
 	ErrInvalidClientHelloSpec = fmt.Errorf("%w: invalid client hello spec", errs.ErrInvalidFingerprint)
 
-	// ErrProfileNotFound 表示 JA4 指纹配置不存在
+	// ErrProfileNotFound indicates the JA4 fingerprint profile was not found
 	ErrProfileNotFound = fmt.Errorf("%w: ja4 profile", errs.ErrProfileNotFound)
 
-	// ErrEmptyProfile 表示 JA4 指纹为空
+	// ErrEmptyProfile indicates the JA4 fingerprint is empty
 	ErrEmptyProfile = fmt.Errorf("%w: empty ja4 profile", errs.ErrInvalidFingerprint)
 
-	// ErrInvalidTLSVersion 表示无效的 TLS 版本
+	// ErrInvalidTLSVersion indicates an invalid TLS version
 	ErrInvalidTLSVersion = fmt.Errorf("%w: invalid tls version", errs.ErrInvalidFingerprint)
 
-	// ErrMissingRequiredField 表示缺少必需字段
+	// ErrMissingRequiredField indicates a missing required field
 	ErrMissingRequiredField = fmt.Errorf("%w: missing required field", errs.ErrInvalidFingerprint)
 )
 
-// IsInvalidClientHelloSpec 检查错误是否为无效的 ClientHello 规范
+// IsInvalidClientHelloSpec checks if the error is an invalid ClientHello spec
 func IsInvalidClientHelloSpec(err error) bool {
 	if err == nil {
 		return false
@@ -36,7 +36,7 @@ func IsInvalidClientHelloSpec(err error) bool {
 	return errors.Is(err, ErrInvalidClientHelloSpec)
 }
 
-// IsJA4ProfileNotFound 检查错误是否为 JA4 指纹不存在
+// IsJA4ProfileNotFound checks if the error is a JA4 fingerprint not found
 func IsJA4ProfileNotFound(err error) bool {
 	if err == nil {
 		return false
@@ -44,7 +44,7 @@ func IsJA4ProfileNotFound(err error) bool {
 	return errors.Is(err, ErrProfileNotFound)
 }
 
-// IsEmptyProfile 检查错误是否为空指纹
+// IsEmptyProfile checks if the error is an empty fingerprint
 func IsEmptyProfile(err error) bool {
 	if err == nil {
 		return false
@@ -52,7 +52,7 @@ func IsEmptyProfile(err error) bool {
 	return errors.Is(err, ErrEmptyProfile)
 }
 
-// IsInvalidTLSVersion 检查错误是否为无效的 TLS 版本
+// IsInvalidTLSVersion checks if the error is an invalid TLS version
 func IsInvalidTLSVersion(err error) bool {
 	if err == nil {
 		return false
