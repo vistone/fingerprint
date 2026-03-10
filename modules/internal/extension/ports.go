@@ -1,14 +1,14 @@
 package extension
 
-// RegistryPort 定义扩展注册表访问端口（Port）
-// 用于将引擎与全局注册表解耦，支持后续替换实现与测试注入。
+// RegistryPort defines the extension registry access port
+// Used to decouple the engine from the global registry, supporting implementation replacement and test injection.
 type RegistryPort interface {
 	GetParser(extType ExtensionType) (Parser, error)
 	GetAnalyzer(extType ExtensionType) (Analyzer, error)
 	GetHandlers(extType ExtensionType) []Handler
 }
 
-// globalRegistryPort 默认适配器：桥接到全局注册表函数，保持现有行为不变。
+// globalRegistryPort is the default adapter: bridges to global registry functions, preserving existing behavior.
 type globalRegistryPort struct{}
 
 func (globalRegistryPort) GetParser(extType ExtensionType) (Parser, error) {

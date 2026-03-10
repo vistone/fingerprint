@@ -9,50 +9,50 @@ import (
 )
 
 // ========================================================================
-// ParseStage: 解析扩展数据
+// ParseStage: parses extension data
 // ========================================================================
 
-// ParseStage 解析扩展数据（从原始 TLS 数据解析为结构化格式）
+// ParseStage parses extension data (from raw TLS data into structured format)
 type ParseStage struct {
 	registry RegistryPort
 }
 
-// NewParseStage 创建新的 ParseStage
+// NewParseStage creates a new ParseStage
 func NewParseStage(registry RegistryPort) *ParseStage {
 	return &ParseStage{registry: registry}
 }
 
-// GetName 获取阶段名称
+// GetName returns the stage name
 func (p *ParseStage) GetName() string {
 	return "parse"
 }
 
-// GetDependencies 获取依赖的前置阶段
+// GetDependencies returns the required preceding stages
 func (p *ParseStage) GetDependencies() []string {
-	return []string{} // 解析是第一步，无依赖
+	return []string{} // parsing is the first step, no dependencies
 }
 
-// Execute 执行阶段
+// Execute executes the stage
 func (p *ParseStage) Execute(ctx context.Context, data *pipeline.StageData) error {
-	// 从输入中获取请求信息
+	// Get request information from input
 	request, ok := data.Input.(*ProcessingRequest)
 	if !ok {
 		return fmt.Errorf("expected *ProcessingRequest, got %T", data.Input)
 	}
 
-	// 从注册表中获取解析器
+	// Get parser from registry
 	parser, err := p.registry.GetParser(request.ExtensionType)
 	if err != nil {
 		return fmt.Errorf("failed to get parser: %w", err)
 	}
 
-	// 解析原始数据
+	// Parse raw data
 	parsedData, err := parser.Parse(request.RawData, ctx)
 	if err != nil {
 		return fmt.Errorf("parse error: %w", err)
 	}
 
-	// 将解析结果存储在 StageData 中
+	// Store parse results in StageData
 	data.Context["parsed_data"] = parsedData
 	data.Output = map[string]interface{}{
 		"parsed_data": parsedData,
@@ -62,60 +62,60 @@ func (p *ParseStage) Execute(ctx context.Context, data *pipeline.StageData) erro
 }
 
 // ========================================================================
-// AnalyzeStage: 分析扩展数据
+// AnalyzeStage: analyzes extension data
 // ========================================================================
 
-// AnalyzeStage 分析扩展数据
+// AnalyzeStage analyzes extension data
 type AnalyzeStage struct {
 	registry RegistryPort
 }
 
-// NewAnalyzeStage 创建新的 AnalyzeStage
+// NewAnalyzeStage creates a new AnalyzeStage
 func NewAnalyzeStage(registry RegistryPort) *AnalyzeStage {
 	return &AnalyzeStage{registry: registry}
 }
 
-// GetName 获取阶段名称
+// GetName returns the stage name
 func (a *AnalyzeStage) GetName() string {
 	return "analyze"
 }
 
-// GetDependencies 获取依赖的前置阶段
+// GetDependencies returns the required preceding stages
 func (a *AnalyzeStage) GetDependencies() []string {
-	return []string{"parse"} // 分析依赖于解析
+	return []string{"parse"} // analysis depends on parsing
 }
 
-// Execute 执行阶段
+// Execute executes the stage
 func (a *AnalyzeStage) Execute(ctx context.Context, data *pipeline.StageData) error {
-	// 从输入中获取请求信息
+	// Get request information from input
 	request, ok := data.Input.(*ProcessingRequest)
 	if !ok {
 		return fmt.Errorf("expected *ProcessingRequest, got %T", data.Input)
 	}
 
-	// 从前一个阶段的输出中获取已解析的数据
+	// Get parsed data from previous stage output
 	parsedData, ok := data.Context["parsed_data"].(ExtensionData)
 	if !ok {
 		return fmt.Errorf("parsed_data not found or invalid in context")
 	}
 
-	// 从注册表中获取分析器
+	// Get analyzer from registry
 	analyzer, err := a.registry.GetAnalyzer(request.ExtensionType)
 	if err != nil {
-		// 如果没有分析器，不当作错误返回（某些扩展类型可能没有分析器）
+		// If no analyzer exists, do not treat as an error (some extension types may not have analyzers)
 		data.Output = map[string]interface{}{
 			"analysis_results": []interface{}{},
 		}
 		return nil
 	}
 
-	// 分析已解析的数据
+	// Analyze parsed data
 	analysisResult, err := analyzer.Analyze(parsedData, request.AnalysisConfig)
 	if err != nil {
 		return fmt.Errorf("analyze error: %w", err)
 	}
 
-	// 存储分析结果
+	// Store analysis results
 	data.Context["analysis_result"] = analysisResult
 	data.Output = map[string]interface{}{
 		"analysis_result": analysisResult,
@@ -125,44 +125,44 @@ func (a *AnalyzeStage) Execute(ctx context.Context, data *pipeline.StageData) er
 }
 
 // ========================================================================
-// TransformStage: 转换扩展数据
+// TransformStage: transforms extension data
 // ========================================================================
 
-// TransformStage 转换扩展数据为标准格式
+// TransformStage transforms extension data into standard format
 type TransformStage struct {
 	registry RegistryPort
 }
 
-// NewTransformStage 创建新的 TransformStage
+// NewTransformStage creates a new TransformStage
 func NewTransformStage(registry RegistryPort) *TransformStage {
 	return &TransformStage{registry: registry}
 }
 
-// GetName 获取阶段名称
+// GetName returns the stage name
 func (t *TransformStage) GetName() string {
 	return "transform"
 }
 
-// GetDependencies 获取依赖的前置阶段
+// GetDependencies returns the required preceding stages
 func (t *TransformStage) GetDependencies() []string {
-	return []string{"parse"} // 转换依赖于解析
+	return []string{"parse"} // transformation depends on parsing
 }
 
-// Execute 执行阶段
+// Execute executes the stage
 func (t *TransformStage) Execute(ctx context.Context, data *pipeline.StageData) error {
-	// 从输入中获取请求信息
+	// Get request information from input
 	request, ok := data.Input.(*ProcessingRequest)
 	if !ok {
 		return fmt.Errorf("expected *ProcessingRequest, got %T", data.Input)
 	}
 
-	// 从前一个阶段的输出中获取已解析的数据
+	// Get parsed data from previous stage output
 	parsedData, ok := data.Context["parsed_data"].(ExtensionData)
 	if !ok {
 		return fmt.Errorf("parsed_data not found in context")
 	}
 
-	// 如果没有分析配置，跳过转换
+	// If no analysis configuration, skip transformation
 	if request.AnalysisConfig == nil {
 		data.Output = map[string]interface{}{
 			"transformed_data": parsedData,
@@ -170,7 +170,7 @@ func (t *TransformStage) Execute(ctx context.Context, data *pipeline.StageData) 
 		return nil
 	}
 
-	// 从分析配置中获取转换列表
+	// Get transform list from analysis configuration
 	rawTransforms, ok := request.AnalysisConfig["transforms"]
 	if !ok {
 		data.Output = map[string]interface{}{
@@ -179,7 +179,7 @@ func (t *TransformStage) Execute(ctx context.Context, data *pipeline.StageData) 
 		return nil
 	}
 
-	// 解析转换名称列表
+	// Parse transform name list
 	transformNames := make([]string, 0)
 	switch values := rawTransforms.(type) {
 	case []string:
@@ -196,7 +196,7 @@ func (t *TransformStage) Execute(ctx context.Context, data *pipeline.StageData) 
 		return fmt.Errorf("unexpected transforms type: %T", rawTransforms)
 	}
 
-	// 应用转换（这里简化为存储转换名称，实际实现可能需要调用注册表的转换器）
+	// Apply transforms (simplified here to storing transform names; actual implementation may call registry transformers)
 	data.Context["transforms_applied"] = transformNames
 	data.Output = map[string]interface{}{
 		"transformed_data":   parsedData,
@@ -207,52 +207,52 @@ func (t *TransformStage) Execute(ctx context.Context, data *pipeline.StageData) 
 }
 
 // ========================================================================
-// HandleStage: 处理扩展
+// HandleStage: handles extensions
 // ========================================================================
 
-// HandleStage 处理扩展的事件
+// HandleStage handles extension events
 type HandleStage struct {
 	registry RegistryPort
 }
 
-// NewHandleStage 创建新的 HandleStage
+// NewHandleStage creates a new HandleStage
 func NewHandleStage(registry RegistryPort) *HandleStage {
 	return &HandleStage{registry: registry}
 }
 
-// GetName 获取阶段名称
+// GetName returns the stage name
 func (h *HandleStage) GetName() string {
 	return "handle"
 }
 
-// GetDependencies 获取依赖的前置阶段
+// GetDependencies returns the required preceding stages
 func (h *HandleStage) GetDependencies() []string {
-	return []string{"parse"} // 处理依赖于解析
+	return []string{"parse"} // handling depends on parsing
 }
 
-// Execute 执行阶段
+// Execute executes the stage
 func (h *HandleStage) Execute(ctx context.Context, data *pipeline.StageData) error {
-	// 从输入中获取请求信息
+	// Get request information from input
 	request, ok := data.Input.(*ProcessingRequest)
 	if !ok {
 		return fmt.Errorf("expected *ProcessingRequest, got %T", data.Input)
 	}
 
-	// 从前一个阶段的输出中获取已解析的数据
+	// Get parsed data from previous stage output
 	parsedData, ok := data.Context["parsed_data"].(ExtensionData)
 	if !ok {
 		return fmt.Errorf("parsed_data not found in context")
 	}
 
-	// 从注册表中获取处理器
+	// Get handlers from registry
 	handlers := h.registry.GetHandlers(request.ExtensionType)
 
-	// 按优先级排序处理器
+	// Sort handlers by priority
 	sort.Slice(handlers, func(i, j int) bool {
 		return handlers[i].GetPriority() > handlers[j].GetPriority()
 	})
 
-	// 执行所有处理器
+	// Execute all handlers
 	events := make([]*ExtensionEvent, 0, len(handlers))
 	for _, handler := range handlers {
 		event := &ExtensionEvent{
@@ -270,13 +270,13 @@ func (h *HandleStage) Execute(ctx context.Context, data *pipeline.StageData) err
 
 		events = append(events, event)
 
-		// 如果处理器要求停止传递，则中断
+		// If the handler requests to stop propagation, break
 		if !handlerResult.ContinueProcessing {
 			break
 		}
 	}
 
-	// 存储处理事件
+	// Store handling events
 	data.Context["events"] = events
 	data.Output = map[string]interface{}{
 		"events": events,

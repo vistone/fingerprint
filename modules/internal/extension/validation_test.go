@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// TestDefaultValidator_ValidateData 测试数据验证
+// TestDefaultValidator_ValidateData tests data validation
 func TestDefaultValidator_ValidateData(t *testing.T) {
 	validator := NewDefaultValidator()
 
@@ -17,35 +17,35 @@ func TestDefaultValidator_ValidateData(t *testing.T) {
 		errCode ErrorCode
 	}{
 		{
-			name:    "正常数据验证通过",
+			name:    "valid data passes validation",
 			data:    []byte("valid data"),
 			wantErr: false,
 		},
 		{
-			name:    "nil数据返回错误",
+			name:    "nil data returns error",
 			data:    nil,
 			wantErr: true,
 			errCode: ErrCodeInvalidInput,
 		},
 		{
-			name:    "空数据返回错误",
+			name:    "empty data returns error",
 			data:    []byte{},
 			wantErr: true,
 			errCode: ErrCodeInvalidInput,
 		},
 		{
-			name:    "超出MaxDataSize返回错误",
+			name:    "exceeding MaxDataSize returns error",
 			data:    bytes.Repeat([]byte("a"), validator.MaxDataSize+1),
 			wantErr: true,
 			errCode: ErrCodeFieldSizeMismatch,
 		},
 		{
-			name:    "边界值-刚好等于MaxDataSize",
+			name:    "boundary - exactly equal to MaxDataSize",
 			data:    bytes.Repeat([]byte("b"), validator.MaxDataSize),
 			wantErr: false,
 		},
 		{
-			name:    "边界值-单个字节",
+			name:    "boundary - single byte",
 			data:    []byte("x"),
 			wantErr: false,
 		},
@@ -76,7 +76,7 @@ func TestDefaultValidator_ValidateData(t *testing.T) {
 	}
 }
 
-// TestDefaultValidator_ValidateMetadata 测试元数据验证
+// TestDefaultValidator_ValidateMetadata tests metadata validation
 func TestDefaultValidator_ValidateMetadata(t *testing.T) {
 	validator := NewDefaultValidator()
 	validatorStrict := NewDefaultValidator()
@@ -92,7 +92,7 @@ func TestDefaultValidator_ValidateMetadata(t *testing.T) {
 		errContain string
 	}{
 		{
-			name:      "正常元数据验证通过",
+			name:      "valid metadata passes validation",
 			validator: validator,
 			metadata: &ExtensionMetadata{
 				Type:                  1,
@@ -103,14 +103,14 @@ func TestDefaultValidator_ValidateMetadata(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "nil元数据返回错误",
+			name:      "nil metadata returns error",
 			validator: validator,
 			metadata:  nil,
 			wantErr:   true,
 			errCode:   ErrCodeInvalidMetadata,
 		},
 		{
-			name:      "Type为0返回错误",
+			name:      "Type=0 returns error",
 			validator: validator,
 			metadata: &ExtensionMetadata{
 				Type: 0,
@@ -120,7 +120,7 @@ func TestDefaultValidator_ValidateMetadata(t *testing.T) {
 			errCode: ErrCodeMissingField,
 		},
 		{
-			name:      "空Name返回错误",
+			name:      "empty Name returns error",
 			validator: validator,
 			metadata: &ExtensionMetadata{
 				Type: 1,
@@ -130,7 +130,7 @@ func TestDefaultValidator_ValidateMetadata(t *testing.T) {
 			errCode: ErrCodeMissingField,
 		},
 		{
-			name:      "Name超过256字符返回错误",
+			name:      "Name exceeding 256 chars returns error",
 			validator: validator,
 			metadata: &ExtensionMetadata{
 				Type: 1,
@@ -140,7 +140,7 @@ func TestDefaultValidator_ValidateMetadata(t *testing.T) {
 			errCode: ErrCodeFieldSizeMismatch,
 		},
 		{
-			name:      "Name刚好256字符通过",
+			name:      "Name exactly 256 chars passes",
 			validator: validator,
 			metadata: &ExtensionMetadata{
 				Type: 1,
@@ -149,7 +149,7 @@ func TestDefaultValidator_ValidateMetadata(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "Description超过1024字符返回错误",
+			name:      "Description exceeding 1024 chars returns error",
 			validator: validator,
 			metadata: &ExtensionMetadata{
 				Type:        1,
@@ -160,7 +160,7 @@ func TestDefaultValidator_ValidateMetadata(t *testing.T) {
 			errCode: ErrCodeFieldSizeMismatch,
 		},
 		{
-			name:      "Description刚好1024字符通过",
+			name:      "Description exactly 1024 chars passes",
 			validator: validator,
 			metadata: &ExtensionMetadata{
 				Type:        1,
@@ -170,7 +170,7 @@ func TestDefaultValidator_ValidateMetadata(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "严格模式下无CompatibleTLSVersions通过",
+			name:      "strict mode without CompatibleTLSVersions passes",
 			validator: validatorStrict,
 			metadata: &ExtensionMetadata{
 				Type:                  1,
@@ -180,14 +180,14 @@ func TestDefaultValidator_ValidateMetadata(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "默认验证器下无CompatibleTLSVersions通过",
+			name:      "default validator without CompatibleTLSVersions passes",
 			validator: validator,
 			metadata: &ExtensionMetadata{
 				Type:                  1,
 				Name:                  "test",
 				CompatibleTLSVersions: []uint16{},
 			},
-			wantErr: false, // 默认 StrictMode=true，不会返回警告
+			wantErr: false, // Default StrictMode=true, will not return warning
 		},
 	}
 
@@ -219,7 +219,7 @@ func TestDefaultValidator_ValidateMetadata(t *testing.T) {
 	}
 }
 
-// TestDefaultValidator_ValidateConfig 测试配置验证
+// TestDefaultValidator_ValidateConfig tests configuration validation
 func TestDefaultValidator_ValidateConfig(t *testing.T) {
 	validator := NewDefaultValidator()
 	strictValidator := NewDefaultValidator()
@@ -235,19 +235,19 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 		errCode   ErrorCode
 	}{
 		{
-			name:      "nil配置通过",
+			name:      "nil configuration passes",
 			validator: validator,
 			config:    nil,
 			wantErr:   false,
 		},
 		{
-			name:      "空配置通过",
+			name:      "empty configuration passes",
 			validator: validator,
 			config:    map[string]interface{}{},
 			wantErr:   false,
 		},
 		{
-			name:      "超过1000个键返回错误",
+			name:      "exceeding 1000 keys returns error",
 			validator: validator,
 			config: func() map[string]interface{} {
 				config := make(map[string]interface{})
@@ -260,7 +260,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			errCode: ErrCodeFieldSizeMismatch,
 		},
 		{
-			name:      "刚好1000个键通过",
+			name:      "exactly 1000 keys passes",
 			validator: validator,
 			config: func() map[string]interface{} {
 				config := make(map[string]interface{})
@@ -272,7 +272,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "空键返回错误",
+			name:      "empty key returns error",
 			validator: validator,
 			config: map[string]interface{}{
 				"": "value",
@@ -281,7 +281,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			errCode: ErrCodeInvalidConfig,
 		},
 		{
-			name:      "长键返回错误",
+			name:      "long key returns error",
 			validator: validator,
 			config: map[string]interface{}{
 				strings.Repeat("k", 257): "value",
@@ -290,7 +290,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			errCode: ErrCodeInvalidConfig,
 		},
 		{
-			name:      "刚好256字符的键通过",
+			name:      "exactly 256-char key passes",
 			validator: validator,
 			config: map[string]interface{}{
 				strings.Repeat("k", 256): "value",
@@ -298,7 +298,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "nil值允许",
+			name:      "nil value allowed",
 			validator: validator,
 			config: map[string]interface{}{
 				"nil_key": nil,
@@ -306,7 +306,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "bool值允许",
+			name:      "bool value allowed",
 			validator: validator,
 			config: map[string]interface{}{
 				"bool_true":  true,
@@ -315,7 +315,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "int值允许",
+			name:      "int value allowed",
 			validator: validator,
 			config: map[string]interface{}{
 				"int": 42,
@@ -323,7 +323,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "int32值允许",
+			name:      "int32 value allowed",
 			validator: validator,
 			config: map[string]interface{}{
 				"int32": int32(42),
@@ -331,7 +331,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "int64值允许",
+			name:      "int64 value allowed",
 			validator: validator,
 			config: map[string]interface{}{
 				"int64": int64(42),
@@ -339,7 +339,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "uint值允许",
+			name:      "uint value allowed",
 			validator: validator,
 			config: map[string]interface{}{
 				"uint": uint(42),
@@ -347,7 +347,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "uint32值允许",
+			name:      "uint32 value allowed",
 			validator: validator,
 			config: map[string]interface{}{
 				"uint32": uint32(42),
@@ -355,7 +355,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "uint64值允许",
+			name:      "uint64 value allowed",
 			validator: validator,
 			config: map[string]interface{}{
 				"uint64": uint64(42),
@@ -363,7 +363,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "float32值允许",
+			name:      "float32 value allowed",
 			validator: validator,
 			config: map[string]interface{}{
 				"float32": float32(3.14),
@@ -371,7 +371,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "float64值允许",
+			name:      "float64 value allowed",
 			validator: validator,
 			config: map[string]interface{}{
 				"float64": float64(3.14),
@@ -379,7 +379,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "string值允许",
+			name:      "string value allowed",
 			validator: validator,
 			config: map[string]interface{}{
 				"string": "hello world",
@@ -387,7 +387,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "[]byte值且长度正常",
+			name:      "[]byte value with valid length",
 			validator: validator,
 			config: map[string]interface{}{
 				"bytes": []byte("normal byte array"),
@@ -395,7 +395,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "[]byte值超出MaxDataSize",
+			name:      "[]byte value exceeding MaxDataSize",
 			validator: validator,
 			config: map[string]interface{}{
 				"large_bytes": bytes.Repeat([]byte("x"), validator.MaxDataSize+1),
@@ -404,7 +404,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			errCode: ErrCodeFieldSizeMismatch,
 		},
 		{
-			name:      "严格模式下不支持的类型返回错误",
+			name:      "unsupported type returns error in strict mode",
 			validator: strictValidator,
 			config: map[string]interface{}{
 				"slice": []string{"a", "b"},
@@ -413,7 +413,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			errCode: ErrCodeInvalidConfig,
 		},
 		{
-			name:      "非严格模式下不支持的类型通过",
+			name:      "unsupported type passes in non-strict mode",
 			validator: nonStrictValidator,
 			config: map[string]interface{}{
 				"slice": []string{"a", "b"},
@@ -421,7 +421,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "严格模式下map类型返回错误",
+			name:      "map type returns error in strict mode",
 			validator: strictValidator,
 			config: map[string]interface{}{
 				"nested_map": map[string]interface{}{},
@@ -430,7 +430,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			errCode: ErrCodeInvalidConfig,
 		},
 		{
-			name:      "非严格模式下map类型通过",
+			name:      "map type passes in non-strict mode",
 			validator: nonStrictValidator,
 			config: map[string]interface{}{
 				"nested_map": map[string]interface{}{},
@@ -464,11 +464,11 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 	}
 }
 
-// TestSimpleLogger_AllLevels 测试所有日志级别
+// TestSimpleLogger_AllLevels tests all log levels
 func TestSimpleLogger_AllLevels(t *testing.T) {
 	logger := NewSimpleLogger("test")
 
-	// 测试每个级别可以正常调用（不panic）
+	// Test that each level can be called without panicking
 	logger.Debug("debug message")
 	logger.Info("info message")
 	logger.Warn("warning message")
@@ -476,7 +476,7 @@ func TestSimpleLogger_AllLevels(t *testing.T) {
 	logger.Fatal("fatal message")
 }
 
-// TestSimpleLogger_SetLevel 测试设置日志级别
+// TestSimpleLogger_SetLevel tests setting log level
 func TestSimpleLogger_SetLevel(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -485,40 +485,40 @@ func TestSimpleLogger_SetLevel(t *testing.T) {
 		expectFail bool
 	}{
 		{
-			name:      "设置有效级别-Debug",
+			name:      "set valid level - Debug",
 			setLevel:  0,
 			wantLevel: 0,
 		},
 		{
-			name:      "设置有效级别-Info",
+			name:      "set valid level - Info",
 			setLevel:  1,
 			wantLevel: 1,
 		},
 		{
-			name:      "设置有效级别-Warn",
+			name:      "set valid level - Warn",
 			setLevel:  2,
 			wantLevel: 2,
 		},
 		{
-			name:      "设置有效级别-Error",
+			name:      "set valid level - Error",
 			setLevel:  3,
 			wantLevel: 3,
 		},
 		{
-			name:      "设置有效级别-Fatal",
+			name:      "set valid level - Fatal",
 			setLevel:  4,
 			wantLevel: 4,
 		},
 		{
-			name:       "设置无效级别-负数",
+			name:       "set invalid level - negative",
 			setLevel:   -1,
-			wantLevel:  1, // 默认是1，不会改变
+			wantLevel:  1, // default is 1, will not change
 			expectFail: true,
 		},
 		{
-			name:       "设置无效级别-大于4",
+			name:       "set invalid level - greater than 4",
 			setLevel:   5,
-			wantLevel:  1, // 默认是1，不会改变
+			wantLevel:  1, // default is 1, will not change
 			expectFail: true,
 		},
 	}
@@ -529,7 +529,7 @@ func TestSimpleLogger_SetLevel(t *testing.T) {
 			logger.SetLevel(tt.setLevel)
 
 			if tt.expectFail {
-				// 无效值不应该改变原有级别（默认是1）
+				// Invalid values should not change the original level (default is 1)
 				if logger.level != 1 {
 					t.Errorf("SetLevel(%d) changed level to %d, expected 1 (unchanged)", tt.setLevel, logger.level)
 				}
@@ -542,16 +542,16 @@ func TestSimpleLogger_SetLevel(t *testing.T) {
 	}
 }
 
-// TestSimpleLogger_LevelFiltering 测试日志级别过滤
+// TestSimpleLogger_LevelFiltering tests log level filtering
 func TestSimpleLogger_LevelFiltering(t *testing.T) {
 	tests := []struct {
 		name     string
 		level    int
 		logFunc  func(*SimpleLogger)
-		expected string // 预期输出的级别前缀
+		expected string // expected output level prefix
 	}{
 		{
-			name:  "Debug级别打印Debug日志",
+			name:  "Debug level prints Debug log",
 			level: 0,
 			logFunc: func(l *SimpleLogger) {
 				l.Debug("test debug")
@@ -559,7 +559,7 @@ func TestSimpleLogger_LevelFiltering(t *testing.T) {
 			expected: "DEBUG",
 		},
 		{
-			name:  "Debug级别打印Info日志",
+			name:  "Debug level prints Info log",
 			level: 0,
 			logFunc: func(l *SimpleLogger) {
 				l.Info("test info")
@@ -567,15 +567,15 @@ func TestSimpleLogger_LevelFiltering(t *testing.T) {
 			expected: "INFO",
 		},
 		{
-			name:  "Info级别不打印Debug日志",
+			name:  "Info level does not print Debug log",
 			level: 1,
 			logFunc: func(l *SimpleLogger) {
 				l.Debug("test debug")
 			},
-			expected: "", // 不输出
+			expected: "", // no output
 		},
 		{
-			name:  "Info级别打印Info日志",
+			name:  "Info level prints Info log",
 			level: 1,
 			logFunc: func(l *SimpleLogger) {
 				l.Info("test info")
@@ -583,15 +583,15 @@ func TestSimpleLogger_LevelFiltering(t *testing.T) {
 			expected: "INFO",
 		},
 		{
-			name:  "Warn级别不打印Info日志",
+			name:  "Warn level does not print Info log",
 			level: 2,
 			logFunc: func(l *SimpleLogger) {
 				l.Info("test info")
 			},
-			expected: "", // 不输出
+			expected: "", // no output
 		},
 		{
-			name:  "Warn级别打印Warn日志",
+			name:  "Warn level prints Warn log",
 			level: 2,
 			logFunc: func(l *SimpleLogger) {
 				l.Warn("test warn")
@@ -599,15 +599,15 @@ func TestSimpleLogger_LevelFiltering(t *testing.T) {
 			expected: "WARN",
 		},
 		{
-			name:  "Error级别不打印Warn日志",
+			name:  "Error level does not print Warn log",
 			level: 3,
 			logFunc: func(l *SimpleLogger) {
 				l.Warn("test warn")
 			},
-			expected: "", // 不输出
+			expected: "", // no output
 		},
 		{
-			name:  "Error级别打印Error日志",
+			name:  "Error level prints Error log",
 			level: 3,
 			logFunc: func(l *SimpleLogger) {
 				l.Error("test error", nil)
@@ -615,7 +615,7 @@ func TestSimpleLogger_LevelFiltering(t *testing.T) {
 			expected: "ERROR",
 		},
 		{
-			name:  "Fatal级别打印Fatal日志",
+			name:  "Fatal level prints Fatal log",
 			level: 4,
 			logFunc: func(l *SimpleLogger) {
 				l.Fatal("test fatal")
@@ -623,12 +623,12 @@ func TestSimpleLogger_LevelFiltering(t *testing.T) {
 			expected: "FATAL",
 		},
 		{
-			name:  "Fatal级别不打印Error日志",
+			name:  "Fatal level does not print Error log",
 			level: 4,
 			logFunc: func(l *SimpleLogger) {
 				l.Error("test error", nil)
 			},
-			expected: "", // 不输出
+			expected: "", // no output
 		},
 	}
 
@@ -637,14 +637,14 @@ func TestSimpleLogger_LevelFiltering(t *testing.T) {
 			logger := NewSimpleLogger("test")
 			logger.SetLevel(tt.level)
 
-			// 这里只是验证调用不panic
-			// 实际输出无法捕获，因为直接打印到stdout
+			// Just verify calls don't panic
+			// Actual output can't be captured since it prints directly to stdout
 			tt.logFunc(logger)
 		})
 	}
 }
 
-// TestInputSanitizer_SanitizeString 测试字符串清理
+// TestInputSanitizer_SanitizeString tests string sanitization
 func TestInputSanitizer_SanitizeString(t *testing.T) {
 	sanitizer := NewInputSanitizer()
 
@@ -656,71 +656,71 @@ func TestInputSanitizer_SanitizeString(t *testing.T) {
 		errCode ErrorCode
 	}{
 		{
-			name:    "正常字符串",
+			name:    "normal string",
 			input:   "Hello World",
 			want:    "Hello World",
 			wantErr: false,
 		},
 		{
-			name:    "包含换行符的字符串",
+			name:    "string with newline",
 			input:   "Line1\nLine2",
 			want:    "Line1\nLine2",
 			wantErr: false,
 		},
 		{
-			name:    "包含回车符的字符串",
+			name:    "string with carriage return",
 			input:   "Line1\rLine2",
 			want:    "Line1\rLine2",
 			wantErr: false,
 		},
 		{
-			name:    "包含制表符的字符串",
+			name:    "string with tab",
 			input:   "Col1\tCol2",
 			want:    "Col1\tCol2",
 			wantErr: false,
 		},
 		{
-			name:    "空字符串",
+			name:    "empty string",
 			input:   "",
 			want:    "",
 			wantErr: false,
 		},
 		{
-			name:    "过长字符串",
+			name:    "string too long",
 			input:   strings.Repeat("a", 1025),
 			want:    "",
 			wantErr: true,
 			errCode: ErrCodeFieldSizeMismatch,
 		},
 		{
-			name:    "刚好最大长度的字符串",
+			name:    "string at max length",
 			input:   strings.Repeat("b", 1024),
 			want:    strings.Repeat("b", 1024),
 			wantErr: false,
 		},
 		{
-			name:    "包含非法控制字符-NUL",
+			name:    "contains illegal control char - NUL",
 			input:   "Hello\x00World",
 			want:    "",
 			wantErr: true,
 			errCode: ErrCodeEncodingError,
 		},
 		{
-			name:    "包含非法控制字符-BEL",
+			name:    "contains illegal control char - BEL",
 			input:   "Hello\x07World",
 			want:    "",
 			wantErr: true,
 			errCode: ErrCodeEncodingError,
 		},
 		{
-			name:    "包含非法控制字符-ESC",
+			name:    "contains illegal control char - ESC",
 			input:   "Hello\x1bWorld",
 			want:    "",
 			wantErr: true,
 			errCode: ErrCodeEncodingError,
 		},
 		{
-			name:    "Unicode字符正常",
+			name:    "Unicode chars OK",
 			input:   "Hello 世界 🌍",
 			want:    "Hello 世界 🌍",
 			wantErr: false,
@@ -756,7 +756,7 @@ func TestInputSanitizer_SanitizeString(t *testing.T) {
 	}
 }
 
-// TestInputSanitizer_SanitizeBytes 测试字节数组清理
+// TestInputSanitizer_SanitizeBytes tests byte slice sanitization
 func TestInputSanitizer_SanitizeBytes(t *testing.T) {
 	sanitizer := NewInputSanitizer()
 
@@ -769,28 +769,28 @@ func TestInputSanitizer_SanitizeBytes(t *testing.T) {
 		errCode ErrorCode
 	}{
 		{
-			name:    "正常字节数组",
+			name:    "normal byte slice",
 			input:   []byte("Hello World"),
 			maxLen:  100,
 			want:    []byte("Hello World"),
 			wantErr: false,
 		},
 		{
-			name:    "空字节数组",
+			name:    "empty byte slice",
 			input:   []byte{},
 			maxLen:  100,
 			want:    []byte{},
 			wantErr: false,
 		},
 		{
-			name:    "nil字节数组",
+			name:    "nil byte slice",
 			input:   nil,
 			maxLen:  100,
 			want:    nil,
 			wantErr: false,
 		},
 		{
-			name:    "过长字节数组",
+			name:    "byte slice too long",
 			input:   bytes.Repeat([]byte("a"), 101),
 			maxLen:  100,
 			want:    nil,
@@ -798,21 +798,21 @@ func TestInputSanitizer_SanitizeBytes(t *testing.T) {
 			errCode: ErrCodeFieldSizeMismatch,
 		},
 		{
-			name:    "刚好最大长度的字节数组",
+			name:    "byte slice at max length",
 			input:   bytes.Repeat([]byte("b"), 100),
 			maxLen:  100,
 			want:    bytes.Repeat([]byte("b"), 100),
 			wantErr: false,
 		},
 		{
-			name:    "包含空字节",
+			name:    "contains null byte",
 			input:   []byte("Hello\x00World"),
 			maxLen:  100,
 			want:    []byte("Hello\x00World"),
-			wantErr: false, // 空字节是允许的
+			wantErr: false, // null bytes are allowed
 		},
 		{
-			name:    "包含非法控制字符-BEL",
+			name:    "contains illegal control char - BEL",
 			input:   []byte("Hello\x07World"),
 			maxLen:  100,
 			want:    nil,
@@ -820,7 +820,7 @@ func TestInputSanitizer_SanitizeBytes(t *testing.T) {
 			errCode: ErrCodeEncodingError,
 		},
 		{
-			name:    "包含非法控制字符-ESC",
+			name:    "contains illegal control char - ESC",
 			input:   []byte("Hello\x1bWorld"),
 			maxLen:  100,
 			want:    nil,
@@ -828,7 +828,7 @@ func TestInputSanitizer_SanitizeBytes(t *testing.T) {
 			errCode: ErrCodeEncodingError,
 		},
 		{
-			name:    "包含非法控制字符-在开头",
+			name:    "contains illegal control char - at start",
 			input:   []byte("\x01Hello"),
 			maxLen:  100,
 			want:    nil,
@@ -836,7 +836,7 @@ func TestInputSanitizer_SanitizeBytes(t *testing.T) {
 			errCode: ErrCodeEncodingError,
 		},
 		{
-			name:    "包含非法控制字符-在结尾",
+			name:    "contains illegal control char - at end",
 			input:   []byte("Hello\x1f"),
 			maxLen:  100,
 			want:    nil,
@@ -874,7 +874,7 @@ func TestInputSanitizer_SanitizeBytes(t *testing.T) {
 	}
 }
 
-// TestSafeParseInt 测试安全解析整数
+// TestSafeParseInt tests safe integer parsing
 func TestSafeParseInt(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -885,42 +885,42 @@ func TestSafeParseInt(t *testing.T) {
 		errCode ErrorCode
 	}{
 		{
-			name:    "正常数字字符串",
+			name:    "normal number string",
 			input:   "12345",
 			base:    10,
 			bitSize: 64,
 			wantErr: false,
 		},
 		{
-			name:    "负数字符串",
+			name:    "negative number string",
 			input:   "-12345",
 			base:    10,
 			bitSize: 64,
 			wantErr: false,
 		},
 		{
-			name:    "带正号的字符串",
+			name:    "string with plus sign",
 			input:   "+12345",
 			base:    10,
 			bitSize: 64,
 			wantErr: false,
 		},
 		{
-			name:    "零",
+			name:    "zero",
 			input:   "0",
 			base:    10,
 			bitSize: 64,
 			wantErr: false,
 		},
 		{
-			name:    "刚好20位数字",
+			name:    "exactly 20 digits",
 			input:   "12345678901234567890",
 			base:    10,
 			bitSize: 64,
 			wantErr: false,
 		},
 		{
-			name:    "超过20位数字",
+			name:    "more than 20 digits",
 			input:   "123456789012345678901",
 			base:    10,
 			bitSize: 64,
@@ -928,7 +928,7 @@ func TestSafeParseInt(t *testing.T) {
 			errCode: ErrCodeInvalidFormat,
 		},
 		{
-			name:    "包含非法字符-字母",
+			name:    "contains illegal char - letter",
 			input:   "123abc",
 			base:    10,
 			bitSize: 64,
@@ -936,7 +936,7 @@ func TestSafeParseInt(t *testing.T) {
 			errCode: ErrCodeEncodingError,
 		},
 		{
-			name:    "包含非法字符-空格",
+			name:    "contains illegal char - space",
 			input:   "123 456",
 			base:    10,
 			bitSize: 64,
@@ -944,7 +944,7 @@ func TestSafeParseInt(t *testing.T) {
 			errCode: ErrCodeEncodingError,
 		},
 		{
-			name:    "包含非法字符-符号",
+			name:    "contains illegal char - symbol",
 			input:   "123@456",
 			base:    10,
 			bitSize: 64,
@@ -952,28 +952,28 @@ func TestSafeParseInt(t *testing.T) {
 			errCode: ErrCodeEncodingError,
 		},
 		{
-			name:    "空字符串",
+			name:    "empty string",
 			input:   "",
 			base:    10,
 			bitSize: 64,
-			wantErr: false, // 空字符串通过基本验证
+			wantErr: false, // empty string passes basic validation
 		},
 		{
-			name:    "只有符号-负号",
+			name:    "sign only - minus",
 			input:   "-",
 			base:    10,
 			bitSize: 64,
-			wantErr: false, // 只有符号通过基本验证
+			wantErr: false, // sign only passes basic validation
 		},
 		{
-			name:    "只有符号-正号",
+			name:    "sign only - plus",
 			input:   "+",
 			base:    10,
 			bitSize: 64,
-			wantErr: false, // 只有符号通过基本验证
+			wantErr: false, // sign only passes basic validation
 		},
 		{
-			name:    "小数点",
+			name:    "decimal point",
 			input:   "123.456",
 			base:    10,
 			bitSize: 64,
@@ -1007,7 +1007,7 @@ func TestSafeParseInt(t *testing.T) {
 	}
 }
 
-// TestRecoveryManager_RegisterHandler 测试注册处理器
+// TestRecoveryManager_RegisterHandler tests registering handlers
 func TestRecoveryManager_RegisterHandler(t *testing.T) {
 	logger := NewSimpleLogger("test")
 
@@ -1018,12 +1018,12 @@ func TestRecoveryManager_RegisterHandler(t *testing.T) {
 		errCode ErrorCode
 	}{
 		{
-			name:    "注册有效的处理器",
+			name:    "register valid handler",
 			handler: NewPanicHandler(),
 			wantErr: false,
 		},
 		{
-			name:    "注册nil处理器返回错误",
+			name:    "register nil handler returns error",
 			handler: nil,
 			wantErr: true,
 			errCode: ErrCodeInvalidInput,
@@ -1032,7 +1032,7 @@ func TestRecoveryManager_RegisterHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// 为每个测试创建新的 RecoveryManager
+			// Create a new RecoveryManager for each test
 			testRm := NewRecoveryManager(logger)
 
 			err := testRm.RegisterHandler(tt.handler)
@@ -1053,7 +1053,7 @@ func TestRecoveryManager_RegisterHandler(t *testing.T) {
 				if err != nil {
 					t.Errorf("RegisterHandler() error = %v, wantErr %v", err, tt.wantErr)
 				}
-				// 验证处理器已注册
+				// Verify handler is registered
 				if len(testRm.handlers) != 1 {
 					t.Errorf("RegisterHandler() registered %d handlers, want 1", len(testRm.handlers))
 				}
@@ -1061,8 +1061,8 @@ func TestRecoveryManager_RegisterHandler(t *testing.T) {
 		})
 	}
 
-	// 测试注册多个处理器
-	t.Run("注册多个处理器", func(t *testing.T) {
+	// Test registering multiple handlers
+	t.Run("register multiple handlers", func(t *testing.T) {
 		multiRm := NewRecoveryManager(logger)
 		handler1 := NewPanicHandler()
 		handler2 := NewPanicHandler()
@@ -1080,7 +1080,7 @@ func TestRecoveryManager_RegisterHandler(t *testing.T) {
 	})
 }
 
-// TestRecoveryManager_Handle 测试错误处理
+// TestRecoveryManager_Handle tests error handling
 func TestRecoveryManager_Handle(t *testing.T) {
 	logger := NewSimpleLogger("test")
 
@@ -1092,13 +1092,13 @@ func TestRecoveryManager_Handle(t *testing.T) {
 		checkFn func(error) bool
 	}{
 		{
-			name:    "处理nil错误",
+			name:    "handle nil error",
 			setup:   func(rm *RecoveryManager) {},
 			err:     nil,
 			wantErr: false,
 		},
 		{
-			name:    "处理普通错误",
+			name:    "handle normal error",
 			setup:   func(rm *RecoveryManager) {},
 			err:     NewError(ErrCodeSystemError, "test error"),
 			wantErr: true,
@@ -1108,7 +1108,7 @@ func TestRecoveryManager_Handle(t *testing.T) {
 			},
 		},
 		{
-			name:    "处理标准库错误",
+			name:    "handle standard library error",
 			setup:   func(rm *RecoveryManager) {},
 			err:     &testError{msg: "standard error"},
 			wantErr: true,
@@ -1118,9 +1118,9 @@ func TestRecoveryManager_Handle(t *testing.T) {
 			},
 		},
 		{
-			name: "使用处理器处理",
+			name: "handle with handler",
 			setup: func(rm *RecoveryManager) {
-				// 注册一个能够处理所有错误的处理器
+				// Register a handler that can handle all errors
 				rm.RegisterHandler(&testErrorHandler{
 					name:    "test_handler",
 					handles: true,
@@ -1154,7 +1154,7 @@ func TestRecoveryManager_Handle(t *testing.T) {
 	}
 }
 
-// 测试用的标准错误类型
+// Standard error type for testing
 type testError struct {
 	msg string
 }
@@ -1163,7 +1163,7 @@ func (e *testError) Error() string {
 	return e.msg
 }
 
-// 测试用的错误处理器
+// Error handler for testing
 type testErrorHandler struct {
 	name    string
 	handles bool
@@ -1181,7 +1181,7 @@ func (h *testErrorHandler) GetName() string {
 	return h.name
 }
 
-// TestRecoveryManager_IsRecoverable 测试错误可恢复性判断
+// TestRecoveryManager_IsRecoverable tests error recoverability
 func TestRecoveryManager_IsRecoverable(t *testing.T) {
 	logger := NewSimpleLogger("test")
 	rm := NewRecoveryManager(logger)
@@ -1193,7 +1193,7 @@ func TestRecoveryManager_IsRecoverable(t *testing.T) {
 		wantPanic bool
 	}{
 		{
-			name: "SeverityInfo可恢复",
+			name: "SeverityInfo is recoverable",
 			err: &Error{
 				Code:     ErrCodeInvalidInput,
 				Message:  "info",
@@ -1202,7 +1202,7 @@ func TestRecoveryManager_IsRecoverable(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "SeverityWarning可恢复",
+			name: "SeverityWarning is recoverable",
 			err: &Error{
 				Code:     ErrCodeInvalidInput,
 				Message:  "warning",
@@ -1211,7 +1211,7 @@ func TestRecoveryManager_IsRecoverable(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "SeverityError可恢复",
+			name: "SeverityError is recoverable",
 			err: &Error{
 				Code:     ErrCodeInvalidInput,
 				Message:  "error",
@@ -1220,7 +1220,7 @@ func TestRecoveryManager_IsRecoverable(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "SeverityCritical不可恢复",
+			name: "SeverityCritical is not recoverable",
 			err: &Error{
 				Code:     ErrCodeSystemError,
 				Message:  "critical",
@@ -1229,7 +1229,7 @@ func TestRecoveryManager_IsRecoverable(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "SeverityFatal不可恢复",
+			name: "SeverityFatal is not recoverable",
 			err: &Error{
 				Code:     ErrCodeSystemError,
 				Message:  "fatal",
@@ -1238,14 +1238,14 @@ func TestRecoveryManager_IsRecoverable(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "非*Error类型错误默认可恢复",
+			name: "non-*Error type defaults to recoverable",
 			err: &testError{
 				msg: "standard error",
 			},
 			want: true,
 		},
 		{
-			name: "nil错误默认可恢复",
+			name: "nil error defaults to recoverable",
 			err:  nil,
 			want: true,
 		},
@@ -1261,7 +1261,7 @@ func TestRecoveryManager_IsRecoverable(t *testing.T) {
 	}
 }
 
-// TestErrorSeverity_String 测试错误严重级别的字符串输出
+// TestErrorSeverity_String tests error severity string output
 func TestErrorSeverity_String(t *testing.T) {
 	tests := []struct {
 		name string
@@ -1294,12 +1294,12 @@ func TestErrorSeverity_String(t *testing.T) {
 			want: "FATAL",
 		},
 		{
-			name: "未知的严重级别",
+			name: "unknown severity level",
 			es:   ErrorSeverity(999),
 			want: "UNKNOWN",
 		},
 		{
-			name: "负的严重级别",
+			name: "negative severity level",
 			es:   ErrorSeverity(-1),
 			want: "UNKNOWN",
 		},

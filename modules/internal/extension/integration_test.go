@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// TestConfigEnvironments 测试三种环境配置预设是否正确
+// TestConfigEnvironments tests whether the three environment configuration presets are correct
 func TestConfigEnvironments(t *testing.T) {
 	envs := []Environment{EnvDevelopment, EnvTesting, EnvProduction}
 	names := map[Environment]string{
@@ -43,12 +43,12 @@ func TestConfigEnvironments(t *testing.T) {
 	}
 }
 
-// TestContainerDependencyInjection 测试容器的依赖注入功能
+// TestContainerDependencyInjection tests the container's dependency injection functionality
 func TestContainerDependencyInjection(t *testing.T) {
 	cfg := NewConfig(EnvTesting)
 	container := NewContainer(cfg)
 
-	// 测试获取组件
+	// Test getting components
 	logger, err := container.GetLogger("test")
 	if err != nil {
 		t.Fatalf("Failed to get logger: %v", err)
@@ -90,7 +90,7 @@ func TestContainerDependencyInjection(t *testing.T) {
 	}
 }
 
-// TestContainerSingletonCaching 测试容器的单例缓存功能
+// TestContainerSingletonCaching tests the container's singleton caching functionality
 func TestContainerSingletonCaching(t *testing.T) {
 	cfg := NewConfig(EnvTesting)
 	container := NewContainer(cfg)
@@ -98,7 +98,7 @@ func TestContainerSingletonCaching(t *testing.T) {
 	logger1, _ := container.GetLogger("test")
 	logger2, _ := container.GetLogger("test")
 
-	// 应该返回相同的实例
+	// Should return the same instance
 	if logger1 != logger2 {
 		t.Error("Container should cache singleton instances")
 	}
@@ -111,7 +111,7 @@ func TestContainerSingletonCaching(t *testing.T) {
 	}
 }
 
-// TestContainerThreadSafety 测试容器的线程安全性
+// TestContainerThreadSafety tests the container's thread safety
 func TestContainerThreadSafety(t *testing.T) {
 	cfg := NewConfig(EnvTesting)
 	container := NewContainer(cfg)
@@ -119,13 +119,13 @@ func TestContainerThreadSafety(t *testing.T) {
 	var wg sync.WaitGroup
 	errors := make(chan error, 10)
 
-	// 并发访问容器
+	// Concurrent container access
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
 
-			// 随机获取不同的组件
+			// Randomly get different components
 			switch id % 5 {
 			case 0:
 				_, err := container.GetLogger("concurrent")
@@ -166,13 +166,13 @@ func TestContainerThreadSafety(t *testing.T) {
 	}
 }
 
-// TestComponentInfoRetrieval 测试组件信息接口
+// TestComponentInfoRetrieval tests the component info interface
 func TestComponentInfoRetrieval(t *testing.T) {
 	cfg := NewConfig(EnvTesting)
 	container := NewContainer(cfg)
 
 	_, _ = container.GetLogger("test")
-	// SimpleLogger 作为组件，有名称和版本
+	// SimpleLogger as a component, has name and version
 	loggerName := "SimpleLogger"
 
 	if loggerName == "" {
@@ -180,7 +180,7 @@ func TestComponentInfoRetrieval(t *testing.T) {
 	}
 }
 
-// TestRateLimiterWithContainer 测试通过容器使用速率限制器
+// TestRateLimiterWithContainer tests using the rate limiter through the container
 func TestRateLimiterWithContainer(t *testing.T) {
 	cfg := NewConfig(EnvTesting)
 	container := NewContainer(cfg)
@@ -190,12 +190,12 @@ func TestRateLimiterWithContainer(t *testing.T) {
 		t.Fatalf("Failed to get rate limiter: %v", err)
 	}
 
-	// 应该允许第一个请求
+	// Should allow the first request
 	if err := limiter.Allow(); err != nil {
 		t.Errorf("First request should be allowed: %v", err)
 	}
 
-	// 再允许几个请求
+	// Allow a few more requests
 	for i := 0; i < 5; i++ {
 		if err := limiter.Allow(); err != nil {
 			t.Logf("Request %d denied: %v", i+2, err)
@@ -203,7 +203,7 @@ func TestRateLimiterWithContainer(t *testing.T) {
 	}
 }
 
-// TestValidatorWithContainer 测试通过容器使用验证器
+// TestValidatorWithContainer tests using the validator through the container
 func TestValidatorWithContainer(t *testing.T) {
 	cfg := NewConfig(EnvTesting)
 	container := NewContainer(cfg)
@@ -213,13 +213,13 @@ func TestValidatorWithContainer(t *testing.T) {
 		t.Fatalf("Failed to get validator: %v", err)
 	}
 
-	// 测试验证小的数据
+	// Test validating small data
 	err = validator.ValidateData([]byte("small data"))
 	if err != nil {
 		t.Errorf("Small data should be valid: err=%v", err)
 	}
 
-	// 测试验证过大的数据
+	// Test validating oversized data
 	largeData := make([]byte, cfg.Validator.MaxDataSize+1)
 	err = validator.ValidateData(largeData)
 	if err == nil {
@@ -227,7 +227,7 @@ func TestValidatorWithContainer(t *testing.T) {
 	}
 }
 
-// TestConfigValidation 测试配置验证
+// TestConfigValidation tests configuration validation
 func TestConfigValidation(t *testing.T) {
 	validConfigs := []Environment{EnvDevelopment, EnvTesting, EnvProduction}
 
@@ -238,7 +238,7 @@ func TestConfigValidation(t *testing.T) {
 		}
 	}
 
-	// 测试无效的配置
+	// Test invalid configuration
 	invalidCfg := NewConfig(EnvTesting)
 	invalidCfg.Defense.MaxInputSize = -1
 	if err := invalidCfg.Validate(); err == nil {
@@ -246,23 +246,23 @@ func TestConfigValidation(t *testing.T) {
 	}
 }
 
-// TestEnvironmentVariableOverride 测试环境变量覆盖
+// TestEnvironmentVariableOverride tests environment variable overrides
 func TestEnvironmentVariableOverride(t *testing.T) {
-	// 这个测试需要设置实际的环境变量
-	// 在这里只是演示测试结构
+	// This test requires setting actual environment variables
+	// This is just demonstrating the test structure
 	cfg := NewConfigFromEnv()
 
 	if cfg == nil {
 		t.Fatal("Config from environment should not be nil")
 	}
 
-	// 环境变量应该覆盖默认值
+	// Environment variables should override defaults
 	if cfg.Environment != EnvDevelopment && cfg.Environment != EnvTesting && cfg.Environment != EnvProduction {
 		t.Errorf("Invalid environment: %s", cfg.Environment)
 	}
 }
 
-// TestUnifiedConfigFromEnv 测试统一配置入口（含规则配置）
+// TestUnifiedConfigFromEnv tests the unified configuration entry (including rules configuration)
 func TestUnifiedConfigFromEnv(t *testing.T) {
 	t.Setenv("FINGERPRINT_ENV", string(EnvTesting))
 	t.Setenv("FINGERPRINT_RULES_FILE", "rules.json")
@@ -285,7 +285,7 @@ func TestUnifiedConfigFromEnv(t *testing.T) {
 	}
 }
 
-// TestConfigLoadRulesFromPath 测试通过路径加载规则配置
+// TestConfigLoadRulesFromPath tests loading rules configuration from a path
 func TestConfigLoadRulesFromPath(t *testing.T) {
 	cfg := NewConfig(EnvTesting)
 
@@ -307,17 +307,17 @@ func TestConfigLoadRulesFromPath(t *testing.T) {
 	}
 }
 
-// TestContainerInitialize 测试容器的初始化方法
+// TestContainerInitialize tests the container's initialization method
 func TestContainerInitialize(t *testing.T) {
 	cfg := NewConfig(EnvTesting)
 	container := NewContainer(cfg)
 
-	// Initialize() 应该预加载所有关键组件
+	// Initialize() should preload all critical components
 	if err := container.Initialize(); err != nil {
 		t.Fatalf("Container initialization failed: %v", err)
 	}
 
-	// 验证所有关键组件都已加载
+	// Verify all critical components are loaded
 	_, err := container.GetLogger("test")
 	if err != nil {
 		t.Error("Logger should be initialized")
@@ -334,12 +334,12 @@ func TestContainerInitialize(t *testing.T) {
 	}
 }
 
-// TestConfigEnvironmentDifferences 测试不同环境的配置差异
+// TestConfigEnvironmentDifferences tests configuration differences across environments
 func TestConfigEnvironmentDifferences(t *testing.T) {
 	devCfg := NewConfig(EnvDevelopment)
 	prodCfg := NewConfig(EnvProduction)
 
-	// Production 应该有更严格的限制
+	// Production should have stricter limits
 	tests := []struct {
 		name string
 		dev  int
@@ -369,7 +369,7 @@ func TestConfigEnvironmentDifferences(t *testing.T) {
 	}
 }
 
-// BenchmarkContainerGetLogger 基准测试：获取日志记录器
+// BenchmarkContainerGetLogger benchmarks getting the logger
 func BenchmarkContainerGetLogger(b *testing.B) {
 	cfg := NewConfig(EnvTesting)
 	container := NewContainer(cfg)
@@ -380,7 +380,7 @@ func BenchmarkContainerGetLogger(b *testing.B) {
 	}
 }
 
-// BenchmarkRateLimiterAllow 基准测试：速率限制器允许操作
+// BenchmarkRateLimiterAllow benchmarks the rate limiter allow operation
 func BenchmarkRateLimiterAllow(b *testing.B) {
 	limiter := NewRateLimiter(10000, time.Second)
 
@@ -390,7 +390,7 @@ func BenchmarkRateLimiterAllow(b *testing.B) {
 	}
 }
 
-// BenchmarkValidatorValidate 基准测试：验证器验证
+// BenchmarkValidatorValidate benchmarks the validator validation
 func BenchmarkValidatorValidate(b *testing.B) {
 	validator := NewDefaultValidator()
 	testData := []byte("test data")

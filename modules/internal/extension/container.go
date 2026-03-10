@@ -6,9 +6,9 @@ import (
 	"time"
 )
 
-// Container 依赖注入容器，管理所有组件的生命周期和依赖关系
+// Container is the dependency injection container that manages the lifecycle and dependencies of all components
 //
-// 使用示例：
+// Usage example:
 //
 //	config := NewConfig(EnvProduction)
 //	container := NewContainer(config)
@@ -17,35 +17,35 @@ import (
 //	guard, err := container.GetRequestGuard()
 //	validator, err := container.GetValidator()
 //
-// 特点：
-//   - 单例模式：每个组件只创建一次
-//   - 懒加载：组件在首次使用时才创建
-//   - 线程安全：使用互斥锁保护共享状态
+// Features:
+//   - Singleton pattern: each component is created only once
+//   - Lazy loading: components are created on first use
+//   - Thread-safe: uses mutexes to protect shared state
 type Container struct {
 	mu sync.RWMutex
 
-	// 配置对象
+	// Configuration object
 	config *Config
 
-	// 单例缓存
+	// Singleton cache
 	singletons map[string]interface{}
 
-	// 工厂函数注册
+	// Factory function registry
 	factories map[string]func() (interface{}, error)
 
-	// 初始化标记
+	// Initialization flag
 	initialized bool
 }
 
-// NewContainer 创建依赖注入容器
+// NewContainer creates a dependency injection container
 func NewContainer(config *Config) *Container {
 	if config == nil {
 		config = NewUnifiedConfigFromEnv()
 	}
 
-	// 验证配置
+	// Validate configuration
 	if err := config.Validate(); err != nil {
-		// 继续，使用有效的默认配置
+		// Continue with valid default configuration
 		config = NewConfig(EnvDevelopment)
 	}
 
@@ -56,7 +56,7 @@ func NewContainer(config *Config) *Container {
 	}
 }
 
-// Register 注册工厂函数
+// Register registers a factory function
 func (c *Container) Register(name string, factory func() (interface{}, error)) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -70,7 +70,7 @@ func (c *Container) Register(name string, factory func() (interface{}, error)) e
 	return nil
 }
 
-// Get 获取组件实例（单例）
+// Get retrieves a component instance (singleton)
 func (c *Container) Get(name string) (interface{}, error) {
 	c.mu.RLock()
 	singleton, exists := c.singletons[name]
@@ -86,13 +86,13 @@ func (c *Container) Get(name string) (interface{}, error) {
 			fmt.Sprintf("component not registered: %s", name))
 	}
 
-	// 创建新实例
+	// Create new instance
 	instance, err := factory()
 	if err != nil {
 		return nil, err
 	}
 
-	// 存储到单例缓存
+	// Store in singleton cache
 	c.mu.Lock()
 	c.singletons[name] = instance
 	c.mu.Unlock()
@@ -100,12 +100,12 @@ func (c *Container) Get(name string) (interface{}, error) {
 	return instance, nil
 }
 
-// GetConfig 获取配置对象
+// GetConfig returns the configuration object
 func (c *Container) GetConfig() *Config {
 	return c.config
 }
 
-// GetLogger 获取日志记录器实例
+// GetLogger returns the logger instance
 func (c *Container) GetLogger(name string) (*SimpleLogger, error) {
 	key := "logger_" + name
 
@@ -114,7 +114,7 @@ func (c *Container) GetLogger(name string) (*SimpleLogger, error) {
 		return instance.(*SimpleLogger), nil
 	}
 
-	// 注册并创建新的日志记录器
+	// Register and create a new logger
 	c.Register(key, func() (interface{}, error) {
 		logger := NewSimpleLogger(name)
 		logger.SetLevel(c.config.Logger.Level)
@@ -129,7 +129,7 @@ func (c *Container) GetLogger(name string) (*SimpleLogger, error) {
 	return instance.(*SimpleLogger), nil
 }
 
-// GetValidator 获取验证器实例
+// GetValidator returns the validator instance
 func (c *Container) GetValidator() (*DefaultValidator, error) {
 	instance, err := c.Get("validator")
 	if err == nil {
@@ -151,7 +151,7 @@ func (c *Container) GetValidator() (*DefaultValidator, error) {
 	return instance.(*DefaultValidator), nil
 }
 
-// GetSecurityAuditor 获取安全审计器实例
+// GetSecurityAuditor returns the security auditor instance
 func (c *Container) GetSecurityAuditor() (*SecurityAuditor, error) {
 	instance, err := c.Get("auditor")
 	if err == nil {
@@ -170,7 +170,7 @@ func (c *Container) GetSecurityAuditor() (*SecurityAuditor, error) {
 	return instance.(*SecurityAuditor), nil
 }
 
-// GetRequestGuard 获取请求守卫实例
+// GetRequestGuard returns the request guard instance
 func (c *Container) GetRequestGuard() (*RequestGuard, error) {
 	instance, err := c.Get("request_guard")
 	if err == nil {
@@ -189,7 +189,7 @@ func (c *Container) GetRequestGuard() (*RequestGuard, error) {
 	return instance.(*RequestGuard), nil
 }
 
-// GetRateLimiter 获取速率限制器实例
+// GetRateLimiter returns the rate limiter instance
 func (c *Container) GetRateLimiter() (*RateLimiter, error) {
 	instance, err := c.Get("rate_limiter")
 	if err == nil {
@@ -212,8 +212,8 @@ func (c *Container) GetRateLimiter() (*RateLimiter, error) {
 	return instance.(*RateLimiter), nil
 }
 
-// Reset 重置容器，清除所有单例
-// 注意：仅在测试中使用
+// Reset resets the container, clearing all singletons
+// Note: only for use in tests
 func (c *Container) Reset() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -222,8 +222,8 @@ func (c *Container) Reset() {
 	c.initialized = false
 }
 
-// Initialize 初始化容器的所有默认组件
-// 预先加载关键组件以提高启动性能
+// Initialize initializes all default components in the container
+// Pre-loads critical components to improve startup performance
 func (c *Container) Initialize() error {
 	c.mu.Lock()
 	if c.initialized {
@@ -232,8 +232,8 @@ func (c *Container) Initialize() error {
 	}
 	c.mu.Unlock()
 
-	// 预先初始化关键组件
-	// 使用类型化访问器确保正确的工厂注册和初始化
+	// Pre-initialize critical components
+	// Use typed accessors to ensure correct factory registration and initialization
 	if _, err := c.GetValidator(); err != nil {
 		return fmt.Errorf("init validator: %w", err)
 	}

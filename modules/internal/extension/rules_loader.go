@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 )
 
-// RulesConfig 规则配置顶级结构
-// 统一配置入口后，该结构由 extension 包维护。
+// RulesConfig is the top-level rules configuration structure
+// After the unified configuration entry, this structure is maintained by the extension package.
 type RulesConfig struct {
 	Metadata                  map[string]interface{} `json:"_metadata"`
 	Entropy                   *EntropyConfig         `json:"entropy"`
@@ -20,7 +20,7 @@ type RulesConfig struct {
 	Scoring                   *RulesScoringConfig    `json:"scoring"`
 }
 
-// EntropyConfig 熵配置
+// EntropyConfig holds entropy configuration
 type EntropyConfig struct {
 	Enabled       bool    `json:"enabled"`
 	HighThreshold float64 `json:"high_threshold"`
@@ -29,56 +29,56 @@ type EntropyConfig struct {
 	Sensitivity   string  `json:"sensitivity"`
 }
 
-// ToolMarkersConfig 工具特征配置
+// ToolMarkersConfig holds tool marker configuration
 type ToolMarkersConfig struct {
 	Enabled     bool         `json:"enabled"`
 	Patterns    []MarkerInfo `json:"patterns"`
 	Description string       `json:"description"`
 }
 
-// MarkerInfo 单个标记信息
+// MarkerInfo holds information for a single marker
 type MarkerInfo struct {
 	Marker   string `json:"marker"`
 	Type     string `json:"type"`
 	Severity string `json:"severity"`
 }
 
-// HeadlessBrowserConfig 无头浏览器配置
+// HeadlessBrowserConfig holds headless browser configuration
 type HeadlessBrowserConfig struct {
 	Enabled     bool     `json:"enabled"`
 	Markers     []string `json:"markers"`
 	Description string   `json:"description"`
 }
 
-// OSPlatformConfig OS/Platform 矛盾配置
+// OSPlatformConfig holds OS/Platform contradiction configuration
 type OSPlatformConfig struct {
 	Enabled     bool     `json:"enabled"`
 	Rules       []OSRule `json:"rules"`
 	Description string   `json:"description"`
 }
 
-// OSRule OS 规则
+// OSRule represents an OS rule
 type OSRule struct {
 	OS                  string      `json:"os"`
 	PlatformMustContain interface{} `json:"platform_must_contain"`
 	Severity            string      `json:"severity"`
 }
 
-// UAOSConfig UA/OS 矛盾配置
+// UAOSConfig holds UA/OS contradiction configuration
 type UAOSConfig struct {
 	Enabled     bool       `json:"enabled"`
 	Rules       []UARuleOS `json:"rules"`
 	Description string     `json:"description"`
 }
 
-// UARuleOS UA/OS 规则
+// UARuleOS represents a UA/OS rule
 type UARuleOS struct {
 	UAContains      string `json:"ua_contains"`
 	OSCannotContain string `json:"os_cannot_contain"`
 	Severity        string `json:"severity"`
 }
 
-// MobileScreenConfig 移动屏幕配置
+// MobileScreenConfig holds mobile screen configuration
 type MobileScreenConfig struct {
 	Enabled               bool               `json:"enabled"`
 	MobileScreenWidthMax  int                `json:"mobile_screen_width_max"`
@@ -87,41 +87,41 @@ type MobileScreenConfig struct {
 	Rules                 []MobileScreenRule `json:"rules"`
 }
 
-// MobileScreenRule 移动屏幕规则
+// MobileScreenRule represents a mobile screen rule
 type MobileScreenRule struct {
 	Device               string `json:"device"`
 	ScreenWidthThreshold int    `json:"screen_width_threshold"`
 	Rule                 string `json:"rule"`
 }
 
-// UAFeatureConfig UA/Feature 矛盾配置
+// UAFeatureConfig holds UA/Feature contradiction configuration
 type UAFeatureConfig struct {
 	Enabled     bool            `json:"enabled"`
 	Rules       []UAFeatureRule `json:"rules"`
 	Description string          `json:"description"`
 }
 
-// UAFeatureRule UA/Feature 规则
+// UAFeatureRule represents a UA/Feature rule
 type UAFeatureRule struct {
 	UAContains           string `json:"ua_contains"`
 	FeatureCannotSupport string `json:"feature_cannot_support"`
 	Severity             string `json:"severity"`
 }
 
-// RulesScoringConfig 评分配置
-// 为避免与其他模块同名配置结构冲突，规则配置侧使用 RulesScoringConfig。
+// RulesScoringConfig holds scoring configuration
+// Uses RulesScoringConfig to avoid conflicts with identically named configuration structures in other modules.
 type RulesScoringConfig struct {
 	AnomalyWeights map[string]float64   `json:"anomaly_weights"`
 	RiskLevels     map[string]RiskLevel `json:"risk_levels"`
 }
 
-// RiskLevel 风险等级
+// RiskLevel represents a risk level
 type RiskLevel struct {
 	Min float64 `json:"min"`
 	Max float64 `json:"max"`
 }
 
-// LoadRulesConfig 从 JSON 文件加载规则配置
+// LoadRulesConfig loads rules configuration from a JSON file
 func LoadRulesConfig(path string) (*RulesConfig, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -136,7 +136,7 @@ func LoadRulesConfig(path string) (*RulesConfig, error) {
 	return &config, nil
 }
 
-// LoadRulesConfigByFilename 根据文件名在项目内查找规则配置
+// LoadRulesConfigByFilename finds and loads rules configuration by filename within the project
 func LoadRulesConfigByFilename(filename string) (*RulesConfig, error) {
 	candidates := []string{
 		filepath.Join("internal", "config", filename),
@@ -154,7 +154,7 @@ func LoadRulesConfigByFilename(filename string) (*RulesConfig, error) {
 	return DefaultRulesConfig(), nil
 }
 
-// DefaultRulesConfig 返回默认规则配置
+// DefaultRulesConfig returns the default rules configuration
 func DefaultRulesConfig() *RulesConfig {
 	return &RulesConfig{
 		Metadata: map[string]interface{}{
@@ -208,7 +208,7 @@ func DefaultRulesConfig() *RulesConfig {
 	}
 }
 
-// String 返回配置的 JSON 字符串表示
+// String returns the JSON string representation of the configuration
 func (c *RulesConfig) String() string {
 	data, _ := json.MarshalIndent(c, "", "  ")
 	return string(data)
