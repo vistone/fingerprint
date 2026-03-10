@@ -6,9 +6,9 @@ import (
 	ic "github.com/vistone/fingerprint/modules/internal/config"
 )
 
-// TestTypeAliases 测试类型别名是否正确导出
+// TestTypeAliases test whether type aliases are correctly exported
 func TestTypeAliases(t *testing.T) {
-	// 测试类型别名可以正常使用
+	// Test type aliases can be used normally
 	var cc *ConfigCenter
 	_ = cc
 
@@ -46,16 +46,16 @@ func TestTypeAliases(t *testing.T) {
 	_ = gc
 }
 
-// TestInitializeConfigCenter 测试初始化配置中心
+// TestInitializeConfigCenter test initialize configuration center
 func TestInitializeConfigCenter(t *testing.T) {
 	err := InitializeConfigCenter()
-	// 如果没有配置文件，初始化会失败，这是预期的行为
-	// 我们只需要确保函数被调用且不 panic 即可
+	// If no configuration file, initialization will fail, this is expected behavior
+	// We just need to ensure the function is called without panic
 	_ = err
 	t.Logf("InitializeConfigCenter() returned: %v", err)
 }
 
-// TestInitializeConfigCenterWithDefaults 测试使用默认配置初始化
+// TestInitializeConfigCenterWithDefaults test initialize with default configuration
 func TestInitializeConfigCenterWithDefaults(t *testing.T) {
 	err := InitializeConfigCenterWithDefaults()
 	if err != nil {
@@ -63,9 +63,9 @@ func TestInitializeConfigCenterWithDefaults(t *testing.T) {
 	}
 }
 
-// TestGetConfigCenter 测试获取配置中心
+// TestGetConfigCenter test get configuration center
 func TestGetConfigCenter(t *testing.T) {
-	// 确保先初始化
+	// Ensure initialization first
 	_ = InitializeConfigCenter()
 
 	cc := GetConfigCenter()
@@ -74,9 +74,9 @@ func TestGetConfigCenter(t *testing.T) {
 	}
 }
 
-// TestGetConfigManager 测试获取配置管理器
+// TestGetConfigManager test get configuration manager
 func TestGetConfigManager(t *testing.T) {
-	// 确保先初始化
+	// Ensure initialization first
 	_ = InitializeConfigCenter()
 
 	cm := GetConfigManager()
@@ -85,9 +85,9 @@ func TestGetConfigManager(t *testing.T) {
 	}
 }
 
-// TestGetHealthChecker 测试获取健康检查器
+// TestGetHealthChecker test get health checker
 func TestGetHealthChecker(t *testing.T) {
-	// 确保先初始化
+	// Ensure initialization first
 	_ = InitializeConfigCenter()
 
 	hc := GetHealthChecker()
@@ -96,15 +96,15 @@ func TestGetHealthChecker(t *testing.T) {
 	}
 }
 
-// TestBridgeIntegration 测试桥接功能集成
+// TestBridgeIntegration test bridge functionality integration
 func TestBridgeIntegration(t *testing.T) {
-	// 测试完整的初始化流程
+	// Test complete initialization process
 	err := InitializeConfigCenterWithDefaults()
 	if err != nil {
 		t.Fatalf("Failed to initialize config center: %v", err)
 	}
 
-	// 获取各个组件
+	// Get each component
 	cc := GetConfigCenter()
 	cm := GetConfigManager()
 	hc := GetHealthChecker()
@@ -121,7 +121,7 @@ func TestBridgeIntegration(t *testing.T) {
 		t.Error("HealthChecker is nil")
 	}
 
-	// 验证类型可以转换回 internal 包类型
+	// Verify types can be converted back to internal package types
 	var internalCC *ic.ConfigCenter = cc
 	_ = internalCC
 
@@ -132,7 +132,7 @@ func TestBridgeIntegration(t *testing.T) {
 	_ = internalHC
 }
 
-// TestManagedConfigUsage 测试 ManagedConfig 使用
+// TestManagedConfigUsage test ManagedConfig usage
 func TestManagedConfigUsage(t *testing.T) {
 	config := &ManagedConfig{
 		BehaviorAnalysis: &BehaviorAnalysisConfig{},
@@ -168,7 +168,7 @@ func TestManagedConfigUsage(t *testing.T) {
 	}
 }
 
-// TestConfigChangeUsage 测试 ConfigChange 使用
+// TestConfigChangeUsage test ConfigChange usage
 func TestConfigChangeUsage(t *testing.T) {
 	change := &ConfigChange{
 		Path:     "test.path",
