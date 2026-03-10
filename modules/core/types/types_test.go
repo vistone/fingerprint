@@ -6,7 +6,7 @@ import (
 	profiles "github.com/vistone/fingerprint/modules/profiles/legacy"
 )
 
-// TestBrowserTypeConstants 测试所有 BrowserType 常量值正确
+// TestBrowserTypeConstants tests all BrowserType constant values are correct
 func TestBrowserTypeConstants(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -14,27 +14,27 @@ func TestBrowserTypeConstants(t *testing.T) {
 		expected string
 	}{
 		{
-			name:     "Chrome浏览器类型应为chrome",
+			name:     "Chrome browser type should be chrome",
 			browser:  BrowserChrome,
 			expected: "chrome",
 		},
 		{
-			name:     "Firefox浏览器类型应为firefox",
+			name:     "Firefox browser type should be firefox",
 			browser:  BrowserFirefox,
 			expected: "firefox",
 		},
 		{
-			name:     "Safari浏览器类型应为safari",
+			name:     "Safari browser type should be safari",
 			browser:  BrowserSafari,
 			expected: "safari",
 		},
 		{
-			name:     "Opera浏览器类型应为opera",
+			name:     "Opera browser type should be opera",
 			browser:  BrowserOpera,
 			expected: "opera",
 		},
 		{
-			name:     "Edge浏览器类型应为edge",
+			name:     "Edge browser type should be edge",
 			browser:  BrowserEdge,
 			expected: "edge",
 		},
@@ -49,7 +49,7 @@ func TestBrowserTypeConstants(t *testing.T) {
 	}
 }
 
-// TestOperatingSystemConstants 测试所有 OperatingSystem 常量值正确
+// TestOperatingSystemConstants tests all OperatingSystem constant values are correct
 func TestOperatingSystemConstants(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -57,42 +57,42 @@ func TestOperatingSystemConstants(t *testing.T) {
 		expected string
 	}{
 		{
-			name:     "Windows 10操作系统",
+			name:     "Windows 10 operating system",
 			os:       OSWindows10,
 			expected: "Windows NT 10.0; Win64; x64",
 		},
 		{
-			name:     "Windows 11操作系统",
+			name:     "Windows 11 operating system",
 			os:       OSWindows11,
 			expected: "Windows NT 10.0; Win64; x64",
 		},
 		{
-			name:     "macOS 13操作系统",
+			name:     "macOS 13 operating system",
 			os:       OSMacOS13,
 			expected: "Macintosh; Intel Mac OS X 13_0_0",
 		},
 		{
-			name:     "macOS 14操作系统",
+			name:     "macOS 14 operating system",
 			os:       OSMacOS14,
 			expected: "Macintosh; Intel Mac OS X 14_0_0",
 		},
 		{
-			name:     "macOS 15操作系统",
+			name:     "macOS 15 operating system",
 			os:       OSMacOS15,
 			expected: "Macintosh; Intel Mac OS X 15_0_0",
 		},
 		{
-			name:     "Linux操作系统",
+			name:     "Linux operating system",
 			os:       OSLinux,
 			expected: "X11; Linux x86_64",
 		},
 		{
-			name:     "Ubuntu Linux操作系统",
+			name:     "Ubuntu Linux operating system",
 			os:       OSLinuxUbuntu,
 			expected: "X11; Linux x86_64",
 		},
 		{
-			name:     "Debian Linux操作系统",
+			name:     "Debian Linux operating system",
 			os:       OSLinuxDebian,
 			expected: "X11; Linux x86_64",
 		},
@@ -107,7 +107,7 @@ func TestOperatingSystemConstants(t *testing.T) {
 	}
 }
 
-// TestOperatingSystemsSlice 测试 OperatingSystems 切片内容正确
+// TestOperatingSystemsSlice tests OperatingSystems slice content is correct
 func TestOperatingSystemsSlice(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -115,7 +115,7 @@ func TestOperatingSystemsSlice(t *testing.T) {
 		expectedItems []OperatingSystem
 	}{
 		{
-			name:        "OperatingSystems切片应包含8个去重操作系统",
+			name:        "OperatingSystems slice should contain 8 unique operating systems",
 			expectedLen: 8,
 			expectedItems: []OperatingSystem{
 				OSWindows10,
@@ -145,7 +145,7 @@ func TestOperatingSystemsSlice(t *testing.T) {
 	}
 }
 
-// TestFingerprintResult 测试 FingerprintResult 结构体的创建和使用
+// TestFingerprintResult tests FingerprintResult struct creation and usage
 func TestFingerprintResult(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -155,7 +155,7 @@ func TestFingerprintResult(t *testing.T) {
 		wantProfileNil bool
 	}{
 		{
-			name: "创建完整的FingerprintResult",
+			name: "create complete FingerprintResult",
 			result: FingerprintResult{
 				Profile:       profiles.Chrome_120,
 				UserAgent:     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.0",
@@ -172,21 +172,21 @@ func TestFingerprintResult(t *testing.T) {
 			wantProfileNil: false,
 		},
 		{
-			name: "创建只包含基本字段的FingerprintResult",
+			name: "create FingerprintResult with basic fields only",
 			result: FingerprintResult{
 				UserAgent:     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
 				HelloClientID: "safari_17",
 			},
 			wantUserAgent:  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
 			wantClientID:   "safari_17",
-			wantProfileNil: false, // ClientProfile 是值类型，默认不为 nil
+			wantProfileNil: false, // ClientProfile is value type, not nil by default
 		},
 		{
-			name:           "创建空的FingerprintResult",
+			name:           "create empty FingerprintResult",
 			result:         FingerprintResult{},
 			wantUserAgent:  "",
 			wantClientID:   "",
-			wantProfileNil: false, // ClientProfile 是值类型，默认不为 nil
+			wantProfileNil: false, // ClientProfile is value type, not nil by default
 		},
 	}
 
@@ -198,13 +198,13 @@ func TestFingerprintResult(t *testing.T) {
 			if tt.result.HelloClientID != tt.wantClientID {
 				t.Errorf("HelloClientID = %q, want %q", tt.result.HelloClientID, tt.wantClientID)
 			}
-			// ClientProfile 是结构体值类型，无法直接比较是否"为空"
-			// 只需验证其他字段正确即可
+			// ClientProfile is struct value type, cannot directly compare if "empty"
+			// only need to verify other fields are correct
 		})
 	}
 }
 
-// TestHTTPHeadersCreation 测试 HTTPHeaders 结构体的创建
+// TestHTTPHeadersCreation tests HTTPHeaders struct creation
 func TestHTTPHeadersCreation(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -215,7 +215,7 @@ func TestHTTPHeadersCreation(t *testing.T) {
 		wantCustomLen int
 	}{
 		{
-			name: "创建完整的HTTPHeaders",
+			name: "create complete HTTPHeaders",
 			headers: HTTPHeaders{
 				Accept:                  "text/html,application/xhtml+xml",
 				AcceptLanguage:          "en-US,en;q=0.9,zh-CN;q=0.8",
@@ -239,7 +239,7 @@ func TestHTTPHeadersCreation(t *testing.T) {
 			wantCustomLen: 1,
 		},
 		{
-			name:          "创建空的HTTPHeaders",
+			name:          "create empty HTTPHeaders",
 			headers:       HTTPHeaders{},
 			wantAccept:    "",
 			wantLang:      "",
@@ -266,7 +266,7 @@ func TestHTTPHeadersCreation(t *testing.T) {
 	}
 }
 
-// TestHTTPHeadersClone 测试 HTTPHeaders.Clone 方法
+// TestHTTPHeadersClone tests HTTPHeaders.Clone method
 func TestHTTPHeadersClone(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -275,7 +275,7 @@ func TestHTTPHeadersClone(t *testing.T) {
 		wantDeep bool
 	}{
 		{
-			name: "克隆包含所有字段的HTTPHeaders",
+			name: "clone HTTPHeaders containing all fields",
 			headers: &HTTPHeaders{
 				Accept:         "text/html",
 				AcceptLanguage: "en-US",
@@ -288,13 +288,13 @@ func TestHTTPHeadersClone(t *testing.T) {
 			wantDeep: true,
 		},
 		{
-			name:     "克隆nil的HTTPHeaders应返回nil",
+			name:     "cloning nil HTTPHeaders should return nil",
 			headers:  nil,
 			wantNil:  true,
 			wantDeep: false,
 		},
 		{
-			name: "克隆空的HTTPHeaders",
+			name: "clone empty HTTPHeaders",
 			headers: &HTTPHeaders{
 				Accept:         "",
 				AcceptLanguage: "",
@@ -304,7 +304,7 @@ func TestHTTPHeadersClone(t *testing.T) {
 			wantDeep: false,
 		},
 		{
-			name: "克隆只有Custom的HTTPHeaders",
+			name: "clone HTTPHeaders with Custom only",
 			headers: &HTTPHeaders{
 				Custom: map[string]string{
 					"Authorization": "Bearer token",
@@ -330,7 +330,7 @@ func TestHTTPHeadersClone(t *testing.T) {
 				t.Fatal("Clone() = nil, want non-nil")
 			}
 
-			// 验证值相等
+			// verify values are equal
 			if cloned.Accept != tt.headers.Accept {
 				t.Errorf("Clone().Accept = %q, want %q", cloned.Accept, tt.headers.Accept)
 			}
@@ -338,19 +338,19 @@ func TestHTTPHeadersClone(t *testing.T) {
 				t.Errorf("Clone().AcceptLanguage = %q, want %q", cloned.AcceptLanguage, tt.headers.AcceptLanguage)
 			}
 
-			// 验证深拷贝
+			// verify deep copy
 			if tt.wantDeep {
 				if cloned.Custom == nil {
 					t.Error("Clone().Custom = nil, want non-nil")
 				}
 				if tt.headers.Custom != nil {
-					// 修改原始值，验证克隆的不会改变
+					// modify original value, verify clone won't change
 					originalCookie := tt.headers.Custom["Cookie"]
 					tt.headers.Custom["Cookie"] = "modified"
 					if cloned.Custom["Cookie"] == "modified" {
 						t.Error("Clone() did not create deep copy of Custom map")
 					}
-					// 恢复原始值
+					// restore original value
 					tt.headers.Custom["Cookie"] = originalCookie
 				}
 			}
@@ -358,7 +358,7 @@ func TestHTTPHeadersClone(t *testing.T) {
 	}
 }
 
-// TestHTTPHeadersSet 测试 HTTPHeaders.Set 方法
+// TestHTTPHeadersSet tests HTTPHeaders.Set method
 func TestHTTPHeadersSet(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -369,7 +369,7 @@ func TestHTTPHeadersSet(t *testing.T) {
 		wantExists bool
 	}{
 		{
-			name: "在nil接收者上设置header",
+			name: "set header on nil receiver",
 			setup: func() *HTTPHeaders {
 				return nil
 			},
@@ -379,7 +379,7 @@ func TestHTTPHeadersSet(t *testing.T) {
 			wantExists: false,
 		},
 		{
-			name: "在空的Custom map上设置新header",
+			name: "set new header on empty Custom map",
 			setup: func() *HTTPHeaders {
 				return &HTTPHeaders{}
 			},
@@ -389,7 +389,7 @@ func TestHTTPHeadersSet(t *testing.T) {
 			wantExists: true,
 		},
 		{
-			name: "更新已存在的header值",
+			name: "update existing header value",
 			setup: func() *HTTPHeaders {
 				return &HTTPHeaders{
 					Custom: map[string]string{
@@ -403,7 +403,7 @@ func TestHTTPHeadersSet(t *testing.T) {
 			wantExists: true,
 		},
 		{
-			name: "设置空值应删除header",
+			name: "setting empty value should delete header",
 			setup: func() *HTTPHeaders {
 				return &HTTPHeaders{
 					Custom: map[string]string{
@@ -417,7 +417,7 @@ func TestHTTPHeadersSet(t *testing.T) {
 			wantExists: false,
 		},
 		{
-			name: "添加多个不同的header",
+			name: "add multiple different headers",
 			setup: func() *HTTPHeaders {
 				h := &HTTPHeaders{}
 				h.Set("Cookie", "session=abc")
@@ -450,7 +450,7 @@ func TestHTTPHeadersSet(t *testing.T) {
 	}
 }
 
-// TestHTTPHeadersSetHeaders 测试 HTTPHeaders.SetHeaders 方法
+// TestHTTPHeadersSetHeaders tests HTTPHeaders.SetHeaders method
 func TestHTTPHeadersSetHeaders(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -460,7 +460,7 @@ func TestHTTPHeadersSetHeaders(t *testing.T) {
 		wantValues map[string]string
 	}{
 		{
-			name: "在nil接收者上批量设置headers",
+			name: "batch set headers on nil receiver",
 			setup: func() *HTTPHeaders {
 				return nil
 			},
@@ -470,7 +470,7 @@ func TestHTTPHeadersSetHeaders(t *testing.T) {
 			wantCount: 0,
 		},
 		{
-			name: "在空的Custom map上批量设置headers",
+			name: "batch set headers on empty Custom map",
 			setup: func() *HTTPHeaders {
 				return &HTTPHeaders{}
 			},
@@ -487,7 +487,7 @@ func TestHTTPHeadersSetHeaders(t *testing.T) {
 			},
 		},
 		{
-			name: "合并到已有的Custom map",
+			name: "merge to existing Custom map",
 			setup: func() *HTTPHeaders {
 				return &HTTPHeaders{
 					Custom: map[string]string{
@@ -505,7 +505,7 @@ func TestHTTPHeadersSetHeaders(t *testing.T) {
 			},
 		},
 		{
-			name: "空值应删除header",
+			name: "empty value should delete header",
 			setup: func() *HTTPHeaders {
 				return &HTTPHeaders{
 					Custom: map[string]string{
@@ -548,7 +548,7 @@ func TestHTTPHeadersSetHeaders(t *testing.T) {
 	}
 }
 
-// TestHTTPHeadersMerge 测试 HTTPHeaders.Merge 方法
+// TestHTTPHeadersMerge tests HTTPHeaders.Merge method
 func TestHTTPHeadersMerge(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -559,13 +559,13 @@ func TestHTTPHeadersMerge(t *testing.T) {
 		checkCustom   map[string]string
 	}{
 		{
-			name:          "合并nil接收者应返回nil",
+			name:          "merge nil receiver should return nil",
 			headers:       nil,
 			customHeaders: map[string]string{"Cookie": "session=abc"},
 			wantNil:       true,
 		},
 		{
-			name: "合并标准headers",
+			name: "merge standard headers",
 			headers: &HTTPHeaders{
 				Accept:         "text/html",
 				AcceptLanguage: "en-US",
@@ -585,7 +585,7 @@ func TestHTTPHeadersMerge(t *testing.T) {
 			},
 		},
 		{
-			name: "合并空customHeaders",
+			name: "merge empty customHeaders",
 			headers: &HTTPHeaders{
 				Accept: "text/html",
 				Custom: map[string]string{
@@ -602,7 +602,7 @@ func TestHTTPHeadersMerge(t *testing.T) {
 			},
 		},
 		{
-			name: "合并所有标准headers字段",
+			name: "merge all standard headers fields",
 			headers: &HTTPHeaders{
 				Accept:                  "old-accept",
 				AcceptLanguage:          "old-lang",
@@ -652,7 +652,7 @@ func TestHTTPHeadersMerge(t *testing.T) {
 			},
 		},
 		{
-			name: "空值应被跳过",
+			name: "empty values should be skipped",
 			headers: &HTTPHeaders{
 				Accept: "text/html",
 			},
@@ -685,7 +685,7 @@ func TestHTTPHeadersMerge(t *testing.T) {
 				t.Fatal("Merge() = nil, want non-nil")
 			}
 
-			// 检查标准字段
+			// check standard fields
 			for field, want := range tt.checkStandard {
 				var got string
 				switch field {
@@ -719,7 +719,7 @@ func TestHTTPHeadersMerge(t *testing.T) {
 				}
 			}
 
-			// 检查自定义字段
+			// check custom fields
 			for key, want := range tt.checkCustom {
 				if got, exists := merged.Custom[key]; !exists || got != want {
 					t.Errorf("Merged Custom[%q] = %q, want %q", key, got, want)
@@ -729,7 +729,7 @@ func TestHTTPHeadersMerge(t *testing.T) {
 	}
 }
 
-// TestHTTPHeadersToMap 测试 HTTPHeaders.ToMap 方法
+// TestHTTPHeadersToMap tests HTTPHeaders.ToMap method
 func TestHTTPHeadersToMap(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -738,7 +738,7 @@ func TestHTTPHeadersToMap(t *testing.T) {
 		wantValues map[string]string
 	}{
 		{
-			name: "转换完整的HTTPHeaders",
+			name: "convert complete HTTPHeaders",
 			headers: &HTTPHeaders{
 				Accept:                  "text/html",
 				AcceptLanguage:          "en-US",
@@ -756,7 +756,7 @@ func TestHTTPHeadersToMap(t *testing.T) {
 					"Cookie": "session=abc",
 				},
 			},
-			wantCount: 13, // 12个标准字段 + 1个Custom字段
+			wantCount: 13, // 12 standard fields + 1 Custom field
 			wantValues: map[string]string{
 				"Accept":                    "text/html",
 				"Accept-Language":           "en-US",
@@ -774,13 +774,13 @@ func TestHTTPHeadersToMap(t *testing.T) {
 			},
 		},
 		{
-			name:       "nil headers应返回空map",
+			name:       "nil headers should return empty map",
 			headers:    nil,
 			wantCount:  0,
 			wantValues: map[string]string{},
 		},
 		{
-			name: "空值字段不应包含在map中",
+			name: "empty value fields should not be included in map",
 			headers: &HTTPHeaders{
 				Accept:         "text/html",
 				AcceptLanguage: "",
@@ -793,7 +793,7 @@ func TestHTTPHeadersToMap(t *testing.T) {
 			},
 		},
 		{
-			name: "Custom中的空值不应包含在map中",
+			name: "empty values in Custom should not be included in map",
 			headers: &HTTPHeaders{
 				Accept: "text/html",
 				Custom: map[string]string{
@@ -808,7 +808,7 @@ func TestHTTPHeadersToMap(t *testing.T) {
 			},
 		},
 		{
-			name: "只有Custom的headers",
+			name: "headers with Custom only",
 			headers: &HTTPHeaders{
 				Custom: map[string]string{
 					"Cookie":        "session=abc",
@@ -840,7 +840,7 @@ func TestHTTPHeadersToMap(t *testing.T) {
 	}
 }
 
-// TestHTTPHeadersToMapWithCustom 测试 HTTPHeaders.ToMapWithCustom 方法
+// TestHTTPHeadersToMapWithCustom tests HTTPHeaders.ToMapWithCustom method
 func TestHTTPHeadersToMapWithCustom(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -850,14 +850,14 @@ func TestHTTPHeadersToMapWithCustom(t *testing.T) {
 		wantValues    map[string]string
 	}{
 		{
-			name:          "合并nil headers和custom headers",
+			name:          "mergenil headersandcustom headers",
 			headers:       nil,
 			customHeaders: map[string]string{"Cookie": "session=abc"},
 			wantCount:     1,
 			wantValues:    map[string]string{"Cookie": "session=abc"},
 		},
 		{
-			name: "合并headers并覆盖标准字段",
+			name: "merge headers and override standard fields",
 			headers: &HTTPHeaders{
 				Accept:         "text/html",
 				AcceptLanguage: "en-US",
@@ -874,7 +874,7 @@ func TestHTTPHeadersToMapWithCustom(t *testing.T) {
 			},
 		},
 		{
-			name: "custom headers优先级高于Custom字段",
+			name: "custom headers take priority over Custom field",
 			headers: &HTTPHeaders{
 				Accept: "text/html",
 				Custom: map[string]string{
@@ -891,7 +891,7 @@ func TestHTTPHeadersToMapWithCustom(t *testing.T) {
 			},
 		},
 		{
-			name: "空值应被过滤",
+			name: "empty values should be filtered",
 			headers: &HTTPHeaders{
 				Accept: "text/html",
 			},
@@ -906,7 +906,7 @@ func TestHTTPHeadersToMapWithCustom(t *testing.T) {
 			},
 		},
 		{
-			name: "合并空的customHeaders",
+			name: "merge empty customHeaders",
 			headers: &HTTPHeaders{
 				Accept: "text/html",
 				Custom: map[string]string{
@@ -939,7 +939,7 @@ func TestHTTPHeadersToMapWithCustom(t *testing.T) {
 	}
 }
 
-// TestUserAgentTemplate 测试 UserAgentTemplate 结构体的创建和使用
+// TestUserAgentTemplate tests UserAgentTemplate struct creation and usage
 func TestUserAgentTemplate(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -951,7 +951,7 @@ func TestUserAgentTemplate(t *testing.T) {
 		wantOSRequired bool
 	}{
 		{
-			name: "创建Chrome桌面端UA模板",
+			name: "create Chrome desktop UA template",
 			template: UserAgentTemplate{
 				Browser:    BrowserChrome,
 				Version:    "120",
@@ -966,7 +966,7 @@ func TestUserAgentTemplate(t *testing.T) {
 			wantOSRequired: true,
 		},
 		{
-			name: "创建Safari移动端UA模板",
+			name: "create Safari mobile UA template",
 			template: UserAgentTemplate{
 				Browser:    BrowserSafari,
 				Version:    "17",
@@ -981,7 +981,7 @@ func TestUserAgentTemplate(t *testing.T) {
 			wantOSRequired: false,
 		},
 		{
-			name:           "创建空的UserAgentTemplate",
+			name:           "create empty UserAgentTemplate",
 			template:       UserAgentTemplate{},
 			wantBrowser:    "",
 			wantVersion:    "",
@@ -1012,16 +1012,16 @@ func TestUserAgentTemplate(t *testing.T) {
 	}
 }
 
-// TestIntegration 测试类型之间的集成使用
+// TestIntegration tests integration usage between types
 func TestIntegration(t *testing.T) {
 	tests := []struct {
 		name string
 		test func(t *testing.T)
 	}{
 		{
-			name: "完整的指纹结果创建和使用流程",
+			name: "complete fingerprint result creation and usage flow",
 			test: func(t *testing.T) {
-				// 创建 HTTPHeaders
+				// create HTTPHeaders
 				headers := &HTTPHeaders{
 					Accept:         "text/html,application/xhtml+xml",
 					AcceptLanguage: "en-US,en;q=0.9",
@@ -1030,13 +1030,13 @@ func TestIntegration(t *testing.T) {
 					SecCHUA:        "\"Google Chrome\";v=\"120\"",
 				}
 
-				// 设置自定义 headers
+				// set custom headers
 				headers.Set("Cookie", "session=abc123")
 				headers.SetHeaders(map[string]string{
 					"Authorization": "Bearer token456",
 				})
 
-				// 创建 FingerprintResult
+				// create FingerprintResult
 				result := FingerprintResult{
 					Profile:       profiles.Chrome_120,
 					UserAgent:     headers.UserAgent,
@@ -1044,12 +1044,12 @@ func TestIntegration(t *testing.T) {
 					Headers:       headers,
 				}
 
-				// 验证结果 - Profile 包含不可比较字段，验证 Headers 不为空即可
+				// verify result - Profile contains incomparable fields, just verify Headers is not empty
 				if result.Headers == nil {
 					t.Error("Headers should not be nil")
 				}
 
-				// 转换为 map
+				// convert to map
 				headerMap := result.Headers.ToMap()
 				if headerMap["Cookie"] != "session=abc123" {
 					t.Error("Cookie not found in headers")
@@ -1060,7 +1060,7 @@ func TestIntegration(t *testing.T) {
 			},
 		},
 		{
-			name: "使用不同操作系统创建UA模板",
+			name: "create UA template with different OS",
 			test: func(t *testing.T) {
 				uaTemplate := UserAgentTemplate{
 					Browser:    BrowserFirefox,
@@ -1069,11 +1069,11 @@ func TestIntegration(t *testing.T) {
 					OSRequired: true,
 				}
 
-				// 使用不同的操作系统
+				// use different operating systems
 				for _, os := range OperatingSystems {
 					ua := uaTemplate.Template
 					if uaTemplate.OSRequired {
-						_ = ua + string(os) // 模拟格式化
+						_ = ua + string(os) // simulate formatting
 					}
 					if os == "" {
 						t.Error("Operating system should not be empty")
@@ -1082,7 +1082,7 @@ func TestIntegration(t *testing.T) {
 			},
 		},
 		{
-			name: "Merge不修改原始对象",
+			name: "Merge does not modify original object",
 			test: func(t *testing.T) {
 				original := &HTTPHeaders{
 					Accept: "text/html",
@@ -1091,16 +1091,16 @@ func TestIntegration(t *testing.T) {
 					},
 				}
 
-				// 克隆用于验证
+				// clone for verification
 				cloned := original.Clone()
 
-				// 执行合并
+				// executemerge
 				merged := original.Merge(map[string]string{
 					"Accept": "application/json",
 					"Cookie": "modified",
 				})
 
-				// 验证原始对象未被修改
+				// verify original object is not modified
 				if original.Accept != cloned.Accept {
 					t.Error("Original Accept was modified")
 				}
@@ -1108,7 +1108,7 @@ func TestIntegration(t *testing.T) {
 					t.Error("Original Cookie was modified")
 				}
 
-				// 验证合并结果
+				// verifymergeresult
 				if merged.Accept != "application/json" {
 					t.Error("Merged Accept should be application/json")
 				}
