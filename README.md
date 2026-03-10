@@ -93,6 +93,9 @@ chromeProfiles := profiles.GetByBrowser(core.BrowserChrome)
 - [架构说明](./docs/ARCHITECTURE.md) - Go Workspace 架构详解
 - [API 文档](./docs/API.md) - 完整 API 参考
 - [开发者指南](./docs/DEVELOPER_GUIDE.md) - 开发和贡献指南
+  - [⚠️ 版本控制规则](./docs/DEVELOPER_GUIDE.md#-版本控制规则强制执行) - **必读开发规则**
+  - [提交前检查清单](./COMMIT_CHECKLIST.md) - 快速参考卡片
+- [版本管理策略](./docs/VERSION_MANAGEMENT.md) - 版本号管理详解
 - [变更日志](./docs/CHANGELOG.md) - 版本更新记录
 
 ## 示例

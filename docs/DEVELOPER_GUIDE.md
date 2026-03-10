@@ -294,28 +294,352 @@ Add Chrome 140 fingerprint with updated TLS settings.
 Closes #123
 ```
 
-## 发布流程
+## ⚠️ 版本控制规则（强制执行）
 
-### 版本号规则
+**本部分规则是强制性的，任何开发者都必须遵守。违反规则将导致提交被拒绝或回滚。**
 
-遵循 [Semantic Versioning](https://semver.org/):
-- `MAJOR`: 不兼容的 API 变更
-- `MINOR`: 向后兼容的功能添加
-- `PATCH`: 向后兼容的问题修复
+### 第一法则：不能乱来
 
-### 发布检查清单
+本项目采用严格的语义化版本控制，每一次代码提交都必须有清晰的版本记录和追溯。这是保证项目稳定性和可维护性的基础。
 
-- [ ] 所有测试通过
-- [ ] 代码审查完成
-- [ ] 文档已更新
-- [ ] CHANGELOG.md 已更新
-- [ ] Tag 已创建
+> "每次修改完后在写好 CHANGELOG 后，提交到 GitHub 上，最小版本号增加 1"
+
+### 版本号规范
+
+采用 **Semantic Versioning**: `MAJOR.MINOR.PATCH` (e.g., v1.0.5)
+
+| 组件 | 含义 | 变化规则 |
+|------|------|---------|
+| MAJOR | 主版本号 | 重大架构变化、不兼容更新（极少改变） |
+| MINOR | **次版本号** | **每次有效提交必须 +1** |
+| PATCH | 修补版本号 | 仅用于紧急热修复 |
+
+### 工作流（必须按顺序执行）
+
+#### Step 1: 完成代码修改
 
 ```bash
-# 创建发布标签
-git tag -a v0.1.0 -m "Release v0.1.0"
-git push origin v0.1.0
+# 开发完功能，确保所有测试通过
+go test ./modules/... -race
+go build ./modules/...
+
+# 提交代码
+git add .
+git commit -m "feat(module): description"
 ```
+
+#### Step 2: 更新 CHANGELOG.md ✅ 必须
+
+在 `docs/CHANGELOG.md` 顶部将 `[Unreleased]` 改为具体版本号和日期：
+
+```markdown
+## [v1.0.6] - 2026-03-10    ← 替换 [Unreleased] 为这样的格式
+
+### Added
+- **Feature 1**: 功能描述
+- **Feature 2**: 功能描述
+
+### Fixed
+- **Bug 1**: Bug 修复说明
+
+### Changed
+- 改进说明
+```
+
+**规则**：
+- 版本号必须与 go.mod 中的版本一致
+- 日期必须是当前日期（YYYY-MM-DD 格式）
+- 至少列出一个 Added/Fixed/Changed 项
+
+#### Step 3: 更新所有版本号 ✅ 必须
+
+更新项目中所有 `go.mod` 文件的版本号：
+
+```bash
+# 当前版本: v1.0.5
+# 新版本: v1.0.6
+
+# 批量更新（从 v1.0.5 → v1.0.6）
+sed -i 's/v1\.0\.5/v1.0.6/g' go.mod modules/*/go.mod
+
+# 验证更新
+grep "v1.0.6" go.mod modules/*/go.mod | wc -l
+# 应该显示 ~20 行（1 主 + 19 模块）
+```
+
+#### Step 4: 提交版本更新 ✅ 必须
+
+```bash
+git add docs/CHANGELOG.md go.mod modules/*/go.mod
+
+# 提交信息固定格式
+git commit -m "chore: Release v1.0.6"
+
+# 查看提交 hash（后续需要用）
+git log -1 --oneline
+# 示例: f0b1d12 (HEAD -> main) chore: Release v1.0.6
+```
+
+#### Step 5: 创建版本 Tags ✅ 必须
+
+```bash
+# 主项目 tag
+git tag -a v1.0.6 -m "Release v1.0.6"
+
+# 所有受影响的模块 tag（通常是全部）
+for module in agent client core defense frontend gateway ml profiles; do
+    git tag -a modules/$module/v1.0.6 -m "Release modules/$module v1.0.6"
+done
+
+# 验证
+git tag -l | grep v1.0.6
+```
+
+#### Step 6: 推送到 GitHub ✅ 必须
+
+```bash
+# 推送主分支
+git push origin main
+
+# 推送所有新 tags
+git push origin --tags
+
+# 验证推送成功
+git push origin --tags --force-with-lease
+```
+
+#### Step 7: 验证规范 ✅ 必须
+
+```bash
+# 运行规范检查脚本
+bash /tmp/version_audit.sh
+
+# 预期输出:
+# ✅ 最新提交已有版本 tag
+# 检查 CHANGELOG 版本声明: ## [v1.0.6] - YYYY-MM-DD
+# v1.0.6 → [commit hash]
+```
+
+### 强制性检查清单
+
+**在执行任何代码修改前，请确保理解这个清单：**
+
+```
+修改代码
+  ↓
+✅ 所有单元测试通过 (go test ./modules/... -race)
+✅ 格式化代码 (go fmt ./...)
+✅ Lint 通过 (golangci-lint run)
+  ↓
+✅ 更新 CHANGELOG.md (将 [Unreleased] → [v1.0.X] - YYYY-MM-DD)
+✅ 更新所有 go.mod 版本 (Minor +1)
+✅ 提交版本更新 (git commit -m "chore: Release v1.0.X")
+  ↓
+✅ 创建主项目 tag (git tag -a v1.0.X ...)
+✅ 创建模块 tags (9 个 modules/*/v1.0.X)
+✅ 推送到 GitHub (git push origin main && git push origin --tags)
+  ↓
+✅ 验证 GitHub 同步成功
+✅ 运行版本审计脚本确认合规
+```
+
+### 严禁的行为 ❌
+
+以下行为严格禁止，发现将导致提交被拒：
+
+| 违规行为 | 后果 |
+|---------|------|
+| ❌ 提交代码但不更新版本号 | 提交拒绝，必须修正后重新提交 |
+| ❌ 版本号不一致（某些 go.mod 是旧版） | 强制 revert，要求重新执行步骤 3 |
+| ❌ 提交了新版本但 CHANGELOG 未更新 | 强制 revert，要求更新 CHANGELOG |
+| ❌ 创建了提交但没有标记 tag | 必须补标 tag，否则不认为是有效发布 |
+| ❌ 推送到 GitHub 前未验证本地规范 | 拒绝 push，要求通过审计脚本 |
+| ❌ 修改版本号但不提交（只在 go.mod 中） | 明确 error，需要 git commit 与 tag |
+
+### 当前版本状态
+
+```
+当前版本: v1.0.5 ✅
+最新提交: f0b1d12 (chore: Release v1.0.5)
+CHANGELOG: ✅ 已更新为 [v1.0.5] - 2026-03-10
+所有模块: ✅ 同步至 v1.0.5
+GitHub: ✅ 所有changes已推送
+```
+
+下次发布时版本应为 **v1.0.6**（Minor +1）
+
+## 发布流程详解
+
+本部分详细说明标准发布流程。**请严格按照【版本控制规则】章节的 Step 1-7 执行。**
+
+### 快速参考脚本
+
+```bash
+#!/bin/bash
+# 完整发布流程（~10 分钟）
+# 前提：所有代码改动已完成并通过测试
+
+set -e  # 任何错误立即停止
+
+echo "📋 Step 1: 验证本地状态..."
+git status  # 应该显示 clean working tree
+
+echo "📝 Step 2: 更新 CHANGELOG.md"
+echo "   手动编辑：将 [Unreleased] 改为 [v1.0.6] - $(date +%Y-%m-%d)"
+
+echo "📦 Step 3: 批量更新版本号..."
+sed -i 's/v1\.0\.5/v1.0.6/g' go.mod modules/*/go.mod
+
+echo "✅ Step 4: 提交版本更新..."
+git add docs/CHANGELOG.md go.mod modules/*/go.mod
+git commit -m "chore: Release v1.0.6"
+
+echo "🏷️  Step 5: 创建主项目 tag..."
+git tag -a v1.0.6 -m "Release v1.0.6"
+
+echo "🏷️  Step 6: 创建模块 tags..."
+for module in agent client config core defense errors fingerprint frontend gateway generator http internal kit metrics ml network plugin profiles tls; do
+    [ -f "modules/$module/go.mod" ] && \
+    git tag -a modules/$module/v1.0.6 -m "Release modules/$module v1.0.6" || true
+done
+
+echo "🚀 Step 7: 推送到 GitHub..."
+git push origin main
+git push origin --tags
+
+echo "✨ 发布成功！"
+echo "   versiion: v1.0.6"
+echo "   commit: $(git log -1 --oneline)"
+echo "   tags: $(git tag -l | grep v1.0.6 | wc -l) 个"
+```
+
+### 手动执行步骤
+
+**Step 1: 编辑 CHANGELOG.md**
+
+在 `docs/CHANGELOG.md` 中找到顶部的 `## [Unreleased]` 并替换为：
+
+```markdown
+## [v1.0.6] - 2026-03-10
+
+### Added
+- **Feature Name**: 功能描述
+  - 附加说明
+  
+### Fixed
+- **Bug Name**: Bug 修复说明
+
+### Changed
+- 改进说明
+```
+
+**Step 2: 更新版本号**
+
+```bash
+# 从 v1.0.5 → v1.0.6
+sed -i 's/v1\.0\.5/v1.0.6/g' go.mod modules/*/go.mod
+
+# 验证所有版本都更新了
+grep -r "v1.0.6" go.mod modules/*/go.mod | wc -l
+# 应该显示约 20 行
+```
+
+**Step 3: 提交**
+
+```bash
+git add .
+git commit -m "chore: Release v1.0.6"
+```
+
+**Step 4: 创建 Tags**
+
+```bash
+# 主项目
+git tag -a v1.0.6 -m "Release v1.0.6"
+
+# 所有模块（可用循环）
+for module in agent client config core defense errors fingerprint frontend gateway generator http internal kit metrics ml network plugin profiles tls; do
+    git tag -a modules/$module/v1.0.6 -m "Release modules/$module v1.0.6"
+done
+
+# 验证
+git tag -l | grep v1.0.6 | wc -l  # 应该显示 19
+```
+
+**Step 5: 推送**
+
+```bash
+git push origin main
+git push origin --tags
+```
+
+### 模块完整列表
+
+项目包含以下 18 个模块，每个 tag 创建时都要对应创建：
+
+| 模块 | go.mod 路径 | Tag 格式 |
+|------|-----------|---------|
+| agent | modules/agent/go.mod | modules/agent/v1.0.6 |
+| client | modules/client/go.mod | modules/client/v1.0.6 |
+| config | modules/config/go.mod | modules/config/v1.0.6 |
+| core | modules/core/go.mod | modules/core/v1.0.6 |
+| defense | modules/defense/go.mod | modules/defense/v1.0.6 |
+| errors | modules/errors/go.mod | modules/errors/v1.0.6 |
+| fingerprint | modules/fingerprint/go.mod | modules/fingerprint/v1.0.6 |
+| frontend | modules/frontend/go.mod | modules/frontend/v1.0.6 |
+| gateway | modules/gateway/go.mod | modules/gateway/v1.0.6 |
+| generator | modules/generator/go.mod | modules/generator/v1.0.6 |
+| http | modules/http/go.mod | modules/http/v1.0.6 |
+| internal | modules/internal/go.mod | modules/internal/v1.0.6 |
+| kit | modules/kit/go.mod | modules/kit/v1.0.6 |
+| metrics | modules/metrics/go.mod | modules/metrics/v1.0.6 |
+| ml | modules/ml/go.mod | modules/ml/v1.0.6 |
+| network | modules/network/go.mod | modules/network/v1.0.6 |
+| plugin | modules/plugin/go.mod | modules/plugin/v1.0.6 |
+| profiles | modules/profiles/go.mod | modules/profiles/v1.0.6 |
+| tls | modules/tls/go.mod | modules/tls/v1.0.6 |
+
+### 故障排查
+
+**问题 1: Tag 创建失败**
+```bash
+# 删除本地 tag
+git tag -d v1.0.6 modules/*/v1.0.6
+
+# 修正后重新创建
+git tag -a v1.0.6 -m "Release v1.0.6"
+```
+
+**问题 2: 版本号不一致**
+```bash
+# 检查是否所有版本都一致
+grep -h "github.com/vistone/fingerprint/modules" go.mod modules/*/go.mod | grep -o "v[0-9.]*" | sort | uniq
+
+# 如果有多个版本，重新运行 sed 更新
+```
+
+**问题 3: Push 失败**
+```bash
+# 拉取最新主分支
+git pull origin main --rebase
+
+# 重试推送
+git push origin main
+git push origin --tags
+```
+
+### 发布后验证
+
+推送成功后，在 GitHub 检查：
+
+1. **最新提交**: https://github.com/vistone/fingerprint/commits/main
+   - 应接近顶部显示 "chore: Release v1.0.6"
+
+2. **Tags 列表**: https://github.com/vistone/fingerprint/tags
+   - 应显示 v1.0.6 及所有 modules/*/v1.0.6 tags
+
+3. **CHANGELOG**: https://github.com/vistone/fingerprint/blob/main/docs/CHANGELOG.md
+   - 顶部应显示 `## [v1.0.6] - 2026-03-XX`
 
 ## 调试技巧
 
