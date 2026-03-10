@@ -106,7 +106,7 @@ func TestHighRiskBlockStrategy(t *testing.T) {
 
 	families := []core.BrowserType{core.BrowserChrome, core.BrowserFirefox, core.BrowserSafari, core.BrowserEdge, core.BrowserOpera}
 
-	// 每次不同指纹 + 不同分类 + 低 ML 置信 + 高风险 → 极低一致性
+	// Each time different fingerprint + different classification + low ML confidence + high risk → extremely low consistency
 	for i := 0; i < 20; i++ {
 		obs := &Observation{
 			ID:              fmt.Sprintf("obs-%d", i),
@@ -236,13 +236,13 @@ func TestRiskTrend(t *testing.T) {
 }
 
 // ===================================================================
-// 知识库测试
+// Knowledge base tests
 // ===================================================================
 
 func TestKnowledgeBaseInit(t *testing.T) {
 	kb := NewKnowledgeBase()
 
-	// 验证浏览器数据已加载
+	// Verify browser data loaded
 	stats := kb.Stats()
 	if stats.TotalKnownBrowsers < 6 {
 		t.Errorf("expected >= 6 browser families, got %d", stats.TotalKnownBrowsers)
@@ -251,7 +251,7 @@ func TestKnowledgeBaseInit(t *testing.T) {
 		t.Errorf("expected >= 10 known versions, got %d", stats.TotalKnownVersions)
 	}
 
-	// Chrome 知识应存在
+	// Chrome knowledge should exist
 	chrome := kb.GetBrowserKnowledge(core.BrowserChrome)
 	if chrome == nil {
 		t.Fatal("Chrome knowledge not found")
@@ -263,12 +263,12 @@ func TestKnowledgeBaseInit(t *testing.T) {
 		t.Errorf("expected >= 3 Chrome versions, got %d", len(chrome.Versions))
 	}
 
-	// Firefox 知识
+	// Firefox knowledge
 	ff := kb.GetBrowserKnowledge(core.BrowserFirefox)
 	if ff == nil {
 		t.Fatal("Firefox knowledge not found")
 	}
-	// Firefox 的 H2 InitialWindowSize 应该远小于 Chrome
+	// Firefox H2 InitialWindowSize should be much smaller than Chrome
 	if len(ff.Versions) > 0 && ff.Versions[0].H2InitialWindowSize >= 6291456 {
 		t.Error("Firefox H2 InitialWindowSize should differ from Chrome")
 	}
@@ -296,7 +296,7 @@ func TestKnowledgeCipherSuiteValidation(t *testing.T) {
 	if !kb.IsKnownCipherSuite(0xc02b) {
 		t.Error("ECDHE_ECDSA_WITH_AES_128_GCM should be known")
 	}
-	// 伪造的 suite
+	// Forged suite
 	if kb.IsKnownCipherSuite(0xFFFF) {
 		t.Error("0xFFFF should NOT be a known cipher suite")
 	}
@@ -354,7 +354,7 @@ func TestKnowledgeHTTP2(t *testing.T) {
 func TestKnowledgeFindClosestVersion(t *testing.T) {
 	kb := NewKnowledgeBase()
 
-	// Chrome 的 TLS 1.3 + 1.2 套件应匹配 Chrome 版本
+	// Chrome TLS 1.3 + 1.2 suites should match Chrome version
 	chromeSuites := []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8, 0xc013, 0xc014, 0x002f, 0x0035, 0x000a}
 	v := kb.FindClosestVersion(core.BrowserChrome, chromeSuites)
 	if v == nil {
@@ -366,14 +366,14 @@ func TestKnowledgeFindClosestVersion(t *testing.T) {
 }
 
 // ===================================================================
-// 异常检测器测试
+// Anomaly detector tests
 // ===================================================================
 
 func TestAnomalyDetectorCleanObservation(t *testing.T) {
 	a := NewAgent(nil)
 	ad := a.anomaly
 
-	// 正常的 Chrome 观测，不应有矛盾
+	// Normal Chrome observation, should have no contradictions
 	obs := &Observation{
 		ID:        "obs-clean",
 		Timestamp: time.Now(),
@@ -382,8 +382,8 @@ func TestAnomalyDetectorCleanObservation(t *testing.T) {
 			Family: core.BrowserChrome, Confidence: 0.95,
 		},
 	}
-	obs.Features.Set(core.FeatureCipherSuites, 12) // 在 Chrome 范围 [9,17] 内
-	obs.Features.Set(core.FeatureExtensions, 13)   // 在 Chrome 范围 [10,18] 内
+	obs.Features.Set(core.FeatureCipherSuites, 12) // Within Chrome range [9,17]
+	obs.Features.Set(core.FeatureExtensions, 13)   // Within Chrome range [10,18]
 
 	mr := ad.Analyze(obs)
 	if mr.SuspicionScore > 0.1 {
@@ -396,7 +396,7 @@ func TestAnomalyDetectorTLSMismatch(t *testing.T) {
 	a := NewAgent(nil)
 	ad := a.anomaly
 
-	// Chrome 声称的客户端，但只有 3 个密码套件（太少）
+	// Claimed Chrome client, but only 3 cipher suites (too few)
 	obs := &Observation{
 		ID:        "obs-tls-anomaly",
 		Timestamp: time.Now(),
@@ -405,8 +405,8 @@ func TestAnomalyDetectorTLSMismatch(t *testing.T) {
 			Family: core.BrowserChrome, Confidence: 0.8,
 		},
 	}
-	obs.Features.Set(core.FeatureCipherSuites, 3) // Chrome 最少 9
-	obs.Features.Set(core.FeatureExtensions, 5)   // Chrome 最少 10
+	obs.Features.Set(core.FeatureCipherSuites, 3) // Chrome minimum 9
+	obs.Features.Set(core.FeatureExtensions, 5)   // Chrome minimum 10
 
 	mr := ad.Analyze(obs)
 	if len(mr.Contradictions) < 2 {
@@ -431,7 +431,7 @@ func TestAnomalyDetectorHeadlessDetection(t *testing.T) {
 	}
 	obs.Features.Set(core.FeatureHeadlessBrowser, 1.0)
 	obs.Features.Set(core.FeatureToolMarker, 1.0)
-	obs.Features.Set(core.FeatureCipherSuites, 12) // 正常范围
+	obs.Features.Set(core.FeatureCipherSuites, 12) // Normal range
 
 	mr := ad.Analyze(obs)
 	found := false
@@ -462,7 +462,7 @@ func TestAnomalyDetectorTCPIPMismatch(t *testing.T) {
 		},
 		Metadata: map[string]string{
 			"os_family": "Windows",
-			"tcp_ttl":   "64", // Windows 应该是 128 段
+			"tcp_ttl":   "64", // Windows should be 128 segment
 		},
 	}
 	obs.Features.Set(core.FeatureCipherSuites, 12)
@@ -484,7 +484,7 @@ func TestAnomalyDetectorHTTP2Mismatch(t *testing.T) {
 	a := NewAgent(nil)
 	ad := a.anomaly
 
-	// Chrome 声称，但 H2 参数是 Firefox 的
+	// Claimed Chrome, but H2 parameters are Firefox's
 	obs := &Observation{
 		ID:        "obs-h2-mismatch",
 		Timestamp: time.Now(),
@@ -508,7 +508,7 @@ func TestProcessWithKnowledgeIntegration(t *testing.T) {
 	a := NewAgent(nil)
 	ctx := context.Background()
 
-	// 正常 Chrome 客户端
+	// Normal Chrome client
 	obs := &Observation{
 		ID:              "obs-normal",
 		ClientID:        "client-normal",
@@ -529,7 +529,7 @@ func TestProcessWithKnowledgeIntegration(t *testing.T) {
 		t.Errorf("normal client should have low suspicion, got %.2f", dec.KnowledgeMatch.SuspicionScore)
 	}
 
-	// 高度可疑的伪造客户端
+	// Highly suspicious spoofed client
 	spoofObs := &Observation{
 		ID:              "obs-spoof",
 		ClientID:        "client-spoof",
@@ -539,8 +539,8 @@ func TestProcessWithKnowledgeIntegration(t *testing.T) {
 		Classification:  &ml.ClassificationResult{Family: core.BrowserChrome, Confidence: 0.4},
 		RiskAssessment:  &core.RiskAssessment{Score: 0.6},
 	}
-	spoofObs.Features.Set(core.FeatureCipherSuites, 3) // 太少
-	spoofObs.Features.Set(core.FeatureExtensions, 4)   // 太少
+	spoofObs.Features.Set(core.FeatureCipherSuites, 3) // Too few
+	spoofObs.Features.Set(core.FeatureExtensions, 4)   // Too few
 	spoofObs.Features.Set(core.FeatureHeadlessBrowser, 1.0)
 	spoofObs.Features.Set(core.FeatureToolMarker, 1.0)
 
