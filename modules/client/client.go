@@ -1,5 +1,5 @@
-// Package client 提供完整的浏览器指纹模拟客户端
-// 从 TCP/IP 层到 TLS 层到 HTTP 层的全栈模拟
+// Package client provides a complete browser fingerprint simulation client
+// Full-stack simulation from TCP/IP to TLS to HTTP layer
 package client
 
 import (
@@ -14,31 +14,31 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles"
 )
 
-// 超时常量定义（使用 core 包标准值）
+// Timeout constants definition (using core package standard values)
 const (
-	// TimeoutDialConnect - 建立 TCP/IP 连接超时
+	// TimeoutDialConnect - TCP/IP connection establishment timeout
 	TimeoutDialConnect = core.DefaultDialTimeout
 
-	// TimeoutTLS - TLS 握手超时
+	// TimeoutTLS - TLS handshake timeout
 	TimeoutTLS = core.DefaultTLSTimeout
 
-	// TimeoutDNS - DNS 解析超时
+	// TimeoutDNS - DNS resolution timeout
 	TimeoutDNS = core.DefaultDNSTimeout
 
-	// TimeoutReadHeader - 读取 HTTP 响应头超时
+	// TimeoutReadHeader - HTTP response header read timeout
 	TimeoutReadHeader = core.DefaultReadTimeout
 
-	// TimeoutRequest - 单个请求超时
+	// TimeoutRequest - Single request timeout
 	TimeoutRequest = core.DefaultTimeout
 
-	// TimeoutTotal - 总请求超时（包括重定向）
+	// TimeoutTotal - Total request timeout (including redirects)
 	TimeoutTotal = 60 * time.Second
 
-	// KeepAliveInterval - TCP 保活间隔
+	// KeepAliveInterval - TCP keep-alive interval
 	KeepAliveInterval = 30 * time.Second
 )
 
-// BrowserClient 完整的浏览器指纹客户端
+// BrowserClient is the complete browser fingerprint client
 type BrowserClient struct {
 	profile   profiles.ClientProfile
 	transport *SmartTransport
@@ -46,22 +46,22 @@ type BrowserClient struct {
 	tracer    *RequestTracer
 }
 
-// ClientOptions 客户端选项
+// ClientOptions defines client configuration options
 type ClientOptions struct {
 	Timeout         time.Duration
 	FollowRedirects bool
 	ProxyURL        string
-	// StrictFingerprint 禁止使用标准 TLS 兼容回退路径，确保请求始终走指纹链路。
+	// StrictFingerprint disallows standard TLS compatibility fallback, ensuring requests always use fingerprint chain
 	StrictFingerprint bool
 }
 
-// DefaultOptions 默认选项
+// DefaultOptions provides default client options
 var DefaultOptions = &ClientOptions{
 	Timeout:         TimeoutRequest,
 	FollowRedirects: true,
 }
 
-// NewBrowserClient 创建浏览器指纹客户端
+// NewBrowserClient creates a new browser fingerprint client
 func NewBrowserClient(profile profiles.ClientProfile, opts ...*ClientOptions) (*BrowserClient, error) {
 	opt := DefaultOptions
 	if len(opts) > 0 && opts[0] != nil {
@@ -72,7 +72,7 @@ func NewBrowserClient(profile profiles.ClientProfile, opts ...*ClientOptions) (*
 		profile: profile,
 	}
 
-	// 创建智能传输层（支持 HTTP/2 → HTTP/1.1 回退）
+	// Create smart transport layer (supports HTTP/2 → HTTP/1.1 fallback)
 	transport, err := NewSmartTransport(profile)
 	if err != nil {
 		return nil, fmt.Errorf("create transport failed: %w", err)
@@ -80,7 +80,7 @@ func NewBrowserClient(profile profiles.ClientProfile, opts ...*ClientOptions) (*
 	transport.SetStrictFingerprint(opt.StrictFingerprint)
 	bc.transport = transport
 
-	// 创建 HTTP 客户端（使用 fhttp）
+	// Create HTTP client (using fhttp)
 	bc.client = &fhttp.Client{
 		Transport: bc.transport,
 		Timeout:   opt.Timeout,
@@ -98,34 +98,34 @@ func NewBrowserClient(profile profiles.ClientProfile, opts ...*ClientOptions) (*
 	return bc, nil
 }
 
-// NewTracedClient 创建带追踪的客户端
+// NewTracedClient creates a new client with request tracing
 func NewTracedClient(profile profiles.ClientProfile, url, method string, opts ...*ClientOptions) (*BrowserClient, error) {
 	client, err := NewBrowserClient(profile, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	// 创建请求追踪器
+	// Create request tracer
 	client.tracer = NewRequestTracer(profile, url, method)
 
 	return client, nil
 }
 
-// Do 执行 HTTP 请求
+// Do executes an HTTP request
 func (bc *BrowserClient) Do(req *fhttp.Request) (*fhttp.Response, error) {
-	// 显式设置 Host，避免部分传输实现在 HTTP/2 下发送空 authority 导致 400。
+	// Explicitly set Host to prevent some HTTP/2 transport implementations from sending empty authority causing 400
 	if req.Host == "" && req.URL != nil {
 		req.Host = req.URL.Host
 	}
 
-	// 应用指纹的请求头（覆盖所有默认头）
+	// Apply fingerprint request headers (override all defaults)
 	bc.applyHeaders(req)
 
-	// 执行请求
+	// Execute request
 	return bc.client.Do(req)
 }
 
-// Get 发起 GET 请求
+// Get initiates a GET request
 func (bc *BrowserClient) Get(url string) (*fhttp.Response, error) {
 	req, err := fhttp.NewRequest("GET", url, nil)
 	if err != nil {
@@ -134,7 +134,7 @@ func (bc *BrowserClient) Get(url string) (*fhttp.Response, error) {
 	return bc.Do(req)
 }
 
-// Post 发起 POST 请求
+// Post initiates a POST request
 func (bc *BrowserClient) Post(url string, contentType string, body io.Reader) (*fhttp.Response, error) {
 	req, err := fhttp.NewRequest("POST", url, body)
 	if err != nil {
@@ -146,17 +146,17 @@ func (bc *BrowserClient) Post(url string, contentType string, body io.Reader) (*
 	return bc.Do(req)
 }
 
-// applyHeaders 应用指纹的请求头。
-// 只覆盖 profile 明确提供的值，避免把默认头清空导致目标站点 400。
+// applyHeaders applies fingerprint request headers
+// Only override values explicitly provided by profile to avoid clearing defaults causing 400
 func (bc *BrowserClient) applyHeaders(req *fhttp.Request) {
-	// 如果 profile 没有 headers，保留默认头
+	// If profile has no headers, keep defaults
 	if bc.profile.Headers == nil {
 		return
 	}
 
 	h := bc.profile.Headers
 
-	// 必需请求头（确保应用，即使之前有值）
+	// Required request headers (ensure applied even if already set)
 	if h.UserAgent != "" {
 		req.Header.Set("User-Agent", h.UserAgent)
 	}
@@ -170,7 +170,7 @@ func (bc *BrowserClient) applyHeaders(req *fhttp.Request) {
 		req.Header.Set("Accept-Encoding", h.AcceptEncoding)
 	}
 
-	// Sec-Fetch 头（如果存在则设置）
+	// Sec-Fetch headers (set if present)
 	if h.SecFetchSite != "" {
 		req.Header.Set("Sec-Fetch-Site", h.SecFetchSite)
 	}
@@ -184,7 +184,7 @@ func (bc *BrowserClient) applyHeaders(req *fhttp.Request) {
 		req.Header.Set("Sec-Fetch-User", h.SecFetchUser)
 	}
 
-	// Chrome 特有头
+	// Chrome-specific headers
 	if h.SecCHUA != "" {
 		req.Header.Set("Sec-CH-UA", h.SecCHUA)
 	}
@@ -198,7 +198,7 @@ func (bc *BrowserClient) applyHeaders(req *fhttp.Request) {
 		req.Header.Set("Upgrade-Insecure-Requests", h.UpgradeInsecureRequests)
 	}
 
-	// 自定义请求头
+	// Custom request headers
 	for key, value := range h.Custom {
 		if value != "" {
 			req.Header.Set(key, value)
@@ -206,7 +206,7 @@ func (bc *BrowserClient) applyHeaders(req *fhttp.Request) {
 	}
 }
 
-// Close 关闭客户端
+// Close closes the client
 func (bc *BrowserClient) Close() error {
 	if bc.transport != nil {
 		return bc.transport.Close()
@@ -214,12 +214,12 @@ func (bc *BrowserClient) Close() error {
 	return nil
 }
 
-// GetProfile 获取使用的指纹
+// GetProfile returns the fingerprint profile in use
 func (bc *BrowserClient) GetProfile() profiles.ClientProfile {
 	return bc.profile
 }
 
-// GetTrace 获取请求追踪信息
+// GetTrace returns request tracing information
 func (bc *BrowserClient) GetTrace() *RequestTrace {
 	if bc.tracer != nil {
 		return bc.tracer.Trace
@@ -227,11 +227,11 @@ func (bc *BrowserClient) GetTrace() *RequestTrace {
 	return nil
 }
 
-// ExecuteProxyRequest 执行带完整追踪的代理请求
+// ExecuteProxyRequest executes a proxy request with complete tracing
 func ExecuteProxyRequest(profile profiles.ClientProfile, url, method, body string, extraHeaders map[string]string) *ProxyResult {
 	start := time.Now()
 
-	// 规范化输入，降低部署环境下因输入格式导致的 400。
+	// Normalize input to reduce 400 errors due to input format in deployment environments
 	method = strings.ToUpper(strings.TrimSpace(method))
 	if method == "" {
 		method = "GET"
@@ -241,7 +241,7 @@ func ExecuteProxyRequest(profile profiles.ClientProfile, url, method, body strin
 		url = "https://" + url
 	}
 
-	// 使用可修复副本，避免 profile 缺失关键头导致请求被站点拒绝。
+	// Use fixable copy to prevent requests from being rejected due to missing critical headers in profile
 	fixedProfile := profile
 	_ = profiles.ValidateAndRepair(&fixedProfile)
 
@@ -258,7 +258,7 @@ func ExecuteProxyRequest(profile profiles.ClientProfile, url, method, body strin
 		},
 	}
 
-	// 创建带追踪的客户端
+	// Create traced client
 	client, err := NewTracedClient(fixedProfile, url, method, &ClientOptions{
 		Timeout:         TimeoutTotal,
 		FollowRedirects: true,
@@ -273,10 +273,10 @@ func ExecuteProxyRequest(profile profiles.ClientProfile, url, method, body strin
 	}
 	defer client.Close()
 
-	// 获取请求追踪信息
+	// Get request tracing information
 	result.RequestTrace = client.GetTrace()
 
-	// 准备请求
+	// Prepare request
 	var bodyReader io.Reader
 	if body != "" && method != "GET" && method != "HEAD" {
 		bodyReader = strings.NewReader(body)
@@ -293,15 +293,15 @@ func ExecuteProxyRequest(profile profiles.ClientProfile, url, method, body strin
 		return result
 	}
 
-	// 添加额外请求头
+	// Add extra request headers
 	for key, value := range extraHeaders {
 		req.Header.Set(key, value)
 	}
 
-	// 记录连接开始时间
+	// Record connection start time
 	connStart := time.Now()
 
-	// 执行请求
+	// Execute request
 	resp, err := client.Do(req)
 	connTime := time.Since(connStart)
 
@@ -312,7 +312,7 @@ func ExecuteProxyRequest(profile profiles.ClientProfile, url, method, body strin
 		result.ErrorDetails["url"] = url
 		result.ErrorDetails["elapsed_ms"] = connTime.Milliseconds()
 
-		// 根据错误类型设置错误代码
+		// Set error code based on error type
 		switch result.ErrorType {
 		case "timeout":
 			result.ErrorCode = 504
@@ -332,7 +332,7 @@ func ExecuteProxyRequest(profile profiles.ClientProfile, url, method, body strin
 		return result
 	}
 
-	// 对 GET/HEAD 的瞬时错误状态进行有限重试：429/502/503/504。
+	// Limited retry for transient error statuses on GET/HEAD: 429/502/503/504
 	if method == "GET" || method == "HEAD" {
 		const maxRetries = 2
 		for attempt := 1; attempt <= maxRetries; attempt++ {
@@ -374,7 +374,7 @@ func ExecuteProxyRequest(profile profiles.ClientProfile, url, method, body strin
 	}
 	defer resp.Body.Close()
 
-	// 读取响应
+	// Read response
 	respStart := time.Now()
 	respBody, err := io.ReadAll(resp.Body)
 	respTime := time.Since(respStart)
@@ -389,7 +389,7 @@ func ExecuteProxyRequest(profile profiles.ClientProfile, url, method, body strin
 		return result
 	}
 
-	// 填充响应追踪信息
+	// Fill response trace information
 	result.ResponseTrace = &ResponseTrace{
 		StatusCode:   resp.StatusCode,
 		Status:       resp.Status,
@@ -399,21 +399,21 @@ func ExecuteProxyRequest(profile profiles.ClientProfile, url, method, body strin
 		ResponseTime: respTime,
 	}
 
-	// 响应体预览（前 2000 字符）
+	// Response body preview (first 2000 characters)
 	if len(respBody) > 2000 {
 		result.ResponseTrace.BodyPreview = string(respBody[:2000]) + "\n... (truncated)"
 	} else {
 		result.ResponseTrace.BodyPreview = string(respBody)
 	}
 
-	// 提取响应头
+	// Extract response headers
 	for key, values := range resp.Header {
 		if len(values) > 0 {
 			result.ResponseTrace.Headers[key] = values[0]
 		}
 	}
 
-	// 更新连接信息
+	// Update connection information
 	result.RequestTrace.Connection = &ConnectionInfo{
 		RemoteAddr:   url,
 		TotalTime:    time.Since(start),
@@ -488,7 +488,7 @@ func retryDelayForStatus(statusCode int, retryAfter string, attempt int) time.Du
 		return d
 	}
 
-	// 5xx 瞬时故障使用短退避。
+	// 5xx transient failures use short backoff
 	d := time.Duration(attempt*600) * time.Millisecond
 	if d > 2*time.Second {
 		return 2 * time.Second
@@ -496,7 +496,7 @@ func retryDelayForStatus(statusCode int, retryAfter string, attempt int) time.Du
 	return d
 }
 
-// classifyRequestError 分类请求错误
+// classifyRequestError classifies request errors
 func classifyRequestError(err error) string {
 	if err == nil {
 		return "unknown"
@@ -505,43 +505,43 @@ func classifyRequestError(err error) string {
 	errStr := err.Error()
 	errLower := strings.ToLower(errStr)
 
-	// 超时错误
+	// Timeout errors
 	if strings.Contains(errLower, "timeout") || strings.Contains(errLower, "deadline exceeded") {
 		return "timeout"
 	}
 
-	// 上下文取消
+	// Context cancellation
 	if strings.Contains(errLower, "context canceled") {
 		return "context_canceled"
 	}
 
-	// DNS 错误
+	// DNS errors
 	if strings.Contains(errLower, "lookup") || strings.Contains(errLower, "no such host") ||
 		strings.Contains(errLower, "name resolution") {
 		return "dns_error"
 	}
 
-	// TLS 错误
+	// TLS errors
 	if strings.Contains(errLower, "tls") || strings.Contains(errLower, "certificate") ||
 		strings.Contains(errLower, "handshake") {
 		return "tls_error"
 	}
 
-	// 协议错误
+	// Protocol errors
 	if strings.Contains(errLower, "protocol_error") || strings.Contains(errLower, "http2") ||
 		strings.Contains(errLower, "stream error") || strings.Contains(errLower, "broken pipe") ||
 		strings.Contains(errLower, "reset by peer") {
 		return "protocol_error"
 	}
 
-	// 网络错误
+	// Network errors
 	if strings.Contains(errLower, "connection refused") || strings.Contains(errLower, "connection reset") ||
 		strings.Contains(errLower, "connection aborted") || strings.Contains(errLower, "no route to host") ||
 		strings.Contains(errLower, "network is unreachable") {
 		return "network_error"
 	}
 
-	// 其他 I/O 错误
+	// Other I/O errors
 	if strings.Contains(errLower, "eof") || strings.Contains(errLower, "i/o") {
 		return "io_error"
 	}
