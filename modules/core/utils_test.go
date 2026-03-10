@@ -1,4 +1,4 @@
-// Package core 工具函数测试
+// Package core utility function tests
 package core
 
 import (
@@ -32,14 +32,14 @@ func TestCalculateSHA256(t *testing.T) {
 func TestRandomChoice(t *testing.T) {
 	slice := []int{1, 2, 3, 4, 5}
 	
-	// 测试多次选择
+	// test multiple selections
 	chosen := make(map[int]bool)
 	for i := 0; i < 100; i++ {
 		c := RandomChoice(slice)
 		chosen[c] = true
 	}
 	
-	// 验证至少选到了一些不同的值
+	// verify at least some different values are selected
 	if len(chosen) < 2 {
 		t.Error("RandomChoice should return varied results")
 	}
@@ -156,7 +156,7 @@ func TestTruncateString(t *testing.T) {
 		t.Errorf("got %s, want Hello", result)
 	}
 	
-	// 不截断
+	// no truncation
 	result = TruncateString(input, 20)
 	if result != input {
 		t.Errorf("should not truncate when maxLen > len")
@@ -181,7 +181,7 @@ func TestCopyMap(t *testing.T) {
 	original := map[string]string{"a": "1", "b": "2"}
 	copied := CopyMap(original)
 	
-	// 修改副本不应影响原件
+	// modifying copy should not affect original
 	copied["a"] = "modified"
 	if original["a"] == "modified" {
 		t.Error("CopyMap should create independent copy")

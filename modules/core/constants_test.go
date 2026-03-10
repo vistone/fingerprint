@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// TestRiskLevelFromScore 验证风险等级计算
+// TestRiskLevelFromScore verifies risk level calculation
 func TestRiskLevelFromScore(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -22,7 +22,7 @@ func TestRiskLevelFromScore(t *testing.T) {
 		{"high_mid", 0.8, RiskLevelHigh},
 		{"critical", 0.9, RiskLevelCritical},
 		{"critical_max", 1.0, RiskLevelCritical},
-		{"negative", -0.5, RiskLevelNone}, // 边界情况
+		{"negative", -0.5, RiskLevelNone}, // edge case
 	}
 
 	for _, tt := range tests {
@@ -35,7 +35,7 @@ func TestRiskLevelFromScore(t *testing.T) {
 	}
 }
 
-// TestRiskLevelString 验证 RiskLevel 字符串表示
+// TestRiskLevelString verifies RiskLevel string representation
 func TestRiskLevelString(t *testing.T) {
 	tests := []struct {
 		level    RiskLevel
@@ -46,7 +46,7 @@ func TestRiskLevelString(t *testing.T) {
 		{RiskLevelMedium, "medium"},
 		{RiskLevelHigh, "high"},
 		{RiskLevelCritical, "critical"},
-		{RiskLevel(999), "unknown"}, // 无效值
+		{RiskLevel(999), "unknown"}, // invalid value
 	}
 
 	for _, tt := range tests {
@@ -59,9 +59,9 @@ func TestRiskLevelString(t *testing.T) {
 	}
 }
 
-// TestConstantValues 验证关键常量值
+// TestConstantValues verifies key constant values
 func TestConstantValues(t *testing.T) {
-	// 时间常量
+	// time constants
 	if DefaultTimeout != 30*time.Second {
 		t.Errorf("DefaultTimeout = %v, want %v", DefaultTimeout, 30*time.Second)
 	}
@@ -72,7 +72,7 @@ func TestConstantValues(t *testing.T) {
 		t.Errorf("DefaultTLSTimeout = %v, want %v", DefaultTLSTimeout, 15*time.Second)
 	}
 
-	// 缓存常量
+	// cache constants
 	if DefaultCacheSize != 10000 {
 		t.Errorf("DefaultCacheSize = %d, want %d", DefaultCacheSize, 10000)
 	}
@@ -80,7 +80,7 @@ func TestConstantValues(t *testing.T) {
 		t.Errorf("DefaultCacheTTL = %v, want %v", DefaultCacheTTL, 5*time.Minute)
 	}
 
-	// 限流常量
+	// rate limiting constants
 	if DefaultRateLimit != 1000 {
 		t.Errorf("DefaultRateLimit = %d, want %d", DefaultRateLimit, 1000)
 	}
@@ -88,7 +88,7 @@ func TestConstantValues(t *testing.T) {
 		t.Errorf("DefaultRateLimitBurst = %d, want %d", DefaultRateLimitBurst, 2000)
 	}
 
-	// 风险阈值
+	// risk thresholds
 	if RiskThresholdLow != 0.1 {
 		t.Errorf("RiskThresholdLow = %v, want %v", RiskThresholdLow, 0.1)
 	}
@@ -102,7 +102,7 @@ func TestConstantValues(t *testing.T) {
 		t.Errorf("RiskThresholdCritical = %v, want %v", RiskThresholdCritical, 0.9)
 	}
 
-	// 大小常量
+	// size constants
 	if Size1KB != 1024 {
 		t.Errorf("Size1KB = %d, want %d", Size1KB, 1024)
 	}
@@ -114,11 +114,11 @@ func TestConstantValues(t *testing.T) {
 	}
 }
 
-// TestLoggerAdapters 验证 Logger 适配器
+// TestLoggerAdapters verify Logger adapter
 func TestLoggerAdapters(t *testing.T) {
 	t.Run("NoOpLogger", func(t *testing.T) {
 		logger := NoOpLogger{}
-		// 不应 panic
+		// should not panic
 		logger.Debug("debug message", "key", "value")
 		logger.Info("info message", "key", "value")
 		logger.Warn("warn message", "key", "value")
@@ -127,7 +127,7 @@ func TestLoggerAdapters(t *testing.T) {
 
 	t.Run("SlogAdapter", func(t *testing.T) {
 		logger := NewDefaultLogger("debug")
-		// 不应 panic
+		// should not panic
 		logger.Debug("debug message", "key", "value")
 		logger.Info("info message", "key", "value")
 		logger.Warn("warn message", "key", "value")
@@ -135,7 +135,7 @@ func TestLoggerAdapters(t *testing.T) {
 	})
 }
 
-// TestTLSVersionConstants 验证 TLS 版本常量
+// TestTLSVersionConstants verifies TLS version constants
 func TestTLSVersionConstants(t *testing.T) {
 	if TLSVersion10 != 0x0301 {
 		t.Errorf("TLSVersion10 = 0x%04x, want 0x0301", TLSVersion10)
@@ -151,7 +151,7 @@ func TestTLSVersionConstants(t *testing.T) {
 	}
 }
 
-// BenchmarkRiskLevelFromScore 性能基准测试
+// BenchmarkRiskLevelFromScore performance benchmark test
 func BenchmarkRiskLevelFromScore(b *testing.B) {
 	scores := []float64{0.05, 0.15, 0.45, 0.75, 0.95}
 	b.ResetTimer()

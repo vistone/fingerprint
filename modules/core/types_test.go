@@ -1,4 +1,4 @@
-// Package core 测试
+// Package core tests
 package core
 
 import (
@@ -14,7 +14,7 @@ func TestHTTPHeadersClone(t *testing.T) {
 
 	cloned := h.Clone()
 
-	// 验证克隆后的值相同
+	// verify cloned values are equal
 	if cloned.Accept != h.Accept {
 		t.Errorf("Accept mismatch: got %s, want %s", cloned.Accept, h.Accept)
 	}
@@ -22,7 +22,7 @@ func TestHTTPHeadersClone(t *testing.T) {
 		t.Errorf("UserAgent mismatch: got %s, want %s", cloned.UserAgent, h.UserAgent)
 	}
 
-	// 验证深拷贝
+	// verify deep copy
 	cloned.Custom["Cookie"] = "modified"
 	if h.Custom["Cookie"] == "modified" {
 		t.Error("Clone should be deep copy")

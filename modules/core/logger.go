@@ -1,19 +1,19 @@
 package core
 
-// Logger 标准日志接口
-// 设计原则：最小接口，满足大多数日志库适配
+// Logger standard logging interface
+// design principle: minimal interface, adapts to most logging libraries
 type Logger interface {
-	// Debug 记录调试信息
+	// Debug logdebuginfo
 	Debug(msg string, keysAndValues ...any)
-	// Info 记录一般信息
+	// Info logs general information
 	Info(msg string, keysAndValues ...any)
-	// Warn 记录警告信息
+	// Warn logwarninginfo
 	Warn(msg string, keysAndValues ...any)
-	// Error 记录错误信息
+	// Error logerrorinfo
 	Error(msg string, keysAndValues ...any)
 }
 
-// NoOpLogger 空日志实现，用于默认值或测试
+// NoOpLogger empty log implementation, used for default values or testing
 type NoOpLogger struct{}
 
 func (l NoOpLogger) Debug(msg string, keysAndValues ...any) {}
