@@ -1,4 +1,4 @@
 package tls
 
-// ModuleName TLS 模块名称。
+// ModuleName is the TLS module name.
 const ModuleName = "tls"

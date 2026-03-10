@@ -7,13 +7,13 @@ import (
 	tls "github.com/bogdanfinn/utls"
 )
 
-// isGREASEValue 检查是否为 GREASE 值（RFC 8701）
-// GREASE 值格式：0xXAXA（十六进制）
+// isGREASEValue checks whether a value is GREASE (RFC 8701)
+// GREASE value format: 0xXAXA (hexadecimal)
 func isGREASEValue(v uint16) bool {
 	return v&0x0f0f == 0x0a0a && (v>>8) == (v&0x00ff)
 }
 
-// filterGREASEUint16 过滤 GREASE 值（uint16 切片）
+// filterGREASEUint16 filters GREASE values (uint16 slice)
 func filterGREASEUint16(values []uint16) []uint16 {
 	result := make([]uint16, 0, len(values))
 	for _, v := range values {
@@ -24,7 +24,7 @@ func filterGREASEUint16(values []uint16) []uint16 {
 	return result
 }
 
-// filterGREASECurveID 过滤 GREASE 值（CurveID 切片）
+// filterGREASECurveID filters GREASE values (CurveID slice)
 func filterGREASECurveID(curves []tls.CurveID) []tls.CurveID {
 	result := make([]tls.CurveID, 0, len(curves))
 	for _, c := range curves {
@@ -35,7 +35,7 @@ func filterGREASECurveID(curves []tls.CurveID) []tls.CurveID {
 	return result
 }
 
-// uint16SliceToString 将 uint16 切片转换为逗号分隔字符串
+// uint16SliceToString converts a uint16 slice to a comma-separated string
 func uint16SliceToString(values []uint16) string {
 	parts := make([]string, len(values))
 	for i, v := range values {
@@ -44,7 +44,7 @@ func uint16SliceToString(values []uint16) string {
 	return strings.Join(parts, "-")
 }
 
-// curveIDSliceToString 将 CurveID 切片转换为逗号分隔字符串
+// curveIDSliceToString converts a CurveID slice to a comma-separated string
 func curveIDSliceToString(curves []tls.CurveID) string {
 	parts := make([]string, len(curves))
 	for i, c := range curves {
@@ -53,7 +53,7 @@ func curveIDSliceToString(curves []tls.CurveID) string {
 	return strings.Join(parts, "-")
 }
 
-// uint8SliceToString 将 uint8 切片转换为逗号分隔字符串
+// uint8SliceToString converts a uint8 slice to a comma-separated string
 func uint8SliceToString(values []uint8) string {
 	parts := make([]string, len(values))
 	for i, v := range values {

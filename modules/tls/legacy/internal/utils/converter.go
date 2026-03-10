@@ -7,7 +7,7 @@ import (
 	tls "github.com/bogdanfinn/utls"
 )
 
-// Uint16SliceToString 将 uint16 切片转换为连字符分隔字符串
+// Uint16SliceToString converts a uint16 slice to a hyphen-separated string
 func Uint16SliceToString(values []uint16) string {
 	parts := make([]string, len(values))
 	for i, v := range values {
@@ -16,7 +16,7 @@ func Uint16SliceToString(values []uint16) string {
 	return strings.Join(parts, "-")
 }
 
-// CurveIDSliceToString 将 CurveID 切片转换为连字符分隔字符串
+// CurveIDSliceToString converts a CurveID slice to a hyphen-separated string
 func CurveIDSliceToString(curves []tls.CurveID) string {
 	parts := make([]string, len(curves))
 	for i, c := range curves {
@@ -25,7 +25,7 @@ func CurveIDSliceToString(curves []tls.CurveID) string {
 	return strings.Join(parts, "-")
 }
 
-// Uint8SliceToString 将 uint8 切片转换为连字符分隔字符串
+// Uint8SliceToString converts a uint8 slice to a hyphen-separated string
 func Uint8SliceToString(values []uint8) string {
 	parts := make([]string, len(values))
 	for i, v := range values {

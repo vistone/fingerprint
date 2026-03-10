@@ -1,3 +1,3 @@
-// Package tlsutil 提供 TLS 相关工具函数的公开接口
-// 包括 GREASE 值处理、数据类型转换等通用功能
+// Package tlsutil provides public interfaces for TLS-related utility functions
+// Including common features such as GREASE value handling and data type conversion
 package utils
