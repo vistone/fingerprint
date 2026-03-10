@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/vistone/fingerprint/modules/generator"
 	errs "github.com/vistone/fingerprint/modules/errors"
+	"github.com/vistone/fingerprint/modules/generator"
 )
 
 // ============================================================================
