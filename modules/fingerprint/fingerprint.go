@@ -1,32 +1,33 @@
-// Package fingerprint 是主 facade 包
-// 提供统一的 API interface，整合所有子模块功能
+// Package fingerprint is the main facade package.
+// It provides a unified API interface, integrating all submodule functionality.
 //
-// 这是 Go Workspace 重构后的主入口点，参考 Rust 版本的 workspace 架构设计
+// This is the main entry point after the Go Workspace refactoring,
+// inspired by the Rust workspace architecture design.
 //
-// 基本用法：
+// Basic usage:
 //
 //	import "github.com/vistone/fingerprint"
 //
-//	// get随机指纹
+//	// Get a random fingerprint
 //	result := fingerprint.GetRandom()
 //
-//	// get指定浏览器的指纹
+//	// Get a fingerprint for a specific browser
 //	chrome := fingerprint.GetByBrowser(fingerprint.BrowserChrome)
 //
-//	// execute指纹analyze
+//	// Execute fingerprint analysis
 //	analyzer := fingerprint.NewAnalyzer()
 //	result := analyzer.Analyze(request)
 //
-// 模块结构：
+// Module structure:
 //
-//	github.com/vistone/fingerprint/core     - 核心typeandinterface
-//	github.com/vistone/fingerprint/profiles - 浏览器指纹configuration
-//	github.com/vistone/fingerprint/tls      - TLS 指纹generate
-//	github.com/vistone/fingerprint/http     - HTTP 指纹generate
-//	github.com/vistone/fingerprint/ml       - ML classify器
-//	github.com/vistone/fingerprint/defense  - 安全防护
-//	github.com/vistone/fingerprint/frontend - 前端 SDK
-//	github.com/vistone/fingerprint/gateway  - API 网关
+//	github.com/vistone/fingerprint/core     - Core types and interfaces
+//	github.com/vistone/fingerprint/profiles - Browser fingerprint profiles
+//	github.com/vistone/fingerprint/tls      - TLS fingerprint generation
+//	github.com/vistone/fingerprint/http     - HTTP fingerprint generation
+//	github.com/vistone/fingerprint/ml       - ML classifier
+//	github.com/vistone/fingerprint/defense  - Security defense
+//	github.com/vistone/fingerprint/frontend - Frontend SDK
+//	github.com/vistone/fingerprint/gateway  - API gateway
 //
 package fingerprint
 
@@ -45,9 +46,9 @@ import (
 	httpmod "github.com/vistone/fingerprint/modules/http"
 )
 
-// ==================== type别名 ====================
+// ==================== Type aliases ====================
 
-// BrowserType 浏览器type
+// BrowserType represents the browser type
 type BrowserType = core.BrowserType
 
 const (
@@ -58,7 +59,7 @@ const (
 	BrowserEdge    = core.BrowserEdge
 )
 
-// OperatingSystem 操作系统type
+// OperatingSystem represents the operating system type
 type OperatingSystem = core.OperatingSystem
 
 const (
@@ -71,7 +72,7 @@ const (
 	OSLinuxUbuntu = core.OSLinuxUbuntu
 )
 
-// ProtocolType protocoltype
+// ProtocolType represents the protocol type
 type ProtocolType = core.ProtocolType
 
 const (
@@ -82,7 +83,7 @@ const (
 	ProtocolHTTP3 = core.ProtocolHTTP3
 )
 
-// FeatureType featuretype
+// FeatureType represents the feature type
 type FeatureType = core.FeatureType
 
 const (
@@ -104,7 +105,7 @@ const (
 	FeatureEntropy         = core.FeatureEntropy
 )
 
-// RiskLevel 风险等级
+// RiskLevel represents the risk level
 type RiskLevel = core.RiskLevel
 
 const (
@@ -115,58 +116,58 @@ const (
 	RiskLevelCritical = core.RiskLevelCritical
 )
 
-// ==================== 核心type别名 ====================
+// ==================== Core type aliases ====================
 
-// HTTPHeaders HTTP 头
+// HTTPHeaders represents HTTP headers
 type HTTPHeaders = core.HTTPHeaders
 
-// FingerprintResult 指纹result
+// FingerprintResult represents a fingerprint result
 type FingerprintResult = core.FingerprintResult
 
-// ClientHelloSpec ClientHello 规范
+// ClientHelloSpec represents a ClientHello specification
 type ClientHelloSpec = core.ClientHelloSpec
 
-// TLSExtension TLS 扩展
+// TLSExtension represents a TLS extension
 type TLSExtension = core.TLSExtension
 
-// CurveID 曲线 ID
+// CurveID represents a curve ID
 type CurveID = core.CurveID
 
-// HTTP2Settings HTTP/2 setting
+// HTTP2Settings represents HTTP/2 settings
 type HTTP2Settings = core.HTTP2Settings
 
-// HTTP2Priority HTTP/2 优先级
+// HTTP2Priority represents HTTP/2 priority
 type HTTP2Priority = core.HTTP2Priority
 
-// FeatureVector feature向量
+// FeatureVector represents a feature vector
 type FeatureVector = core.FeatureVector
 
-// RiskAssessment 风险评估
+// RiskAssessment represents a risk assessment
 type RiskAssessment = core.RiskAssessment
 
-// RiskFactor 风险因子
+// RiskFactor represents a risk factor
 type RiskFactor = core.RiskFactor
 
-// ==================== 核心函数 ====================
+// ==================== Core functions ====================
 
-// GetRandom get随机指纹
+// GetRandom returns a random fingerprint
 func GetRandom() *profiles.ClientProfile {
 	p := profiles.GetRandom()
 	return &p
 }
 
-// GetByBrowser 按浏览器typeget随机指纹
+// GetByBrowser returns a random fingerprint by browser type
 func GetByBrowser(browser BrowserType) *profiles.ClientProfile {
 	p := profiles.GetRandomByBrowser(browser)
 	return &p
 }
 
-// GetAllProfiles get所有指纹configuration
+// GetAllProfiles returns all fingerprint profiles
 func GetAllProfiles() []profiles.ClientProfile {
 	return profiles.GetAll()
 }
 
-// GetProfile get指定 ID 的指纹configuration
+// GetProfile returns a fingerprint profile by ID
 func GetProfile(id string) (*profiles.ClientProfile, bool) {
 	p, ok := profiles.Get(id)
 	if !ok {
@@ -175,14 +176,14 @@ func GetProfile(id string) (*profiles.ClientProfile, bool) {
 	return &p, true
 }
 
-// ==================== TLS 指纹 ====================
+// ==================== TLS fingerprint ====================
 
-// CalculateJA3 calculate JA3 指纹
+// CalculateJA3 calculates the JA3 fingerprint
 func CalculateJA3(spec ClientHelloSpec) *tls.JA3Result {
 	return tls.CalculateJA3(spec)
 }
 
-// CalculateJA4 calculate JA4 指纹
+// CalculateJA4 calculates the JA4 fingerprint
 func CalculateJA4(spec ClientHelloSpec) *tls.JA4Result {
 	return tls.CalculateJA4(spec)
 }
@@ -193,9 +194,9 @@ type JA3Result = tls.JA3Result
 // JA4Result JA4 result
 type JA4Result = tls.JA4Result
 
-// ==================== HTTP 指纹 ====================
+// ==================== HTTP fingerprint ====================
 
-// CalculateJA4H calculate JA4H 指纹
+// CalculateJA4H calculates the JA4H fingerprint
 func CalculateJA4H(headers *HTTPHeaders, method string) *httpmod.JA4HResult {
 	return httpmod.CalculateJA4H(headers, method)
 }
@@ -203,103 +204,103 @@ func CalculateJA4H(headers *HTTPHeaders, method string) *httpmod.JA4HResult {
 // JA4HResult JA4H result
 type JA4HResult = httpmod.JA4HResult
 
-// ==================== ML classify器 ====================
+// ==================== ML classifier ====================
 
-// HierarchicalClassifier 三层分层classify器
+// HierarchicalClassifier is a three-layer hierarchical classifier
 type HierarchicalClassifier = ml.HierarchicalClassifier
 
-// NewHierarchicalClassifier create新的分层classify器
+// NewHierarchicalClassifier creates a new hierarchical classifier
 func NewHierarchicalClassifier() *HierarchicalClassifier {
 	hc := ml.NewHierarchicalClassifier()
 	hc.Initialize()
 	return hc
 }
 
-// ClassificationResult classifyresult
+// ClassificationResult represents a classification result
 type ClassificationResult = ml.ClassificationResult
 
-// FeatureExtractor featureextract器
+// FeatureExtractor is a feature extractor
 type FeatureExtractor = ml.FeatureExtractor
 
-// NewFeatureExtractor create新的featureextract器
+// NewFeatureExtractor creates a new feature extractor
 func NewFeatureExtractor() *FeatureExtractor {
 	return ml.NewFeatureExtractor()
 }
 
-// ==================== 安全防护 ====================
+// ==================== Security defense ====================
 
-// DefenseSystem 防护系统
+// DefenseSystem represents the defense system
 type DefenseSystem = defense.DefenseSystem
 
-// NewDefenseSystem create新的防护系统
+// NewDefenseSystem creates a new defense system
 func NewDefenseSystem() *DefenseSystem {
 	return defense.NewDefenseSystem()
 }
 
-// DetectionResult 检测result
+// DetectionResult represents a detection result
 type DetectionResult = defense.DetectionResult
 
-// RiskEngine 风险引擎
+// RiskEngine represents the risk engine
 type RiskEngine = defense.RiskEngine
 
-// NewRiskEngine create新的风险引擎
+// NewRiskEngine creates a new risk engine
 func NewRiskEngine() *RiskEngine {
 	return defense.NewRiskEngine()
 }
 
-// ProtectionConfig 防护configuration
+// ProtectionConfig represents the protection configuration
 type ProtectionConfig = defense.ProtectionConfig
 
-// DefaultProtectionConfig 默认防护configuration
+// DefaultProtectionConfig is the default protection configuration
 var DefaultProtectionConfig = defense.DefaultProtectionConfig
 
-// ==================== 前端 SDK ====================
+// ==================== Frontend SDK ====================
 
-// FrontendSDK 前端 SDK
+// FrontendSDK represents the frontend SDK
 type FrontendSDK = frontend.SDK
 
-// NewFrontendSDK create新的前端 SDK
+// NewFrontendSDK creates a new frontend SDK
 func NewFrontendSDK(config *frontend.SDKConfig) *FrontendSDK {
 	return frontend.NewSDK(config)
 }
 
-// DefaultSDKConfig 默认 SDK configuration
+// DefaultSDKConfig is the default SDK configuration
 var DefaultSDKConfig = frontend.DefaultSDKConfig
 
-// FrontendFingerprintData 前端指纹data
+// FrontendFingerprintData represents frontend fingerprint data
 type FrontendFingerprintData = ml.FrontendFingerprintData
 
-// ==================== 网关 ====================
+// ==================== Gateway ====================
 
-// Gateway 网关
+// Gateway represents the API gateway
 type Gateway = gateway.Gateway
 
-// GatewayConfig 网关configuration
+// GatewayConfig represents the gateway configuration
 type GatewayConfig = gateway.GatewayConfig
 
-// NewGateway create新的网关
+// NewGateway creates a new gateway
 func NewGateway(config *GatewayConfig) *Gateway {
 	return gateway.NewGateway(config)
 }
 
-// DefaultGatewayConfig 默认网关configuration
+// DefaultGatewayConfig is the default gateway configuration
 var DefaultGatewayConfig = gateway.DefaultGatewayConfig
 
-// AnalyzeRequest analyzerequest
+// AnalyzeRequest represents an analysis request
 type AnalyzeRequest = gateway.AnalyzeRequest
 
-// AnalyzeResponse analyzeresponse
+// AnalyzeResponse represents an analysis response
 type AnalyzeResponse = gateway.AnalyzeResponse
 
-// StartGateway start网关服务
+// StartGateway starts the gateway service
 func StartGateway(config *GatewayConfig) error {
 	gw := NewGateway(config)
 	return gw.Start()
 }
 
-// ==================== analyze器 ====================
+// ==================== Analyzer ====================
 
-// Analyzer 综合analyze器
+// Analyzer is a comprehensive fingerprint analyzer
 type Analyzer struct {
 	classifier *ml.HierarchicalClassifier
 	extractor  *ml.FeatureExtractor
@@ -307,7 +308,7 @@ type Analyzer struct {
 	defense    *defense.DefenseSystem
 }
 
-// NewAnalyzer create新的analyze器
+// NewAnalyzer creates a new analyzer
 func NewAnalyzer() *Analyzer {
 	hc := ml.NewHierarchicalClassifier()
 	hc.Initialize()
@@ -320,7 +321,7 @@ func NewAnalyzer() *Analyzer {
 	}
 }
 
-// Analyze execute综合analyze
+// Analyze executes a comprehensive analysis
 func (a *Analyzer) Analyze(req *gateway.AnalyzeRequest) *AnalyzeResponse {
 	ctx := context.Background()
 	gw := gateway.NewGateway(nil)
@@ -328,40 +329,40 @@ func (a *Analyzer) Analyze(req *gateway.AnalyzeRequest) *AnalyzeResponse {
 	return resp
 }
 
-// Classify executeclassify
+// Classify executes classification
 func (a *Analyzer) Classify(features *core.FeatureVector) *ml.ClassificationResult {
 	return a.classifier.Classify(features)
 }
 
-// ExtractFeatures fromconfigurationextractfeature
+// ExtractFeatures extracts features from a profile
 func (a *Analyzer) ExtractFeatures(profile *profiles.ClientProfile) *core.FeatureVector {
 	return a.extractor.ExtractFromProfile(profile)
 }
 
-// EvaluateRisk 评估风险
+// EvaluateRisk evaluates the risk
 func (a *Analyzer) EvaluateRisk(features *core.FeatureVector, classification *ml.ClassificationResult) *core.RiskAssessment {
 	return a.riskEngine.Evaluate(features, classification)
 }
 
-// GetDefenseAdvice get防护建议
+// GetDefenseAdvice returns defense recommendations
 func (a *Analyzer) GetDefenseAdvice(features *core.FeatureVector, classification *ml.ClassificationResult) *defense.DefenseAdvice {
 	return a.defense.Analyze(features, classification)
 }
 
-// ==================== 便捷函数 ====================
+// ==================== Convenience functions ====================
 
-// QuickAnalyze 快速analyze
+// QuickAnalyze performs a quick analysis
 func QuickAnalyze(headers *HTTPHeaders, method string) *QuickAnalyzeResult {
-	// extractfeature
+	// Extract features
 	extractor := ml.NewFeatureExtractor()
 	features := extractor.ExtractFromHTTPHeaders(headers)
 
-	// classify
+	// Classify
 	hc := ml.NewHierarchicalClassifier()
 	hc.Initialize()
 	classification := hc.Classify(features)
 
-	// calculate指纹
+	// Calculate fingerprint
 	ja4h := httpmod.CalculateJA4H(headers, method)
 
 	riskLevel := RiskLevelMedium
@@ -375,21 +376,21 @@ func QuickAnalyze(headers *HTTPHeaders, method string) *QuickAnalyzeResult {
 	}
 }
 
-// QuickAnalyzeResult 快速analyzeresult
+// QuickAnalyzeResult represents a quick analysis result
 type QuickAnalyzeResult struct {
 	Classification *ml.ClassificationResult
 	JA4H           *httpmod.JA4HResult
 	RiskLevel      RiskLevel
 }
 
-// MatchProfile match指纹configuration
+// MatchProfile matches a fingerprint profile
 func MatchProfile(headers *HTTPHeaders) (*profiles.ClientProfile, float64) {
 	profiles := profiles.GetAll()
 	if len(profiles) == 0 {
 		return nil, 0
 	}
 
-	// 简单的match逻辑：compare User-Agent
+	// Simple matching logic: compare User-Agent
 	ua := headers.UserAgent
 	if ua == "" {
 		return nil, 0
@@ -401,11 +402,11 @@ func MatchProfile(headers *HTTPHeaders) (*profiles.ClientProfile, float64) {
 		}
 	}
 
-	// return第一个作为默认值
+	// Return the first one as the default
 	return &profiles[0], 0.1
 }
 
-// GenerateUserAgent generate User-Agent
+// GenerateUserAgent generates a User-Agent string
 func GenerateUserAgent(browser BrowserType, version string, os OperatingSystem) string {
 	switch browser {
 	case BrowserChrome:
@@ -422,17 +423,17 @@ func GenerateUserAgent(browser BrowserType, version string, os OperatingSystem) 
 	}
 }
 
-// IsHeadless 检测whether为无头浏览器
+// IsHeadless detects whether the browser is headless
 func IsHeadless(features *core.FeatureVector) bool {
-	// 基于feature判断
+	// Determine based on features
 	if features.Get(core.FeatureHeadlessBrowser) > 0.5 {
 		return true
 	}
-	// 其他检测逻辑...
+	// Other detection logic...
 	return false
 }
 
-// CalculateSimilarity calculate两个指纹的相似度
+// CalculateSimilarity calculates the similarity between two fingerprints
 func CalculateSimilarity(a, b *core.FeatureVector) float64 {
 	if a == nil || b == nil {
 		return 0
@@ -461,9 +462,9 @@ func CalculateSimilarity(a, b *core.FeatureVector) float64 {
 	return matchWeight / totalWeight
 }
 
-// ==================== HTTP process器 ====================
+// ==================== HTTP handler ====================
 
-// HTTPHandler create HTTP process器
+// HTTPHandler creates an HTTP handler
 func HTTPHandler() http.Handler {
 	gw := gateway.NewGateway(nil)
 	

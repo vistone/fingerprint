@@ -27,9 +27,7 @@ require (
 	github.com/gobwas/ws v1.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
-	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/vistone/fingerprint/modules/agent v1.0.8 // indirect
 	github.com/vistone/fingerprint/modules/defense v1.0.8 // indirect
 	github.com/vistone/fingerprint/modules/errors v1.0.8 // indirect
@@ -49,5 +47,4 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
 	google.golang.org/grpc v1.79.1 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
