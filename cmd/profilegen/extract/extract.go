@@ -1,10 +1,10 @@
-// extract.go - 从现有的 Go 文件提取指纹配置并生成 YAML
+// extract.go - extract fingerprint configuration from existing Go files and generate YAML
 //
-// 该工具解析 profiles/ 目录下的 Go 文件，提取 ClientProfile 定义，
-// 并生成对应的 YAML 配置文件。
+// this tool parses Go files under profiles/ directory, extracts ClientProfile definitions,
+// and generates corresponding YAML configuration files.
 //
-// 注意：这是一个简化实现，完整的实现需要完整的 Go AST 解析。
-// 当前版本用于演示迁移流程。
+// note: this is a simplified implementation, complete implementation requires full Go AST parsing.
+// current version is for demonstration of migration process.
 package main
 
 import (
@@ -19,7 +19,7 @@ import (
 	"strings"
 )
 
-// ProfileData 从 Go 代码提取的配置数据
+// ProfileData configuration data extracted from Go code
 type ProfileData struct {
 	Name         string
 	VarName      string
@@ -31,43 +31,43 @@ type ProfileData struct {
 
 func main() {
 	var (
-		inputDir  = flag.String("input", "profiles", "输入 Go 文件目录")
-		outputDir = flag.String("output", "profiles/specs", "输出 YAML 目录")
+		inputDir  = flag.String("input", "profiles", "input Go file directory")
+		outputDir = flag.String("output", "profiles/specs", "output YAML directory")
 	)
 	flag.Parse()
 
-	// 创建输出目录
+	// create output directory
 	if err := os.MkdirAll(*outputDir, 0755); err != nil {
-		fmt.Fprintf(os.Stderr, "创建目录失败: %v\n", err)
+		fmt.Fprintf(os.Stderr, "failed to create directory: %v\n", err)
 		os.Exit(1)
 	}
 
-	// 解析 Go 文件
+	// parse Go files
 	profiles, err := extractProfilesFromDir(*inputDir)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "提取配置失败: %v\n", err)
+		fmt.Fprintf(os.Stderr, "failed to extract configuration: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("提取了 %d 个指纹配置\n", len(profiles))
+	fmt.Printf("extracted %d fingerprint configurations\n", len(profiles))
 
-	// 生成 YAML 文件
+	// generate YAML files
 	for _, profile := range profiles {
 		outputPath := filepath.Join(*outputDir, profile.Name+".yaml")
 		if err := generateYAML(profile, outputPath); err != nil {
-			fmt.Fprintf(os.Stderr, "生成 YAML 失败 %s: %v\n", profile.Name, err)
+			fmt.Fprintf(os.Stderr, "failed to generate YAML %s: %v\n", profile.Name, err)
 			continue
 		}
-		fmt.Printf("✓ 生成 %s\n", outputPath)
+		fmt.Printf("✓ generated %s\n", outputPath)
 	}
 }
 
-// extractProfilesFromDir 从目录中提取所有指纹配置
+// extractProfilesFromDir extract all fingerprint configurations from directory
 func extractProfilesFromDir(dir string) ([]ProfileData, error) {
 	var profiles []ProfileData
 
-	// 使用简化方法：正则表达式提取
-	// 完整的实现应该使用 go/ast 进行完整解析
+	// use simplified method: regex extraction
+	// complete implementation should use go/ast for full parsing
 	files, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, err
@@ -87,7 +87,7 @@ func extractProfilesFromDir(dir string) ([]ProfileData, error) {
 		path := filepath.Join(dir, file.Name())
 		fileProfiles, err := extractProfilesFromFile(path)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "警告: 解析 %s 失败: %v\n", path, err)
+			fmt.Fprintf(os.Stderr, "warning: failed to parse %s: %v\n", path, err)
 			continue
 		}
 		profiles = append(profiles, fileProfiles...)
@@ -96,7 +96,7 @@ func extractProfilesFromDir(dir string) ([]ProfileData, error) {
 	return profiles, nil
 }
 
-// extractProfilesFromFile 从单个 Go 文件提取指纹配置
+// extractProfilesFromFile extract fingerprint configuration from single Go file
 func extractProfilesFromFile(path string) ([]ProfileData, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
@@ -111,7 +111,7 @@ func extractProfilesFromFile(path string) ([]ProfileData, error) {
 
 	var profiles []ProfileData
 
-	// 遍历所有声明
+	// iterate all declarations
 	for _, decl := range f.Decls {
 		genDecl, ok := decl.(*ast.GenDecl)
 		if !ok || genDecl.Tok != token.VAR {
@@ -130,7 +130,7 @@ func extractProfilesFromFile(path string) ([]ProfileData, error) {
 					continue
 				}
 
-				// 检查是否是 ClientProfile 类型
+				// check if it is ClientProfile type
 				if isClientProfileType(compositeLit.Type) {
 					profile := extractProfileData(valueSpec.Names[0].Name, compositeLit)
 					if profile.Name != "" {
@@ -144,7 +144,7 @@ func extractProfilesFromFile(path string) ([]ProfileData, error) {
 	return profiles, nil
 }
 
-// isClientProfileType 检查类型是否为 ClientProfile
+// isClientProfileType check if type is ClientProfile
 func isClientProfileType(expr ast.Expr) bool {
 	ident, ok := expr.(*ast.Ident)
 	if !ok {
@@ -153,7 +153,7 @@ func isClientProfileType(expr ast.Expr) bool {
 	return ident.Name == "ClientProfile"
 }
 
-// extractProfileData 从 CompositeLit 提取配置数据
+// extractProfileData extract configuration data from CompositeLit
 func extractProfileData(varName string, lit *ast.CompositeLit) ProfileData {
 	profile := ProfileData{
 		VarName: varName,
@@ -179,7 +179,7 @@ func extractProfileData(varName string, lit *ast.CompositeLit) ProfileData {
 	return profile
 }
 
-// extractClientHelloId 提取 ClientHelloID 信息
+// extractClientHelloId extract ClientHelloID information
 func extractClientHelloId(expr ast.Expr) map[string]string {
 	lit, ok := expr.(*ast.CompositeLit)
 	if !ok {
@@ -201,7 +201,7 @@ func extractClientHelloId(expr ast.Expr) map[string]string {
 	return info
 }
 
-// getIdentName 获取标识符名称
+// getIdentName get identifier name
 func getIdentName(expr ast.Expr) string {
 	ident, ok := expr.(*ast.Ident)
 	if !ok {
@@ -210,7 +210,7 @@ func getIdentName(expr ast.Expr) string {
 	return ident.Name
 }
 
-// getBasicLitValue 获取基本字面量值
+// getBasicLitValue get basic literal value
 func getBasicLitValue(expr ast.Expr) string {
 	switch v := expr.(type) {
 	case *ast.BasicLit:
@@ -222,7 +222,7 @@ func getBasicLitValue(expr ast.Expr) string {
 	}
 }
 
-// toSnakeCase 将驼峰命名转换为下划线命名
+// toSnakeCase convert camelCase to snake_case
 func toSnakeCase(s string) string {
 	var result strings.Builder
 	for i, r := range s {
@@ -234,9 +234,9 @@ func toSnakeCase(s string) string {
 	return strings.ToLower(result.String())
 }
 
-// generateYAML 生成 YAML 配置文件
+// generateYAML generate YAML configuration file
 func generateYAML(profile ProfileData, path string) error {
-	// 使用模板生成 YAML
+	// use template to generate YAML
 	template := `# %s fingerprint configuration
 # Auto-generated from %s
 
@@ -271,11 +271,11 @@ connection_flow: 0
 	return os.WriteFile(path, []byte(content), 0644)
 }
 
-// extractWithRegex 使用正则表达式提取（备用方法）
+// extractWithRegex extract using regex (backup method)
 func extractWithRegex(content []byte) []ProfileData {
 	var profiles []ProfileData
 
-	// 匹配 var Name = ClientProfile{...}
+	// match var Name = ClientProfile{...}
 	varRegex := regexp.MustCompile(`var\s+(\w+)\s*=\s*ClientProfile\{`)
 	matches := varRegex.FindAllSubmatchIndex(content, -1)
 
