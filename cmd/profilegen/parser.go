@@ -13,7 +13,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// YAMLProfile 是 YAML 配置文件的根结构
+// YAMLProfile is the root structure of YAML configuration file
 type YAMLProfile struct {
 	Name                 string             `yaml:"name"`
 	VarName              string             `yaml:"var_name"`
@@ -48,22 +48,22 @@ type YAMLPriority struct {
 	YAMLPriorityParam
 }
 
-// parseYAMLFile 解析单个 YAML 文件，带有安全验证
+// parseYAMLFile parses single YAML file with security verification
 func parseYAMLFile(path string) (*YAMLProfile, error) {
-	// 安全检查 1: 防止路径遍历攻击（最先检查）
+	// security check 1: prevent path traversal attack (check first)
 	if strings.Contains(path, "..") {
-		return nil, fmt.Errorf("路径包含非法字符 '..': %s", path)
+		return nil, fmt.Errorf("path contains illegal characters '..': %s", path)
 	}
 	
-	// 安全检查 2: 验证文件路径是否在允许的目录内
+	// security check 2: verify if file path is within allowed directory
 	allowedDirs := []string{"profiles/specs", "cmd/profilegen/extract"}
 	isAllowed := false
 	
-	// 清理路径并转换为绝对路径
+	// cleanup path and convert to absolute path
 	cleanPath := filepath.Clean(path)
 	absPath, err := filepath.Abs(cleanPath)
 	if err != nil {
-		return nil, fmt.Errorf("获取绝对路径失败 %s: %w", path, err)
+		return nil, fmt.Errorf("failed to get absolute path %s: %w", path, err)
 	}
 	
 	for _, allowedDir := range allowedDirs {
@@ -72,7 +72,7 @@ func parseYAMLFile(path string) (*YAMLProfile, error) {
 			continue
 		}
 		
-		// 检查路径是否以允许的目录开头
+		// check if path starts with allowed directory
 		if strings.HasPrefix(absPath, absAllowedDir) {
 			isAllowed = true
 			break
@@ -80,49 +80,49 @@ func parseYAMLFile(path string) (*YAMLProfile, error) {
 	}
 	
 	if !isAllowed {
-		return nil, fmt.Errorf("路径不在允许范围内：%s (允许目录：%v)", path, allowedDirs)
+		return nil, fmt.Errorf("path not in allowed range: %s (allowed directories: %v)", path, allowedDirs)
 	}
 	
-	// 安全检查 3: 检查文件大小（最大 10MB）
+	// security check 3: check file size (maximum 10MB)
 	const maxFileSize = 10 * 1024 * 1024 // 10MB
 	fileInfo, err := os.Stat(path)
 	if err != nil {
-		return nil, fmt.Errorf("获取文件信息失败 %s: %w", path, err)
+		return nil, fmt.Errorf("getfileinfofailed %s: %w", path, err)
 	}
 	
 	if fileInfo.Size() > maxFileSize {
-		return nil, fmt.Errorf("文件大小超出限制 (%d > %d bytes): %s", fileInfo.Size(), maxFileSize, path)
+		return nil, fmt.Errorf("file size exceeds limit (%d > %d bytes): %s", fileInfo.Size(), maxFileSize, path)
 	}
 	
-	// 读取文件内容
+	// read file content
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("读取文件失败 %s: %w", path, err)
+		return nil, fmt.Errorf("failed to read file %s: %w", path, err)
 	}
 	
-	// 安全检查 4: 再次验证读取的数据大小
+	// security check 4: verify read data size again
 	if len(data) > maxFileSize {
-		return nil, fmt.Errorf("文件数据大小超出限制：%s", path)
+		return nil, fmt.Errorf("file data size exceeds limit: %s", path)
 	}
 
 	var profile YAMLProfile
 	if err := yaml.Unmarshal(data, &profile); err != nil {
-		return nil, fmt.Errorf("解析 YAML 失败 %s: %w", path, err)
+		return nil, fmt.Errorf("parse YAML failed %s: %w", path, err)
 	}
 
 	return &profile, nil
 }
 
-// parseAllProfiles 解析目录中的所有 YAML 文件，带有安全验证
+// parseAllProfiles parses all YAML files in directory with security verification
 func parseAllProfiles(dir string) ([]ProfileSpec, []string, error) {
-	// 安全检查：验证目录路径
+	// security check: verify directory path
 	allowedBaseDirs := []string{"profiles/specs", "cmd/profilegen/extract"}
 	isAllowed := false
 	
 	cleanDir := filepath.Clean(dir)
 	absDir, err := filepath.Abs(cleanDir)
 	if err != nil {
-		return nil, nil, fmt.Errorf("获取目录绝对路径失败: %w", err)
+		return nil, nil, fmt.Errorf("failed to get directory absolute path: %w", err)
 	}
 	
 	for _, allowedDir := range allowedBaseDirs {
@@ -138,21 +138,21 @@ func parseAllProfiles(dir string) ([]ProfileSpec, []string, error) {
 	}
 	
 	if !isAllowed {
-		return nil, nil, fmt.Errorf("目录不在允许范围内：%s (允许目录：%v)", dir, allowedBaseDirs)
+		return nil, nil, fmt.Errorf("directory not in allowed range: %s (allowed directories: %v)", dir, allowedBaseDirs)
 	}
 	
 	entries, err := os.ReadDir(dir)
 	if err != nil {
-		return nil, nil, fmt.Errorf("读取目录失败: %w", err)
+		return nil, nil, fmt.Errorf("failed to read directory: %w", err)
 	}
 
 	var profiles []ProfileSpec
 	var files []string
 
 	for _, entry := range entries {
-		// 安全检查：跳过符号链接
+		// security check: skip symbolic links
 		if entry.Type()&fs.ModeSymlink != 0 {
-			fmt.Printf("警告：跳过符号链接 %s\n", entry.Name())
+			fmt.Printf("warning: skipping symbolic link %s\n", entry.Name())
 			continue
 		}
 		
@@ -165,10 +165,10 @@ func parseAllProfiles(dir string) ([]ProfileSpec, []string, error) {
 
 		path := filepath.Join(dir, entry.Name())
 		
-		// 双重检查：确保拼接后的路径仍在允许目录内
+		// double check: ensure joined path is still within allowed directory
 		absPath, err := filepath.Abs(path)
 		if err != nil {
-			fmt.Printf("警告：跳过无法获取绝对路径的文件 %s\n", entry.Name())
+			fmt.Printf("warning: skipping file %s (cannot get absolute path)\n", entry.Name())
 			continue
 		}
 		
@@ -182,7 +182,7 @@ func parseAllProfiles(dir string) ([]ProfileSpec, []string, error) {
 		}
 		
 		if !validPath {
-			fmt.Printf("警告：跳过路径不在允许范围内的文件 %s\n", entry.Name())
+			fmt.Printf("warning: skipping file %s (path not in allowed range)\n", entry.Name())
 			continue
 		}
 		
@@ -191,7 +191,7 @@ func parseAllProfiles(dir string) ([]ProfileSpec, []string, error) {
 			return nil, nil, err
 		}
 
-		// 转换为 ProfileSpec
+		// convert to ProfileSpec
 		spec := convertToSpec(yamlProfile)
 		profiles = append(profiles, spec)
 		files = append(files, entry.Name())
@@ -200,7 +200,7 @@ func parseAllProfiles(dir string) ([]ProfileSpec, []string, error) {
 	return profiles, files, nil
 }
 
-// convertToSpec 将 YAMLProfile 转换为 ProfileSpec
+// convertToSpec converts YAMLProfile to ProfileSpec
 func convertToSpec(yaml *YAMLProfile) ProfileSpec {
 	return ProfileSpec{
 		Name:                 yaml.Name,
@@ -221,7 +221,7 @@ func convertToSpec(yaml *YAMLProfile) ProfileSpec {
 	}
 }
 
-// convertExtensions 将 YAML 扩展转换为 Go 代码字符串
+// convertExtensions converts YAML extensions to Go code strings
 func convertExtensions(exts []YAMLExtension) []string {
 	var result []string
 	for _, ext := range exts {
@@ -231,7 +231,7 @@ func convertExtensions(exts []YAMLExtension) []string {
 	return result
 }
 
-// generateExtensionCode 生成扩展的 Go 代码
+// generateExtensionCode generates Go code for extensions
 func generateExtensionCode(ext YAMLExtension) string {
 	switch ext.Type {
 	case "UtlsGREASEExtension":
@@ -290,7 +290,7 @@ func generateExtensionCode(ext YAMLExtension) string {
 	}
 }
 
-// 各扩展类型的代码生成函数
+// code generation functions for each extension type
 func generateSignatureAlgorithmsExtension(params map[string]interface{}) string {
 	algorithms, ok := params["supported_signature_algorithms"].([]interface{})
 	if !ok {
