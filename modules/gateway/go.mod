@@ -47,12 +47,3 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 )
-
-replace (
-	github.com/vistone/fingerprint/modules/agent => ../agent
-	github.com/vistone/fingerprint/modules/core => ../core
-	github.com/vistone/fingerprint/modules/defense => ../defense
-	github.com/vistone/fingerprint/modules/frontend => ../frontend
-	github.com/vistone/fingerprint/modules/ml => ../ml
-	github.com/vistone/fingerprint/modules/profiles => ../profiles
-)

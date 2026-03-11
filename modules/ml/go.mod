@@ -6,8 +6,3 @@ require (
 	github.com/vistone/fingerprint/modules/core v1.0.11
 	github.com/vistone/fingerprint/modules/profiles v1.0.11
 )
-
-replace (
-	github.com/vistone/fingerprint/modules/core => ../core
-	github.com/vistone/fingerprint/modules/profiles => ../profiles
-)

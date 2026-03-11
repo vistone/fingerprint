@@ -55,18 +55,3 @@ require (
 	google.golang.org/grpc v1.79.1 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 )
-
-replace (
-	github.com/vistone/fingerprint/modules/core => ../core
-	github.com/vistone/fingerprint/modules/defense => ../defense
-	github.com/vistone/fingerprint/modules/errors => ../errors
-	github.com/vistone/fingerprint/modules/frontend => ../frontend
-	github.com/vistone/fingerprint/modules/gateway => ../gateway
-	github.com/vistone/fingerprint/modules/generator => ../generator
-	github.com/vistone/fingerprint/modules/http => ../http
-	github.com/vistone/fingerprint/modules/internal => ../internal
-	github.com/vistone/fingerprint/modules/kit => ../kit
-	github.com/vistone/fingerprint/modules/ml => ../ml
-	github.com/vistone/fingerprint/modules/profiles => ../profiles
-	github.com/vistone/fingerprint/modules/tls => ../tls
-)

@@ -6,10 +6,9 @@ github.com/bogdanfinn/utls v1.7.7-barnius h1:OuJ497cc7F3yKNVHRsYPQdGggmk5x6+V5Zl
 github.com/bogdanfinn/utls v1.7.7-barnius/go.mod h1:aAK1VZQlpKZClF1WEQeq6kyclbkPq4hz6xTbB5xSlmg=
 github.com/klauspost/compress v1.18.0 h1:c/Cqfb0r+Yi+JtIEq73FWXVkRonBlf0CRNYc8Zttxdo=
 github.com/klauspost/compress v1.18.0/go.mod h1:2Pp+KzxcywXVXMr50+X0Q/Lsb43OQHYWRCY2AiWywWQ=
-github.com/vistone/fingerprint/modules/errors v1.0.8 h1:E1kjAjcOs/fC1XVSCD7Fr+z2/MYn85YyWJIwIozdvZM=
-github.com/vistone/fingerprint/modules/errors v1.0.8/go.mod h1:dRwXR4+yrNnXjKF1CFCvBVrvUqNpRe2XuYiZFqSN6dQ=
-github.com/vistone/fingerprint/modules/profiles v1.0.8 h1:9zbboRWBvqzjz0U6XxSW1S7EswGumj8isk29fbSA+XI=
-github.com/vistone/fingerprint/modules/profiles v1.0.8/go.mod h1:Jpc3GzsoqoNdWv/FBQhRLJU9p+xIzrzS+48EEvIANO8=
+github.com/vistone/fingerprint/modules/core v1.0.11 h1:l/qDTOXfoFzfJJOee2efnvuQKZeWt8P5Yi7NCEENOtU=
+github.com/vistone/fingerprint/modules/errors v1.0.11 h1:udebffGg4ZVp7zPf8HG9dsJ0IZ+qkLqVEWL5pZ1Ni3U=
+github.com/vistone/fingerprint/modules/profiles v1.0.11 h1:c6987dW4XOPT9CrqeIn0u3CDMav7tHzqBSRnS3rcbE8=
 github.com/xyproto/randomstring v1.0.5 h1:YtlWPoRdgMu3NZtP45drfy1GKoojuR7hmRcnhZqKjWU=
 github.com/xyproto/randomstring v1.0.5/go.mod h1:rgmS5DeNXLivK7YprL0pY+lTuhNQW3iGxZ18UQApw/E=
 golang.org/x/crypto v0.46.0 h1:cKRW/pmt1pKAfetfu+RCEvjvZkA9RimPbh7bhFjGVBU=

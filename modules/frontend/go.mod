@@ -8,8 +8,3 @@ require (
 )
 
 require github.com/vistone/fingerprint/modules/profiles v1.0.11
-
-replace (
-	github.com/vistone/fingerprint/modules/core => ../core
-	github.com/vistone/fingerprint/modules/ml => ../ml
-)

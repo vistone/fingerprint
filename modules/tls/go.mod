@@ -18,9 +18,3 @@ require (
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
 )
-
-replace (
-	github.com/vistone/fingerprint/modules/core => ../core
-	github.com/vistone/fingerprint/modules/errors => ../errors
-	github.com/vistone/fingerprint/modules/profiles => ../profiles
-)

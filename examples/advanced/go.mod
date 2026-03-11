@@ -38,9 +38,3 @@ require (
 	google.golang.org/grpc v1.79.1 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 )
-
-replace (
-	github.com/vistone/fingerprint/modules/core => ../../modules/core
-	github.com/vistone/fingerprint/modules/fingerprint => ../../modules/fingerprint
-	github.com/vistone/fingerprint/modules/profiles => ../../modules/profiles
-)

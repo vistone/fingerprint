@@ -42,10 +42,3 @@ require (
 	golang.org/x/text v0.32.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 )
-
-replace (
-	github.com/vistone/fingerprint/modules/core => ../core
-	github.com/vistone/fingerprint/modules/ml => ../ml
-	github.com/vistone/fingerprint/modules/profiles => ../profiles
-	github.com/vistone/fingerprint/modules/tls => ../tls
-)
