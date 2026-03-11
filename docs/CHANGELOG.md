@@ -4,6 +4,27 @@ This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+## [v1.0.10] - 2026-03-11
+
+### Removed
+
+- **Compiled binaries from git tracking** (~25MB total)
+  - Remove 5 ELF binaries under `examples/` that were accidentally committed
+  - Add binary paths to `.gitignore` to prevent future tracking
+- **Dead code cleanup**
+  - Delete `modules/kit/strings.go` (6 stdlib wrapper functions with zero external references)
+  - Remove unused `Min()`, `Max()`, `Clamp()` from `modules/core/utils.go` (Go 1.25 has builtin `min`/`max`)
+  - Remove corresponding `TestMinMax` and `TestClamp` test functions
+
+### Fixed
+
+- **Duplicate test function** `TestRiskLevelString` declared in both `core/constants_test.go` and `core/types_test.go`
+- **Undefined function calls** in `modules/kit/useragent.go` after dead code removal, replaced with `strings.*` stdlib calls
+
+### Changed
+
+- **Remove 52-line commented-out example code** from `modules/internal/observability/observability.go`
+
 ## [v1.0.9] - 2026-03-11
 
 ### Added

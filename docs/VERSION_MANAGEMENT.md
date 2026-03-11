@@ -18,8 +18,8 @@ Uses **Semantic Versioning (Semantic Versioning)**: `MAJOR.MINOR.PATCH`
 
 ### Current Version
 
-- **Main project**: v1.0.9
-- **All modules**: v1.0.9 (unified)
+- **Main project**: v1.0.10
+- **All modules**: v1.0.10 (unified)
 
 ## 📤 Commit & Tagging Workflow
 
