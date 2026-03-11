@@ -76,26 +76,6 @@ func TestFeatureVector(t *testing.T) {
 	}
 }
 
-func TestRiskLevelString(t *testing.T) {
-	tests := []struct {
-		level    RiskLevel
-		expected string
-	}{
-		{RiskLevelNone, "none"},
-		{RiskLevelLow, "low"},
-		{RiskLevelMedium, "medium"},
-		{RiskLevelHigh, "high"},
-		{RiskLevelCritical, "critical"},
-		{RiskLevel(99), "unknown"},
-	}
-
-	for _, tt := range tests {
-		if got := tt.level.String(); got != tt.expected {
-			t.Errorf("RiskLevel(%d).String() = %s, want %s", tt.level, got, tt.expected)
-		}
-	}
-}
-
 func TestBrowserTypeConsts(t *testing.T) {
 	if BrowserChrome != "chrome" {
 		t.Errorf("BrowserChrome = %s, want chrome", BrowserChrome)

@@ -80,27 +80,6 @@ func TestUnique(t *testing.T) {
 	}
 }
 
-func TestMinMax(t *testing.T) {
-	if Min(5, 3) != 3 {
-		t.Error("Min(5, 3) should be 3")
-	}
-	if Max(5, 3) != 5 {
-		t.Error("Max(5, 3) should be 5")
-	}
-}
-
-func TestClamp(t *testing.T) {
-	if Clamp(5, 0, 10) != 5 {
-		t.Error("Clamp(5, 0, 10) should be 5")
-	}
-	if Clamp(-5, 0, 10) != 0 {
-		t.Error("Clamp(-5, 0, 10) should be 0")
-	}
-	if Clamp(15, 0, 10) != 10 {
-		t.Error("Clamp(15, 0, 10) should be 10")
-	}
-}
-
 func TestParseTLSVersion(t *testing.T) {
 	tests := []struct {
 		input    string

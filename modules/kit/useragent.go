@@ -1,10 +1,13 @@
 package utils
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // ExtractChromeVersion extracts the Chrome version from User-Agent.
 func ExtractChromeVersion(ua string) string {
-	start := Index(ua, "Chrome/")
+	start := strings.Index(ua, "Chrome/")
 	if start == -1 {
 		return "120" // Default version
 	}
@@ -21,11 +24,11 @@ func ExtractChromeVersion(ua string) string {
 
 // ExtractPlatform extracts platform info from User-Agent.
 func ExtractPlatform(ua string) string {
-	if Contains(ua, "Windows") {
+	if strings.Contains(ua, "Windows") {
 		return `"Windows"`
-	} else if Contains(ua, "Macintosh") {
+	} else if strings.Contains(ua, "Macintosh") {
 		return `"macOS"`
-	} else if Contains(ua, "Linux") {
+	} else if strings.Contains(ua, "Linux") {
 		return `"Linux"`
 	}
 	return `"Windows"` // Default
