@@ -4,6 +4,48 @@
 
 ## [Unreleased]
 
+## [v1.0.16] - 2026-03-11
+
+### 新增
+
+- **国际浏览器指纹配置** (`modules/profiles/international.go`)
+  - 23 个新配置: Yandex (4 变体), Vivaldi (3), QQ 浏览器 (2), UC 浏览器 (2), Naver Whale (2), 小米浏览器 (1), 华为浏览器 (1), OPPO 浏览器 (1), Tor 浏览器 (1), DuckDuckGo (1), 360 安全浏览器 (1), 搜狗浏览器 (1), 百度浏览器 (1), Arc (2)
+  - Chromium 内核国际浏览器映射至 `BrowserChrome`，Tor 映射至 `BrowserFirefox`，DuckDuckGo/UC iOS 映射至 `BrowserSafari`
+
+- **机器人与自动化工具指纹** (`modules/profiles/bots.go`)
+  - 17 个新配置用于伪造检测训练
+  - 无头浏览器: Puppeteer Headless (120, 124), Puppeteer Stealth (120)
+  - Playwright: Chromium 120, Firefox 121, WebKit 17.4
+  - Selenium: ChromeDriver 120, GeckoDriver 121
+  - HTTP 客户端: cURL/OpenSSL, Go net/http, Python requests, Node.js Axios, Scrapy
+  - 反检测浏览器: Multilogin Mimic 10, GoLogin Chrome 124, Dolphin Anty
+  - 无服务器: Cloudflare Worker
+  - 每个配置标记 `bot_type`, `tool`, `forgery` 元数据供 ML 标注
+
+- **指纹采集工具** (`cmd/collector/main.go`)
+  - 内置知识库: 15 个 JA3 哈希, 6 个 TLS 指纹, 14 个机器人/无头浏览器条目, 20 个国际浏览器条目
+  - 采集 55 条指纹至 `training/collected/fingerprints.json`
+
+- **PyTorch GPU 训练流水线** (`training/train_pytorch.py`)
+  - 6 个 PyTorch 模型类: EncoderNet, ClassifierNet, ForgeryDetectorNet, ForgeryTypeNet, ThreatAssessorNet, ActionNet
+  - 4 阶段训练: 编码器 (triplet loss), 分类器 (交叉熵), 伪造检测器 (BCE+CE), 威胁评估器
+  - RTX 2080 SUPER GPU 加速，CUDA 12.4
+  - 权重导出为 JSON 供 Go 推理加载
+
+- **Go 推理验证工具** (`cmd/validate/main.go`)
+  - 加载 PyTorch 训练权重至 Go ML 流水线
+  - 逐配置推理: 浏览器分类、伪造检测、威胁评估
+  - 嵌入质量分析（同族 vs 跨族余弦相似度）
+
+- **训练特征导出工具** (`cmd/export_features/main.go`)
+  - 将所有注册配置导出为 30 维特征向量供 PyTorch 训练
+
+### 变更
+
+- **扩展训练数据集**: 200 → 240 个配置，覆盖国际浏览器和机器人
+- **重训练模型**: 整体准确率 55% → 58.3%，Chrome 50% → 65.3%，Safari 62.5% → 70.6%
+- **`BatchNormLayer.Params()`**: 返回 4 个参数（gamma, beta, runMean, runVar）以正确加载 PyTorch 权重
+
 ## [v1.0.15] - 2026-03-12
 
 ### 新增

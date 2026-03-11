@@ -4,6 +4,48 @@ This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+## [v1.0.16] - 2026-03-11
+
+### Added
+
+- **International Browser Profiles** (`modules/profiles/international.go`)
+  - 23 new profiles: Yandex (4 variants), Vivaldi (3), QQ Browser (2), UC Browser (2), Naver Whale (2), Mi Browser (1), Huawei Browser (1), OPPO Browser (1), Tor Browser (1), DuckDuckGo (1), 360 Safe Browser (1), Sogou Browser (1), Baidu Browser (1), Arc (2)
+  - Maps Chromium-based international browsers to `BrowserChrome`, Tor to `BrowserFirefox`, DuckDuckGo/UC iOS to `BrowserSafari`
+
+- **Bot & Automation Tool Profiles** (`modules/profiles/bots.go`)
+  - 17 new profiles for forgery detection training
+  - Headless browsers: Puppeteer Headless (120, 124), Puppeteer Stealth (120)
+  - Playwright: Chromium 120, Firefox 121, WebKit 17.4
+  - Selenium: ChromeDriver 120, GeckoDriver 121
+  - HTTP clients: cURL/OpenSSL, Go net/http, Python requests, Node.js Axios, Scrapy
+  - Anti-detect browsers: Multilogin Mimic 10, GoLogin Chrome 124, Dolphin Anty
+  - Serverless: Cloudflare Worker
+  - Each profile tagged with `bot_type`, `tool`, `forgery` metadata for ML labeling
+
+- **Fingerprint Collector Tool** (`cmd/collector/main.go`)
+  - Built-in knowledge bases: 15 JA3 hashes, 6 TLS fingerprints, 14 bot/headless entries, 20 international browser entries
+  - Collected 55 fingerprints to `training/collected/fingerprints.json`
+
+- **PyTorch GPU Training Pipeline** (`training/train_pytorch.py`)
+  - 6 PyTorch model classes: EncoderNet, ClassifierNet, ForgeryDetectorNet, ForgeryTypeNet, ThreatAssessorNet, ActionNet
+  - 4-phase training: encoder (triplet loss), classifier (cross-entropy), forgery detector (BCE+CE), threat assessor
+  - RTX 2080 SUPER GPU acceleration with CUDA 12.4
+  - Weight export to JSON for Go inference loading
+
+- **Go Inference Validation** (`cmd/validate/main.go`)
+  - Loads PyTorch-trained weights into Go ML pipeline
+  - Per-profile inference with browser classification, forgery detection, threat assessment
+  - Embedding quality analysis (same-family vs cross-family cosine similarity)
+
+- **Training Feature Export** (`cmd/export_features/main.go`)
+  - Exports all registered profiles as 30-dim feature vectors for PyTorch training
+
+### Changed
+
+- **Expanded training dataset**: 200 → 240 profiles with international and bot coverage
+- **Retrained model**: overall accuracy 55% → 58.3%, Chrome 50% → 65.3%, Safari 62.5% → 70.6%
+- **`BatchNormLayer.Params()`**: returns 4 parameters (gamma, beta, runMean, runVar) for correct PyTorch weight loading
+
 ## [v1.0.15] - 2026-03-12
 
 ### Added
