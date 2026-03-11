@@ -57,13 +57,17 @@ github.com/vistone/fingerprint/
 │   ├── frontend/               # 前端 SDK
 │   ├── gateway/                # API 网关
 │   ├── generator/              # 指纹生成器
-│   ├── network/                # 网络层分析
+│   ├── network/                # 网络层分析 (JA4T)
 │   ├── internal/               # 内部工具
 │   ├── config/                 # 配置管理
-│   └── plugin/                 # 插件系统
+│   ├── plugin/                 # 插件系统
+│   ├── agent/                  # 自主安全代理
+│   ├── errors/                 # 标准错误包
+│   ├── kit/                    # 工具集
+│   ├── client/                 # HTTP 客户端
+│   └── fingerprint/            # Facade 模块
 ├── cmd/                        # 应用程序入口
-├── examples/                   # 示例代码
-└── test/                       # 集成测试
+└── examples/                   # 示例代码
 ```
 
 ## 模块详解
@@ -230,7 +234,6 @@ tcpFingerprint := network.AnalyzeTCP(packet)
 
 ```go
 import "github.com/vistone/fingerprint/modules/internal/utils"
-import "github.com/vistone/fingerprint/modules/internal/metrics"
 ```
 
 ### 12. Config 模块 (`modules/config`)
@@ -352,7 +355,7 @@ Level 5: gateway     (完整系统)
 | Profile 选择 | O(1) | 哈希表查找 |
 | JA3 解析 | O(n) | n = 字符串长度 |
 | HTTP/2 分析 | O(m) | m = 帧数量 |
-| 指纹注册 | O(1) | 187+ 指纹预注册 |
+| 指纹注册 | O(1) | 200+ 指纹预注册 |
 
 ## 扩展点
 

@@ -285,7 +285,7 @@ choice := utils.RandomChoice(items)
 import "github.com/vistone/fingerprint/modules/internal/metrics"
 
 // 记录指标
-metrics.RecordFingerprintGeneration("Chrome", "Windows", nil)
+metrics.RecordFingerprintGeneration("Chrome", "Windows", 12.5)
 ```
 
 ## Config 模块 API

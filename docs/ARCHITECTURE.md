@@ -42,10 +42,14 @@ github.com/vistone/fingerprint/
 │   ├── frontend/               # Frontend SDK
 │   ├── gateway/                # API gateway
 │   ├── generator/              # Fingerprint generator
-│   ├── network/                # Network layer
+│   ├── network/                # Network layer (JA4T)
 │   ├── internal/               # Internal utilities
 │   ├── config/                 # Configuration management
 │   ├── plugin/                 # Plugin system
+│   ├── agent/                  # Autonomous security agent
+│   ├── errors/                 # Canonical error package
+│   ├── kit/                    # Utility toolkit
+│   ├── client/                 # HTTP client
 │   └── fingerprint/            # Facade entry point
 ├── cmd/                        # Application entry points
 ├── examples/                   # Example code

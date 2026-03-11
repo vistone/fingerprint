@@ -13,8 +13,8 @@ Uses **Semantic Versioning (Semantic Versioning)**: `MAJOR.MINOR.PATCH`
 | Position | Name | Change Rule | Example |
 |----------|------|------------|---------|
 | Major | Major version | Breaking changes, incompatible updates | v2.0.0 |
-| Minor | Minor version | **Incremented on each GitHub commit** | v1.0.7 → v1.0.8 |
-| Patch | Patch version | Internal build/hotfix only | v1.0.8-1 |
+| Minor | Minor version | **Incremented on each GitHub commit** | v1.0.10 → v1.0.11 |
+| Patch | Patch version | Internal build/hotfix only | v1.0.11-1 |
 
 ### Current Version
 
@@ -40,7 +40,7 @@ git commit -m "feat: [frontend] Add i18n support for English/Chinese language sw
 
 ```bash
 # Tag main project (format: v<version>)
-git tag -a v1.0.8 -m "Release v1.0.8"
+git tag -a v1.0.11 -m "Release v1.0.11"
 ```
 
 ### Step 3: Create Module Tags
@@ -49,10 +49,10 @@ git tag -a v1.0.8 -m "Release v1.0.8"
 
 ```bash
 # Module tag format: modules/<module>/v<version>
-git tag -a modules/core/v1.0.8 -m "Release modules/core v1.0.8"
-git tag -a modules/profiles/v1.0.8 -m "Release modules/profiles v1.0.8"
-git tag -a modules/gateway/v1.0.8 -m "Release modules/gateway v1.0.8"
-git tag -a modules/ml/v1.0.8 -m "Release modules/ml v1.0.8"
+git tag -a modules/core/v1.0.11 -m "Release modules/core v1.0.11"
+git tag -a modules/profiles/v1.0.11 -m "Release modules/profiles v1.0.11"
+git tag -a modules/gateway/v1.0.11 -m "Release modules/gateway v1.0.11"
+git tag -a modules/ml/v1.0.11 -m "Release modules/ml v1.0.11"
 
 # ... repeat for all modified modules
 ```
@@ -70,13 +70,13 @@ git push origin --tags
 ```bash
 # 1. Verify all go.mod files have correct version
 grep "require github.com/vistone/fingerprint/modules" \
-    modules/*/go.mod | grep v1.0.8
+    modules/*/go.mod | grep v1.0.11
 
 # 2. Verify tags exist
-git tag | grep v1.0.8
+git tag | grep v1.0.11
 
 # 3. Verify CHANGELOG is updated
-grep "## \[v1.0.8\]" docs/CHANGELOG.md
+grep "## \[v1.0.11\]" docs/CHANGELOG.md
 
 # 4. Verify all modules are versioned
 find . -name "go.mod" -type f -exec grep "^go 1" {} \;
@@ -88,7 +88,7 @@ find . -name "go.mod" -type f -exec grep "^go 1" {} \;
 
 1. **Add new section** at the top:
    ```markdown
-   ## [v1.0.8] - YYYY-MM-DD
+   ## [v1.0.11] - YYYY-MM-DD
 
    ### Added
    - New feature description
@@ -133,14 +133,14 @@ find . -name "go.mod" -type f -exec grep "^go 1" {} \;
 ```plaintext
 Main project version = All module versions
 
-v1.0.8 (main)
-    ├── modules/core/v1.0.8
-    ├── modules/profiles/v1.0.8
-    ├── modules/tls/v1.0.8
-    ├── modules/http/v1.0.8
-    ├── modules/ml/v1.0.8
-    ├── modules/gateway/v1.0.8
-    └── ... (all 18 modules)
+v1.0.11 (main)
+    ├── modules/core/v1.0.11
+    ├── modules/profiles/v1.0.11
+    ├── modules/tls/v1.0.11
+    ├── modules/http/v1.0.11
+    ├── modules/ml/v1.0.11
+    ├── modules/gateway/v1.0.11
+    └── ... (all 17 modules)
 ```
 
 ### Rational
@@ -153,7 +153,7 @@ v1.0.8 (main)
 ## 📊 Version History
 
 ```
-v1.0.0 → v1.0.1 → v1.0.2 → ... → v1.0.8
+v1.0.0 → v1.0.1 → v1.0.2 → ... → v1.0.11
 ```
 
 Each version increment represents a set of changes committed to main branch.
@@ -176,28 +176,28 @@ git commit -m "feat: [module] description"
 
 # 4. Update version in all go.mod files
 find . -name "go.mod" -type f | while read file; do
-    sed -i 's/v1\.0\.7/v1.0.8/g' "$file"
+    sed -i 's/v1\.0\.10/v1.0.11/g' "$file"
 done
 
 # 5. Create version commit
 git add docs/CHANGELOG.md $(find . -name "go.mod" -type f)
-git commit -m "chore: bump version to v1.0.8"
+git commit -m "chore: bump version to v1.0.11"
 
 # 6. Create main project tag
-git tag -a v1.0.8 -m "Release v1.0.8"
+git tag -a v1.0.11 -m "Release v1.0.11"
 
-# 7. Create module tags (18 modules)
+# 7. Create module tags (17 modules)
 for module in core profiles tls http ml defense frontend gateway \
               generator network internal config plugin fingerprint \
-              agent errors kit metrics scanner client tracer; do
-    git tag -a modules/$module/v1.0.8 -m "Release modules/$module v1.0.8"
+              agent errors kit client; do
+    git tag -a modules/$module/v1.0.11 -m "Release modules/$module v1.0.11"
 done
 
 # 8. Push everything
 git push origin main --tags
 
 # 9. Verify
-git tag | grep v1.0.8 | wc -l  # Should show 19 tags
+git tag | grep v1.0.11 | wc -l  # Should show 18 tags (1 main + 17 modules)
 ```
 
 ## 🔍 Verification Commands
@@ -219,13 +219,13 @@ find . -name "go.mod" -type f -exec grep "^module" {} \;
 
 ```bash
 # List all tags
-git tag -l | grep v1.0.8
+git tag -l | grep v1.0.11
 
 # Show tag details
-git show v1.0.8
+git show v1.0.11
 
 # Compare versions
-git log v1.0.7..v1.0.8 --oneline
+git log v1.0.10..v1.0.11 --oneline
 ```
 
 ### Validate Version Consistency
@@ -238,41 +238,40 @@ for file in $(find . -name "go.mod" -type f); do
 done
 
 # Verify CHANGELOG matches version
-grep "^\## \\[v1.0.8\\]" docs/CHANGELOG.md
+grep "^\## \\[v1.0.11\\]" docs/CHANGELOG.md
 ```
 
-## 📌 Module List (18 Modules)
+## 📌 Module List (17 Modules)
 
 1. core - Core types (zero dependencies)
-2. profiles - Fingerprint profiles
-3. tls - TLS fingerprint analysis
-4. http - HTTP fingerprint analysis
-5. ml - Machine learning classifier
-6. defense - Security defense system
-7. frontend - Frontend SDK
-8. gateway - API Gateway
-9. generator - Fingerprint generator
-10. network - Network layer analysis
-11. internal - Internal utilities
-12. config - Configuration management
-13. plugin - Plugin system
-14. agent - Autonomous security agent
-15. errors - Error handling
+2. errors - Canonical error package
+3. profiles - Fingerprint profiles
+4. tls - TLS fingerprint analysis
+5. http - HTTP fingerprint analysis
+6. ml - Machine learning classifier
+7. defense - Security defense system
+8. frontend - Frontend SDK
+9. gateway - API Gateway
+10. generator - Fingerprint generator
+11. network - Network layer analysis
+12. internal - Internal utilities
+13. config - Configuration management
+14. plugin - Plugin system
+15. agent - Autonomous security agent
 16. kit - Utility toolkit
-17. metrics - Prometheus metrics
-18. scanner - Security scanner
+17. client - HTTP client
 
 ## 🎯 GitHub Release Notes
 
 When creating a GitHub Release:
 
-1. **Title**: `Release v1.0.8`
-2. **Target**: Select tag `v1.0.8`
+1. **Title**: `Release v1.0.11`
+2. **Target**: Select tag `v1.0.11`
 3. **Description**: Copy from CHANGELOG.md
 4. **Binary**: Attach compiled binaries
 
 ```markdown
-# Release v1.0.8
+# Release v1.0.11
 
 ## Changes
 
@@ -305,4 +304,4 @@ A: Still create a tag to keep versions in sync.
 A: Create a new version with revert commits, don't delete tags.
 
 **Q: Can I skip a version number?**
-A: No, versions must be sequential: v1.0.7 → v1.0.8 → v1.0.9
+A: No, versions must be sequential: v1.0.10 → v1.0.11 → v1.0.9

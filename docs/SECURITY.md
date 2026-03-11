@@ -23,7 +23,7 @@ Please email security@example.com with the following details:
 
 - Keep updated: `go get -u github.com/vistone/fingerprint/modules/fingerprint`
 - Subscribe to releases: https://github.com/vistone/fingerprint/releases
-- Pin versions explicitly: `require ... v1.0.8`
+- Pin versions explicitly: `require ... v1.0.11`
 - Audit dependencies: `go list -u -m all`
 
 ### Contributors
@@ -35,7 +35,7 @@ Please email security@example.com with the following details:
 
 ## Known Issues
 
-Current version (v1.0.8) has no known unresolved security issues.
+Current version (v1.0.11) has no known unresolved security issues.
 
 ## Dependencies
 
@@ -61,9 +61,9 @@ govulncheck ./...
 
 | Version | Status | Security Updates |
 |---------|--------|-----------------|
-| v1.0.8+ | Current | ✅ |
-| v1.0.7 | Maintained | ✅ |
-| v1.0.6 and earlier | Deprecated | ❌ |
+| v1.0.11+ | Current | ✅ |
+| v1.0.9–v1.0.10 | Maintained | ✅ |
+| v1.0.8 and earlier | Deprecated | ❌ |
 
 ## TLS Fingerprinting Library
 
@@ -100,5 +100,5 @@ This project has not undergone third-party security audit. Please conduct your o
 
 ---
 
-**最后更新：2026-03-10**  
-**当前版本：v1.0.7** ✅
+**Last updated: 2026-03-11**  
+**Current version: v1.0.11** ✅

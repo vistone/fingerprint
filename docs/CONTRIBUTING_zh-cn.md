@@ -83,9 +83,9 @@ func (r *Registry) Get(id string) (Profile, bool) {
 ### 日志
 
 ```go
-import "github.com/vistone/fingerprint/modules/internal/logger"
+import "log/slog"
 
-logger.Debug("request", "profile", name)
+slog.Debug("request", "profile", name)
 ```
 
 ## 测试
@@ -132,7 +132,7 @@ cd modules/newmod
 cat > go.mod << 'EOF'
 module github.com/vistone/fingerprint/modules/newmod
 go 1.25.7
-require github.com/vistone/fingerprint/modules/core v1.0.7
+require github.com/vistone/fingerprint/modules/core v1.0.11
 replace github.com/vistone/fingerprint/modules/core => ../core
 EOF
 
@@ -157,7 +157,7 @@ go work sync
 - [ ] CHANGELOG.md 已更新
 - [ ] 版本号已更新（sed）
 - [ ] 版本提交已创建
-- [ ] Tags 已创建（主项目 + 19 模块）
+- [ ] Tags 已创建（主项目 + 17 模块）
 - [ ] 版本审计通过
 
 ## 文档

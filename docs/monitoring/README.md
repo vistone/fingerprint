@@ -24,7 +24,7 @@ func main() {
 
 ### 可用指标
 
-详见 [internal/metrics/README.md](../../internal/metrics/README.md)
+详见 [internal/metrics/README.md](../../modules/internal/metrics/README.md)
 
 ### Prometheus 配置
 

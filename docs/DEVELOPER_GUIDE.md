@@ -67,14 +67,17 @@ github.com/vistone/fingerprint/
 │   ├── frontend/               # Frontend SDK
 │   ├── gateway/                # API Gateway
 │   ├── generator/              # Fingerprint generator
-│   ├── network/                # Network layer
+│   ├── network/                # Network layer (JA4T)
 │   ├── internal/               # Internal utilities
 │   ├── config/                 # Configuration management
 │   ├── plugin/                 # Plugin system
+│   ├── agent/                  # Autonomous security agent
+│   ├── errors/                 # Canonical error package
+│   ├── kit/                    # Utility toolkit
+│   ├── client/                 # HTTP client
 │   └── fingerprint/            # Facade module
 ├── cmd/                        # Application entry points
-├── examples/                   # Example code
-└── test/                       # Integration tests
+└── examples/                   # Example code
 ```
 
 ## Module Development Standards
@@ -200,14 +203,15 @@ func (e *ValidationError) Error() string {
 
 ### Logging
 
-```go
-import "github.com/vistone/fingerprint/modules/internal/logger"
+Use Go's standard `log/slog` package for structured logging:
 
-// Use structured logging
-logger.Debug("request processed", "profile", name, "duration_ms", elapsed)
-logger.Info("profile created", "id", id, "browser", browser)
-logger.Warn("cache miss", "key", key)
-logger.Error("database error", "err", err)
+```go
+import "log/slog"
+
+slog.Debug("request processed", "profile", name, "duration_ms", elapsed)
+slog.Info("profile created", "id", id, "browser", browser)
+slog.Warn("cache miss", "key", key)
+slog.Error("database error", "err", err)
 ```
 
 ### Concurrency Safety
@@ -336,30 +340,31 @@ go tool cover -func=coverage.out | grep modules/core
 
 **Step 3: Bump version**
 - Update all `go.mod` files version number
-- Increment minor version: `v1.0.7` → `v1.0.8`
+- Increment minor version: `v1.0.10` → `v1.0.11`
 
 ```bash
 # Update all go.mod files
 find . -name "go.mod" -type f | while read file; do
-    sed -i 's/v1\.0\.7/v1.0.8/g' "$file"
+    sed -i 's/v1\.0\.10/v1.0.11/g' "$file"
 done
 ```
 
 **Step 4: Create version commit**
 ```bash
 git add docs/CHANGELOG.md $(find . -name "go.mod" -type f)
-git commit -m "chore: bump version to v1.0.8"
+git commit -m "chore: bump version to v1.0.11"
 ```
 
 **Step 5: Create tags**
 ```bash
 # Main project tag
-git tag -a v1.0.8 -m "Release v1.0.8"
+git tag -a v1.0.11 -m "Release v1.0.11"
 
-# Module tags (18 modules)
-git tag -a modules/core/v1.0.8 -m "Release modules/core v1.0.8"
-git tag -a modules/profiles/v1.0.8 -m "Release modules/profiles v1.0.8"
-# ... repeat for all modules
+# Module tags (17 modules)
+for module in core errors profiles tls http ml defense frontend gateway \
+              generator network internal config plugin agent kit client; do
+    git tag -a modules/$module/v1.0.11 -m "Release modules/$module v1.0.11"
+done
 ```
 
 **Step 6: Push to GitHub**
@@ -371,13 +376,13 @@ git push origin --tags
 **Step 7: Verify compliance**
 ```bash
 # Verify tags
-git tag | grep v1.0.8
+git tag | grep v1.0.11
 
 # Verify CHANGELOG
-grep "v1.0.8" docs/CHANGELOG.md
+grep "v1.0.11" docs/CHANGELOG.md
 
 # Verify go.mod versions
-grep -h "require" $(find . -name "go.mod" -type f) | grep v1.0.8
+grep -h "require" $(find . -name "go.mod" -type f) | grep v1.0.11
 ```
 
 ### Rules That Must Be Followed

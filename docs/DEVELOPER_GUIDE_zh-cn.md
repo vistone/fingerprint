@@ -67,14 +67,17 @@ github.com/vistone/fingerprint/
 │   ├── frontend/               # 前端 SDK
 │   ├── gateway/                # API 网关
 │   ├── generator/              # 指纹生成
-│   ├── network/                # 网络层
+│   ├── network/                # 网络层 (JA4T)
 │   ├── internal/               # 内部工具
 │   ├── config/                 # 配置管理
 │   ├── plugin/                 # 插件系统
+│   ├── agent/                  # 自主安全代理
+│   ├── errors/                 # 标准错误包
+│   ├── kit/                    # 工具集
+│   ├── client/                 # HTTP 客户端
 │   └── fingerprint/            # Facade 模块
 ├── cmd/                        # 应用程序入口
-├── examples/                   # 示例代码
-└── test/                       # 集成测试
+└── examples/                   # 示例代码
 ```
 
 ## 模块开发规范
@@ -167,11 +170,12 @@ if errors.Is(err, profiles.ErrNotFound) {
 
 ### 日志记录
 
-```go
-// 使用标准库日志或内部日志
-import "github.com/vistone/fingerprint/modules/internal/logger"
+使用 Go 标准库 `log/slog` 进行结构化日志记录：
 
-logger.Debug("processing request", 
+```go
+import "log/slog"
+
+slog.Debug("processing request", 
     "profile", profileName,
     "browser", browserType,
 )
@@ -306,7 +310,7 @@ Closes #123
 
 ### 版本号规范
 
-采用 **Semantic Versioning**: `MAJOR.MINOR.PATCH` (e.g., v1.0.5)
+采用 **Semantic Versioning**: `MAJOR.MINOR.PATCH` (e.g., v1.0.11)
 
 | 组件 | 含义 | 变化规则 |
 |------|------|---------|
@@ -333,7 +337,7 @@ git commit -m "feat(module): description"
 在 `docs/CHANGELOG.md` 顶部将 `[Unreleased]` 改为具体版本号和日期：
 
 ```markdown
-## [v1.0.6] - 2026-03-10    ← 替换 [Unreleased] 为这样的格式
+## [v1.0.12] - 2026-XX-XX    ← 替换 [Unreleased] 为这样的格式
 
 ### Added
 - **Feature 1**: 功能描述
@@ -356,15 +360,15 @@ git commit -m "feat(module): description"
 更新项目中所有 `go.mod` 文件的版本号：
 
 ```bash
-# 当前版本: v1.0.5
-# 新版本: v1.0.6
+# 当前版本: v1.0.11
+# 新版本: v1.0.12
 
-# 批量更新（从 v1.0.5 → v1.0.6）
-sed -i 's/v1\.0\.5/v1.0.6/g' go.mod modules/*/go.mod
+# 批量更新（从 v1.0.11 → v1.0.12）
+sed -i 's/v1\.0\.11/v1.0.12/g' go.mod modules/*/go.mod
 
 # 验证更新
-grep "v1.0.6" go.mod modules/*/go.mod | wc -l
-# 应该显示 ~20 行（1 主 + 19 模块）
+grep "v1.0.12" go.mod modules/*/go.mod | wc -l
+# 应该显示 ~18 行（1 主 + 17 模块）
 ```
 
 #### Step 4: 提交版本更新 ✅ 必须
@@ -373,26 +377,26 @@ grep "v1.0.6" go.mod modules/*/go.mod | wc -l
 git add docs/CHANGELOG.md go.mod modules/*/go.mod
 
 # 提交信息固定格式
-git commit -m "chore: Release v1.0.6"
+git commit -m "chore: Release v1.0.12"
 
 # 查看提交 hash（后续需要用）
 git log -1 --oneline
-# 示例: f0b1d12 (HEAD -> main) chore: Release v1.0.6
+# 示例: f0b1d12 (HEAD -> main) chore: Release v1.0.12
 ```
 
 #### Step 5: 创建版本 Tags ✅ 必须
 
 ```bash
 # 主项目 tag
-git tag -a v1.0.6 -m "Release v1.0.6"
+git tag -a v1.0.12 -m "Release v1.0.12"
 
 # 所有受影响的模块 tag（通常是全部）
 for module in agent client core defense frontend gateway ml profiles; do
-    git tag -a modules/$module/v1.0.6 -m "Release modules/$module v1.0.6"
+    git tag -a modules/$module/v1.0.12 -m "Release modules/$module v1.0.12"
 done
 
 # 验证
-git tag -l | grep v1.0.6
+git tag -l | grep v1.0.12
 ```
 
 #### Step 6: 推送到 GitHub ✅ 必须
@@ -416,8 +420,8 @@ bash /tmp/version_audit.sh
 
 # 预期输出:
 # ✅ 最新提交已有版本 tag
-# 检查 CHANGELOG 版本声明: ## [v1.0.6] - YYYY-MM-DD
-# v1.0.6 → [commit hash]
+# 检查 CHANGELOG 版本声明: ## [v1.0.12] - YYYY-MM-DD
+# v1.0.12 → [commit hash]
 ```
 
 ### 强制性检查清单
@@ -436,7 +440,7 @@ bash /tmp/version_audit.sh
 ✅ 提交版本更新 (git commit -m "chore: Release v1.0.X")
   ↓
 ✅ 创建主项目 tag (git tag -a v1.0.X ...)
-✅ 创建模块 tags (9 个 modules/*/v1.0.X)
+✅ 创建模块 tags (17 个 modules/*/v1.0.X)
 ✅ 推送到 GitHub (git push origin main && git push origin --tags)
   ↓
 ✅ 验证 GitHub 同步成功
@@ -459,14 +463,14 @@ bash /tmp/version_audit.sh
 ### 当前版本状态
 
 ```
-当前版本: v1.0.5 ✅
-最新提交: f0b1d12 (chore: Release v1.0.5)
-CHANGELOG: ✅ 已更新为 [v1.0.5] - 2026-03-10
-所有模块: ✅ 同步至 v1.0.5
-GitHub: ✅ 所有changes已推送
+当前版本: v1.0.11 ✅
+最新提交: (chore: Release v1.0.11)
+CHANGELOG: ✅ 已更新为 [v1.0.11]
+所有模块: ✅ 同步至 v1.0.11
+GitHub: ✅ 所有 changes 已推送
 ```
 
-下次发布时版本应为 **v1.0.6**（Minor +1）
+下次发布时版本应为 **v1.0.12**（Minor +1）
 
 ## 发布流程详解
 
@@ -485,22 +489,22 @@ echo "📋 Step 1: 验证本地状态..."
 git status  # 应该显示 clean working tree
 
 echo "📝 Step 2: 更新 CHANGELOG.md"
-echo "   手动编辑：将 [Unreleased] 改为 [v1.0.6] - $(date +%Y-%m-%d)"
+echo "   手动编辑：将 [Unreleased] 改为 [v1.0.12] - $(date +%Y-%m-%d)"
 
 echo "📦 Step 3: 批量更新版本号..."
-sed -i 's/v1\.0\.5/v1.0.6/g' go.mod modules/*/go.mod
+sed -i 's/v1\.0\.5/v1.0.12/g' go.mod modules/*/go.mod
 
 echo "✅ Step 4: 提交版本更新..."
 git add docs/CHANGELOG.md go.mod modules/*/go.mod
-git commit -m "chore: Release v1.0.6"
+git commit -m "chore: Release v1.0.12"
 
 echo "🏷️  Step 5: 创建主项目 tag..."
-git tag -a v1.0.6 -m "Release v1.0.6"
+git tag -a v1.0.12 -m "Release v1.0.12"
 
 echo "🏷️  Step 6: 创建模块 tags..."
-for module in agent client config core defense errors fingerprint frontend gateway generator http internal kit metrics ml network plugin profiles tls; do
+for module in agent client config core defense errors fingerprint frontend gateway generator http internal kit ml network plugin profiles tls; do
     [ -f "modules/$module/go.mod" ] && \
-    git tag -a modules/$module/v1.0.6 -m "Release modules/$module v1.0.6" || true
+    git tag -a modules/$module/v1.0.12 -m "Release modules/$module v1.0.12" || true
 done
 
 echo "🚀 Step 7: 推送到 GitHub..."
@@ -508,9 +512,9 @@ git push origin main
 git push origin --tags
 
 echo "✨ 发布成功！"
-echo "   versiion: v1.0.6"
+echo "   version: v1.0.12"
 echo "   commit: $(git log -1 --oneline)"
-echo "   tags: $(git tag -l | grep v1.0.6 | wc -l) 个"
+echo "   tags: $(git tag -l | grep v1.0.12 | wc -l) 个"
 ```
 
 ### 手动执行步骤
@@ -520,7 +524,7 @@ echo "   tags: $(git tag -l | grep v1.0.6 | wc -l) 个"
 在 `docs/CHANGELOG.md` 中找到顶部的 `## [Unreleased]` 并替换为：
 
 ```markdown
-## [v1.0.6] - 2026-03-10
+## [v1.0.12] - 2026-03-10
 
 ### Added
 - **Feature Name**: 功能描述
@@ -536,11 +540,11 @@ echo "   tags: $(git tag -l | grep v1.0.6 | wc -l) 个"
 **Step 2: 更新版本号**
 
 ```bash
-# 从 v1.0.5 → v1.0.6
-sed -i 's/v1\.0\.5/v1.0.6/g' go.mod modules/*/go.mod
+# 从 v1.0.11 → v1.0.12
+sed -i 's/v1\.0\.5/v1.0.12/g' go.mod modules/*/go.mod
 
 # 验证所有版本都更新了
-grep -r "v1.0.6" go.mod modules/*/go.mod | wc -l
+grep -r "v1.0.12" go.mod modules/*/go.mod | wc -l
 # 应该显示约 20 行
 ```
 
@@ -548,22 +552,23 @@ grep -r "v1.0.6" go.mod modules/*/go.mod | wc -l
 
 ```bash
 git add .
-git commit -m "chore: Release v1.0.6"
+git commit -m "chore: Release v1.0.12"
 ```
 
 **Step 4: 创建 Tags**
 
 ```bash
 # 主项目
-git tag -a v1.0.6 -m "Release v1.0.6"
+git tag -a v1.0.12 -m "Release v1.0.12"
 
 # 所有模块（可用循环）
-for module in agent client config core defense errors fingerprint frontend gateway generator http internal kit metrics ml network plugin profiles tls; do
-    git tag -a modules/$module/v1.0.6 -m "Release modules/$module v1.0.6"
+for module in core errors profiles tls http ml defense frontend gateway \
+              generator network internal config plugin agent kit client; do
+    git tag -a modules/$module/v1.0.12 -m "Release modules/$module v1.0.12"
 done
 
 # 验证
-git tag -l | grep v1.0.6 | wc -l  # 应该显示 19
+git tag -l | grep v1.0.12 | wc -l  # 应该显示 18
 ```
 
 **Step 5: 推送**
@@ -575,39 +580,38 @@ git push origin --tags
 
 ### 模块完整列表
 
-项目包含以下 18 个模块，每个 tag 创建时都要对应创建：
+项目包含以下 17 个模块，每个 tag 创建时都要对应创建：
 
 | 模块 | go.mod 路径 | Tag 格式 |
 |------|-----------|---------|
-| agent | modules/agent/go.mod | modules/agent/v1.0.6 |
-| client | modules/client/go.mod | modules/client/v1.0.6 |
-| config | modules/config/go.mod | modules/config/v1.0.6 |
-| core | modules/core/go.mod | modules/core/v1.0.6 |
-| defense | modules/defense/go.mod | modules/defense/v1.0.6 |
-| errors | modules/errors/go.mod | modules/errors/v1.0.6 |
-| fingerprint | modules/fingerprint/go.mod | modules/fingerprint/v1.0.6 |
-| frontend | modules/frontend/go.mod | modules/frontend/v1.0.6 |
-| gateway | modules/gateway/go.mod | modules/gateway/v1.0.6 |
-| generator | modules/generator/go.mod | modules/generator/v1.0.6 |
-| http | modules/http/go.mod | modules/http/v1.0.6 |
-| internal | modules/internal/go.mod | modules/internal/v1.0.6 |
-| kit | modules/kit/go.mod | modules/kit/v1.0.6 |
-| metrics | modules/metrics/go.mod | modules/metrics/v1.0.6 |
-| ml | modules/ml/go.mod | modules/ml/v1.0.6 |
-| network | modules/network/go.mod | modules/network/v1.0.6 |
-| plugin | modules/plugin/go.mod | modules/plugin/v1.0.6 |
-| profiles | modules/profiles/go.mod | modules/profiles/v1.0.6 |
-| tls | modules/tls/go.mod | modules/tls/v1.0.6 |
+| agent | modules/agent/go.mod | modules/agent/v1.0.12 |
+| client | modules/client/go.mod | modules/client/v1.0.12 |
+| config | modules/config/go.mod | modules/config/v1.0.12 |
+| core | modules/core/go.mod | modules/core/v1.0.12 |
+| defense | modules/defense/go.mod | modules/defense/v1.0.12 |
+| errors | modules/errors/go.mod | modules/errors/v1.0.12 |
+| fingerprint | modules/fingerprint/go.mod | modules/fingerprint/v1.0.12 |
+| frontend | modules/frontend/go.mod | modules/frontend/v1.0.12 |
+| gateway | modules/gateway/go.mod | modules/gateway/v1.0.12 |
+| generator | modules/generator/go.mod | modules/generator/v1.0.12 |
+| http | modules/http/go.mod | modules/http/v1.0.12 |
+| internal | modules/internal/go.mod | modules/internal/v1.0.12 |
+| kit | modules/kit/go.mod | modules/kit/v1.0.12 |
+| ml | modules/ml/go.mod | modules/ml/v1.0.12 |
+| network | modules/network/go.mod | modules/network/v1.0.12 |
+| plugin | modules/plugin/go.mod | modules/plugin/v1.0.12 |
+| profiles | modules/profiles/go.mod | modules/profiles/v1.0.12 |
+| tls | modules/tls/go.mod | modules/tls/v1.0.12 |
 
 ### 故障排查
 
 **问题 1: Tag 创建失败**
 ```bash
 # 删除本地 tag
-git tag -d v1.0.6 modules/*/v1.0.6
+git tag -d v1.0.12 modules/*/v1.0.12
 
 # 修正后重新创建
-git tag -a v1.0.6 -m "Release v1.0.6"
+git tag -a v1.0.12 -m "Release v1.0.12"
 ```
 
 **问题 2: 版本号不一致**
@@ -633,13 +637,13 @@ git push origin --tags
 推送成功后，在 GitHub 检查：
 
 1. **最新提交**: https://github.com/vistone/fingerprint/commits/main
-   - 应接近顶部显示 "chore: Release v1.0.6"
+   - 应接近顶部显示 "chore: Release v1.0.12"
 
 2. **Tags 列表**: https://github.com/vistone/fingerprint/tags
-   - 应显示 v1.0.6 及所有 modules/*/v1.0.6 tags
+   - 应显示 v1.0.12 及所有 modules/*/v1.0.12 tags
 
 3. **CHANGELOG**: https://github.com/vistone/fingerprint/blob/main/docs/CHANGELOG.md
-   - 顶部应显示 `## [v1.0.6] - 2026-03-XX`
+   - 顶部应显示 `## [v1.0.12] - 2026-03-XX`
 
 ## 调试技巧
 
@@ -694,7 +698,7 @@ A: 在 `modules/profiles/` 中添加新的 `.go` 文件，参考 `chrome.go` 的
 
 ### Q: 如何测试模块间的集成？
 
-A: 使用 `test/` 目录进行集成测试，或创建 `example_test.go`。
+A: 使用 `examples/` 目录进行集成测试，或创建 `example_test.go`。
 
 ## 参考资源
 

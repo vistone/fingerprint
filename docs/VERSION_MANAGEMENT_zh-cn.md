@@ -13,8 +13,8 @@
 | 位置 | 名称 | 变化规则 | 示例 |
 |------|------|---------|------|
 | Major | 主版本号 | 重大功能变化、不兼容更新 | v2.0.0 |
-| Minor | 次版本号 | **每次 GitHub 提交时递增** | v1.0.3 → v1.0.4 |
-| Patch | 修补版本号 | 仅内部构建/热修复 | v1.0.3-1 |
+| Minor | 次版本号 | **每次 GitHub 提交时递增** | v1.0.10 → v1.0.11 |
+| Patch | 修补版本号 | 仅内部构建/热修复 | v1.0.10-1 |
 
 ### 当前版本
 
@@ -40,7 +40,7 @@ git commit -m "feat: [frontend] Add i18n support for English/Chinese language sw
 
 ```bash
 # 为主项目打 tag（格式: v版本号）
-git tag -a v1.0.4 -m "Release v1.0.4"
+git tag -a v1.0.11 -m "Release v1.0.11"
 ```
 
 ### Step 3: 创建模块 Tags
@@ -51,8 +51,8 @@ git tag -a v1.0.4 -m "Release v1.0.4"
 # 格式: modules/[模块名]/v版本号
 
 # 例如：只有 frontend/gateway 有改动
-git tag -a modules/frontend/v1.0.4 -m "Release modules/frontend v1.0.4"
-git tag -a modules/gateway/v1.0.4 -m "Release modules/gateway v1.0.4"
+git tag -a modules/frontend/v1.0.11 -m "Release modules/frontend v1.0.11"
+git tag -a modules/gateway/v1.0.11 -m "Release modules/gateway v1.0.11"
 ```
 
 ### Step 4: 推送到 GitHub
@@ -68,11 +68,11 @@ git push origin --tags
 ### Step 5: 验证
 
 ```bash
-# 列出所有 v1.0.4 tags
-git tag -l | grep v1.0.4
+# 列出所有 v1.0.11 tags
+git tag -l | grep v1.0.11
 
 # 查看 tag 详情
-git show v1.0.4
+git show v1.0.11
 ```
 
 ## 📝 更新 CHANGELOG 规范
@@ -80,7 +80,7 @@ git show v1.0.4
 每次发布必须更新 `docs/CHANGELOG.md`：
 
 ```markdown
-## [v1.0.4] - 2026-03-10
+## [v1.0.11] - 2026-03-10
 
 ### Added
 - **功能标题**: 功能描述
@@ -107,7 +107,7 @@ git show v1.0.4
 # 检查所有 go.mod 中的模块版本
 grep "github.com/vistone/fingerprint/modules" modules/*/go.mod | grep -o "v[0-9.]*" | sort | uniq
 
-# 应该全部输出: v1.0.4（或当前版本）
+# 应该全部输出: v1.0.11（或当前版本）
 ```
 
 ### 检查 GitHub Tags
@@ -117,7 +117,7 @@ grep "github.com/vistone/fingerprint/modules" modules/*/go.mod | grep -o "v[0-9.
 git tag -l | head -50
 
 # 列出特定版本的所有 tags
-git tag -l | grep "v1.0.4"
+git tag -l | grep "v1.0.11"
 ```
 
 ## 🚀 版本升级步骤
@@ -125,27 +125,27 @@ git tag -l | grep "v1.0.4"
 ### 场景 1：优先修复 (Patch 升级)
 
 ```bash
-# v1.0.3 → v1.0.3-1
+# v1.0.10 → v1.0.10-1
 git commit -m "fix: [core] Fix critical bug in XYZ"
 ```
 
 ### 场景 2：新功能发布 (Minor 升级)
 
 ```bash
-# v1.0.3 → v1.0.4（下一个版本）
+# v1.0.10 → v1.0.11（下一个版本）
 git commit -m "feat: [frontend] Add i18n multi-language support"
 
-# 更新 go.mod 中所有模块版本为 v1.0.4
-sed -i 's/v1.0.3/v1.0.4/g' go.mod modules/*/go.mod
+# 更新 go.mod 中所有模块版本为 v1.0.11
+sed -i 's/v1.0.10/v1.0.11/g' go.mod modules/*/go.mod
 
 git add -A
-git commit -m "chore: Bump version to v1.0.4"
+git commit -m "chore: Bump version to v1.0.11"
 ```
 
 ### 场景 3：重大改变 (Major 升级)
 
 ```bash
-# v1.0.4 → v2.0.0
+# v1.0.11 → v2.0.0
 # 修改 go.mod 中所有版本为 v2.0.0
 # 更新 CHANGELOG 中的 [Unreleased] 为 [v2.0.0]
 # 执行完整的提交和 tag 流程

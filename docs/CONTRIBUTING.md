@@ -83,9 +83,9 @@ func (r *Registry) Get(id string) (Profile, bool) {
 ### Logging
 
 ```go
-import "github.com/vistone/fingerprint/modules/internal/logger"
+import "log/slog"
 
-logger.Debug("request", "profile", name)
+slog.Debug("request", "profile", name)
 ```
 
 ## Testing
@@ -132,7 +132,7 @@ cd modules/newmod
 cat > go.mod << 'EOF'
 module github.com/vistone/fingerprint/modules/newmod
 go 1.25.7
-require github.com/vistone/fingerprint/modules/core v1.0.8
+require github.com/vistone/fingerprint/modules/core v1.0.11
 replace github.com/vistone/fingerprint/modules/core => ../core
 EOF
 
@@ -157,7 +157,7 @@ Before submitting:
 - [ ] CHANGELOG.md updated
 - [ ] Version number updated (sed)
 - [ ] Version commit created
-- [ ] Tags created (main project + 18 modules)
+- [ ] Tags created (main project + 17 modules)
 - [ ] Version audit passed
 
 ## Documentation

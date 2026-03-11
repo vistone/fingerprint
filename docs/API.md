@@ -327,13 +327,13 @@ cfg.RegisterListener(func(old, new interface{}) {
 ### Logger
 
 ```go
-import "github.com/vistone/fingerprint/modules/internal/logger"
+import "log/slog"
 
 // Structured logging
-logger.Debug("message", "key", value)
-logger.Info("message", "key", value)
-logger.Warn("message", "key", value)
-logger.Error("message", "err", err)
+slog.Debug("message", "key", value)
+slog.Info("message", "key", value)
+slog.Warn("message", "key", value)
+slog.Error("message", "err", err)
 ```
 
 ### Connection Pool
@@ -461,7 +461,7 @@ func main() {
 
 ## Migration Guide
 
-### From v1.0.7 to v1.0.8
+### From v1.0.10 to v1.0.11
 
 1. Update imports
    ```go

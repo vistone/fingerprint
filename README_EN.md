@@ -2,7 +2,7 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/vistone/fingerprint.svg)](https://pkg.go.dev/github.com/vistone/fingerprint)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/vistone/fingerprint/releases/tag/v2.0.0)
+[![Version](https://img.shields.io/badge/version-1.0.11-blue.svg)](https://github.com/vistone/fingerprint/releases/tag/v1.0.11)
 [![Go Version](https://img.shields.io/badge/go-1.25.7+-blue.svg)](https://golang.org)
 
 High-performance browser TLS fingerprinting library providing 200+ browser fingerprint configurations and comprehensive fingerprinting capabilities.
@@ -41,16 +41,23 @@ func main() {
 
 ```
 modules/
-├── core          # Core types (zero dependencies)
+├── core          # Core types and constants (zero dependencies)
+├── errors        # Canonical error package (ErrorCode, CoreError)
 ├── profiles      # 200+ browser fingerprints
-├── tls           # TLS fingerprint analysis
-├── http          # HTTP/2 analysis
+├── tls           # TLS fingerprint analysis (JA3/JA4)
+├── http          # HTTP/2 signature analysis
 ├── ml            # ML classifier
-├── defense       # Security protection
+├── defense       # Security protection and risk assessment
 ├── gateway       # API gateway
 ├── generator     # Fingerprint generator
+├── network       # TCP/IP fingerprinting (JA4T)
+├── agent         # Autonomous security agent
+├── config        # Configuration management bridge
+├── plugin        # Plugin system public API
+├── kit           # Utilities (UA parsing, etc.)
+├── frontend      # Frontend static assets
 ├── fingerprint   # Facade entry point
-└── ...
+└── internal      # Internal implementation (extensions/security/TCP)
 ```
 
 ## Usage
@@ -86,12 +93,12 @@ chromeProfiles := profiles.GetByBrowser(core.BrowserChrome)
 | Edge | 115-134 | 23 |
 | Opera | 100-110 | 12 |
 | Brave | 1.60-1.72 | 7 |
-| Mobile | iOS/Android | 3 |
-| **Total** | | **200** |
+| Mobile | iOS/Android | 10 |
+| **Total** | | **207** |
 
 ## Documentation
 
-- [Architecture](./docs/ARCHITECTURE_EN.md) - Architecture overview
+- [Architecture](./docs/ARCHITECTURE.md) - Architecture overview
 - [API Documentation](./docs/API.md) - Complete API reference
 - [Developer Guide](./docs/DEVELOPER_GUIDE.md) - Development guide
 - [Changelog](./docs/CHANGELOG.md) - Version history

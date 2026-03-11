@@ -2,14 +2,14 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/vistone/fingerprint.svg)](https://pkg.go.dev/github.com/vistone/fingerprint)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/vistone/fingerprint/releases/tag/v2.0.0)
+[![Version](https://img.shields.io/badge/version-1.0.11-blue.svg)](https://github.com/vistone/fingerprint/releases/tag/v1.0.11)
 [![Go Version](https://img.shields.io/badge/go-1.25.7+-blue.svg)](https://golang.org)
 
-高性能浏览器 TLS 指纹库，提供 150+ 浏览器指纹配置和全面的指纹识别能力。
+高性能浏览器 TLS 指纹库，提供 200+ 浏览器指纹配置和全面的指纹识别能力。
 
 ## 核心特性
 
-- **150+ 真实浏览器指纹** - Chrome、Firefox、Safari、Edge、Opera、Brave 等
+- **200+ 真实浏览器指纹** - Chrome、Firefox、Safari、Edge、Opera、Brave 等
 - **TLS 指纹分析** - JA3/JA4 指纹生成与识别
 - **HTTP/2 签名** - 完整的帧分析和签名匹配
 - **机器学习分类** - 内置 ML 检测异常流量
@@ -41,16 +41,23 @@ func main() {
 
 ```
 modules/
-├── core          # 核心类型 (零依赖)
-├── profiles      # 150+ 浏览器指纹
-├── tls           # TLS 指纹分析
-├── http          # HTTP/2 分析
+├── core          # 核心类型与常量 (零依赖)
+├── errors        # 规范错误包 (ErrorCode, CoreError)
+├── profiles      # 200+ 浏览器指纹
+├── tls           # TLS 指纹分析 (JA3/JA4)
+├── http          # HTTP/2 签名分析
 ├── ml            # 机器学习分类器
-├── defense       # 安全防护
+├── defense       # 安全防护与风险评估
 ├── gateway       # API 网关
 ├── generator     # 指纹生成器
+├── network       # TCP/IP 指纹 (JA4T)
+├── agent         # 自治安全代理
+├── config        # 配置管理桥接层
+├── plugin        # 插件系统公共 API
+├── kit           # 工具集 (UA 解析等)
+├── frontend      # 前端静态资源
 ├── fingerprint   # Facade 统一入口
-└── ...
+└── internal      # 内部实现 (扩展/安全/TCP等)
 ```
 
 ## 使用方式
@@ -80,13 +87,14 @@ chromeProfiles := profiles.GetByBrowser(core.BrowserChrome)
 
 | 浏览器 | 版本范围 | 数量 |
 |--------|----------|------|
-| Chrome | 115-140 | 22+ |
-| Firefox | 115-135 | 16+ |
-| Safari | 16-18 | 17+ |
-| Edge | 115-130 | 13+ |
-| Opera | 100-110 | 6+ |
-| Brave | 1.60-1.72 | 7+ |
-| 移动端 | iOS/Android | 28+ |
+| Chrome | 115-144 | 64 |
+| Firefox | 115-140 | 43 |
+| Safari | 16-18 | 48 |
+| Edge | 115-134 | 23 |
+| Opera | 100-110 | 12 |
+| Brave | 1.60-1.72 | 7 |
+| 移动端 | iOS/Android | 10 |
+| **合计** | | **207** |
 
 ## 文档
 
@@ -94,7 +102,6 @@ chromeProfiles := profiles.GetByBrowser(core.BrowserChrome)
 - [API 文档](./docs/API.md) - 完整 API 参考
 - [开发者指南](./docs/DEVELOPER_GUIDE.md) - 开发和贡献指南
   - [⚠️ 版本控制规则](./docs/DEVELOPER_GUIDE.md#-版本控制规则强制执行) - **必读开发规则**
-  - [提交前检查清单](./COMMIT_CHECKLIST.md) - 快速参考卡片
 - [版本管理策略](./docs/VERSION_MANAGEMENT.md) - 版本号管理详解
 - [变更日志](./docs/CHANGELOG.md) - 版本更新记录
 
