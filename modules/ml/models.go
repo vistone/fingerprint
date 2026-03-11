@@ -196,14 +196,23 @@ type FingerprintEncoder struct {
 }
 
 // NewFingerprintEncoder creates a fingerprint encoder.
-// Architecture: Input(30) → Dense(128,ReLU) → Dropout(0.1) → Dense(64,ReLU) → Dense(32)
+// Architecture: Input(30) → Dense(256) → BN → ReLU → Dropout(0.2)
+//
+//	→ Dense(128) → BN → ReLU → Dropout(0.1)
+//	→ Dense(64) → BN → ReLU → Dense(32)
 func NewFingerprintEncoder() *FingerprintEncoder {
 	return &FingerprintEncoder{
 		Net: NewSequential(
-			NewDenseLayer(FingerprintFeatureDim, 128),
+			NewDenseLayer(FingerprintFeatureDim, 256),
+			NewBatchNormLayer(256),
+			NewReLULayer(),
+			NewDropoutLayer(0.2),
+			NewDenseLayer(256, 128),
+			NewBatchNormLayer(128),
 			NewReLULayer(),
 			NewDropoutLayer(0.1),
 			NewDenseLayer(128, 64),
+			NewBatchNormLayer(64),
 			NewReLULayer(),
 			NewDenseLayer(64, EmbeddingDim),
 		),
@@ -264,11 +273,19 @@ type BrowserClassifier struct {
 }
 
 // NewBrowserClassifier creates a browser classifier.
-// Architecture: Embedding(32) → Dense(64,ReLU) → Dropout(0.1) → Dense(7,Softmax)
+// Architecture: Embedding(32) → Dense(128) → BN → ReLU → Dropout(0.2)
+//
+//	→ Dense(64) → BN → ReLU → Dropout(0.1)
+//	→ Dense(7) → Softmax
 func NewBrowserClassifier() *BrowserClassifier {
 	return &BrowserClassifier{
 		Net: NewSequential(
-			NewDenseLayer(EmbeddingDim, 64),
+			NewDenseLayer(EmbeddingDim, 128),
+			NewBatchNormLayer(128),
+			NewReLULayer(),
+			NewDropoutLayer(0.2),
+			NewDenseLayer(128, 64),
+			NewBatchNormLayer(64),
 			NewReLULayer(),
 			NewDropoutLayer(0.1),
 			NewDenseLayer(64, NumBrowserFamilies),
@@ -375,13 +392,23 @@ type ForgeryDetector struct {
 }
 
 // NewForgeryDetector creates a forgery detector.
-// Detector: Input(40) → Dense(64,ReLU) → Dense(32,ReLU) → Dense(1,Sigmoid)
-// TypeNet:  Input(40) → Dense(64,ReLU) → Dense(32,ReLU) → Dense(4,Softmax)
+// Detector: Input(40) → Dense(128) → BN → ReLU → Dropout(0.2)
+//
+//	→ Dense(64) → BN → ReLU → Dense(32) → ReLU → Dense(1) → Sigmoid
+//
+// TypeNet:  Input(40) → Dense(128) → BN → ReLU → Dropout(0.2)
+//
+//	→ Dense(64) → BN → ReLU → Dense(32) → ReLU → Dense(4) → Softmax
 func NewForgeryDetector() *ForgeryDetector {
 	inputDim := FingerprintFeatureDim + CrossLayerFeatureDim // 30 + 10 = 40
 	return &ForgeryDetector{
 		DetectorNet: NewSequential(
-			NewDenseLayer(inputDim, 64),
+			NewDenseLayer(inputDim, 128),
+			NewBatchNormLayer(128),
+			NewReLULayer(),
+			NewDropoutLayer(0.2),
+			NewDenseLayer(128, 64),
+			NewBatchNormLayer(64),
 			NewReLULayer(),
 			NewDenseLayer(64, 32),
 			NewReLULayer(),
@@ -389,7 +416,12 @@ func NewForgeryDetector() *ForgeryDetector {
 			NewSigmoidLayer(),
 		),
 		TypeNet: NewSequential(
-			NewDenseLayer(inputDim, 64),
+			NewDenseLayer(inputDim, 128),
+			NewBatchNormLayer(128),
+			NewReLULayer(),
+			NewDropoutLayer(0.2),
+			NewDenseLayer(128, 64),
+			NewBatchNormLayer(64),
 			NewReLULayer(),
 			NewDenseLayer(64, 32),
 			NewReLULayer(),
@@ -531,13 +563,23 @@ type ThreatAssessor struct {
 
 // NewThreatAssessor creates a threat assessor.
 // Input: embedding(32) + forgery output(5: prob+4 type probs) + behavior(8) = 45
-// Threat: Input(45) → Dense(64,ReLU) → Dense(32,ReLU) → Dense(6,Softmax)
-// Action: Input(45) → Dense(64,ReLU) → Dense(32,ReLU) → Dense(5,Softmax)
+// Threat: Input(45) → Dense(128) → BN → ReLU → Dropout(0.2)
+//
+//	→ Dense(64) → BN → ReLU → Dense(32) → ReLU → Dense(6) → Softmax
+//
+// Action: Input(45) → Dense(128) → BN → ReLU → Dropout(0.2)
+//
+//	→ Dense(64) → BN → ReLU → Dense(32) → ReLU → Dense(5) → Softmax
 func NewThreatAssessor() *ThreatAssessor {
 	inputDim := EmbeddingDim + 1 + NumForgeryTypes + BehaviorFeatureDim // 32+1+4+8 = 45
 	return &ThreatAssessor{
 		ThreatNet: NewSequential(
-			NewDenseLayer(inputDim, 64),
+			NewDenseLayer(inputDim, 128),
+			NewBatchNormLayer(128),
+			NewReLULayer(),
+			NewDropoutLayer(0.2),
+			NewDenseLayer(128, 64),
+			NewBatchNormLayer(64),
 			NewReLULayer(),
 			NewDenseLayer(64, 32),
 			NewReLULayer(),
@@ -545,7 +587,12 @@ func NewThreatAssessor() *ThreatAssessor {
 			NewSoftmaxLayer(),
 		),
 		ActionNet: NewSequential(
-			NewDenseLayer(inputDim, 64),
+			NewDenseLayer(inputDim, 128),
+			NewBatchNormLayer(128),
+			NewReLULayer(),
+			NewDropoutLayer(0.2),
+			NewDenseLayer(128, 64),
+			NewBatchNormLayer(64),
 			NewReLULayer(),
 			NewDenseLayer(64, 32),
 			NewReLULayer(),

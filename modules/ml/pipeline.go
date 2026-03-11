@@ -260,12 +260,12 @@ type NeuralTrainerConfig struct {
 
 // DefaultNeuralTrainerConfig is the default training configuration.
 var DefaultNeuralTrainerConfig = &NeuralTrainerConfig{
-	Epochs:          50,
-	BatchSize:       16,
+	Epochs:          100,
+	BatchSize:       32,
 	LearningRate:    0.001,
-	AugmentNoise:    0.02,
+	AugmentNoise:    0.05,
 	TripletMargin:   1.0,
-	ForgeryRatio:    1.0,
+	ForgeryRatio:    1.5,
 	ValidationSplit: 0.2,
 }
 
@@ -364,12 +364,22 @@ func (t *NeuralTrainer) buildTrainingData(allProfiles []profiles.ClientProfile) 
 			ProfileID:   p.ID,
 			BrowserType: p.BrowserType,
 		})
-		// Data augmentation: generate variants with Gaussian noise
-		for aug := 0; aug < 3; aug++ {
+		// Data augmentation: generate variants with varying noise levels
+		augNoises := []float64{
+			t.Config.AugmentNoise * 0.5,
+			t.Config.AugmentNoise * 0.75,
+			t.Config.AugmentNoise,
+			t.Config.AugmentNoise,
+			t.Config.AugmentNoise * 1.25,
+			t.Config.AugmentNoise * 1.5,
+			t.Config.AugmentNoise * 2.0,
+			t.Config.AugmentNoise * 2.5,
+		}
+		for _, noise := range augNoises {
 			augFeatures := make([]float64, len(features))
 			copy(augFeatures, features)
 			for i := range augFeatures {
-				augFeatures[i] += rand.NormFloat64() * t.Config.AugmentNoise
+				augFeatures[i] += rand.NormFloat64() * noise
 				augFeatures[i] = math.Max(0, math.Min(1, augFeatures[i]))
 			}
 			samples = append(samples, profileSample{
@@ -410,7 +420,9 @@ func (t *NeuralTrainer) trainEncoder(samples []profileSample) error {
 	enc.Net.SetTraining(true)
 	defer enc.Net.SetTraining(false)
 
-	optimizer := NewAdamOptimizer(enc.Net.Params(), cfg.LearningRate)
+	params := enc.Net.Params()
+	optimizer := NewAdamOptimizer(params, cfg.LearningRate)
+	scheduler := NewWarmupCosineAnnealingLR(cfg.LearningRate, cfg.LearningRate*0.01, 5)
 	tripletMargin := cfg.TripletMargin
 
 	// Group indices by family
@@ -425,35 +437,33 @@ func (t *NeuralTrainer) trainEncoder(samples []profileSample) error {
 	sort.Ints(families)
 
 	for epoch := 0; epoch < cfg.Epochs; epoch++ {
+		scheduler.StepLR(optimizer, epoch, cfg.Epochs)
 		totalLoss := 0.0
 		count := 0
 
-		// Generate triplets: anchor, positive (same family), negative (different family)
+		// Generate triplets with semi-hard negative mining
 		for _, fam := range families {
 			indices := familyIdx[fam]
 			if len(indices) < 2 {
 				continue
 			}
-			// Select different family as negative sample source
-			var negFam int
-			for {
-				negFam = families[rand.Intn(len(families))]
-				if negFam != fam && len(familyIdx[negFam]) > 0 {
-					break
-				}
-				if len(families) <= 1 {
-					negFam = fam
-					break
-				}
-			}
-			negIndices := familyIdx[negFam]
 
 			batchSize := min(cfg.BatchSize, len(indices)/2)
 			if batchSize < 1 {
 				batchSize = 1
 			}
 
-			// Generate batchSize triplets for current family
+			// Pre-compute embeddings for hard negative selection
+			var candidateNegs []int
+			for _, otherFam := range families {
+				if otherFam != fam {
+					candidateNegs = append(candidateNegs, familyIdx[otherFam]...)
+				}
+			}
+			if len(candidateNegs) == 0 {
+				continue
+			}
+
 			anchors := make([]float64, 0, batchSize*FingerprintFeatureDim)
 			positives := make([]float64, 0, batchSize*FingerprintFeatureDim)
 			negatives := make([]float64, 0, batchSize*FingerprintFeatureDim)
@@ -461,10 +471,31 @@ func (t *NeuralTrainer) trainEncoder(samples []profileSample) error {
 			for b := 0; b < batchSize; b++ {
 				aIdx := indices[rand.Intn(len(indices))]
 				pIdx := indices[rand.Intn(len(indices))]
-				nIdx := negIndices[rand.Intn(len(negIndices))]
+
+				// Semi-hard negative mining: pick closest negative
+				anchorEmb := enc.EncodeSingle(samples[aIdx].Features)
+				bestNegIdx := candidateNegs[rand.Intn(len(candidateNegs))]
+				bestNegDist := math.MaxFloat64
+
+				// Sample a subset of candidates for efficiency
+				numCandidates := min(16, len(candidateNegs))
+				for c := 0; c < numCandidates; c++ {
+					cIdx := candidateNegs[rand.Intn(len(candidateNegs))]
+					negEmb := enc.EncodeSingle(samples[cIdx].Features)
+					dist := 0.0
+					for d := 0; d < len(anchorEmb); d++ {
+						diff := anchorEmb[d] - negEmb[d]
+						dist += diff * diff
+					}
+					if dist < bestNegDist {
+						bestNegDist = dist
+						bestNegIdx = cIdx
+					}
+				}
+
 				anchors = append(anchors, samples[aIdx].Features...)
 				positives = append(positives, samples[pIdx].Features...)
-				negatives = append(negatives, samples[nIdx].Features...)
+				negatives = append(negatives, samples[bestNegIdx].Features...)
 			}
 
 			anchorT := NewTensor([]int{batchSize, FingerprintFeatureDim}, anchors)
@@ -478,8 +509,8 @@ func (t *NeuralTrainer) trainEncoder(samples []profileSample) error {
 
 			loss, anchorGrad, _, _ := TripletMarginLoss(anchorEmb, posEmb, negEmb, tripletMargin)
 
-			// Backpropagation
 			enc.Net.Backward(anchorGrad)
+			ClipGradNorm(params, 5.0)
 			optimizer.Step()
 
 			totalLoss += loss
@@ -504,9 +535,12 @@ func (t *NeuralTrainer) trainClassifier(trainSet, valSet []profileSample) error 
 	cls.Net.SetTraining(true)
 	defer cls.Net.SetTraining(false)
 
-	optimizer := NewAdamOptimizer(cls.Net.Params(), cfg.LearningRate)
+	params := cls.Net.Params()
+	optimizer := NewAdamOptimizer(params, cfg.LearningRate)
+	scheduler := NewWarmupCosineAnnealingLR(cfg.LearningRate, cfg.LearningRate*0.01, 5)
 
 	for epoch := 0; epoch < cfg.Epochs; epoch++ {
+		scheduler.StepLR(optimizer, epoch, cfg.Epochs)
 		totalLoss := 0.0
 		count := 0
 
@@ -538,6 +572,7 @@ func (t *NeuralTrainer) trainClassifier(trainSet, valSet []profileSample) error 
 
 			// Backpropagation
 			cls.Net.Backward(grad)
+			ClipGradNorm(params, 5.0)
 			optimizer.Step()
 
 			totalLoss += lossVal
@@ -584,10 +619,12 @@ func (t *NeuralTrainer) trainForgeryDetector(realSamples []profileSample) error 
 
 	allParams := append(det.DetectorNet.Params(), det.TypeNet.Params()...)
 	optimizer := NewAdamOptimizer(allParams, cfg.LearningRate)
+	scheduler := NewWarmupCosineAnnealingLR(cfg.LearningRate, cfg.LearningRate*0.01, 5)
 
 	inputDim := FingerprintFeatureDim + CrossLayerFeatureDim
 
 	for epoch := 0; epoch < cfg.Epochs; epoch++ {
+		scheduler.StepLR(optimizer, epoch, cfg.Epochs)
 		totalLoss := 0.0
 		count := 0
 
@@ -634,6 +671,7 @@ func (t *NeuralTrainer) trainForgeryDetector(realSamples []profileSample) error 
 			// Binary cross-entropy loss
 			lossVal, grad := BinaryCrossEntropyLoss(output, targetData)
 			det.DetectorNet.Backward(grad)
+			ClipGradNorm(allParams, 5.0)
 			optimizer.Step()
 
 			totalLoss += lossVal
@@ -648,30 +686,77 @@ func (t *NeuralTrainer) trainForgeryDetector(realSamples []profileSample) error 
 }
 
 // generateForgedSample generates a forged fingerprint sample.
-// Strategy: randomly mix layer features from different browser families to create cross-layer inconsistency.
+// Multiple strategies to simulate different forgery types:
+//   - Cross-browser layer mixing (anti-detect tool pattern)
+//   - Headless browser simulation (missing JS features)
+//   - Proxy/MITM pattern (TCP anomalies)
+//   - Noise injection (generic tool fingerprint)
 func (t *NeuralTrainer) generateForgedSample(samples []profileSample) []float64 {
 	forged := make([]float64, FingerprintFeatureDim)
 
-	// Mix feature layers from two different samples
+	strategy := rand.Intn(4)
 	s1 := samples[rand.Intn(len(samples))]
 	s2 := samples[rand.Intn(len(samples))]
 
-	// TLS layer from s1 (index 0-7)
-	copy(forged[0:8], s1.Features[0:8])
-	// HTTP/2 layer from s2 (index 8-13, creating TLS<>HTTP/2 inconsistency)
-	copy(forged[8:14], s2.Features[8:14])
-	// TCP/IP layer randomly selected
-	if rand.Float64() < 0.5 {
-		copy(forged[14:18], s1.Features[14:18])
-	} else {
-		copy(forged[14:18], s2.Features[14:18])
-	}
-	// JS layer: add headless browser features
-	forged[25] = rand.Float64()*0.3 + 0.5 // headless_score biased high
+	switch strategy {
+	case 0: // Cross-browser layer mixing (anti-detect)
+		// TLS from one browser, HTTP/2 from another
+		copy(forged[0:8], s1.Features[0:8])
+		copy(forged[8:14], s2.Features[8:14])
+		if rand.Float64() < 0.5 {
+			copy(forged[14:18], s1.Features[14:18])
+		} else {
+			copy(forged[14:18], s2.Features[14:18])
+		}
+		// JS features: partial or mismatched
+		forged[18] = rand.Float64() * 0.3 // low canvas (tool fingerprint)
+		forged[19] = rand.Float64() * 0.3 // low webgl
+		forged[25] = rand.Float64()*0.3 + 0.4
+		forged[26] = s1.Features[26]          // keep original UA
+		forged[27] = s2.Features[27]          // but entropy from different browser
+		forged[28] = rand.Float64()*0.3 + 0.3 // moderate tool marker
 
-	// Add noise
+	case 1: // Headless browser (Puppeteer/Selenium)
+		copy(forged, s1.Features)
+		// Missing or anomalous JS features
+		forged[18] = 0                        // no canvas
+		forged[19] = 0                        // no webgl
+		forged[20] = 0                        // no audio
+		forged[21] = rand.Float64() * 0.05    // very few fonts
+		forged[22] = rand.Float64() * 0.2     // low storage
+		forged[23] = 0                        // no webrtc
+		forged[24] = 0.25                     // generic 4 cores
+		forged[25] = rand.Float64()*0.3 + 0.7 // high headless score
+		forged[28] = rand.Float64()*0.2 + 0.5 // tool marker present
+
+	case 2: // Proxy/MITM (TCP anomalies)
+		copy(forged, s1.Features)
+		// TCP layer inconsistencies
+		forged[14] = 0.5 + rand.Float64()*0.5 // anomalous TTL
+		forged[15] = rand.Float64() * 0.3     // unusual window
+		forged[16] = rand.Float64() * 0.4     // unusual MSS
+		forged[17] = 0                        // no timestamps (proxy stripped)
+		forged[29] = rand.Float64()*0.2 + 0.3 // mild behavior anomaly
+
+	case 3: // Noise injection (generic tool)
+		// Start with random mix
+		for i := 0; i < FingerprintFeatureDim; i++ {
+			if rand.Float64() < 0.5 {
+				forged[i] = s1.Features[i]
+			} else {
+				forged[i] = s2.Features[i]
+			}
+		}
+		// Add significant noise
+		for i := range forged {
+			forged[i] += rand.NormFloat64() * 0.1
+		}
+		forged[28] = rand.Float64()*0.3 + 0.2 // some tool marker
+	}
+
+	// Final noise + clamp
 	for i := range forged {
-		forged[i] += rand.NormFloat64() * 0.05
+		forged[i] += rand.NormFloat64() * 0.02
 		forged[i] = math.Max(0, math.Min(1, forged[i]))
 	}
 	return forged
@@ -693,10 +778,12 @@ func (t *NeuralTrainer) trainThreatAssessor(samples []profileSample) error {
 
 	allParams := append(assessor.ThreatNet.Params(), assessor.ActionNet.Params()...)
 	optimizer := NewAdamOptimizer(allParams, cfg.LearningRate)
+	scheduler := NewWarmupCosineAnnealingLR(cfg.LearningRate, cfg.LearningRate*0.01, 5)
 
 	inputDim := EmbeddingDim + 1 + NumForgeryTypes + BehaviorFeatureDim
 
 	for epoch := 0; epoch < cfg.Epochs; epoch++ {
+		scheduler.StepLR(optimizer, epoch, cfg.Epochs)
 		totalLoss := 0.0
 		count := 0
 
@@ -722,7 +809,10 @@ func (t *NeuralTrainer) trainThreatAssessor(samples []profileSample) error {
 				inputData[off] = forgery.ForgeryProb
 				off++
 				copy(inputData[off:off+NumForgeryTypes], forgery.TypeProbs)
-				// Behavioral features: use zeros during training (filled by Agent at inference time)
+				off += NumForgeryTypes
+				// Synthetic behavioral features to prevent zero-feature bias
+				behavior := t.generateSyntheticBehavior(s, &forgery)
+				copy(inputData[off:off+BehaviorFeatureDim], behavior)
 
 				threatTargets[i] = t.generateThreatLabel(s, &forgery)
 			}
@@ -733,6 +823,7 @@ func (t *NeuralTrainer) trainThreatAssessor(samples []profileSample) error {
 			output := assessor.ThreatNet.Forward(input)
 			lossVal, grad := CrossEntropyLoss(output, threatTargets)
 			assessor.ThreatNet.Backward(grad)
+			ClipGradNorm(allParams, 5.0)
 			optimizer.Step()
 
 			totalLoss += lossVal
@@ -759,7 +850,49 @@ func (t *NeuralTrainer) generateThreatLabel(s profileSample, forgery *ForgeryRes
 		}
 		return int(ThreatFingerprintSpoof)
 	}
+	// Check for behavioral anomaly signals from features
+	if s.Features[28] > 0.3 { // tool marker
+		return int(ThreatBot)
+	}
+	if s.Features[29] > 0.3 { // behavior pattern anomaly
+		return int(ThreatBehavioralAnomaly)
+	}
 	return int(ThreatNone)
+}
+
+// generateSyntheticBehavior generates synthetic behavioral features for training.
+// This prevents the model from learning to ignore the behavior input dimensions.
+func (t *NeuralTrainer) generateSyntheticBehavior(s profileSample, forgery *ForgeryResult) []float64 {
+	behavior := make([]float64, BehaviorFeatureDim)
+
+	if forgery.ForgeryProb > 0.5 {
+		// Forged clients tend to have anomalous behavior
+		behavior[0] = rand.Float64()*0.3 + 0.5 // high fingerprint switch rate
+		behavior[1] = rand.Float64()*0.4 + 0.4 // high request rate
+		behavior[2] = rand.Float64() * 0.4     // low consistency
+		behavior[3] = rand.Float64()*0.3 + 0.5 // rising risk trend
+		behavior[4] = rand.Float64() * 0.3     // few observations
+		behavior[5] = rand.Float64()*0.3 + 0.5 // high unique FP ratio
+		behavior[6] = rand.Float64() * 0.3     // short sessions
+		behavior[7] = rand.Float64()*0.3 + 0.3 // burst indicator
+	} else {
+		// Normal clients have stable behavior
+		behavior[0] = rand.Float64() * 0.2     // low switch rate
+		behavior[1] = rand.Float64() * 0.3     // moderate request rate
+		behavior[2] = rand.Float64()*0.3 + 0.6 // high consistency
+		behavior[3] = rand.Float64() * 0.3     // low risk trend
+		behavior[4] = rand.Float64()*0.3 + 0.4 // many observations
+		behavior[5] = rand.Float64() * 0.3     // low unique FP ratio
+		behavior[6] = rand.Float64()*0.3 + 0.5 // longer sessions
+		behavior[7] = rand.Float64() * 0.2     // no burst
+	}
+
+	// Add noise
+	for i := range behavior {
+		behavior[i] += rand.NormFloat64() * 0.05
+		behavior[i] = math.Max(0, math.Min(1, behavior[i]))
+	}
+	return behavior
 }
 
 func (t *NeuralTrainer) recordMetric(epoch int, encLoss, clsLoss, forLoss, thrLoss, valAcc, forAUC float64) {

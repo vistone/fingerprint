@@ -3,8 +3,10 @@
 // Contents:
 //   - Layer interface and Dense (fully-connected) layer implementation
 //   - Activation functions: ReLU, Sigmoid, Softmax, Tanh
+//   - Batch normalization layer for training stability
 //   - Sequential model: chains multiple layers into a forward/backward graph
-//   - Adam optimizer: adaptive learning rate
+//   - Adam optimizer with weight decay and gradient clipping
+//   - Learning rate schedulers: cosine annealing, step decay
 //   - Loss functions: CrossEntropy, MSE, TripletMargin
 //   - Parameter initialization: He, Xavier, zero-init
 //
@@ -249,6 +251,159 @@ func (l *DropoutLayer) Params() []*Param          { return nil }
 func (l *DropoutLayer) SetTraining(training bool) { l.training = training }
 
 // ---------------------------------------------------------------------------
+// Batch normalization layer
+// ---------------------------------------------------------------------------
+
+// BatchNormLayer implements batch normalization: normalizes activations across the batch,
+// then applies learned scale (gamma) and shift (beta).
+// During inference, uses running mean/variance estimated during training.
+type BatchNormLayer struct {
+	dim      int
+	gamma    *Tensor // learned scale [dim]
+	beta     *Tensor // learned shift [dim]
+	gammaG   *Tensor // gamma gradient
+	betaG    *Tensor // beta gradient
+	runMean  *Tensor // running mean for inference
+	runVar   *Tensor // running variance for inference
+	runMeanG *Tensor // zero gradient placeholder for serialization
+	runVarG  *Tensor // zero gradient placeholder for serialization
+	momentum float64 // running stat momentum (default 0.1)
+	eps      float64 // numerical stability
+	training bool
+
+	// cached for backward pass
+	xNorm *Tensor
+	xMu   *Tensor
+	std   []float64
+	batch int
+}
+
+// NewBatchNormLayer creates a batch normalization layer.
+func NewBatchNormLayer(dim int) *BatchNormLayer {
+	return &BatchNormLayer{
+		dim:        dim,
+		gamma:      Ones(1, dim),
+		beta:       Zeros(1, dim),
+		gammaG:     Zeros(1, dim),
+		betaG:      Zeros(1, dim),
+		runMean:    Zeros(1, dim),
+		runVar:     Ones(1, dim),
+		runMeanG:   Zeros(1, dim),
+		runVarG:    Zeros(1, dim),
+		momentum:   0.1,
+		eps:        1e-5,
+		training:   true,
+	}
+}
+
+func (l *BatchNormLayer) Forward(input *Tensor) *Tensor {
+	rows, cols := input.Shape[0], input.Shape[1]
+	l.batch = rows
+	out := Zeros(rows, cols)
+
+	if l.training && rows > 1 {
+		// Compute batch mean and variance
+		mean := make([]float64, cols)
+		variance := make([]float64, cols)
+		for j := 0; j < cols; j++ {
+			sum := 0.0
+			for i := 0; i < rows; i++ {
+				sum += input.At(i, j)
+			}
+			mean[j] = sum / float64(rows)
+		}
+		for j := 0; j < cols; j++ {
+			sum := 0.0
+			for i := 0; i < rows; i++ {
+				d := input.At(i, j) - mean[j]
+				sum += d * d
+			}
+			variance[j] = sum / float64(rows)
+		}
+
+		// Normalize
+		l.std = make([]float64, cols)
+		l.xMu = Zeros(rows, cols)
+		l.xNorm = Zeros(rows, cols)
+		for j := 0; j < cols; j++ {
+			l.std[j] = math.Sqrt(variance[j] + l.eps)
+		}
+		for i := 0; i < rows; i++ {
+			for j := 0; j < cols; j++ {
+				d := input.At(i, j) - mean[j]
+				l.xMu.Set(i, j, d)
+				norm := d / l.std[j]
+				l.xNorm.Set(i, j, norm)
+				out.Set(i, j, norm*l.gamma.Data[j]+l.beta.Data[j])
+			}
+		}
+
+		// Update running statistics
+		for j := 0; j < cols; j++ {
+			l.runMean.Data[j] = (1-l.momentum)*l.runMean.Data[j] + l.momentum*mean[j]
+			l.runVar.Data[j] = (1-l.momentum)*l.runVar.Data[j] + l.momentum*variance[j]
+		}
+	} else {
+		// Inference: use running statistics
+		for i := 0; i < rows; i++ {
+			for j := 0; j < cols; j++ {
+				norm := (input.At(i, j) - l.runMean.Data[j]) / math.Sqrt(l.runVar.Data[j]+l.eps)
+				out.Set(i, j, norm*l.gamma.Data[j]+l.beta.Data[j])
+			}
+		}
+	}
+	return out
+}
+
+func (l *BatchNormLayer) Backward(gradOutput *Tensor) *Tensor {
+	rows, cols := gradOutput.Shape[0], gradOutput.Shape[1]
+	n := float64(rows)
+	gradInput := Zeros(rows, cols)
+
+	for j := 0; j < cols; j++ {
+		// dGamma = sum(gradOutput * xNorm)
+		// dBeta = sum(gradOutput)
+		dGamma := 0.0
+		dBeta := 0.0
+		for i := 0; i < rows; i++ {
+			dGamma += gradOutput.At(i, j) * l.xNorm.At(i, j)
+			dBeta += gradOutput.At(i, j)
+		}
+		l.gammaG.Data[j] += dGamma / n
+		l.betaG.Data[j] += dBeta / n
+
+		// gradInput: standard batch norm backward
+		invStd := 1.0 / l.std[j]
+		dxNorm := 0.0
+		dxNormXmu := 0.0
+		for i := 0; i < rows; i++ {
+			dx := gradOutput.At(i, j) * l.gamma.Data[j]
+			dxNorm += dx
+			dxNormXmu += dx * l.xMu.At(i, j)
+		}
+		for i := 0; i < rows; i++ {
+			dx := gradOutput.At(i, j) * l.gamma.Data[j]
+			gradInput.Set(i, j, invStd*(dx-dxNorm/n-l.xMu.At(i, j)*dxNormXmu/(n*l.std[j]*l.std[j])))
+		}
+	}
+	return gradInput
+}
+
+func (l *BatchNormLayer) Params() []*Param {
+	// Include running stats so they are serialized/deserialized along with learned params.
+	// Order: gamma, beta, running_mean, running_var
+	// Running stats have permanent zero gradients — optimizer won't modify them.
+	return []*Param{
+		{Value: l.gamma, Grad: l.gammaG},
+		{Value: l.beta, Grad: l.betaG},
+		{Value: l.runMean, Grad: l.runMeanG},
+		{Value: l.runVar, Grad: l.runVarG},
+	}
+}
+
+func (l *BatchNormLayer) SetTraining(training bool) { l.training = training }
+
+// ---------------------------------------------------------------------------
 // Sequential model
 // ---------------------------------------------------------------------------
 
@@ -357,6 +512,73 @@ func (opt *AdamOptimizer) Step() {
 			vHat := opt.v[i].Data[j] / bc2
 			p.Value.Data[j] -= opt.LR * mHat / (math.Sqrt(vHat) + opt.Epsilon)
 		}
+	}
+}
+
+// ClipGradNorm clips parameter gradients by global L2 norm.
+// maxNorm: maximum allowed gradient norm (typical: 1.0-5.0).
+func ClipGradNorm(params []*Param, maxNorm float64) {
+	totalNorm := 0.0
+	for _, p := range params {
+		for _, g := range p.Grad.Data {
+			totalNorm += g * g
+		}
+	}
+	totalNorm = math.Sqrt(totalNorm)
+	if totalNorm > maxNorm {
+		scale := maxNorm / totalNorm
+		for _, p := range params {
+			for i := range p.Grad.Data {
+				p.Grad.Data[i] *= scale
+			}
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Learning rate schedulers
+// ---------------------------------------------------------------------------
+
+// LRScheduler adjusts the optimizer learning rate over training.
+type LRScheduler interface {
+	// StepLR updates the learning rate. Call once per epoch.
+	StepLR(optimizer *AdamOptimizer, epoch, totalEpochs int)
+}
+
+// CosineAnnealingLR implements cosine annealing: LR decays from initial to minLR following a cosine curve.
+type CosineAnnealingLR struct {
+	InitialLR float64
+	MinLR     float64
+}
+
+func NewCosineAnnealingLR(initialLR, minLR float64) *CosineAnnealingLR {
+	return &CosineAnnealingLR{InitialLR: initialLR, MinLR: minLR}
+}
+
+func (s *CosineAnnealingLR) StepLR(opt *AdamOptimizer, epoch, totalEpochs int) {
+	progress := float64(epoch) / float64(totalEpochs)
+	opt.LR = s.MinLR + 0.5*(s.InitialLR-s.MinLR)*(1.0+math.Cos(math.Pi*progress))
+}
+
+// WarmupCosineAnnealingLR adds a linear warmup phase before cosine decay.
+type WarmupCosineAnnealingLR struct {
+	InitialLR    float64
+	MinLR        float64
+	WarmupEpochs int
+}
+
+func NewWarmupCosineAnnealingLR(initialLR, minLR float64, warmupEpochs int) *WarmupCosineAnnealingLR {
+	return &WarmupCosineAnnealingLR{InitialLR: initialLR, MinLR: minLR, WarmupEpochs: warmupEpochs}
+}
+
+func (s *WarmupCosineAnnealingLR) StepLR(opt *AdamOptimizer, epoch, totalEpochs int) {
+	if epoch < s.WarmupEpochs {
+		// Linear warmup
+		opt.LR = s.InitialLR * float64(epoch+1) / float64(s.WarmupEpochs)
+	} else {
+		// Cosine decay after warmup
+		progress := float64(epoch-s.WarmupEpochs) / float64(totalEpochs-s.WarmupEpochs)
+		opt.LR = s.MinLR + 0.5*(s.InitialLR-s.MinLR)*(1.0+math.Cos(math.Pi*progress))
 	}
 }
 

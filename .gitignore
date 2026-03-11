@@ -59,3 +59,8 @@ examples/random/random
 examples/plugin/plugin
 examples/advanced/advanced
 
+# PyTorch checkpoints (binary, not needed for Go inference)
+*.pt
+# Python cache
+__pycache__/
+
