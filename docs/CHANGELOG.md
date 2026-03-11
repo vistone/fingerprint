@@ -4,6 +4,46 @@ This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+## [v1.0.15] - 2026-03-12
+
+### Added
+
+- **Persistent Versioned Model Store** (`modules/ml/store.go`)
+  - `ModelStore` manages versioned model snapshots on disk with auto-pruning
+  - `StoreConfig` with configurable base directory and max version count (default 10)
+  - `ModelManifest` index file tracks all versions with metadata (parent version, epochs, loss, accuracy)
+  - `Save()` / `Load()` / `LoadLatest()` / `ListVersions()` for full model lifecycle management
+  - Automatic cleanup of oldest versions when exceeding `MaxVersions`
+  - Store persistence: manifest survives process restarts, all versions recoverable
+
+- **Incremental Model Evolution** (`modules/ml/store.go`)
+  - `Evolve()` fine-tunes existing weights with a lower learning rate (default 0.0001) and fewer epochs (default 10)
+  - `EvolveConfig` for tuning fine-tuning behavior separately from full training
+  - `EvolveAndSave()` convenience: evolve + save new version in one call
+  - `TrainAndSave()` convenience: initial full training + save in one call
+  - Models evolve continuously from saved weights — never retrain from scratch after initial training
+
+- **Pipeline Store Integration**
+  - `LoadFromStore()` / `SaveToStore()` convenience methods on `ModelPipeline`
+  - 5 new model store tests: CreateAndLoad, MultipleVersions, EmptyLoadLatest, Persistence, LoadFromStore
+
+### Changed
+
+- **Agent Auto-loads Model from Store** (`modules/agent/agent.go`)
+  - `AgentConfig.ModelStorePath` field for specifying model store directory
+  - `NewAgent()` automatically loads latest model snapshot on startup if store path is configured
+  - Zero-downtime model continuity: model weights persist across process restarts
+
+### Fixed
+
+- **Convert all Chinese comments to English** — strict compliance with DEVELOPER_GUIDE.md mandatory rule
+  - `modules/ml/tensor.go`: 35 comment blocks converted
+  - `modules/ml/nn.go`: 30 comment blocks converted
+  - `modules/ml/models.go`: ~60 comment blocks converted (model docs, struct fields, function docs, inline comments)
+  - `modules/ml/pipeline.go`: ~50 comment blocks converted (ASCII art diagram, phase headers, training comments, serialization docs)
+  - `modules/ml/pipeline_test.go`: ~20 comment blocks converted (section headers, assertions, test descriptions)
+  - `modules/agent/agent.go`: 6 comment blocks converted (Agent doc block, inference pipeline comments)
+
 ## [v1.0.14] - 2026-03-11
 
 ### Added

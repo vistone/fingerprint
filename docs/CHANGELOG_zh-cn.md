@@ -4,6 +4,41 @@
 
 ## [Unreleased]
 
+## [v1.0.15] - 2026-03-12
+
+### 新增
+
+- **持久化版本模型库** (`modules/ml/store.go`)
+  - `ModelStore` 管理磁盘上的版本化模型快照，自动清理旧版本
+  - `StoreConfig` 可配置基础目录和最大版本数（默认 10）
+  - `ModelManifest` 索引文件追踪所有版本元数据（父版本、轮次、损失、精度）
+  - `Save()` / `Load()` / `LoadLatest()` / `ListVersions()` 完整模型生命周期管理
+  - 超过 `MaxVersions` 时自动删除最旧版本
+  - 持久化存储：manifest 跨进程重启保留，所有版本可恢复
+
+- **增量模型进化**
+  - `Evolve()` 用更低学习率（默认 0.0001）和更少轮次（默认 10）微调现有权重
+  - `EvolveConfig` 独立于完整训练配置调整微调行为
+  - `EvolveAndSave()` 便捷方法：进化 + 保存新版本一步完成
+  - `TrainAndSave()` 便捷方法：初始完整训练 + 保存一步完成
+  - 模型从已保存权重持续进化——初始训练后永远不从头重训
+
+- **Pipeline 模型库集成**
+  - `LoadFromStore()` / `SaveToStore()` Pipeline 便捷方法
+  - 新增 5 个模型库测试
+
+### 变更
+
+- **Agent 自动加载模型**
+  - `AgentConfig.ModelStorePath` 指定模型库目录
+  - `NewAgent()` 启动时自动加载最新模型快照
+  - 模型权重跨进程重启持久化
+
+### 修复
+
+- **所有中文注释转为英文** — 严格遵循 DEVELOPER_GUIDE.md 强制规则
+  - 6 个文件约 200 处注释从中文转为英文
+
 ## [v1.0.14] - 2026-03-11
 
 ### 新增

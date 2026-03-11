@@ -1,13 +1,15 @@
-// Package ml — tensor.go 提供张量计算引擎，支持 CPU 并行计算和 GPU 设备抽象。
+// Package ml — tensor.go provides the tensor computation engine with CPU parallel
+// execution and GPU device abstraction.
 //
-// 这是整个指纹智能分析模型库的计算基础。所有神经网络的前向传播、反向传播、
-// 参数更新都建立在 Tensor 运算之上。
+// This is the computational foundation for the entire fingerprint analysis model
+// library. All neural network forward/backward propagation and parameter updates
+// are built on top of Tensor operations.
 //
-// GPU 支持策略：
-//   - ComputeDevice 接口抽象计算设备（CPU / GPU）
-//   - CPU 实现使用 goroutine 并行化批量运算
-//   - GPU 实现可通过 build tag "gpu_cuda" 接入 CUDA 后端
-//   - 张量数据布局采用行优先（row-major），与 CUDA/cuBLAS 兼容
+// GPU support strategy:
+//   - ComputeDevice interface abstracts compute backends (CPU / GPU)
+//   - CPU implementation uses goroutine-parallel batch operations
+//   - GPU implementation can be plugged in via build tag "gpu_cuda" + CGo
+//   - Tensor data layout is row-major, compatible with CUDA/cuBLAS
 package ml
 
 import (
@@ -19,27 +21,27 @@ import (
 )
 
 // ---------------------------------------------------------------------------
-// ComputeDevice — 计算设备抽象
+// ComputeDevice — compute device abstraction
 // ---------------------------------------------------------------------------
 
-// ComputeDevice 定义计算设备接口。
-// CPU 实现使用 goroutine 并行化；GPU 实现可通过 CGo + CUDA 接入。
+// ComputeDevice defines the compute device interface.
+// CPU uses goroutine parallelism; GPU can be plugged in via CGo + CUDA.
 type ComputeDevice interface {
 	Name() string
-	// MatMul 矩阵乘法: C = A × B, A[m×k], B[k×n] → C[m×n]
+	// MatMul performs matrix multiplication: C = A × B, A[m×k], B[k×n] → C[m×n]
 	MatMul(a, b *Tensor) *Tensor
-	// MatMulAdd 矩阵乘加: C = A × B + bias (broadcast)
+	// MatMulAdd performs fused multiply-add: C = A × B + bias (broadcast)
 	MatMulAdd(a, b, bias *Tensor) *Tensor
-	// Apply 逐元素函数: out[i] = fn(in[i])
+	// Apply applies an element-wise function: out[i] = fn(in[i])
 	Apply(t *Tensor, fn func(float64) float64) *Tensor
-	// BatchParallel 并行处理批量数据
+	// BatchParallel executes fn in parallel over [0, batchSize)
 	BatchParallel(batchSize int, fn func(i int))
 }
 
-// CPU 是默认的 CPU 计算设备，使用 goroutine 并行化。
+// CPU is the default CPU compute device using goroutine parallelism.
 var CPU ComputeDevice = &cpuDevice{workers: runtime.NumCPU()}
 
-// cpuDevice CPU 计算设备实现
+// cpuDevice implements ComputeDevice for CPU with goroutine parallelism.
 type cpuDevice struct {
 	workers int
 }
@@ -118,25 +120,25 @@ func (d *cpuDevice) BatchParallel(n int, fn func(i int)) {
 	wg.Wait()
 }
 
-// DefaultDevice 当前活跃的计算设备，默认 CPU。
-// 通过 SetDevice(gpu) 可切换到 GPU。
+// DefaultDevice is the currently active compute device, defaults to CPU.
+// Use SetDevice(gpu) to switch to a GPU backend.
 var DefaultDevice ComputeDevice = CPU
 
-// SetDevice 设置全局默认计算设备。
+// SetDevice sets the global default compute device.
 func SetDevice(dev ComputeDevice) { DefaultDevice = dev }
 
 // ---------------------------------------------------------------------------
-// Tensor — 多维张量
+// Tensor — multi-dimensional tensor
 // ---------------------------------------------------------------------------
 
-// Tensor 表示一个多维浮点张量，行优先存储。
-// Shape 说明各维度大小，Data 是展平后的一维数组。
+// Tensor represents a multi-dimensional float64 tensor in row-major layout.
+// Shape holds the size of each dimension; Data is the flattened 1D array.
 type Tensor struct {
 	Data  []float64
 	Shape []int
 }
 
-// NewTensor 从给定的形状和数据创建张量。
+// NewTensor creates a tensor from the given shape and data.
 func NewTensor(shape []int, data []float64) *Tensor {
 	size := 1
 	for _, s := range shape {
@@ -148,7 +150,7 @@ func NewTensor(shape []int, data []float64) *Tensor {
 	return &Tensor{Data: data, Shape: append([]int{}, shape...)}
 }
 
-// Zeros 创建全零张量。
+// Zeros creates a zero-filled tensor.
 func Zeros(dims ...int) *Tensor {
 	size := 1
 	for _, d := range dims {
@@ -157,7 +159,7 @@ func Zeros(dims ...int) *Tensor {
 	return &Tensor{Data: make([]float64, size), Shape: append([]int{}, dims...)}
 }
 
-// Ones 创建全 1 张量。
+// Ones creates a tensor filled with ones.
 func Ones(dims ...int) *Tensor {
 	t := Zeros(dims...)
 	for i := range t.Data {
@@ -166,7 +168,7 @@ func Ones(dims ...int) *Tensor {
 	return t
 }
 
-// RandN 创建标准正态分布随机张量。
+// RandN creates a tensor with standard normal random values.
 func RandN(dims ...int) *Tensor {
 	t := Zeros(dims...)
 	for i := range t.Data {
@@ -175,7 +177,7 @@ func RandN(dims ...int) *Tensor {
 	return t
 }
 
-// RandNScaled 创建缩放正态分布随机张量（用于 He/Xavier 初始化）。
+// RandNScaled creates a scaled normal random tensor (for He/Xavier initialization).
 func RandNScaled(scale float64, dims ...int) *Tensor {
 	t := Zeros(dims...)
 	for i := range t.Data {
@@ -184,17 +186,17 @@ func RandNScaled(scale float64, dims ...int) *Tensor {
 	return t
 }
 
-// Clone 深拷贝张量。
+// Clone returns a deep copy of the tensor.
 func (t *Tensor) Clone() *Tensor {
 	d := make([]float64, len(t.Data))
 	copy(d, t.Data)
 	return &Tensor{Data: d, Shape: append([]int{}, t.Shape...)}
 }
 
-// Size 返回元素总数。
+// Size returns the total number of elements.
 func (t *Tensor) Size() int { return len(t.Data) }
 
-// Rows 返回第 0 维大小（行数），要求至少 2D。
+// Rows returns the size of dimension 0 (row count).
 func (t *Tensor) Rows() int {
 	if len(t.Shape) < 2 {
 		return t.Shape[0]
@@ -202,7 +204,7 @@ func (t *Tensor) Rows() int {
 	return t.Shape[0]
 }
 
-// Cols 返回第 1 维大小（列数），要求 2D。
+// Cols returns the size of dimension 1 (column count) for 2D tensors.
 func (t *Tensor) Cols() int {
 	if len(t.Shape) < 2 {
 		return 1
@@ -210,30 +212,30 @@ func (t *Tensor) Cols() int {
 	return t.Shape[1]
 }
 
-// At 获取 2D 张量 [i,j] 处的值。
+// At returns the value at [i,j] in a 2D tensor.
 func (t *Tensor) At(i, j int) float64 {
 	return t.Data[i*t.Shape[1]+j]
 }
 
-// Set 设置 2D 张量 [i,j] 处的值。
+// Set sets the value at [i,j] in a 2D tensor.
 func (t *Tensor) Set(i, j int, v float64) {
 	t.Data[i*t.Shape[1]+j] = v
 }
 
-// Row 返回第 i 行的切片视图（共享底层数据）。
+// Row returns a slice view of row i (shares underlying data).
 func (t *Tensor) Row(i int) []float64 {
 	cols := t.Shape[1]
 	return t.Data[i*cols : (i+1)*cols]
 }
 
-// FromSlice 从一维 float64 切片创建 [1×n] 行向量张量。
+// FromSlice creates a [1×n] row vector tensor from a float64 slice.
 func FromSlice(data []float64) *Tensor {
 	d := make([]float64, len(data))
 	copy(d, data)
 	return &Tensor{Data: d, Shape: []int{1, len(data)}}
 }
 
-// ToSlice 将张量展平为一维切片（拷贝）。
+// ToSlice returns a flattened copy of the tensor data.
 func (t *Tensor) ToSlice() []float64 {
 	d := make([]float64, len(t.Data))
 	copy(d, t.Data)
@@ -241,10 +243,10 @@ func (t *Tensor) ToSlice() []float64 {
 }
 
 // ---------------------------------------------------------------------------
-// 张量运算
+// Tensor operations
 // ---------------------------------------------------------------------------
 
-// Add 逐元素加法: C = A + B (要求同形状或 B 可广播到 A)。
+// Add performs element-wise addition: C = A + B (same shape or B broadcastable to A).
 func (t *Tensor) Add(other *Tensor) *Tensor {
 	if len(t.Data) == len(other.Data) {
 		out := t.Clone()
@@ -253,7 +255,7 @@ func (t *Tensor) Add(other *Tensor) *Tensor {
 		}
 		return out
 	}
-	// 广播: other 是单行，t 是多行
+	// Broadcast: other is single-row, t is multi-row
 	if len(t.Shape) == 2 && len(other.Shape) >= 1 && other.Size() == t.Shape[1] {
 		out := t.Clone()
 		cols := t.Shape[1]
@@ -267,7 +269,7 @@ func (t *Tensor) Add(other *Tensor) *Tensor {
 	panic(fmt.Sprintf("Add shape mismatch: %v vs %v", t.Shape, other.Shape))
 }
 
-// Sub 逐元素减法。
+// Sub performs element-wise subtraction.
 func (t *Tensor) Sub(other *Tensor) *Tensor {
 	out := t.Clone()
 	for i := range out.Data {
@@ -276,7 +278,7 @@ func (t *Tensor) Sub(other *Tensor) *Tensor {
 	return out
 }
 
-// MulScalar 标量乘法。
+// MulScalar performs scalar multiplication.
 func (t *Tensor) MulScalar(s float64) *Tensor {
 	out := t.Clone()
 	for i := range out.Data {
@@ -285,7 +287,7 @@ func (t *Tensor) MulScalar(s float64) *Tensor {
 	return out
 }
 
-// MulElem 逐元素乘法（Hadamard 积）。
+// MulElem performs element-wise (Hadamard) multiplication.
 func (t *Tensor) MulElem(other *Tensor) *Tensor {
 	out := t.Clone()
 	for i := range out.Data {
@@ -294,7 +296,7 @@ func (t *Tensor) MulElem(other *Tensor) *Tensor {
 	return out
 }
 
-// Transpose 返回 2D 张量的转置。
+// Transpose returns the transpose of a 2D tensor.
 func (t *Tensor) Transpose() *Tensor {
 	if len(t.Shape) != 2 {
 		panic("Transpose requires 2D tensor")
@@ -309,12 +311,12 @@ func (t *Tensor) Transpose() *Tensor {
 	return out
 }
 
-// MatMul 矩阵乘法，委托给 DefaultDevice。
+// MatMul performs matrix multiplication, delegated to DefaultDevice.
 func (t *Tensor) MatMul(other *Tensor) *Tensor {
 	return DefaultDevice.MatMul(t, other)
 }
 
-// Sum 返回所有元素之和。
+// Sum returns the sum of all elements.
 func (t *Tensor) Sum() float64 {
 	s := 0.0
 	for _, v := range t.Data {
@@ -323,12 +325,12 @@ func (t *Tensor) Sum() float64 {
 	return s
 }
 
-// Mean 返回所有元素的均值。
+// Mean returns the mean of all elements.
 func (t *Tensor) Mean() float64 {
 	return t.Sum() / float64(len(t.Data))
 }
 
-// L2Norm 返回 L2 范数。
+// L2Norm returns the L2 norm.
 func (t *Tensor) L2Norm() float64 {
 	s := 0.0
 	for _, v := range t.Data {
@@ -337,7 +339,7 @@ func (t *Tensor) L2Norm() float64 {
 	return math.Sqrt(s)
 }
 
-// Normalize 原地 L2 归一化（使向量模为 1）。
+// Normalize returns an L2-normalized copy (unit vector).
 func (t *Tensor) Normalize() *Tensor {
 	norm := t.L2Norm()
 	if norm < 1e-12 {
@@ -346,7 +348,7 @@ func (t *Tensor) Normalize() *Tensor {
 	return t.MulScalar(1.0 / norm)
 }
 
-// Clamp 将所有元素限制在 [lo, hi] 范围内。
+// Clamp restricts all elements to the range [lo, hi].
 func (t *Tensor) Clamp(lo, hi float64) *Tensor {
 	out := t.Clone()
 	for i, v := range out.Data {
@@ -359,7 +361,7 @@ func (t *Tensor) Clamp(lo, hi float64) *Tensor {
 	return out
 }
 
-// Argmax 返回最大元素的索引。
+// Argmax returns the index of the maximum element.
 func (t *Tensor) Argmax() int {
 	maxIdx := 0
 	maxVal := t.Data[0]
@@ -372,7 +374,7 @@ func (t *Tensor) Argmax() int {
 	return maxIdx
 }
 
-// Max 返回最大元素值。
+// Max returns the maximum element value.
 func (t *Tensor) Max() float64 {
 	m := t.Data[0]
 	for _, v := range t.Data[1:] {
@@ -383,7 +385,7 @@ func (t *Tensor) Max() float64 {
 	return m
 }
 
-// SoftmaxRow 对 2D 张量的每一行做 Softmax 变换。
+// SoftmaxRow applies softmax to each row of a 2D tensor.
 func (t *Tensor) SoftmaxRow() *Tensor {
 	if len(t.Shape) != 2 {
 		panic("SoftmaxRow requires 2D tensor")
@@ -410,7 +412,7 @@ func (t *Tensor) SoftmaxRow() *Tensor {
 	return out
 }
 
-// SigmoidApply 逐元素 Sigmoid 变换。
+// SigmoidApply applies element-wise sigmoid.
 func (t *Tensor) SigmoidApply() *Tensor {
 	out := t.Clone()
 	for i, v := range out.Data {
@@ -419,7 +421,7 @@ func (t *Tensor) SigmoidApply() *Tensor {
 	return out
 }
 
-// ReluApply 逐元素 ReLU 变换。
+// ReluApply applies element-wise ReLU.
 func (t *Tensor) ReluApply() *Tensor {
 	out := t.Clone()
 	for i, v := range out.Data {

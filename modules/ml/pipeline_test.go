@@ -10,7 +10,7 @@ import (
 )
 
 // =========================================================================
-// Tensor 基础测试
+// Tensor basic tests
 // =========================================================================
 
 func TestTensorCreation(t *testing.T) {
@@ -51,7 +51,7 @@ func TestTensorSoftmax(t *testing.T) {
 	tensor := NewTensor([]int{1, 3}, []float64{1.0, 2.0, 3.0})
 	result := tensor.SoftmaxRow()
 
-	// 验证 softmax 归一化
+	// Verify softmax normalization
 	sum := 0.0
 	for _, v := range result.Data {
 		sum += v
@@ -60,7 +60,7 @@ func TestTensorSoftmax(t *testing.T) {
 		t.Fatalf("softmax sum should be 1.0, got %f", sum)
 	}
 
-	// 验证顺序
+	// Verify ordering
 	if result.Data[2] <= result.Data[1] || result.Data[1] <= result.Data[0] {
 		t.Fatal("softmax should preserve order")
 	}
@@ -81,7 +81,7 @@ func TestTensorArgmax(t *testing.T) {
 }
 
 // =========================================================================
-// 神经网络层测试
+// Neural network layer tests
 // =========================================================================
 
 func TestDenseLayerForward(t *testing.T) {
@@ -113,7 +113,7 @@ func TestSequentialForwardBackward(t *testing.T) {
 		t.Fatalf("expected [2,3], got %v", output.Shape)
 	}
 
-	// 验证 softmax 归一化
+	// Verify softmax normalization
 	for row := 0; row < 2; row++ {
 		sum := 0.0
 		for col := 0; col < 3; col++ {
@@ -124,12 +124,12 @@ func TestSequentialForwardBackward(t *testing.T) {
 		}
 	}
 
-	// 测试反向传播不 panic
+	// Test backward pass does not panic
 	grad := Ones(2, 3)
 	seq.ZeroGrad()
 	_ = seq.Backward(grad)
 
-	// 验证参数有梯度
+	// Verify parameters have gradients
 	params := seq.Params()
 	if len(params) == 0 {
 		t.Fatal("Sequential should have parameters")
@@ -141,7 +141,7 @@ func TestAdamOptimizer(t *testing.T) {
 	params := layer.Params()
 	optimizer := NewAdamOptimizer(params, 0.01)
 
-	// 模拟一步梯度
+	// Simulate one gradient step
 	for _, p := range params {
 		if p.Grad != nil {
 			for i := range p.Grad.Data {
@@ -151,7 +151,7 @@ func TestAdamOptimizer(t *testing.T) {
 	}
 
 	optimizer.Step()
-	// 验证参数被更新 — 不应该 panic
+	// Verify parameters were updated — should not panic
 }
 
 func TestCrossEntropyLoss(t *testing.T) {
@@ -160,7 +160,7 @@ func TestCrossEntropyLoss(t *testing.T) {
 		0.1, 0.8, 0.05, 0.05,
 		0.1, 0.1, 0.1, 0.7,
 	})
-	targets := []int{0, 1, 3} // 正确分类
+	targets := []int{0, 1, 3} // correct classifications
 
 	loss, grad := CrossEntropyLoss(probs, targets)
 	if loss < 0 {
@@ -199,13 +199,13 @@ func TestTripletMarginLoss(t *testing.T) {
 }
 
 // =========================================================================
-// 领域模型测试
+// Domain model tests
 // =========================================================================
 
 func TestFingerprintEncoder(t *testing.T) {
 	enc := NewFingerprintEncoder()
 
-	// 单样本编码
+	// Single sample encoding
 	features := make([]float64, FingerprintFeatureDim)
 	for i := range features {
 		features[i] = float64(i) / float64(FingerprintFeatureDim)
@@ -216,7 +216,7 @@ func TestFingerprintEncoder(t *testing.T) {
 		t.Fatalf("expected %d-dim embedding, got %d", EmbeddingDim, len(embedding))
 	}
 
-	// 验证 L2 归一化
+	// Verify L2 normalization
 	norm := 0.0
 	for _, v := range embedding {
 		norm += v * v
@@ -259,7 +259,7 @@ func TestBrowserClassifier(t *testing.T) {
 		t.Errorf("expected %d probs, got %d", NumBrowserFamilies, len(pred.Probs))
 	}
 
-	// 验证概率归一化
+	// Verify probability normalization
 	sum := 0.0
 	for _, p := range pred.Probs {
 		sum += p
@@ -278,7 +278,7 @@ func TestForgeryDetector(t *testing.T) {
 		features[i] = 0.5
 	}
 	for i := range crossFeatures {
-		crossFeatures[i] = 0.8 // 高一致性 → 应为真实
+		crossFeatures[i] = 0.8 // high consistency → should be real
 	}
 
 	result := det.DetectSingle(features, crossFeatures)
@@ -316,7 +316,7 @@ func TestThreatAssessor(t *testing.T) {
 }
 
 // =========================================================================
-// 特征编码测试
+// Feature encoding tests
 // =========================================================================
 
 func TestEncodeFingerprint(t *testing.T) {
@@ -346,19 +346,19 @@ func TestEncodeFingerprint(t *testing.T) {
 		t.Fatalf("expected %d features, got %d", FingerprintFeatureDim, len(vec))
 	}
 
-	// 验证 TLS 版本编码
+	// Verify TLS version encoding
 	if math.Abs(vec[0]-1.0) > 1e-9 {
 		t.Errorf("TLS 1.3 should encode to 1.0, got %f", vec[0])
 	}
 
-	// 验证所有值在 [0,1] 范围
+	// Verify all values in [0,1] range
 	for i, v := range vec {
 		if v < 0 || v > 1 {
 			t.Errorf("feature[%d] out of range [0,1]: %f", i, v)
 		}
 	}
 
-	// 验证 SNI 检测
+	// Verify SNI detection
 	if vec[4] != 1.0 {
 		t.Errorf("hasSNI should be 1.0, got %f", vec[4])
 	}
@@ -381,7 +381,7 @@ func TestEncodeFingerprintFromFeatureVector(t *testing.T) {
 
 func TestComputeCrossLayerFeatures(t *testing.T) {
 	fp := make([]float64, FingerprintFeatureDim)
-	// 设置一些一致的特征
+	// Set some consistent features
 	fp[0] = 0.8  // TLS version
 	fp[1] = 0.5  // cipher count
 	fp[8] = 0.5  // H2 window
@@ -394,12 +394,12 @@ func TestComputeCrossLayerFeatures(t *testing.T) {
 		t.Fatalf("expected %d cross features, got %d", CrossLayerFeatureDim, len(cross))
 	}
 
-	// canvas 和 webgl 都存在 → 一致性应为 1.0
+	// canvas and webgl both present → consistency should be 1.0
 	if cross[6] != 1.0 {
 		t.Errorf("canvas+webgl consistency should be 1.0, got %f", cross[6])
 	}
 
-	// 所有值应在 [0,1]
+	// All values should be in [0,1]
 	for i, v := range cross {
 		if v < 0 || v > 1 {
 			t.Errorf("cross[%d] out of range: %f", i, v)
@@ -408,7 +408,7 @@ func TestComputeCrossLayerFeatures(t *testing.T) {
 }
 
 // =========================================================================
-// 推理管线测试
+// Inference pipeline tests
 // =========================================================================
 
 func TestModelPipelineInfer(t *testing.T) {
@@ -489,7 +489,7 @@ func TestModelPipelineBatchInfer(t *testing.T) {
 }
 
 // =========================================================================
-// 模型序列化测试
+// Model serialization tests
 // =========================================================================
 
 func TestModelPipelineSaveLoad(t *testing.T) {
@@ -497,18 +497,18 @@ func TestModelPipelineSaveLoad(t *testing.T) {
 
 	tmpFile := t.TempDir() + "/model_weights.json"
 
-	// 保存
+	// Save
 	if err := pipeline.SaveWeights(tmpFile); err != nil {
 		t.Fatalf("SaveWeights failed: %v", err)
 	}
 
-	// 加载到新管线
+	// Load into new pipeline
 	pipeline2 := NewModelPipeline()
 	if err := pipeline2.LoadWeights(tmpFile); err != nil {
 		t.Fatalf("LoadWeights failed: %v", err)
 	}
 
-	// 验证权重一致性
+	// Verify weight consistency
 	params1 := pipeline.encoder.Net.Params()
 	params2 := pipeline2.encoder.Net.Params()
 	if len(params1) != len(params2) {
@@ -524,7 +524,7 @@ func TestModelPipelineSaveLoad(t *testing.T) {
 }
 
 // =========================================================================
-// NeuralTrainer 测试
+// NeuralTrainer tests
 // =========================================================================
 
 func TestNeuralTrainerBuildData(t *testing.T) {
@@ -539,13 +539,13 @@ func TestNeuralTrainerBuildData(t *testing.T) {
 		ValidationSplit: 0.2,
 	})
 
-	// 创建测试配置文件
+	// Create test profiles
 	registry := profiles.NewProfileRegistry()
 	for i := 0; i < 10; i++ {
 		p := profiles.ClientProfile{
-			ID:          fmt.Sprintf("test_%d", i),
-			BrowserType: core.BrowserChrome,
-			TLSVersion:  0x0304,
+			ID:           fmt.Sprintf("test_%d", i),
+			BrowserType:  core.BrowserChrome,
+			TLSVersion:   0x0304,
 			CipherSuites: []uint16{0x1301, 0x1302, 0x1303},
 			Extensions:   []core.TLSExtension{{Type: 0x0000}},
 		}
@@ -562,7 +562,7 @@ func TestNeuralTrainerBuildData(t *testing.T) {
 }
 
 // =========================================================================
-// GPU 设备抽象测试
+// GPU device abstraction tests
 // =========================================================================
 
 func TestCPUDevice(t *testing.T) {
@@ -579,5 +579,148 @@ func TestCPUDevice(t *testing.T) {
 	c := dev.MatMul(a, b)
 	if c.Shape[0] != 2 || c.Shape[1] != 2 {
 		t.Fatalf("device MatMul shape: expected [2,2], got %v", c.Shape)
+	}
+}
+
+// =========================================================================
+// Model store tests
+// =========================================================================
+
+func TestModelStoreCreateAndLoad(t *testing.T) {
+	dir := t.TempDir()
+	store, err := NewModelStore(DefaultStoreConfig(dir))
+	if err != nil {
+		t.Fatalf("NewModelStore: %v", err)
+	}
+
+	if store.VersionCount() != 0 {
+		t.Fatalf("expected 0 versions, got %d", store.VersionCount())
+	}
+
+	// Save a model
+	pipeline := NewModelPipeline()
+	err = store.Save(pipeline, "test save", nil)
+	if err != nil {
+		t.Fatalf("Save: %v", err)
+	}
+
+	if store.VersionCount() != 1 {
+		t.Fatalf("expected 1 version, got %d", store.VersionCount())
+	}
+
+	latest := store.Latest()
+	if latest == nil || latest.Version != 1 {
+		t.Fatalf("expected version 1, got %v", latest)
+	}
+	if latest.Description != "test save" {
+		t.Errorf("expected description 'test save', got %q", latest.Description)
+	}
+
+	// Load into a new pipeline
+	pipeline2 := NewModelPipeline()
+	loaded, err := store.LoadLatest(pipeline2)
+	if err != nil {
+		t.Fatalf("LoadLatest: %v", err)
+	}
+	if !loaded {
+		t.Fatal("expected to load model")
+	}
+
+	// Verify weights match
+	p1 := pipeline.encoder.Net.Params()
+	p2 := pipeline2.encoder.Net.Params()
+	for i := range p1 {
+		for j := range p1[i].Value.Data {
+			if p1[i].Value.Data[j] != p2[i].Value.Data[j] {
+				t.Fatalf("weight mismatch at param[%d][%d]", i, j)
+			}
+		}
+	}
+}
+
+func TestModelStoreMultipleVersions(t *testing.T) {
+	dir := t.TempDir()
+	cfg := DefaultStoreConfig(dir)
+	cfg.MaxVersions = 3
+	store, err := NewModelStore(cfg)
+	if err != nil {
+		t.Fatalf("NewModelStore: %v", err)
+	}
+
+	pipeline := NewModelPipeline()
+
+	// Save 5 versions; store should prune to 3
+	for i := 0; i < 5; i++ {
+		err = store.Save(pipeline, fmt.Sprintf("version %d", i+1), nil)
+		if err != nil {
+			t.Fatalf("Save v%d: %v", i+1, err)
+		}
+	}
+
+	if store.VersionCount() != 3 {
+		t.Fatalf("expected 3 versions after pruning, got %d", store.VersionCount())
+	}
+
+	versions := store.ListVersions()
+	if versions[0].Version != 3 || versions[2].Version != 5 {
+		t.Errorf("expected versions [3,4,5], got [%d,%d,%d]",
+			versions[0].Version, versions[1].Version, versions[2].Version)
+	}
+}
+
+func TestModelStoreEmptyLoadLatest(t *testing.T) {
+	dir := t.TempDir()
+	store, err := NewModelStore(DefaultStoreConfig(dir))
+	if err != nil {
+		t.Fatalf("NewModelStore: %v", err)
+	}
+
+	pipeline := NewModelPipeline()
+	loaded, err := store.LoadLatest(pipeline)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if loaded {
+		t.Fatal("should not load from empty store")
+	}
+}
+
+func TestModelStorePersistence(t *testing.T) {
+	dir := t.TempDir()
+
+	// Create store and save
+	store1, _ := NewModelStore(DefaultStoreConfig(dir))
+	pipeline := NewModelPipeline()
+	_ = store1.Save(pipeline, "persist test", nil)
+
+	// Re-open store from same directory
+	store2, err := NewModelStore(DefaultStoreConfig(dir))
+	if err != nil {
+		t.Fatalf("re-open store: %v", err)
+	}
+	if store2.VersionCount() != 1 {
+		t.Fatalf("expected 1 version after re-open, got %d", store2.VersionCount())
+	}
+
+	pipeline2 := NewModelPipeline()
+	loaded, err := store2.LoadLatest(pipeline2)
+	if err != nil || !loaded {
+		t.Fatalf("failed to load from re-opened store: loaded=%v, err=%v", loaded, err)
+	}
+}
+
+func TestPipelineLoadFromStore(t *testing.T) {
+	dir := t.TempDir()
+	store, _ := NewModelStore(DefaultStoreConfig(dir))
+	orig := NewModelPipeline()
+	_ = store.Save(orig, "convenience test", nil)
+
+	pipeline := NewModelPipeline()
+	loaded, err := pipeline.LoadFromStore(store)
+	if err != nil || !loaded {
+		t.Fatalf("LoadFromStore failed: loaded=%v, err=%v", loaded, err)
+	}
+	if !pipeline.Trained() {
+		t.Error("pipeline should be marked as trained after loading")
 	}
 }

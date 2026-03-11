@@ -1,14 +1,14 @@
-// Package ml — nn.go 提供神经网络基础组件。
+// Package ml — nn.go provides neural network building blocks.
 //
-// 包含：
-//   - Layer 接口与 Dense（全连接）层实现
-//   - 激活函数：ReLU、Sigmoid、Softmax、Tanh
-//   - Sequential 模型：将多个层串联为一个前向/反向传播图
-//   - Adam 优化器：自适应学习率
-//   - 损失函数：CrossEntropy、MSE、TripletMargin
-//   - 参数初始化：He、Xavier、零初始化
+// Contents:
+//   - Layer interface and Dense (fully-connected) layer implementation
+//   - Activation functions: ReLU, Sigmoid, Softmax, Tanh
+//   - Sequential model: chains multiple layers into a forward/backward graph
+//   - Adam optimizer: adaptive learning rate
+//   - Loss functions: CrossEntropy, MSE, TripletMargin
+//   - Parameter initialization: He, Xavier, zero-init
 //
-// 这些组件直接在 Tensor 之上构建，支持 mini-batch 训练。
+// These components build directly on top of Tensor and support mini-batch training.
 package ml
 
 import (
@@ -17,46 +17,47 @@ import (
 )
 
 // ---------------------------------------------------------------------------
-// Layer 接口
+// Layer interface
 // ---------------------------------------------------------------------------
 
-// Layer 定义神经网络中单个层的接口。
+// Layer defines the interface for a single neural network layer.
 type Layer interface {
-	// Forward 前向传播: input[batch×in] → output[batch×out]
+	// Forward performs forward propagation: input[batch×in] → output[batch×out]
 	Forward(input *Tensor) *Tensor
-	// Backward 反向传播: gradOutput[batch×out] → gradInput[batch×in]，同时累积参数梯度
+	// Backward performs backpropagation: gradOutput[batch×out] → gradInput[batch×in],
+	// accumulating parameter gradients.
 	Backward(gradOutput *Tensor) *Tensor
-	// Params 返回可训练参数及其梯度（用于优化器更新）
+	// Params returns trainable parameters and their gradients (for optimizer updates).
 	Params() []*Param
-	// SetTraining 设置训练/推理模式
+	// SetTraining switches between training and inference modes.
 	SetTraining(training bool)
 }
 
-// Param 表示一个可训练参数及其梯度。
+// Param represents a trainable parameter and its gradient.
 type Param struct {
-	Value *Tensor // 参数值
-	Grad  *Tensor // 参数梯度
+	Value *Tensor // parameter values
+	Grad  *Tensor // parameter gradients
 }
 
 // ---------------------------------------------------------------------------
-// Dense 全连接层
+// Dense fully-connected layer
 // ---------------------------------------------------------------------------
 
-// DenseLayer 全连接层: y = x·W^T + b
-// 其中 W[out×in], b[out], x[batch×in] → y[batch×out]
+// DenseLayer implements a fully-connected layer: y = x·W^T + b
+// where W[out×in], b[out], x[batch×in] → y[batch×out]
 type DenseLayer struct {
-	Weight    *Tensor // [outDim × inDim]
-	Bias      *Tensor // [outDim]
-	WeightG   *Tensor // 梯度
-	BiasG     *Tensor // 梯度
-	input     *Tensor // 缓存前向传播输入（反向传播用）
-	inDim     int
-	outDim    int
-	useBias   bool
-	training  bool
+	Weight   *Tensor // [outDim × inDim]
+	Bias     *Tensor // [outDim]
+	WeightG  *Tensor // weight gradient
+	BiasG    *Tensor // bias gradient
+	input    *Tensor // cached forward input (used in backward pass)
+	inDim    int
+	outDim   int
+	useBias  bool
+	training bool
 }
 
-// NewDenseLayer 创建全连接层，使用 He 初始化。
+// NewDenseLayer creates a fully-connected layer with He initialization.
 func NewDenseLayer(inDim, outDim int) *DenseLayer {
 	scale := math.Sqrt(2.0 / float64(inDim)) // He init
 	w := RandNScaled(scale, outDim, inDim)
@@ -73,7 +74,7 @@ func NewDenseLayer(inDim, outDim int) *DenseLayer {
 }
 
 func (l *DenseLayer) Forward(input *Tensor) *Tensor {
-	l.input = input // 缓存用于反向传播
+	l.input = input // cache for backward pass
 	// y = x · W^T + b
 	wt := l.Weight.Transpose() // [inDim × outDim]
 	out := DefaultDevice.MatMulAdd(input, wt, l.Bias)
@@ -82,24 +83,24 @@ func (l *DenseLayer) Forward(input *Tensor) *Tensor {
 
 func (l *DenseLayer) Backward(gradOutput *Tensor) *Tensor {
 	batch := gradOutput.Shape[0]
-	// 梯度 of Weight: dW = gradOutput^T · input → [outDim × inDim]
+	// Weight gradient: dW = gradOutput^T · input → [outDim × inDim]
 	gt := gradOutput.Transpose() // [outDim × batch]
 	dW := DefaultDevice.MatMul(gt, l.input)
-	// 梯度 of Bias: dB = sum(gradOutput, axis=0) → [1 × outDim]
+	// Bias gradient: dB = sum(gradOutput, axis=0) → [1 × outDim]
 	dB := Zeros(1, l.outDim)
 	for i := 0; i < batch; i++ {
 		for j := 0; j < l.outDim; j++ {
 			dB.Data[j] += gradOutput.At(i, j)
 		}
 	}
-	// 累积梯度（支持梯度累加用于多 mini-batch）
+	// Accumulate gradients (supports gradient accumulation across mini-batches)
 	for i := range l.WeightG.Data {
 		l.WeightG.Data[i] += dW.Data[i] / float64(batch)
 	}
 	for i := range l.BiasG.Data {
 		l.BiasG.Data[i] += dB.Data[i] / float64(batch)
 	}
-	// 梯度 of input: dX = gradOutput · W → [batch × inDim]
+	// Input gradient: dX = gradOutput · W → [batch × inDim]
 	dX := DefaultDevice.MatMul(gradOutput, l.Weight) // [batch×out] × [out×in] → [batch×in]
 	return dX
 }
@@ -117,12 +118,12 @@ func (l *DenseLayer) Params() []*Param {
 func (l *DenseLayer) SetTraining(training bool) { l.training = training }
 
 // ---------------------------------------------------------------------------
-// 激活函数层
+// Activation layers
 // ---------------------------------------------------------------------------
 
-// ReLULayer ReLU 激活: max(0, x)
+// ReLULayer implements ReLU activation: max(0, x)
 type ReLULayer struct {
-	mask *Tensor // 前向传播的 mask，反向传播用
+	mask *Tensor // forward mask, used in backward pass
 }
 
 func NewReLULayer() *ReLULayer { return &ReLULayer{} }
@@ -144,12 +145,12 @@ func (l *ReLULayer) Backward(gradOutput *Tensor) *Tensor {
 	return gradOutput.MulElem(l.mask)
 }
 
-func (l *ReLULayer) Params() []*Param           { return nil }
-func (l *ReLULayer) SetTraining(training bool)   {}
+func (l *ReLULayer) Params() []*Param          { return nil }
+func (l *ReLULayer) SetTraining(training bool) {}
 
-// SigmoidLayer Sigmoid 激活: σ(x) = 1/(1+e^(-x))
+// SigmoidLayer implements sigmoid activation: σ(x) = 1/(1+e^(-x))
 type SigmoidLayer struct {
-	output *Tensor // 缓存输出，反向传播用
+	output *Tensor // cached output, used in backward pass
 }
 
 func NewSigmoidLayer() *SigmoidLayer { return &SigmoidLayer{} }
@@ -166,10 +167,10 @@ func (l *SigmoidLayer) Backward(gradOutput *Tensor) *Tensor {
 	return gradOutput.MulElem(dsig)
 }
 
-func (l *SigmoidLayer) Params() []*Param         { return nil }
+func (l *SigmoidLayer) Params() []*Param          { return nil }
 func (l *SigmoidLayer) SetTraining(training bool) {}
 
-// SoftmaxLayer Softmax 激活（按行）
+// SoftmaxLayer implements row-wise softmax activation.
 type SoftmaxLayer struct {
 	output *Tensor
 }
@@ -182,8 +183,8 @@ func (l *SoftmaxLayer) Forward(input *Tensor) *Tensor {
 }
 
 func (l *SoftmaxLayer) Backward(gradOutput *Tensor) *Tensor {
-	// 对于 CrossEntropy + Softmax 的组合，梯度直接传递到 logits
-	// 这里提供完整的 Jacobian 反向传播以支持独立使用
+	// For CrossEntropy + Softmax combined losses, gradient passes directly to logits.
+	// Here we provide the full Jacobian backward pass for standalone usage.
 	rows, cols := l.output.Shape[0], l.output.Shape[1]
 	grad := Zeros(rows, cols)
 	for i := 0; i < rows; i++ {
@@ -204,10 +205,10 @@ func (l *SoftmaxLayer) Backward(gradOutput *Tensor) *Tensor {
 	return grad
 }
 
-func (l *SoftmaxLayer) Params() []*Param         { return nil }
+func (l *SoftmaxLayer) Params() []*Param          { return nil }
 func (l *SoftmaxLayer) SetTraining(training bool) {}
 
-// DropoutLayer Dropout 正则化层
+// DropoutLayer implements dropout regularization.
 type DropoutLayer struct {
 	rate     float64
 	mask     *Tensor
@@ -244,24 +245,24 @@ func (l *DropoutLayer) Backward(gradOutput *Tensor) *Tensor {
 	return gradOutput.MulElem(l.mask)
 }
 
-func (l *DropoutLayer) Params() []*Param         { return nil }
+func (l *DropoutLayer) Params() []*Param          { return nil }
 func (l *DropoutLayer) SetTraining(training bool) { l.training = training }
 
 // ---------------------------------------------------------------------------
-// Sequential 模型
+// Sequential model
 // ---------------------------------------------------------------------------
 
-// Sequential 将多个 Layer 串联成一个端到端模型。
+// Sequential chains multiple layers into an end-to-end model.
 type Sequential struct {
 	Layers []Layer
 }
 
-// NewSequential 创建序列模型。
+// NewSequential creates a sequential model.
 func NewSequential(layers ...Layer) *Sequential {
 	return &Sequential{Layers: layers}
 }
 
-// Forward 依次执行所有层的前向传播。
+// Forward executes all layers in order.
 func (m *Sequential) Forward(input *Tensor) *Tensor {
 	x := input
 	for _, l := range m.Layers {
@@ -270,7 +271,7 @@ func (m *Sequential) Forward(input *Tensor) *Tensor {
 	return x
 }
 
-// Backward 逆序执行所有层的反向传播。
+// Backward executes all layers in reverse order.
 func (m *Sequential) Backward(gradOutput *Tensor) *Tensor {
 	g := gradOutput
 	for i := len(m.Layers) - 1; i >= 0; i-- {
@@ -279,7 +280,7 @@ func (m *Sequential) Backward(gradOutput *Tensor) *Tensor {
 	return g
 }
 
-// Params 收集所有层的可训练参数。
+// Params collects trainable parameters from all layers.
 func (m *Sequential) Params() []*Param {
 	var all []*Param
 	for _, l := range m.Layers {
@@ -290,14 +291,14 @@ func (m *Sequential) Params() []*Param {
 	return all
 }
 
-// SetTraining 设置所有层的训练/推理模式。
+// SetTraining sets training/inference mode for all layers.
 func (m *Sequential) SetTraining(training bool) {
 	for _, l := range m.Layers {
 		l.SetTraining(training)
 	}
 }
 
-// ZeroGrad 清零所有参数梯度。
+// ZeroGrad zeroes all parameter gradients.
 func (m *Sequential) ZeroGrad() {
 	for _, p := range m.Params() {
 		for i := range p.Grad.Data {
@@ -307,22 +308,22 @@ func (m *Sequential) ZeroGrad() {
 }
 
 // ---------------------------------------------------------------------------
-// Adam 优化器
+// Adam optimizer
 // ---------------------------------------------------------------------------
 
-// AdamOptimizer 自适应矩估计优化器（Adam）。
+// AdamOptimizer implements the Adam (Adaptive Moment Estimation) optimizer.
 type AdamOptimizer struct {
-	LR      float64 // 学习率
-	Beta1   float64 // 一阶矩衰减率 (default 0.9)
-	Beta2   float64 // 二阶矩衰减率 (default 0.999)
-	Epsilon float64 // 数值稳定性 (default 1e-8)
+	LR      float64 // learning rate
+	Beta1   float64 // first moment decay rate (default 0.9)
+	Beta2   float64 // second moment decay rate (default 0.999)
+	Epsilon float64 // numerical stability (default 1e-8)
 	step    int
-	m       []*Tensor // 一阶矩
-	v       []*Tensor // 二阶矩
+	m       []*Tensor // first moment estimates
+	v       []*Tensor // second moment estimates
 	params  []*Param
 }
 
-// NewAdamOptimizer 创建 Adam 优化器。
+// NewAdamOptimizer creates an Adam optimizer.
 func NewAdamOptimizer(params []*Param, lr float64) *AdamOptimizer {
 	m := make([]*Tensor, len(params))
 	v := make([]*Tensor, len(params))
@@ -341,7 +342,7 @@ func NewAdamOptimizer(params []*Param, lr float64) *AdamOptimizer {
 	}
 }
 
-// Step 执行一步参数更新。
+// Step performs a single parameter update.
 func (opt *AdamOptimizer) Step() {
 	opt.step++
 	bc1 := 1.0 - math.Pow(opt.Beta1, float64(opt.step))
@@ -360,13 +361,13 @@ func (opt *AdamOptimizer) Step() {
 }
 
 // ---------------------------------------------------------------------------
-// 损失函数
+// Loss functions
 // ---------------------------------------------------------------------------
 
-// CrossEntropyLoss 计算交叉熵损失与梯度。
-// probs: Softmax 输出 [batch × classes]
-// targets: 目标类别索引 [batch]（int 数组）
-// 返回: 损失值, 对 logits 的梯度 [batch × classes]
+// CrossEntropyLoss computes cross-entropy loss and gradient.
+// probs: softmax output [batch × classes]
+// targets: target class indices [batch] (int array)
+// Returns: loss value, gradient w.r.t. logits [batch × classes]
 func CrossEntropyLoss(probs *Tensor, targets []int) (float64, *Tensor) {
 	batch, classes := probs.Shape[0], probs.Shape[1]
 	loss := 0.0
@@ -389,9 +390,9 @@ func CrossEntropyLoss(probs *Tensor, targets []int) (float64, *Tensor) {
 	return loss / float64(batch), grad.MulScalar(1.0 / float64(batch))
 }
 
-// BinaryCrossEntropyLoss 计算二元交叉熵损失与梯度。
-// preds: Sigmoid 输出 [batch × 1]
-// targets: 目标值 [batch]（0.0 或 1.0）
+// BinaryCrossEntropyLoss computes binary cross-entropy loss and gradient.
+// preds: sigmoid output [batch × 1]
+// targets: target values [batch] (0.0 or 1.0)
 func BinaryCrossEntropyLoss(preds *Tensor, targets []float64) (float64, *Tensor) {
 	batch := len(targets)
 	loss := 0.0
@@ -401,12 +402,12 @@ func BinaryCrossEntropyLoss(preds *Tensor, targets []float64) (float64, *Tensor)
 		t := targets[i]
 		p = math.Max(1e-12, math.Min(1-1e-12, p))
 		loss -= t*math.Log(p) + (1-t)*math.Log(1-p)
-		grad.Data[i] = (p - t) / (p * (1 - p) + 1e-12)
+		grad.Data[i] = (p - t) / (p*(1-p) + 1e-12)
 	}
 	return loss / float64(batch), grad.MulScalar(1.0 / float64(batch))
 }
 
-// MSELoss 计算均方误差损失与梯度。
+// MSELoss computes mean squared error loss and gradient.
 func MSELoss(preds, targets *Tensor) (float64, *Tensor) {
 	diff := preds.Sub(targets)
 	n := float64(len(diff.Data))
@@ -418,9 +419,9 @@ func MSELoss(preds, targets *Tensor) (float64, *Tensor) {
 	return loss / n, grad
 }
 
-// TripletMarginLoss 计算三元组损失。
-// anchor, positive, negative 各为 [batch × dim] 的嵌入向量。
-// margin: 最小间距。
+// TripletMarginLoss computes triplet margin loss.
+// anchor, positive, negative are each [batch × dim] embedding tensors.
+// margin: minimum margin between positive and negative distances.
 func TripletMarginLoss(anchor, positive, negative *Tensor, margin float64) (float64, *Tensor, *Tensor, *Tensor) {
 	batch := anchor.Shape[0]
 	dim := anchor.Shape[1]
@@ -430,7 +431,7 @@ func TripletMarginLoss(anchor, positive, negative *Tensor, margin float64) (floa
 	gradN := Zeros(batch, dim)
 
 	for i := 0; i < batch; i++ {
-		// 计算距离
+		// Compute positive and negative distances
 		dPos, dNeg := 0.0, 0.0
 		for j := 0; j < dim; j++ {
 			dp := anchor.At(i, j) - positive.At(i, j)
@@ -441,7 +442,7 @@ func TripletMarginLoss(anchor, positive, negative *Tensor, margin float64) (floa
 		loss := dPos - dNeg + margin
 		if loss > 0 {
 			totalLoss += loss
-			// 梯度: d(loss)/d(anchor) = 2(anchor-positive) - 2(anchor-negative)
+			// Gradient: d(loss)/d(anchor) = 2(anchor-positive) - 2(anchor-negative)
 			// d(loss)/d(positive) = -2(anchor-positive)
 			// d(loss)/d(negative) = 2(anchor-negative)
 			for j := 0; j < dim; j++ {
