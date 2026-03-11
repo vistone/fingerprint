@@ -4,6 +4,29 @@
 
 ## [Unreleased]
 
+## [v1.0.13] - 2026-03-11
+
+### 变更
+
+- **强化学习升级：从表格式 Q-learning 升级为深度 Q 网络 (DQN)** (`modules/agent/reinforcement.go`)
+  - 用多层感知器 (MLP) 神经网络替代 Q 表，采用 He 初始化和 ReLU 激活函数
+  - 实现完整的 SGD 反向传播，梯度裁剪 (±1.0) 保证训练稳定性
+  - 添加经验回放缓冲区（可配置容量，默认 10000），均匀小批量采样
+  - 添加目标网络，定期权重同步（默认每 100 步），稳定 TD 目标
+  - 离散 4 桶状态替换为连续 8 维状态向量：[风险分数, ML置信度, 一致性, 切换率, 请求率, 风险趋势, 观测数, 唯一指纹比率]
+  - `RLConfig` 扩展：`HiddenLayers []int`、`LearningRate`、`ReplayCapacity`、`BatchSize`、`TargetUpdateFreq`、`StateDim`
+  - 新增连续状态 API：`SelectActionContinuous()`、`UpdateContinuous()`、`QValueContinuous()`、`BestActionContinuous()`
+  - `ExtractStateVector()` 直接从观测生成 8 维归一化特征向量（无离散化信息损失）
+  - `RLStats` 扩展：`Steps`、`TrainSteps`、`AvgLoss`、`ReplaySize`、`NetworkLayers`
+  - 保持向后兼容 API：`SelectAction()`、`Update()`、`QValue()`、`BestAction()` 内部自动将离散 State 转换为向量
+- **更新 Agent 集成** (`modules/agent/agent.go`)
+  - `Process()` 改用 `ExtractStateVector` + `SelectActionContinuous` + `QValueContinuous`
+  - `ReportReward()` 改用 `ExtractStateVector` + `UpdateContinuous`，支持终止状态标记
+  - 洞察文本前缀从 "RL" 更新为 "DQN"
+- **重写 DQN 测试套件** (`modules/agent/reinforcement_test.go`)
+  - 18 个测试函数覆盖：神经网络前向/反向/复制传播、回放缓冲区、状态提取、DQN 贪心/探索/收敛/损失/目标网络同步、向后兼容、统计信息、Agent 集成
+  - 对比训练覆盖全部 5 个动作，确保收敛验证稳健性
+
 ## [v1.0.12] - 2026-03-11
 
 ### 新增

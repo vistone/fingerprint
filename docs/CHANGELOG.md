@@ -4,6 +4,29 @@ This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+## [v1.0.13] - 2026-03-11
+
+### Changed
+
+- **Upgrade Reinforcement Learning from tabular Q-learning to Deep Q-Network (DQN)** (`modules/agent/reinforcement.go`)
+  - Replace Q-table with multi-layer perceptron (MLP) neural network using He initialization and ReLU activations
+  - Implement full SGD backpropagation with gradient clipping (±1.0) for stable training
+  - Add experience replay buffer (configurable capacity, default 10000) with uniform mini-batch sampling
+  - Add target network with periodic weight sync (default every 100 steps) for stable TD targets
+  - Replace discretized 4-bucket state with continuous 8-dimensional state vector: [risk_score, ml_confidence, consistency, switch_rate, req_rate, risk_trend, obs_count, unique_fp_ratio]
+  - `RLConfig` extended: `HiddenLayers []int`, `LearningRate`, `ReplayCapacity`, `BatchSize`, `TargetUpdateFreq`, `StateDim`
+  - New continuous API: `SelectActionContinuous()`, `UpdateContinuous()`, `QValueContinuous()`, `BestActionContinuous()`
+  - `ExtractStateVector()` generates 8-dim normalized feature vector directly from observations (no discretization loss)
+  - `RLStats` extended: `Steps`, `TrainSteps`, `AvgLoss`, `ReplaySize`, `NetworkLayers`
+  - Backward-compatible API preserved: `SelectAction()`, `Update()`, `QValue()`, `BestAction()` convert discrete State to vector internally
+- **Update Agent integration** (`modules/agent/agent.go`)
+  - `Process()` now uses `ExtractStateVector` + `SelectActionContinuous` + `QValueContinuous`
+  - `ReportReward()` now uses `ExtractStateVector` + `UpdateContinuous` with terminal flag
+  - Insight text updated from "RL" to "DQN" prefix
+- **Rewrite DQN test suite** (`modules/agent/reinforcement_test.go`)
+  - 18 test functions covering: neural net forward/backward/copy, replay buffer, state extraction, DQN greedy/exploration/convergence/loss/target-sync, backward compatibility, stats, agent integration
+  - Contrastive training with all 5 actions for robust convergence verification
+
 ## [v1.0.12] - 2026-03-11
 
 ### Added

@@ -18,9 +18,9 @@ type OnlineClassifier struct {
 	mu          sync.Mutex
 
 	// Concept drift detection
-	recentCorrect int // correct predictions in recent window
-	recentTotal   int // total predictions in recent window
-	windowSize    int // sliding window size for accuracy tracking
+	recentCorrect  int     // correct predictions in recent window
+	recentTotal    int     // total predictions in recent window
+	windowSize     int     // sliding window size for accuracy tracking
 	driftThreshold float64 // accuracy below this triggers drift alert
 }
 

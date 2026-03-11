@@ -246,18 +246,19 @@ func (a *Agent) Process(ctx context.Context, obs *Observation) *Decision {
 				len(matchResult.Contradictions), matchResult.SuspicionScore))
 	}
 
-	// RL override: if reinforcement learning is active, let it refine the action
+	// DQN override: if reinforcement learning is active, let the neural network refine the action
 	if a.rl != nil {
-		state := DiscretizeState(obs, profile)
-		rlAction, explored := a.rl.SelectAction(state)
+		stateVec := ExtractStateVector(obs, profile)
+		rlAction, explored := a.rl.SelectActionContinuous(stateVec)
 		if explored {
-			decision.Insights = append(decision.Insights, "RL exploring alternative action")
+			decision.Insights = append(decision.Insights, "DQN exploring alternative action")
 		}
-		// RL only escalates (never downgrades from strategy decision)
+		// DQN only escalates (never downgrades from strategy decision)
 		if actionIndex[rlAction] > actionIndex[decision.Action] {
+			qvals := a.rl.QValueContinuous(stateVec)
 			decision.Action = rlAction
 			decision.Insights = append(decision.Insights,
-				fmt.Sprintf("RL escalated to %s (Q=%.3f)", rlAction, a.rl.QValue(state, rlAction)))
+				fmt.Sprintf("DQN escalated to %s (Q=%.3f)", rlAction, qvals[actionIndex[rlAction]]))
 		}
 	}
 
@@ -325,10 +326,10 @@ func (a *Agent) ReportReward(obs *Observation, profile *BehaviorSummary, action 
 	wasActualThreat bool, matchResult *MatchResult) {
 
 	if a.rl != nil {
-		state := DiscretizeState(obs, profile)
+		stateVec := ExtractStateVector(obs, profile)
 		reward := ComputeReward(action, wasActualThreat, 0.8, 1.0)
-		// For terminal reward, nextState = state (no transition)
-		a.rl.Update(state, action, reward, state)
+		// Terminal transition: done=true so no bootstrap from next state
+		a.rl.UpdateContinuous(stateVec, action, reward, stateVec, true)
 	}
 
 	if a.bandit != nil {

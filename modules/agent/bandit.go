@@ -244,7 +244,7 @@ func (cb *ContextualBandit) Stats() BanditStats {
 
 // BanditStats contains contextual bandit runtime statistics.
 type BanditStats struct {
-	TotalArms int                `json:"total_arms"`
+	TotalArms int                 `json:"total_arms"`
 	Arms      map[string]ArmStats `json:"arms"`
 }
 
