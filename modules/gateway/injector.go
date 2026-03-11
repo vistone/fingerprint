@@ -1,11 +1,12 @@
 // Package gateway - HTML Response Injector with P3 Anti-Detection Code
-// 自动拦截HTML响应并注入P3反检测代码
+// Automatically intercepts HTML responses and injects P3 anti-detection code
 package gateway
 
 import (
 	"bytes"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -18,11 +19,60 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles"
 )
 
-// 预编译 HTML 注入点匹配正则
+// Pre-compiled HTML injection point regex patterns
 var (
 	injectorHeadPattern = regexp.MustCompile(`(?i)<head[^>]*>`)
 	injectorHTMLPattern = regexp.MustCompile(`(?i)<html[^>]*>`)
 )
+
+// validateProxyTarget checks that the target URL does not point to internal
+// or loopback addresses to prevent SSRF attacks.
+// Set allowPrivate=true for Docker/Kubernetes environments where internal
+// service names resolve to private IPs.
+func validateProxyTarget(targetURL *url.URL, allowPrivate bool) error {
+	host := targetURL.Hostname()
+	if host == "" {
+		return fmt.Errorf("proxy target URL has empty host")
+	}
+
+	// Reject common loopback/metadata hostnames
+	lower := strings.ToLower(host)
+	if lower == "localhost" || lower == "metadata.google.internal" {
+		return fmt.Errorf("proxy target %q is a restricted hostname", host)
+	}
+
+	// Resolve and check IP ranges
+	ips, err := net.LookupHost(host)
+	if err != nil {
+		// DNS resolution failure is not fatal; the proxy will fail at request time.
+		return nil
+	}
+
+	for _, ipStr := range ips {
+		ip := net.ParseIP(ipStr)
+		if ip == nil {
+			continue
+		}
+		// Always block loopback, link-local, and unspecified
+		if ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsUnspecified() {
+			return fmt.Errorf("proxy target %q resolves to restricted address %s", host, ipStr)
+		}
+		// Block RFC 1918 / RFC 6598 private ranges unless explicitly allowed
+		if !allowPrivate {
+			if ip4 := ip.To4(); ip4 != nil {
+				if ip4[0] == 10 ||
+					(ip4[0] == 172 && ip4[1] >= 16 && ip4[1] <= 31) ||
+					(ip4[0] == 192 && ip4[1] == 168) ||
+					(ip4[0] == 100 && ip4[1] >= 64 && ip4[1] <= 127) ||
+					(ip4[0] == 169 && ip4[1] == 254) {
+					return fmt.Errorf("proxy target %q resolves to private address %s", host, ipStr)
+				}
+			}
+		}
+	}
+
+	return nil
+}
 
 func buildInjectionCode(cfg *InjectorConfig, generator *frontend.JSAntiDetectCodeGenerator) string {
 	var buf bytes.Buffer
@@ -57,43 +107,49 @@ func buildInjectionCode(cfg *InjectorConfig, generator *frontend.JSAntiDetectCod
 	return buf.String()
 }
 
-// InjectorConfig 注入器配置
+// InjectorConfig injector configuration
 type InjectorConfig struct {
-	// 是否启用自动注入
+	// Whether to enable automatic injection
 	Enabled bool
 
-	// 目标后端服务 URL（如果为空，则只拦截当前服务的响应）
+	// Target backend service URL (if empty, only intercept current service responses)
 	TargetURL string
 
-	// 使用的 ClientProfile ID（用于生成反检测代码）
+	// ClientProfile ID to use (for generating anti-detection code)
 	ProfileID string
 
-	// ClientProfile（如果提供，直接使用，否则从 ProfileID 加载）
+	// ClientProfile (if provided, use directly; otherwise load from ProfileID)
 	Profile *profiles.ClientProfile
 
-	// 是否注入一致性校验代码
+	// Whether to inject consistency validation code
 	InjectConsistency bool
 
-	// 是否只在 <head> 标签存在时注入（否则注入到 <html> 后）
+	// Whether to only inject when <head> tag exists (otherwise inject after <html>)
 	RequireHeadTag bool
 
-	// 是否添加注入标记注释
+	// Whether to add injection marker comments
 	AddInjectionMarker bool
 
-	// 自定义注入位置（如果为空，默认在 <head> 后）
-	CustomInjectionPoint string // 例如 "</title>" 表示在 title 标签后注入
+	// Custom injection point (if empty, default is after <head>)
+	CustomInjectionPoint string // e.g. "</title>" means inject after title tag
+
+	// AllowPrivateTarget permits proxy targets that resolve to RFC 1918 private
+	// addresses. Enable this when running inside Docker/Kubernetes where services
+	// communicate over internal networks.
+	AllowPrivateTarget bool
 }
 
-// DefaultInjectorConfig 默认注入器配置
+// DefaultInjectorConfig default injector configuration
 var DefaultInjectorConfig = &InjectorConfig{
 	Enabled:              true,
 	InjectConsistency:    true,
 	RequireHeadTag:       true,
 	AddInjectionMarker:   false,
 	CustomInjectionPoint: "",
+	AllowPrivateTarget:   false,
 }
 
-// HTMLInjector HTML 响应注入器
+// HTMLInjector HTML response injector
 type HTMLInjector struct {
 	config     *InjectorConfig
 	profile    *profiles.ClientProfile
@@ -101,11 +157,11 @@ type HTMLInjector struct {
 	validator  *utils.ConsistencyValidator
 	proxy      *httputil.ReverseProxy
 	mu         sync.RWMutex
-	codeCache  string // 缓存生成的代码
-	cacheValid bool
+	codeCache  string // Cache for generated code
+	cacheValid bool   // Whether cache is valid
 }
 
-// NewHTMLInjector 创建新的 HTML 注入器
+// NewHTMLInjector creates a new HTML injector
 func NewHTMLInjector(config *InjectorConfig) (*HTMLInjector, error) {
 	if config == nil {
 		config = DefaultInjectorConfig
@@ -115,29 +171,32 @@ func NewHTMLInjector(config *InjectorConfig) (*HTMLInjector, error) {
 		config: config,
 	}
 
-	// 加载或使用提供的 Profile
+	// Load or use provided Profile
 	if config.Profile != nil {
 		injector.profile = config.Profile
 	} else if config.ProfileID != "" {
-		// TODO: 从配置文件或数据库加载 profile
-		// 这里暂时返回错误，需要用户提供 Profile
+		// TODO: Load profile from config file or database
+		// Return error for now, user needs to provide Profile
 		return nil, fmt.Errorf("profile loading not implemented, please provide Profile directly")
 	} else {
-		// 使用默认空配置（不注入任何代码）
+		// Use default empty config (no code injection)
 		injector.profile = &profiles.ClientProfile{}
 	}
 
-	// 初始化生成器
+	// Initialize generator
 	if injector.profile.JSAntiDetection != nil {
 		injector.generator = frontend.NewJSAntiDetectCodeGenerator(injector.profile)
 		injector.validator = utils.NewConsistencyValidator(injector.profile)
 	}
 
-	// 如果提供了目标 URL，设置反向代理
+	// If target URL is provided, set up reverse proxy with SSRF protection
 	if config.TargetURL != "" {
 		targetURL, err := url.Parse(config.TargetURL)
 		if err != nil {
 			return nil, fmt.Errorf("invalid target URL: %w", err)
+		}
+		if err := validateProxyTarget(targetURL, config.AllowPrivateTarget); err != nil {
+			return nil, fmt.Errorf("proxy target rejected: %w", err)
 		}
 		injector.proxy = httputil.NewSingleHostReverseProxy(targetURL)
 		injector.proxy.ModifyResponse = injector.modifyResponse
@@ -146,7 +205,7 @@ func NewHTMLInjector(config *InjectorConfig) (*HTMLInjector, error) {
 	return injector, nil
 }
 
-// SetProfile 动态更新 Profile（会清空代码缓存）
+// SetProfile dynamically updates the Profile and invalidates the code cache.
 func (inj *HTMLInjector) SetProfile(profile *profiles.ClientProfile) {
 	inj.mu.Lock()
 	defer inj.mu.Unlock()
@@ -163,7 +222,7 @@ func (inj *HTMLInjector) SetProfile(profile *profiles.ClientProfile) {
 	}
 }
 
-// GenerateInjectionCode 生成要注入的完整代码
+// GenerateInjectionCode generates the full anti-detection code to inject.
 func (inj *HTMLInjector) GenerateInjectionCode() string {
 	inj.mu.RLock()
 	if inj.cacheValid {
@@ -176,7 +235,7 @@ func (inj *HTMLInjector) GenerateInjectionCode() string {
 	inj.mu.Lock()
 	defer inj.mu.Unlock()
 
-	// 再次检查（双重检查锁定）
+	// Double-checked locking
 	if inj.cacheValid {
 		return inj.codeCache
 	}
@@ -187,7 +246,7 @@ func (inj *HTMLInjector) GenerateInjectionCode() string {
 	return inj.codeCache
 }
 
-// GenerateInjectionCodeForProfile 生成指定 profile 的注入代码，不修改全局注入器状态。
+// GenerateInjectionCodeForProfile generates injection code for the given profile without modifying global state.
 func (inj *HTMLInjector) GenerateInjectionCodeForProfile(profile *profiles.ClientProfile) string {
 	if profile == nil || profile.JSAntiDetection == nil {
 		return ""
@@ -199,14 +258,14 @@ func (inj *HTMLInjector) GenerateInjectionCodeForProfile(profile *profiles.Clien
 	return buildInjectionCode(&cfg, gen)
 }
 
-// InjectIntoHTML 将代码注入到 HTML 响应中
+// InjectIntoHTML injects anti-detection code into an HTML response body.
 func (inj *HTMLInjector) InjectIntoHTML(htmlContent []byte) []byte {
 	if !inj.config.Enabled {
 		return htmlContent
 	}
 
 	if inj.generator == nil {
-		// 没有配置反检测，直接返回原内容
+		// No anti-detection configured, return original content
 		return htmlContent
 	}
 
@@ -215,23 +274,22 @@ func (inj *HTMLInjector) InjectIntoHTML(htmlContent []byte) []byte {
 
 	var injectedContent string
 
-	// 尝试自定义注入点
+	// Try custom injection point (use simple string search instead of regexp on hot path)
 	if inj.config.CustomInjectionPoint != "" {
-		pattern := regexp.MustCompile(regexp.QuoteMeta(inj.config.CustomInjectionPoint))
-		if loc := pattern.FindStringIndex(content); loc != nil {
-			// 在自定义位置注入
-			injectedContent = content[:loc[1]] + "\n" + injectionCode + content[loc[1]:]
+		if idx := strings.Index(content, inj.config.CustomInjectionPoint); idx >= 0 {
+			end := idx + len(inj.config.CustomInjectionPoint)
+			injectedContent = content[:end] + "\n" + injectionCode + content[end:]
 			return []byte(injectedContent)
 		}
 	}
 
-	// 尝试在 <head> 标签后注入（最推荐）
+	// Try injecting after <head> tag (preferred)
 	if loc := injectorHeadPattern.FindStringIndex(content); loc != nil {
 		injectedContent = content[:loc[1]] + "\n" + injectionCode + content[loc[1]:]
 		return []byte(injectedContent)
 	}
 
-	// 如果 RequireHeadTag = false，尝试在 <html> 后注入
+	// If RequireHeadTag is false, try injecting after <html>
 	if !inj.config.RequireHeadTag {
 		if loc := injectorHTMLPattern.FindStringIndex(content); loc != nil {
 			injectedContent = content[:loc[1]] + "\n" + injectionCode + content[loc[1]:]
@@ -239,47 +297,47 @@ func (inj *HTMLInjector) InjectIntoHTML(htmlContent []byte) []byte {
 		}
 	}
 
-	// 如果都没找到，在文档最开始注入（作为最后的备选）
+	// Fallback: inject at the beginning of the document
 	if !inj.config.RequireHeadTag {
 		return []byte(injectionCode + content)
 	}
 
-	// 不符合注入条件，返回原内容
+	// Does not meet injection criteria, return original content
 	return htmlContent
 }
 
-// maxInjectableBodySize 可注入的 HTML 响应体最大大小（10MB）
+// maxInjectableBodySize is the maximum HTML response body size for injection (10MB).
 const maxInjectableBodySize = 10 * 1024 * 1024
 
-// modifyResponse 修改反向代理的响应（用于代理模式）
+// modifyResponse modifies reverse proxy responses (proxy mode).
 func (inj *HTMLInjector) modifyResponse(resp *http.Response) error {
-	// 只处理 HTML 响应
+	// Only process HTML responses
 	contentType := resp.Header.Get("Content-Type")
 	if !strings.Contains(strings.ToLower(contentType), "text/html") {
 		return nil
 	}
 
-	// 限制读取大小，防止超大响应导致 OOM
+	// Limit read size to prevent OOM from oversized responses
 	bodyBytes, err := io.ReadAll(io.LimitReader(resp.Body, maxInjectableBodySize))
 	if err != nil {
 		return err
 	}
 	resp.Body.Close()
 
-	// 注入代码
+	// Inject code
 	injectedBody := inj.InjectIntoHTML(bodyBytes)
 
-	// 创建新的响应体
+	// Build new response body
 	resp.Body = io.NopCloser(bytes.NewReader(injectedBody))
 	resp.Header.Set("Content-Length", fmt.Sprintf("%d", len(injectedBody)))
 
-	// 移除可能的 Content-Encoding（因为我们已经解压并修改了内容）
+	// Remove Content-Encoding since we decompressed and modified the body
 	resp.Header.Del("Content-Encoding")
 
 	return nil
 }
 
-// ServeHTTP 实现 http.Handler 接口（代理模式）
+// ServeHTTP implements http.Handler (proxy mode).
 func (inj *HTMLInjector) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if inj.proxy == nil {
 		http.Error(w, "proxy not configured", http.StatusInternalServerError)
@@ -289,61 +347,61 @@ func (inj *HTMLInjector) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	inj.proxy.ServeHTTP(w, r)
 }
 
-// WrapHandler 包装现有的 HTTP handler（中间件模式）
+// WrapHandler wraps an existing HTTP handler (middleware mode).
 func (inj *HTMLInjector) WrapHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// 创建响应拦截器
+		// Create response interceptor
 		recorder := &responseRecorderWithInjection{
 			ResponseWriter: w,
 			injector:       inj,
 			statusCode:     http.StatusOK,
 		}
 
-		// 调用下一个 handler
+		// Call next handler
 		next.ServeHTTP(recorder, r)
 
-		// 如果是 HTML 响应，注入代码
+		// Inject code if the response is HTML
 		if recorder.shouldInject() {
 			injectedBody := inj.InjectIntoHTML(recorder.body.Bytes())
 			w.Header().Set("Content-Length", fmt.Sprintf("%d", len(injectedBody)))
 			w.WriteHeader(recorder.statusCode)
 			w.Write(injectedBody)
 		} else {
-			// 否则直接写入原响应
+			// Write original response as-is
 			w.WriteHeader(recorder.statusCode)
 			w.Write(recorder.body.Bytes())
 		}
 	})
 }
 
-// WrapHandlerFunc 包装 HandlerFunc（中间件模式）
+// WrapHandlerFunc wraps an http.HandlerFunc (middleware mode).
 func (inj *HTMLInjector) WrapHandlerFunc(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// 创建响应拦截器
+		// Create response interceptor
 		recorder := &responseRecorderWithInjection{
 			ResponseWriter: w,
 			injector:       inj,
 			statusCode:     http.StatusOK,
 		}
 
-		// 调用下一个 handler
+		// Call next handler
 		next(recorder, r)
 
-		// 如果是 HTML 响应，注入代码
+		// Inject code if the response is HTML
 		if recorder.shouldInject() {
 			injectedBody := inj.InjectIntoHTML(recorder.body.Bytes())
 			w.Header().Set("Content-Length", fmt.Sprintf("%d", len(injectedBody)))
 			w.WriteHeader(recorder.statusCode)
 			w.Write(injectedBody)
 		} else {
-			// 否则直接写入原响应
+			// Write original response as-is
 			w.WriteHeader(recorder.statusCode)
 			w.Write(recorder.body.Bytes())
 		}
 	}
 }
 
-// responseRecorderWithInjection 响应记录器（用于中间件模式）
+// responseRecorderWithInjection is a response recorder for middleware mode.
 type responseRecorderWithInjection struct {
 	http.ResponseWriter
 	injector    *HTMLInjector
@@ -368,12 +426,12 @@ func (rec *responseRecorderWithInjection) shouldInject() bool {
 	return strings.Contains(strings.ToLower(contentType), "text/html")
 }
 
-// ProxyHandler 返回一个代理 handler（代理模式）
+// ProxyHandler returns a proxy handler (proxy mode).
 func (inj *HTMLInjector) ProxyHandler() http.Handler {
 	return inj
 }
 
-// InjectorMiddleware 返回中间件函数（中间件模式）
+// InjectorMiddleware returns a middleware handler (middleware mode).
 func (inj *HTMLInjector) InjectorMiddleware(next http.Handler) http.Handler {
 	return inj.WrapHandler(next)
 }
