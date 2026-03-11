@@ -4,6 +4,58 @@
 
 ## [Unreleased]
 
+## [v1.0.17] - 2026-03-12
+
+### 新增
+
+- **中央 ML 服务** (`modules/ml/service.go`)
+  - `MLService` 单例：项目级 AI 大脑，统一推理、验证、生成与进化
+  - `ServiceConfig` 可配置模型存储路径、漂移阈值、伪造/一致性阈值
+  - 接口：`Infer()`、`InferFromFeatures()`、`InferBatch()`、`Validate()`、`ValidateFeatures()`
+  - `Feedback()` 持续学习、`Generate()` ML 驱动指纹生成
+  - `Evolve()` 自动模型进化、`Train()` 基于注册表重训练
+  - `Stats()` 公开推理/反馈/进化计数器
+
+- **在线学习系统** (`modules/ml/learner.go`)
+  - `OnlineLearner` 环形缓冲反馈样本 + 自动漂移检测
+  - `BrowserDistribution` 浏览器分布追踪器，KL 散度计算
+  - 通过峰值与近期准确率对比实现自动漂移检测
+
+- **配置进化引擎** (`modules/ml/evolution.go`)
+  - `ProfileEvolutionEngine` 逐配置统计：命中次数、伪造率 EMA、置信度 EMA
+  - `CheckHealth()` 返回 `EvolutionHealthReport`（过时/伪造/漂移配置）
+  - `ShouldEvolve()` 决策逻辑、`TopStaleProfiles()`、`TopForgeryProfiles()`
+  - `SnapshotDistribution()` 跨所有配置的浏览器分布快照
+
+- **ML 驱动指纹生成器** (`modules/generator/generator.go`)
+  - `SmartGenerator`：ML 验证生成 + 质量评分 + 缓存
+  - 质量分 = 40% × (1-伪造概率) + 30% × 一致性 + 30% × 置信度
+  - `GenerateBatch()`、`GenerateForBrowser()`、`GenerateForOS()` 便捷方法
+  - `RankProfiles()` 配置质量排名、`FindSimilarProfiles()` 嵌入距离搜索
+  - `GenerateFeatureVector()`、`GenerateEmbedding()` 原始 ML 数据访问
+
+- **ML 门面 API** (`modules/fingerprint/ml_api.go`)
+  - `MLFacade`：统一入口，封装 MLService + SmartGenerator + EvolutionEngine
+  - `MLAnalyze()`、`MLAnalyzeWithBehavior()`、`MLAnalyzeBatch()` ML 增强分析
+  - `MLGenerate()`、`MLGenerateRandom()`、`MLGenerateBatch()` ML 驱动生成
+  - `MLValidate()`、`MLValidateAll()` 注册表级验证
+  - `MLFeedback()`、`MLEvolve()`、`MLTrain()`、`MLCheckHealth()` 生命周期管理
+  - `MLFindSimilar()`、`MLEmbedding()`、`MLStats()` 高级查询
+
+- **TLS/HTTP/跨层 ML 验证器** (`modules/ml/tls_validator.go`)
+  - `TLSValidator`：ML 驱动的 TLS ClientHello 配置验证
+  - `HTTPValidator`：ML 驱动的 HTTP 头部/设置验证
+  - `CrossLayerValidator`：跨层一致性检查（TLS + HTTP 浏览器一致性）
+
+### 变更
+
+- **网关 ML 集成** (`modules/gateway/gateway.go`)
+  - Gateway 结构体新增可选 `MLService` 字段
+  - `GatewayConfig` 新增 `MLServiceEnabled` / `MLServiceConfig` 配置项
+  - `Analyze()` 启用 MLService 时自动附加 `MLValidation` 结果
+  - 伪造检测结果自动追加至 `DefenseHints`
+  - 新增 `GetMLService()` 访问器
+
 ## [v1.0.16] - 2026-03-11
 
 ### 新增

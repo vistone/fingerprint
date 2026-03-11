@@ -43,6 +43,7 @@ type Gateway struct {
 	profileManager *ProfileManager // Profile configuration manager
 	injector       *HTMLInjector   // HTML response injector
 	agent          *agent.Agent    // Autonomous security agent
+	mlService      *ml.MLService   // Central ML service (optional)
 	mu             sync.RWMutex
 }
 
@@ -88,6 +89,10 @@ type GatewayConfig struct {
 	// Agent configuration
 	AgentEnabled bool               // Whether to enable autonomous security agent
 	AgentConfig  *agent.AgentConfig // Detailed agent configuration (nil uses defaults)
+
+	// ML Service configuration
+	MLServiceEnabled bool              // Whether to enable central ML service
+	MLServiceConfig  *ml.ServiceConfig // ML service configuration (nil uses defaults)
 }
 
 // DefaultGatewayConfig is the default gateway configuration
@@ -174,6 +179,16 @@ func NewGateway(config *GatewayConfig) *Gateway {
 		g.agent.Start()
 	}
 
+	// Initialize central ML service
+	if config.MLServiceEnabled {
+		svc, err := ml.NewMLService(config.MLServiceConfig)
+		if err != nil {
+			fmt.Printf("Warning: failed to initialize ML service: %v\n", err)
+		} else {
+			g.mlService = svc
+		}
+	}
+
 	return g
 }
 
@@ -223,6 +238,9 @@ type AnalyzeResponse struct {
 
 	// Agent decision
 	AgentDecision *agent.Decision `json:"agent_decision,omitempty"`
+
+	// ML Service enrichment (when MLService is enabled)
+	MLValidation *ml.ValidationResult `json:"ml_validation,omitempty"`
 
 	// Cache info
 	Cached    bool      `json:"cached"`
@@ -294,6 +312,11 @@ func (g *Gateway) GetProfileManager() *ProfileManager {
 	return g.profileManager
 }
 
+// GetMLService returns the central ML service (nil if not enabled)
+func (g *Gateway) GetMLService() *ml.MLService {
+	return g.mlService
+}
+
 // GetConfig returns the current gateway configuration (read-only copy)
 func (g *Gateway) GetConfig() *GatewayConfig {
 	g.mu.RLock()
@@ -354,6 +377,26 @@ func (g *Gateway) Analyze(ctx context.Context, req *AnalyzeRequest) (*AnalyzeRes
 		DefenseHints:     risk.Suggestions,
 		Cached:           false,
 		ProcessingTimeMs: time.Since(start).Milliseconds(),
+	}
+
+	// ML Service validation (when enabled)
+	if g.mlService != nil && g.mlService.IsReady() {
+		result := g.mlService.InferFromFeatures(features, nil)
+		if result != nil {
+			vr := &ml.ValidationResult{
+				Valid:            !result.Forgery.IsForgery,
+				ForgeryProb:     result.Forgery.ForgeryProb,
+				ForgeryType:     result.Forgery.ForgeryType,
+				ConsistencyScore: 1.0 - result.Forgery.ForgeryProb,
+				BrowserFamily:   string(result.Browser.Family),
+				Confidence:      result.Browser.Confidence,
+			}
+			response.MLValidation = vr
+			if !vr.Valid {
+				response.DefenseHints = append(response.DefenseHints,
+					fmt.Sprintf("ML: forgery detected (type=%s, prob=%.2f)", vr.ForgeryType, vr.ForgeryProb))
+			}
+		}
 	}
 
 	// Agent processing

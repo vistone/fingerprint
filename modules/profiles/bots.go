@@ -218,7 +218,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.5",
 			AcceptEncoding: "gzip, deflate, br",
 			UserAgent:      "Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0",
-			SecFetchSite: "none", SecFetchMode: "navigate", SecFetchDest: "document",
+			SecFetchSite:   "none", SecFetchMode: "navigate", SecFetchDest: "document",
 		},
 		JSAntiDetection: &JSAntiDetection{
 			Automation: &AutomationAntiDetect{
@@ -258,7 +258,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.9",
 			AcceptEncoding: "gzip, deflate, br",
 			UserAgent:      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
-			SecFetchSite: "none", SecFetchMode: "navigate", SecFetchDest: "document",
+			SecFetchSite:   "none", SecFetchMode: "navigate", SecFetchDest: "document",
 		},
 		JSAntiDetection: &JSAntiDetection{
 			Automation: &AutomationAntiDetect{
@@ -346,7 +346,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.5",
 			AcceptEncoding: "gzip, deflate, br",
 			UserAgent:      "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
-			SecFetchSite: "none", SecFetchMode: "navigate", SecFetchDest: "document",
+			SecFetchSite:   "none", SecFetchMode: "navigate", SecFetchDest: "document",
 		},
 		JSAntiDetection: &JSAntiDetection{
 			Automation: &AutomationAntiDetect{
@@ -716,7 +716,7 @@ func init() {
 				InitialMaxData:         16777216,
 				InitialMaxStreamData:   6291456,
 				InitialMaxStreamsBidi:  100,
-				InitialMaxStreamsUni:    100,
+				InitialMaxStreamsUni:   100,
 				MaxUDPPayloadSize:      1472,
 				AckDelayExponent:       3,
 				MaxAckDelay:            25,

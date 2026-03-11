@@ -183,7 +183,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.9",
 			AcceptEncoding: "gzip, deflate, br",
 			UserAgent:      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-			SecFetchSite: "none", SecFetchMode: "navigate", SecFetchDest: "document",
+			SecFetchSite:   "none", SecFetchMode: "navigate", SecFetchDest: "document",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
@@ -215,7 +215,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.9",
 			AcceptEncoding: "gzip, deflate, br",
 			UserAgent:      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-			SecFetchSite: "none", SecFetchMode: "navigate", SecFetchDest: "document",
+			SecFetchSite:   "none", SecFetchMode: "navigate", SecFetchDest: "document",
 		},
 		TCPIP: CreateTCPIP(core.OSLinuxUbuntu),
 	}
@@ -247,7 +247,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.9",
 			AcceptEncoding: "gzip, deflate, br, zstd",
 			UserAgent:      "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-			SecFetchSite: "none", SecFetchMode: "navigate", SecFetchDest: "document",
+			SecFetchSite:   "none", SecFetchMode: "navigate", SecFetchDest: "document",
 		},
 		TCPIP: CreateTCPIP(core.OSMacOS15),
 	}
@@ -285,7 +285,7 @@ var (
 			AcceptLanguage: "zh-CN,zh;q=0.9,en;q=0.8",
 			AcceptEncoding: "gzip, deflate, br",
 			UserAgent:      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 QQBrowser/14.0.0.0",
-			SecFetchSite: "none", SecFetchMode: "navigate", SecFetchDest: "document",
+			SecFetchSite:   "none", SecFetchMode: "navigate", SecFetchDest: "document",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
@@ -317,7 +317,7 @@ var (
 			AcceptLanguage: "zh-CN,zh;q=0.9",
 			AcceptEncoding: "gzip, deflate, br",
 			UserAgent:      "Mozilla/5.0 (Linux; Android 14; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/122.0.0.0 Mobile MQQBrowser/14.5 QQ/9.0.0 Safari/537.36",
-			SecFetchSite: "none", SecFetchMode: "navigate",
+			SecFetchSite:   "none", SecFetchMode: "navigate",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
@@ -355,7 +355,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.9,zh-CN;q=0.8",
 			AcceptEncoding: "gzip, deflate, br",
 			UserAgent:      "Mozilla/5.0 (Linux; U; Android 14; en-US; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/100.0.4896.127 UCBrowser/16.5.0.1 Mobile Safari/537.36",
-			SecFetchSite: "none", SecFetchMode: "navigate",
+			SecFetchSite:   "none", SecFetchMode: "navigate",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
@@ -387,7 +387,7 @@ var (
 			AcceptLanguage: "zh-CN,zh-Hans;q=0.9",
 			AcceptEncoding: "gzip, deflate, br",
 			UserAgent:      "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1 UCBrowser/16.3.0.0",
-			SecFetchSite: "none", SecFetchMode: "navigate",
+			SecFetchSite:   "none", SecFetchMode: "navigate",
 		},
 		TCPIP: CreateTCPIP(core.OSiOS),
 	}
@@ -499,7 +499,7 @@ var (
 			AcceptLanguage: "zh-CN,zh;q=0.9,en;q=0.8",
 			AcceptEncoding: "gzip, deflate, br",
 			UserAgent:      "Mozilla/5.0 (Linux; Android 14; 23113RKC6C) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36 MiuiBrowser/18.5.30110",
-			SecFetchSite: "none", SecFetchMode: "navigate",
+			SecFetchSite:   "none", SecFetchMode: "navigate",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
@@ -531,7 +531,7 @@ var (
 			AcceptLanguage: "zh-CN,zh;q=0.9",
 			AcceptEncoding: "gzip, deflate, br",
 			UserAgent:      "Mozilla/5.0 (Linux; Android 14; NOH-AN00) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.88 HuaweiBrowser/15.0.3.300 Mobile Safari/537.36",
-			SecFetchSite: "none", SecFetchMode: "navigate",
+			SecFetchSite:   "none", SecFetchMode: "navigate",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
@@ -563,7 +563,7 @@ var (
 			AcceptLanguage: "zh-CN,zh;q=0.9",
 			AcceptEncoding: "gzip, deflate, br",
 			UserAgent:      "Mozilla/5.0 (Linux; Android 14; CPH2569) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36 OppoBrowser/8.10.0.0",
-			SecFetchSite: "none", SecFetchMode: "navigate",
+			SecFetchSite:   "none", SecFetchMode: "navigate",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
@@ -601,7 +601,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.5",
 			AcceptEncoding: "gzip, deflate, br",
 			UserAgent:      "Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/115.0",
-			SecFetchSite: "none", SecFetchMode: "navigate", SecFetchDest: "document",
+			SecFetchSite:   "none", SecFetchMode: "navigate", SecFetchDest: "document",
 		},
 		TCPIP: CreateTCPIP(core.OSLinuxUbuntu),
 	}
@@ -633,7 +633,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.9",
 			AcceptEncoding: "gzip, deflate, br",
 			UserAgent:      "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 DuckDuckGo/7 Safari/605.1.15",
-			SecFetchSite: "none", SecFetchMode: "navigate", SecFetchDest: "document",
+			SecFetchSite:   "none", SecFetchMode: "navigate", SecFetchDest: "document",
 		},
 		TCPIP: CreateTCPIP(core.OSMacOS14),
 	}
@@ -671,7 +671,7 @@ var (
 			AcceptLanguage: "zh-CN,zh;q=0.9",
 			AcceptEncoding: "gzip, deflate, br",
 			UserAgent:      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 360SE/15.3.1055.64",
-			SecFetchSite: "none", SecFetchMode: "navigate",
+			SecFetchSite:   "none", SecFetchMode: "navigate",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
@@ -703,7 +703,7 @@ var (
 			AcceptLanguage: "zh-CN,zh;q=0.9",
 			AcceptEncoding: "gzip, deflate, br",
 			UserAgent:      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 SogouMobileBrowser/12.4.0",
-			SecFetchSite: "none", SecFetchMode: "navigate",
+			SecFetchSite:   "none", SecFetchMode: "navigate",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
@@ -735,7 +735,7 @@ var (
 			AcceptLanguage: "zh-CN,zh;q=0.9",
 			AcceptEncoding: "gzip, deflate, br",
 			UserAgent:      "Mozilla/5.0 (Linux; Android 14; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Mobile Safari/537.36 baiduboxapp/7.65.0.10",
-			SecFetchSite: "none", SecFetchMode: "navigate",
+			SecFetchSite:   "none", SecFetchMode: "navigate",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
 	}
@@ -773,7 +773,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.9",
 			AcceptEncoding: "gzip, deflate, br",
 			UserAgent:      "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-			SecFetchSite: "none", SecFetchMode: "navigate", SecFetchDest: "document",
+			SecFetchSite:   "none", SecFetchMode: "navigate", SecFetchDest: "document",
 		},
 		TCPIP: CreateTCPIP(core.OSMacOS14),
 	}
@@ -805,7 +805,7 @@ var (
 			AcceptLanguage: "en-US,en;q=0.9",
 			AcceptEncoding: "gzip, deflate, br, zstd",
 			UserAgent:      "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-			SecFetchSite: "none", SecFetchMode: "navigate", SecFetchDest: "document",
+			SecFetchSite:   "none", SecFetchMode: "navigate", SecFetchDest: "document",
 		},
 		TCPIP: CreateTCPIP(core.OSMacOS15),
 	}
@@ -842,7 +842,7 @@ func init() {
 				InitialMaxData:         16777216,
 				InitialMaxStreamData:   6291456,
 				InitialMaxStreamsBidi:  100,
-				InitialMaxStreamsUni:    100,
+				InitialMaxStreamsUni:   100,
 				MaxUDPPayloadSize:      1472,
 				AckDelayExponent:       3,
 				MaxAckDelay:            25,

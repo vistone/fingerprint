@@ -5,12 +5,12 @@ go 1.25.7
 require (
 	github.com/bogdanfinn/utls v1.7.7-barnius
 	github.com/prometheus/client_golang v1.23.2
-	github.com/vistone/fingerprint/modules/core v1.0.16
-	github.com/vistone/fingerprint/modules/defense v1.0.16
-	github.com/vistone/fingerprint/modules/generator v1.0.16
-	github.com/vistone/fingerprint/modules/http v1.0.16
-	github.com/vistone/fingerprint/modules/ml v1.0.16
-	github.com/vistone/fingerprint/modules/profiles v1.0.16
+	github.com/vistone/fingerprint/modules/core v1.0.17
+	github.com/vistone/fingerprint/modules/defense v1.0.17
+	github.com/vistone/fingerprint/modules/generator v1.0.17
+	github.com/vistone/fingerprint/modules/http v1.0.17
+	github.com/vistone/fingerprint/modules/ml v1.0.17
+	github.com/vistone/fingerprint/modules/profiles v1.0.17
 	go.opentelemetry.io/otel v1.39.0
 	go.opentelemetry.io/otel/sdk v1.39.0
 	go.opentelemetry.io/otel/trace v1.39.0
@@ -30,8 +30,8 @@ require (
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.66.1 // indirect
 	github.com/prometheus/procfs v0.16.1 // indirect
-	github.com/vistone/fingerprint/modules/errors v1.0.16 // indirect
-	github.com/vistone/fingerprint/modules/kit v1.0.16 // indirect
+	github.com/vistone/fingerprint/modules/errors v1.0.17 // indirect
+	github.com/vistone/fingerprint/modules/kit v1.0.17 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel/metric v1.39.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect

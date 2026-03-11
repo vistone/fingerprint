@@ -4,6 +4,58 @@ This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+## [v1.0.17] - 2026-03-12
+
+### Added
+
+- **Central ML Service** (`modules/ml/service.go`)
+  - `MLService` singleton: project-wide AI brain for inference, validation, generation and evolution
+  - `ServiceConfig` with model store path, drift threshold, forgery/consistency thresholds
+  - APIs: `Infer()`, `InferFromFeatures()`, `InferBatch()`, `Validate()`, `ValidateFeatures()`
+  - `Feedback()` for continuous learning, `Generate()` for ML-guided fingerprint creation
+  - `Evolve()` for automated model evolution, `Train()` for retraining from registry
+  - `Stats()` exposes inference/feedback/evolve counters
+
+- **Online Learning System** (`modules/ml/learner.go`)
+  - `OnlineLearner` with ring buffer for feedback samples and drift detection
+  - `BrowserDistribution` tracker with KL divergence computation for distribution monitoring
+  - Automatic drift detection via peak-vs-recent accuracy comparison
+
+- **Profile Evolution Engine** (`modules/ml/evolution.go`)
+  - `ProfileEvolutionEngine` with per-profile hit count, forgery rate EMA, confidence EMA
+  - `CheckHealth()` returns `EvolutionHealthReport` with stale/forgery/drift profiles
+  - `ShouldEvolve()` decision logic, `TopStaleProfiles()`, `TopForgeryProfiles()`
+  - `SnapshotDistribution()` for browser distribution tracking across all profiles
+
+- **ML-Driven Fingerprint Generator** (`modules/generator/generator.go`)
+  - `SmartGenerator`: ML-validated generation with quality scoring and caching
+  - Quality score: 40% (1-forgeryProb) + 30% consistency + 30% confidence
+  - `GenerateBatch()`, `GenerateForBrowser()`, `GenerateForOS()` convenience methods
+  - `RankProfiles()` for profile quality ranking, `FindSimilarProfiles()` via embedding distance
+  - `GenerateFeatureVector()`, `GenerateEmbedding()` for raw ML data access
+
+- **ML Facade API** (`modules/fingerprint/ml_api.go`)
+  - `MLFacade`: unified entry point wrapping MLService + SmartGenerator + EvolutionEngine
+  - `MLAnalyze()`, `MLAnalyzeWithBehavior()`, `MLAnalyzeBatch()` for ML-powered analysis
+  - `MLGenerate()`, `MLGenerateRandom()`, `MLGenerateBatch()` for ML-guided generation
+  - `MLValidate()`, `MLValidateAll()` for registry-wide validation
+  - `MLFeedback()`, `MLEvolve()`, `MLTrain()`, `MLCheckHealth()` for lifecycle management
+  - `MLFindSimilar()`, `MLEmbedding()`, `MLStats()` for advanced queries
+
+- **TLS/HTTP/Cross-Layer ML Validators** (`modules/ml/tls_validator.go`)
+  - `TLSValidator`: ML-guided TLS ClientHello configuration validation
+  - `HTTPValidator`: ML-guided HTTP header/settings validation
+  - `CrossLayerValidator`: cross-layer consistency checking (TLS + HTTP browser agreement)
+
+### Changed
+
+- **Gateway ML Integration** (`modules/gateway/gateway.go`)
+  - Added optional `MLService` field to `Gateway` struct
+  - `MLServiceEnabled` / `MLServiceConfig` configuration in `GatewayConfig`
+  - `Analyze()` now enriches response with `MLValidation` when MLService is enabled
+  - Forgery detection results automatically appended to `DefenseHints`
+  - `GetMLService()` accessor for external consumers
+
 ## [v1.0.16] - 2026-03-11
 
 ### Added
