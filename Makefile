@@ -1,4 +1,4 @@
-.PHONY: help test benchmark lint format clean install-tools build
+.PHONY: help test benchmark lint format clean install-tools build sync-version tag-version release
 
 GO ?= go
 
@@ -16,6 +16,11 @@ help:
 	@echo "Build:"
 	@echo "  make build             - Build all example binaries"
 	@echo "  make clean             - Remove build artifacts"
+	@echo ""
+	@echo "Release:"
+	@echo "  make sync-version V=v1.0.16  - Update all internal module versions"
+	@echo "  make tag-version  V=v1.0.16  - Create git tags for all modules"
+	@echo "  make release      V=v1.0.16  - sync-version + tag-version + push"
 	@echo ""
 	@echo "Setup:"
 	@echo "  make install-tools     - Install development tools"
@@ -136,3 +141,50 @@ all: lint test benchmark
 quick: format lint test
 	@echo ""
 	@echo "✅ Quick checks passed!"
+
+# Module list for version management
+MODULES := agent client config core defense errors fingerprint frontend gateway generator http internal kit metrics ml network plugin profiles tls
+
+# Sync all internal module version references in go.mod files
+# Usage: make sync-version V=v1.0.16
+sync-version:
+	@if [ -z "$(V)" ]; then echo "❌ Usage: make sync-version V=v1.0.16"; exit 1; fi
+	@echo "Syncing internal module versions to $(V)..."
+	@for f in $$(find . -name 'go.mod' -not -path '*/vendor/*'); do \
+		for mod in $(MODULES); do \
+			sed -i "s|github.com/vistone/fingerprint/modules/$${mod} v[0-9]\+\.[0-9]\+\.[0-9]\+|github.com/vistone/fingerprint/modules/$${mod} $(V)|g" "$$f"; \
+		done; \
+		sed -i "s|github.com/vistone/fingerprint v[0-9]\+\.[0-9]\+\.[0-9]\+|github.com/vistone/fingerprint $(V)|g" "$$f"; \
+	done
+	@echo "✓ All go.mod files updated to $(V)"
+
+# Create git tags for root and all modules
+# Usage: make tag-version V=v1.0.16
+tag-version:
+	@if [ -z "$(V)" ]; then echo "❌ Usage: make tag-version V=v1.0.16"; exit 1; fi
+	@echo "Creating tags for $(V)..."
+	@git tag $(V) 2>/dev/null || echo "  tag $(V) already exists"
+	@for mod in $(MODULES); do \
+		git tag "modules/$${mod}/$(V)" 2>/dev/null || echo "  tag modules/$${mod}/$(V) already exists"; \
+	done
+	@echo "✓ All tags created for $(V)"
+
+# Full release: sync versions, commit, tag, and push
+# Usage: make release V=v1.0.16
+release: sync-version
+	@if [ -z "$(V)" ]; then echo "❌ Usage: make release V=v1.0.16"; exit 1; fi
+	@echo "Building to verify..."
+	@$(GO) build ./cmd/... ./modules/... 2>&1
+	@echo "✓ Build passed"
+	@git add -A
+	@if git diff --cached --quiet; then \
+		echo "No version changes to commit"; \
+	else \
+		git commit -m "chore: bump internal module versions to $(V)"; \
+	fi
+	@$(MAKE) tag-version V=$(V)
+	@git push origin main --tags
+	@echo ""
+	@echo "════════════════════════════════"
+	@echo "✅ Released $(V) to GitHub!"
+	@echo "════════════════════════════════"
