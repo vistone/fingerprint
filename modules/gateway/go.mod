@@ -5,18 +5,18 @@ go 1.25.7
 require (
 	github.com/chromedp/cdproto v0.0.0-20241022234722-4d5d5faf59fb
 	github.com/chromedp/chromedp v0.11.2
-	github.com/vistone/fingerprint v1.0.9
-	github.com/vistone/fingerprint/modules/agent v1.0.9
-	github.com/vistone/fingerprint/modules/core v1.0.9
-	github.com/vistone/fingerprint/modules/defense v1.0.9
-	github.com/vistone/fingerprint/modules/errors v1.0.9
-	github.com/vistone/fingerprint/modules/frontend v1.0.9
-	github.com/vistone/fingerprint/modules/internal v1.0.9
-	github.com/vistone/fingerprint/modules/kit v1.0.9
-	github.com/vistone/fingerprint/modules/ml v1.0.9
-	github.com/vistone/fingerprint/modules/plugin v1.0.9
-	github.com/vistone/fingerprint/modules/profiles v1.0.9
-	github.com/vistone/fingerprint/modules/tls v1.0.9
+	github.com/vistone/fingerprint v1.0.10
+	github.com/vistone/fingerprint/modules/agent v1.0.10
+	github.com/vistone/fingerprint/modules/core v1.0.10
+	github.com/vistone/fingerprint/modules/defense v1.0.10
+	github.com/vistone/fingerprint/modules/errors v1.0.10
+	github.com/vistone/fingerprint/modules/frontend v1.0.10
+	github.com/vistone/fingerprint/modules/internal v1.0.10
+	github.com/vistone/fingerprint/modules/kit v1.0.10
+	github.com/vistone/fingerprint/modules/ml v1.0.10
+	github.com/vistone/fingerprint/modules/plugin v1.0.10
+	github.com/vistone/fingerprint/modules/profiles v1.0.10
+	github.com/vistone/fingerprint/modules/tls v1.0.10
 	google.golang.org/grpc v1.79.1
 )
 

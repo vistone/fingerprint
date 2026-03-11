@@ -7,9 +7,9 @@ import (
 
 func TestHTTPHeadersClone(t *testing.T) {
 	h := &HTTPHeaders{
-		Accept:     "text/html",
-		UserAgent:  "Mozilla/5.0",
-		Custom:     map[string]string{"Cookie": "session=abc"},
+		Accept:    "text/html",
+		UserAgent: "Mozilla/5.0",
+		Custom:    map[string]string{"Cookie": "session=abc"},
 	}
 
 	cloned := h.Clone()
@@ -61,7 +61,7 @@ func TestHTTPHeadersSet(t *testing.T) {
 
 func TestFeatureVector(t *testing.T) {
 	fv := NewFeatureVector()
-	
+
 	fv.Set(FeatureTLSVersion, 0x0303)
 	fv.Set(FeatureCipherSuites, 8.0)
 
@@ -101,7 +101,7 @@ func BenchmarkHTTPHeadersClone(b *testing.B) {
 
 func BenchmarkFeatureVectorSet(b *testing.B) {
 	fv := NewFeatureVector()
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		fv.Set(FeatureTLSVersion, float64(i))
