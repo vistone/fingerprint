@@ -148,6 +148,12 @@ var DefaultAgentConfig = &AgentConfig{
 }
 
 // Agent is the Autonomous Security Agent implementation.
+//
+// Agent 是模型编排器 + 记忆管理器 + 决策权威：
+//   - 维护每客户端的会话记忆（观察、行为状态）
+//   - 编排 ModelPipeline 执行端到端推理（编码→分类→伪造检测→威胁评估）
+//   - 基于模型输出做出最终安全决策
+//   - 提供反馈回路用于模型持续改进
 type Agent struct {
 	config    *AgentConfig
 	behavior  *BehaviorAnalyzer
@@ -156,7 +162,10 @@ type Agent struct {
 	knowledge *KnowledgeBase
 	anomaly   *AnomalyDetector
 
-	// Intelligence subsystems
+	// Neural network model pipeline (core inference engine)
+	pipeline *ml.ModelPipeline
+
+	// Intelligence subsystems (legacy, kept for backward compat)
 	rl     *ReinforcementEngine // Q-learning (nil if disabled)
 	bandit *ContextualBandit    // LinUCB strategy selector (nil if disabled)
 
@@ -181,6 +190,7 @@ func NewAgent(config *AgentConfig) *Agent {
 		memory:    mem,
 		knowledge: kb,
 		anomaly:   NewAnomalyDetector(kb),
+		pipeline:  ml.NewModelPipeline(),
 		stopCh:    make(chan struct{}),
 	}
 
@@ -214,6 +224,9 @@ func (a *Agent) Stop() {
 
 // Process handles an observation event and returns a decision - main OADA loop.
 //
+// 推理管线：
+//   观察记录 → 行为分析 → 模型推理(编码→分类→伪造检测→威胁评估) → 策略决策 → 输出
+//
 // This is the entry point called by Gateway.Analyze(), executes synchronously,
 // typical latency < 1ms.
 func (a *Agent) Process(ctx context.Context, obs *Observation) *Decision {
@@ -225,7 +238,7 @@ func (a *Agent) Process(ctx context.Context, obs *Observation) *Decision {
 	// A1: Behavioral analysis
 	profile := a.behavior.Analyze(obs.ClientID)
 
-	// A2: Knowledge-driven anomaly detection - verify observation consistency with global fingerprint blueprint
+	// A2: Knowledge-driven anomaly detection
 	matchResult := a.anomaly.Analyze(obs)
 
 	// D: Strategy decision (behavioral + knowledge dual input)
@@ -234,7 +247,6 @@ func (a *Agent) Process(ctx context.Context, obs *Observation) *Decision {
 	// Merge knowledge match result into decision
 	decision.KnowledgeMatch = matchResult
 	if matchResult.SuspicionScore > 0.5 {
-		// Knowledge check indicates high suspicion, escalate threat level
 		if decision.Action == ActionAllow {
 			decision.Action = ActionMonitor
 		} else if decision.Action == ActionMonitor {
@@ -246,6 +258,41 @@ func (a *Agent) Process(ctx context.Context, obs *Observation) *Decision {
 				len(matchResult.Contradictions), matchResult.SuspicionScore))
 	}
 
+	// Neural model pipeline: run end-to-end inference if features available and model is trained
+	if a.pipeline != nil && a.pipeline.Trained() && obs.Features != nil {
+		behaviorVec := a.extractBehaviorVector(profile)
+		result := a.pipeline.InferFromFeatures(obs.Features, behaviorVec)
+
+		// 用模型输出增强决策（仅当模型置信度足够高时才升级）
+		if result.Forgery.ForgeryProb > 0.6 && result.Forgery.ForgeryProb > result.Forgery.TypeProbs[int(ml.ForgeryReal)] {
+			decision.Insights = append(decision.Insights,
+				fmt.Sprintf("NN forgery detector: %.1f%% probability, type=%s",
+					result.Forgery.ForgeryProb*100, forgeryTypeName(result.Forgery.ForgeryType)))
+			if decision.Action == ActionAllow {
+				decision.Action = ActionMonitor
+			}
+		}
+		if result.Forgery.ForgeryProb > 0.8 {
+			if decision.Action == ActionMonitor {
+				decision.Action = ActionChallenge
+			}
+			decision.ThreatClass = ThreatFingerprintSpoof
+		}
+
+		// 模型威胁评估可以升级动作（仅当置信度 > 0.7 时）
+		modelAction := threatActionToAgentAction(result.Threat.Action)
+		if result.Threat.ActionConfidence > 0.7 && actionIndex[modelAction] > actionIndex[decision.Action] {
+			decision.Action = modelAction
+			decision.Insights = append(decision.Insights,
+				fmt.Sprintf("NN threat assessor escalated to %s (confidence=%.2f, class=%s)",
+					modelAction, result.Threat.ThreatProb, threatClassName(result.Threat.ThreatClass)))
+		}
+
+		decision.Insights = append(decision.Insights,
+			fmt.Sprintf("NN browser: %s (confidence=%.2f)",
+				result.Browser.Family, result.Browser.Confidence))
+	}
+
 	// DQN override: if reinforcement learning is active, let the neural network refine the action
 	if a.rl != nil {
 		stateVec := ExtractStateVector(obs, profile)
@@ -253,7 +300,6 @@ func (a *Agent) Process(ctx context.Context, obs *Observation) *Decision {
 		if explored {
 			decision.Insights = append(decision.Insights, "DQN exploring alternative action")
 		}
-		// DQN only escalates (never downgrades from strategy decision)
 		if actionIndex[rlAction] > actionIndex[decision.Action] {
 			qvals := a.rl.QValueContinuous(stateVec)
 			decision.Action = rlAction
@@ -262,7 +308,7 @@ func (a *Agent) Process(ctx context.Context, obs *Observation) *Decision {
 		}
 	}
 
-	// Bandit-driven strategy prioritization: context-aware arm selection
+	// Bandit-driven strategy prioritization
 	if a.bandit != nil && len(decision.TriggeredStrategies) > 1 {
 		ctx := BuildContext(obs, profile, matchResult)
 		bestArm, score := a.bandit.SelectArmAmong(ctx, decision.TriggeredStrategies)
@@ -373,5 +419,89 @@ func (a *Agent) strategyEvolutionLoop() {
 		case <-ticker.C:
 			a.strategy.Evolve()
 		}
+	}
+}
+
+// Pipeline returns the agent's neural network model pipeline.
+func (a *Agent) Pipeline() *ml.ModelPipeline {
+	return a.pipeline
+}
+
+// extractBehaviorVector converts behavioral profile to 8-dim feature vector for the model pipeline.
+func (a *Agent) extractBehaviorVector(profile *BehaviorSummary) []float64 {
+	vec := make([]float64, ml.BehaviorFeatureDim)
+	if profile == nil {
+		return vec
+	}
+	vec[0] = float64(profile.TotalObservations) / 100.0
+	vec[1] = float64(profile.UniqueFP) / 10.0
+	vec[2] = profile.FPSwitchRate / 5.0
+	vec[3] = profile.AvgRequestInterval / 60.0
+	vec[4] = profile.ConsistencyScore
+	vec[5] = (profile.RiskTrend + 1.0) / 2.0 // normalize -1~1 → 0~1
+	vec[6] = profile.SessionDurationSecs / 3600.0
+	// vec[7] reserved
+
+	for i := range vec {
+		if vec[i] < 0 {
+			vec[i] = 0
+		} else if vec[i] > 1 {
+			vec[i] = 1
+		}
+	}
+	return vec
+}
+
+// threatActionToAgentAction maps model ActionClass to agent ActionType.
+func threatActionToAgentAction(action ml.ActionClass) ActionType {
+	switch action {
+	case ml.ActAllow:
+		return ActionAllow
+	case ml.ActMonitor:
+		return ActionMonitor
+	case ml.ActChallenge:
+		return ActionChallenge
+	case ml.ActThrottle:
+		return ActionThrottle
+	case ml.ActBlock:
+		return ActionBlock
+	default:
+		return ActionAllow
+	}
+}
+
+// forgeryTypeName returns human-readable forgery type name.
+func forgeryTypeName(ft ml.ForgeryType) string {
+	switch ft {
+	case ml.ForgeryReal:
+		return "real"
+	case ml.ForgeryHeadless:
+		return "headless"
+	case ml.ForgeryAntiDetect:
+		return "antidetect"
+	case ml.ForgeryProxy:
+		return "proxy"
+	default:
+		return "unknown"
+	}
+}
+
+// threatClassName returns human-readable threat class name.
+func threatClassName(tc ml.ThreatClass) string {
+	switch tc {
+	case ml.ThreatNone:
+		return "none"
+	case ml.ThreatBot:
+		return "bot"
+	case ml.ThreatFingerprintSpoof:
+		return "fingerprint_spoof"
+	case ml.ThreatSessionAnomaly:
+		return "session_anomaly"
+	case ml.ThreatBehavioralAnomaly:
+		return "behavioral_anomaly"
+	case ml.ThreatEvasion:
+		return "evasion"
+	default:
+		return "unknown"
 	}
 }

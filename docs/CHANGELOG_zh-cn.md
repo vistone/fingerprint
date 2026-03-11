@@ -4,6 +4,50 @@
 
 ## [Unreleased]
 
+## [v1.0.14] - 2026-03-11
+
+### 新增
+
+- **纯 Go 张量计算引擎** (`modules/ml/tensor.go`)
+  - `Tensor` 结构体，支持形状感知运算：MatMul、Add、Sub、MulScalar、MulElem、Transpose、SoftmaxRow、SigmoidApply、ReluApply、Normalize、Argmax、Clamp、Clone
+  - `ComputeDevice` 接口抽象硬件后端（当前 CPU，未来可通过 CGo 扩展 GPU/CUDA）
+  - `cpuDevice` 实现：goroutine 并行 `BatchParallel` 和 `MatMul`
+  - 工厂函数：Zeros、Ones、RandN、RandNScaled、FromSlice、NewTensor
+  - `SetDevice()` 全局设备切换
+
+- **神经网络层库** (`modules/ml/nn.go`)
+  - `Layer` 接口：Forward/Backward/Params/SetTraining
+  - `DenseLayer`：He 初始化 + 完整反向传播
+  - 激活层：ReLU、Sigmoid、Softmax、Dropout（支持训练/推理模式切换）
+  - `Sequential` 模型：可组合的层堆叠
+  - `AdamOptimizer`：动量估计 + 偏差校正
+  - 损失函数：CrossEntropyLoss、BinaryCrossEntropyLoss、MSELoss、TripletMarginLoss
+
+- **四个领域专用神经网络模型** (`modules/ml/models.go`)
+  - `FingerprintEncoder`：30 维 → 128 → 64 → 32 维 L2 归一化嵌入；三元组损失训练浏览器配置文件相似性
+  - `BrowserClassifier`：嵌入 → 64 → 7 类 Softmax；识别 Chrome/Firefox/Safari/Edge/Opera/Brave/Samsung 家族
+  - `ForgeryDetector`：双头网络（40 维 = 指纹特征 + 跨层一致性特征）；DetectorNet 输出二元伪造概率，TypeNet 输出 4 类伪造类型（真实/无头浏览器/反检测/代理）
+  - `ThreatAssessor`：双头网络（45 维 = 嵌入 + 伪造信号 + 行为特征）；ThreatNet 输出 6 类威胁分类，ActionNet 输出 5 类安全动作建议
+  - 特征工程：`EncodeFingerprint()` 从 TLS/HTTP2/TCP-IP/JS/行为五层提取 30 维特征；`ComputeCrossLayerFeatures()` 检测跨层不一致性
+
+- **训练管线与模型序列化** (`modules/ml/pipeline.go`)
+  - `ModelPipeline`：端到端推理链 Infer()、InferFromFeatures()、InferBatch()
+  - `trained` 标志确保仅在训练或权重加载后使用模型输出
+  - `NeuralTrainer`：从 ProfileRegistry 进行 4 阶段训练：编码器(三元组) → 分类器(交叉熵) → 伪造检测器(二元交叉熵) → 威胁评估器(交叉熵)
+  - 3 倍高斯噪声数据增强、合成伪造样本生成、基于规则的威胁标注
+  - `SaveWeights()`/`LoadWeights()`：JSON 格式模型序列化
+
+- **完整 ML 测试套件** (`modules/ml/pipeline_test.go`)
+  - 23 个测试：张量运算、神经网络层、全部 4 个领域模型、特征编码、管线推理（单条/批量/从特征）、模型序列化、NeuralTrainer 数据构建、CPU 设备
+
+### 变更
+
+- **Agent 升级为模型编排器** (`modules/agent/agent.go`)
+  - Agent 现持有 `ModelPipeline` 用于神经推理，与现有策略引擎和 DQN 并行工作
+  - `Process()` 集成模型管线：伪造检测需置信度 > 0.6 才触发升级，威胁评估需动作置信度 > 0.7 才覆盖决策
+  - 管线仅在训练/权重加载后激活（`Trained()` 守卫）
+  - 新增辅助函数：extractBehaviorVector、threatActionToAgentAction、forgeryTypeName、threatClassName
+
 ## [v1.0.13] - 2026-03-11
 
 ### 变更

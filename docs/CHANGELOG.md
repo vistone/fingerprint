@@ -4,6 +4,50 @@ This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+## [v1.0.14] - 2026-03-11
+
+### Added
+
+- **Pure-Go Tensor Computation Engine** (`modules/ml/tensor.go`)
+  - `Tensor` struct with shape-aware operations: MatMul, Add, Sub, MulScalar, MulElem, Transpose, SoftmaxRow, SigmoidApply, ReluApply, Normalize, Argmax, Clamp, Clone
+  - `ComputeDevice` interface abstracting hardware backends (CPU now, GPU/CUDA via CGo planned)
+  - `cpuDevice` implementation with goroutine-parallel `BatchParallel` and `MatMul`
+  - Factory functions: Zeros, Ones, RandN, RandNScaled, FromSlice, NewTensor
+  - `SetDevice()` for global device switching
+
+- **Neural Network Layer Library** (`modules/ml/nn.go`)
+  - `Layer` interface with Forward/Backward/Params/SetTraining
+  - `DenseLayer` with He initialization and full backpropagation
+  - Activation layers: ReLU, Sigmoid, Softmax, Dropout (training mode support)
+  - `Sequential` model for composable layer stacking
+  - `AdamOptimizer` with moment estimation and bias correction
+  - Loss functions: CrossEntropyLoss, BinaryCrossEntropyLoss, MSELoss, TripletMarginLoss
+
+- **Four Domain-Specific Neural Network Models** (`modules/ml/models.go`)
+  - `FingerprintEncoder`: 30-dim → 128 → 64 → 32-dim L2-normalized embeddings; trained with triplet loss on browser profile similarity
+  - `BrowserClassifier`: embedding → 64 → 7-class softmax; identifies Chrome/Firefox/Safari/Edge/Opera/Brave/Samsung families
+  - `ForgeryDetector`: dual-head network (40-dim combining fingerprint + cross-layer consistency features); DetectorNet for binary forgery probability, TypeNet for 4-class forgery type (Real/Headless/AntiDetect/Proxy)
+  - `ThreatAssessor`: dual-head network (45-dim combining embedding + forgery signals + behavior); ThreatNet for 6-class threat classification, ActionNet for 5-class security action recommendation
+  - Feature engineering: `EncodeFingerprint()` extracts 30-dim from TLS/HTTP2/TCP-IP/JS/Behavioral layers; `ComputeCrossLayerFeatures()` detects cross-layer inconsistencies
+
+- **Training Pipeline & Model Serialization** (`modules/ml/pipeline.go`)
+  - `ModelPipeline` with end-to-end inference: Infer(), InferFromFeatures(), InferBatch()
+  - `trained` flag ensuring model outputs are only used after training or weight loading
+  - `NeuralTrainer` with 4-phase training from ProfileRegistry: encoder(triplet) → classifier(cross-entropy) → forgery(binary CE) → threat(cross-entropy)
+  - 3x Gaussian noise data augmentation, synthetic forged sample generation, rule-based threat labeling
+  - `SaveWeights()`/`LoadWeights()` for JSON-based model serialization
+
+- **Comprehensive ML Test Suite** (`modules/ml/pipeline_test.go`)
+  - 23 tests: tensor ops, NN layers, all 4 domain models, feature encoding, pipeline inference (single/batch/from-features), model serialization, NeuralTrainer data building, CPU device
+
+### Changed
+
+- **Agent as Model Orchestrator** (`modules/agent/agent.go`)
+  - Agent now holds `ModelPipeline` for neural inference alongside existing strategy engine and DQN
+  - `Process()` integrates model pipeline: forgery detection with confidence thresholds (>0.6), threat assessment with action confidence gating (>0.7)
+  - Pipeline only active after training/weight loading (`Trained()` guard)
+  - New helpers: extractBehaviorVector, threatActionToAgentAction, forgeryTypeName, threatClassName
+
 ## [v1.0.13] - 2026-03-11
 
 ### Changed
