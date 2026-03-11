@@ -124,33 +124,6 @@ func Unique[T comparable](slice []T) []T {
 	return result
 }
 
-// Min returns smaller of two integers
-func Min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-// Max returns larger of two integers
-func Max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
-// Clamp clamps value within range
-func Clamp(value, min, max int) int {
-	if value < min {
-		return min
-	}
-	if value > max {
-		return max
-	}
-	return value
-}
-
 // GenerateRandomID generates random ID
 func GenerateRandomID() string {
 	return strconv.FormatInt(time.Now().UnixNano(), 36)

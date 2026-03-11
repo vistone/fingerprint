@@ -4,6 +4,68 @@
 
 ## [Unreleased]
 
+## [v1.0.11] - 2026-03-11
+
+### 移除
+
+- **死代码：内部日志模块** (`modules/internal/logger/`) — 独立日志实现，零外部引用
+- **死代码：手写指标模块** (`modules/metrics/`) — Counter/Gauge/Histogram/Summary 类型，零外部引用；保留基于 Prometheus 的 `modules/internal/metrics/`
+
+### 变更
+
+- **统一错误体系** — `modules/errors` 现为规范错误包
+  - 新增 `CoreError` 类型、`NewCodedError`、`NewCodedErrorf`、`WrapError`、`WrapErrorf` 函数
+  - 新增 `VAL`、`NTF`、`SEC` 错误码族和 10 个新哨兵错误
+  - 重写 `modules/core/errors.go` 为薄层再导出（类型别名 + 函数转发）
+- **修复根目录 Dockerfile** — 修正 HEALTHCHECK 语法，移除已删除 modules/metrics 和不存在 examples/v3 的引用
+- **简化根目录 docker-compose.yml** — 面向开发环境，移除 Redis/Nginx 服务，引用 `deploy/docker/` 作为生产配置
+- **翻译中文注释为英文** — `modules/plugin/bridge.go` 和 `modules/internal/plugins/`（types.go、registry.go、basic_plugin.go）
+- **记录插件架构** — 添加包级文档说明三个插件子系统（internal/plugin、internal/plugins、internal/extension）
+
+## [v1.0.10] - 2026-03-11
+
+### 移除
+
+- **从 Git 跟踪中移除已编译二进制文件**（约 25MB）
+  - 移除 `examples/` 下 5 个误提交的 ELF 二进制文件
+  - 将二进制路径添加到 `.gitignore` 防止再次跟踪
+- **死代码清理**
+  - 删除 `modules/kit/strings.go`（6 个标准库包装函数，零外部引用）
+  - 移除 `modules/core/utils.go` 中未使用的 `Min()`、`Max()`、`Clamp()`（Go 1.25 已有内置 `min`/`max`）
+  - 移除对应的 `TestMinMax` 和 `TestClamp` 测试函数
+
+### 修复
+
+- **重复测试函数** `TestRiskLevelString` 同时声明在 `core/constants_test.go` 和 `core/types_test.go`
+- **未定义函数调用** — 死代码移除后 `modules/kit/useragent.go` 中的断裂引用，替换为 `strings.*` 标准库调用
+
+### 变更
+
+- **移除 52 行注释掉的示例代码** — `modules/internal/observability/observability.go`
+
+## [v1.0.9] - 2026-03-11
+
+### 新增
+
+- **API 密钥认证中间件** (`modules/gateway/auth.go`)
+  - 通过 `X-API-Key` 头或 `api_key` 查询参数进行恒定时间 API 密钥验证
+  - 可配置跳过路径（health/metrics 端点）
+  - JSON 错误响应，正确设置 `Content-Type: application/json`
+  - 6 个单元测试覆盖所有认证场景
+
+### 安全
+
+- **反向代理 SSRF 防护** (`modules/gateway/injector.go`)
+  - 新增 `validateProxyTarget()` 阻止回环地址、链路本地地址和云元数据端点
+  - 支持 `AllowPrivateTarget` 配置用于 Docker/Kubernetes 环境
+  - 4 个 SSRF 验证测试
+
+### 变更
+
+- **HTML 注入器性能优化** (`modules/gateway/injector.go`)
+  - 将每请求 `regexp.MustCompile` + `QuoteMeta` 替换为 `strings.Index` 匹配 `CustomInjectionPoint`
+- **翻译所有剩余中文注释为英文** — `modules/gateway/injector.go`
+
 ## [v1.0.8] - 2026-03-10
 
 ### Changed

@@ -31,14 +31,14 @@ func TestCalculateSHA256(t *testing.T) {
 
 func TestRandomChoice(t *testing.T) {
 	slice := []int{1, 2, 3, 4, 5}
-	
+
 	// test multiple selections
 	chosen := make(map[int]bool)
 	for i := 0; i < 100; i++ {
 		c := RandomChoice(slice)
 		chosen[c] = true
 	}
-	
+
 	// verify at least some different values are selected
 	if len(chosen) < 2 {
 		t.Error("RandomChoice should return varied results")
@@ -55,7 +55,7 @@ func TestRandomChoiceEmpty(t *testing.T) {
 
 func TestContains(t *testing.T) {
 	slice := []int{1, 2, 3, 4, 5}
-	
+
 	if !Contains(slice, 3) {
 		t.Error("Contains should return true for 3")
 	}
@@ -67,37 +67,16 @@ func TestContains(t *testing.T) {
 func TestUnique(t *testing.T) {
 	input := []int{1, 2, 2, 3, 3, 3}
 	result := Unique(input)
-	
+
 	if len(result) != 3 {
 		t.Errorf("Unique should return 3 elements, got %d", len(result))
 	}
-	
+
 	expected := map[int]bool{1: true, 2: true, 3: true}
 	for _, v := range result {
 		if !expected[v] {
 			t.Errorf("Unexpected value: %d", v)
 		}
-	}
-}
-
-func TestMinMax(t *testing.T) {
-	if Min(5, 3) != 3 {
-		t.Error("Min(5, 3) should be 3")
-	}
-	if Max(5, 3) != 5 {
-		t.Error("Max(5, 3) should be 5")
-	}
-}
-
-func TestClamp(t *testing.T) {
-	if Clamp(5, 0, 10) != 5 {
-		t.Error("Clamp(5, 0, 10) should be 5")
-	}
-	if Clamp(-5, 0, 10) != 0 {
-		t.Error("Clamp(-5, 0, 10) should be 0")
-	}
-	if Clamp(15, 0, 10) != 10 {
-		t.Error("Clamp(15, 0, 10) should be 10")
 	}
 }
 
@@ -112,7 +91,7 @@ func TestParseTLSVersion(t *testing.T) {
 		{"1.3", 0x0304},
 		{"2.0", 0x0303}, // default
 	}
-	
+
 	for _, tt := range tests {
 		result := ParseTLSVersion(tt.input)
 		if result != tt.expected {
@@ -132,7 +111,7 @@ func TestTLSVersionToString(t *testing.T) {
 		{0x0304, "1.3"},
 		{0x9999, "unknown"},
 	}
-	
+
 	for _, tt := range tests {
 		result := TLSVersionToString(tt.version)
 		if result != tt.expected {
@@ -155,7 +134,7 @@ func TestTruncateString(t *testing.T) {
 	if result != "Hello" {
 		t.Errorf("got %s, want Hello", result)
 	}
-	
+
 	// no truncation
 	result = TruncateString(input, 20)
 	if result != input {
@@ -166,9 +145,9 @@ func TestTruncateString(t *testing.T) {
 func TestMergeMaps(t *testing.T) {
 	m1 := map[string]string{"a": "1", "b": "2"}
 	m2 := map[string]string{"b": "3", "c": "4"}
-	
+
 	result := MergeMaps(m1, m2)
-	
+
 	if len(result) != 3 {
 		t.Errorf("merged map should have 3 keys, got %d", len(result))
 	}
@@ -180,7 +159,7 @@ func TestMergeMaps(t *testing.T) {
 func TestCopyMap(t *testing.T) {
 	original := map[string]string{"a": "1", "b": "2"}
 	copied := CopyMap(original)
-	
+
 	// modifying copy should not affect original
 	copied["a"] = "modified"
 	if original["a"] == "modified" {
@@ -188,10 +167,9 @@ func TestCopyMap(t *testing.T) {
 	}
 }
 
-
 func BenchmarkUint16SliceToString(b *testing.B) {
 	slice := []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = Uint16SliceToString(slice)
@@ -200,7 +178,7 @@ func BenchmarkUint16SliceToString(b *testing.B) {
 
 func BenchmarkCalculateSHA256(b *testing.B) {
 	data := []byte("test data for hashing")
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = CalculateSHA256(data)

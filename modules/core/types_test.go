@@ -7,9 +7,9 @@ import (
 
 func TestHTTPHeadersClone(t *testing.T) {
 	h := &HTTPHeaders{
-		Accept:     "text/html",
-		UserAgent:  "Mozilla/5.0",
-		Custom:     map[string]string{"Cookie": "session=abc"},
+		Accept:    "text/html",
+		UserAgent: "Mozilla/5.0",
+		Custom:    map[string]string{"Cookie": "session=abc"},
 	}
 
 	cloned := h.Clone()
@@ -61,7 +61,7 @@ func TestHTTPHeadersSet(t *testing.T) {
 
 func TestFeatureVector(t *testing.T) {
 	fv := NewFeatureVector()
-	
+
 	fv.Set(FeatureTLSVersion, 0x0303)
 	fv.Set(FeatureCipherSuites, 8.0)
 
@@ -73,26 +73,6 @@ func TestFeatureVector(t *testing.T) {
 	}
 	if fv.Get(FeatureUserAgent) != 0 {
 		t.Errorf("Unset feature should return 0")
-	}
-}
-
-func TestRiskLevelString(t *testing.T) {
-	tests := []struct {
-		level    RiskLevel
-		expected string
-	}{
-		{RiskLevelNone, "none"},
-		{RiskLevelLow, "low"},
-		{RiskLevelMedium, "medium"},
-		{RiskLevelHigh, "high"},
-		{RiskLevelCritical, "critical"},
-		{RiskLevel(99), "unknown"},
-	}
-
-	for _, tt := range tests {
-		if got := tt.level.String(); got != tt.expected {
-			t.Errorf("RiskLevel(%d).String() = %s, want %s", tt.level, got, tt.expected)
-		}
 	}
 }
 
@@ -121,7 +101,7 @@ func BenchmarkHTTPHeadersClone(b *testing.B) {
 
 func BenchmarkFeatureVectorSet(b *testing.B) {
 	fv := NewFeatureVector()
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		fv.Set(FeatureTLSVersion, float64(i))

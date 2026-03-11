@@ -52,3 +52,10 @@ cmd/gateway/gateway
 /verify_fingerprint_packet
 /verify_profile_observed
 
+# Example binaries (built from examples/*/main.go)
+examples/basic/basic
+examples/simple/simple
+examples/random/random
+examples/plugin/plugin
+examples/advanced/advanced
+

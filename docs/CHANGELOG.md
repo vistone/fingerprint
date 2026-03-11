@@ -4,6 +4,45 @@ This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+## [v1.0.11] - 2026-03-11
+
+### Removed
+
+- **Dead internal logger** (`modules/internal/logger/`) — standalone logger with zero external imports
+- **Dead hand-rolled metrics module** (`modules/metrics/`) — Counter/Gauge/Histogram/Summary types with zero imports; the Prometheus-based `modules/internal/metrics/` is retained
+
+### Changed
+
+- **Consolidate error system** — `modules/errors` is now the canonical error package
+  - Add `CoreError` type, `NewCodedError`, `NewCodedErrorf`, `WrapError`, `WrapErrorf` functions
+  - Add `VAL`, `NTF`, `SEC` error code families and 10 new sentinel errors
+  - Rewrite `modules/core/errors.go` as thin re-export layer (type aliases + function forwarding)
+- **Fix root Dockerfile** — correct HEALTHCHECK syntax, remove references to deleted modules/metrics and non-existent examples/v3
+- **Simplify root docker-compose.yml** — dev-oriented config, remove Redis/Nginx services, reference `deploy/docker/` for production
+- **Translate Chinese comments to English** in `modules/plugin/bridge.go` and `modules/internal/plugins/` (types.go, registry.go, basic_plugin.go)
+- **Document plugin architecture** — add package-level doc explaining the three plugin subsystems (internal/plugin, internal/plugins, internal/extension)
+
+## [v1.0.10] - 2026-03-11
+
+### Removed
+
+- **Compiled binaries from git tracking** (~25MB total)
+  - Remove 5 ELF binaries under `examples/` that were accidentally committed
+  - Add binary paths to `.gitignore` to prevent future tracking
+- **Dead code cleanup**
+  - Delete `modules/kit/strings.go` (6 stdlib wrapper functions with zero external references)
+  - Remove unused `Min()`, `Max()`, `Clamp()` from `modules/core/utils.go` (Go 1.25 has builtin `min`/`max`)
+  - Remove corresponding `TestMinMax` and `TestClamp` test functions
+
+### Fixed
+
+- **Duplicate test function** `TestRiskLevelString` declared in both `core/constants_test.go` and `core/types_test.go`
+- **Undefined function calls** in `modules/kit/useragent.go` after dead code removal, replaced with `strings.*` stdlib calls
+
+### Changed
+
+- **Remove 52-line commented-out example code** from `modules/internal/observability/observability.go`
+
 ## [v1.0.9] - 2026-03-11
 
 ### Added

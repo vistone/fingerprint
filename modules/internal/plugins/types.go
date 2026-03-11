@@ -1,11 +1,11 @@
-// Package plugins 定义指纹插件系统接口和类型
+// Package plugins defines the fingerprint plugin system interfaces and types.
 package plugins
 
 import (
 	tls "github.com/bogdanfinn/utls"
 )
 
-// FingerprintCategory 指纹分类
+// FingerprintCategory classifies fingerprint profiles.
 type FingerprintCategory string
 
 const (
@@ -16,36 +16,36 @@ const (
 	CategoryCommunity FingerprintCategory = "community"
 )
 
-// FingerprintMetadata 指纹元数据
+// FingerprintMetadata holds metadata for a fingerprint profile.
 type FingerprintMetadata struct {
-	Name           string              // 指纹ID
-	DisplayName    string              // 显示名称
-	Description    string              // 描述
-	Category       FingerprintCategory // 分类
-	Version        string              // 版本
-	Browser        string              // 浏览器名称
-	BrowserVersion string              // 浏览器版本
-	OS             string              // 操作系统
-	IsMobile       bool                // 是否移动设备
-	Author         string              // 作者
-	License        string              // 许可证
-	Tags           []string            // 标签
-	Verified       bool                // 是否验证
+	Name           string              // Fingerprint ID
+	DisplayName    string              // Display name
+	Description    string              // Description
+	Category       FingerprintCategory // Category
+	Version        string              // Version
+	Browser        string              // Browser name
+	BrowserVersion string              // Browser version
+	OS             string              // Operating system
+	IsMobile       bool                // Whether it is a mobile device
+	Author         string              // Author
+	License        string              // License
+	Tags           []string            // Tags
+	Verified       bool                // Whether verified
 }
 
-// ClientHelloSpec TLS ClientHello 规范
+// ClientHelloSpec describes a TLS ClientHello specification.
 type ClientHelloSpec struct {
-	TLSVersion                uint16   // TLS版本
-	CipherSuites              []uint16 // 密码套件
-	Extensions                []uint16 // 扩展
-	EllipticCurves            []uint16 // 椭圆曲线
-	EllipticCurvePointFormats []uint8  // EC点格式
-	SignatureAlgorithms       []uint16 // 签名算法
-	SupportedVersions         []uint16 // 支持版本
-	KeyShareCurves            []uint16 // 密钥共享曲线
+	TLSVersion                uint16   // TLS version
+	CipherSuites              []uint16 // Cipher suites
+	Extensions                []uint16 // Extensions
+	EllipticCurves            []uint16 // Elliptic curves
+	EllipticCurvePointFormats []uint8  // EC point formats
+	SignatureAlgorithms       []uint16 // Signature algorithms
+	SupportedVersions         []uint16 // Supported versions
+	KeyShareCurves            []uint16 // Key share curves
 }
 
-// FingerprintData 指纹数据（标准格式）
+// FingerprintData holds fingerprint data in the standard format.
 type FingerprintData struct {
 	Metadata    FingerprintMetadata    `json:"metadata"`
 	ClientHello *ClientHelloSpec       `json:"client_hello"`
@@ -53,7 +53,7 @@ type FingerprintData struct {
 	Extensions  map[string]interface{} `json:"extensions,omitempty"`
 }
 
-// Plugin 指纹插件接口
+// Plugin is the fingerprint plugin interface.
 type Plugin interface {
 	Metadata() *FingerprintMetadata
 	Data() *FingerprintData
@@ -63,7 +63,7 @@ type Plugin interface {
 	Clone() Plugin
 }
 
-// PluginSource 插件来源
+// PluginSource indicates where a plugin was loaded from.
 type PluginSource int
 
 const (
@@ -73,7 +73,7 @@ const (
 	SourceCommunity
 )
 
-// PluginInfo 插件信息
+// PluginInfo holds runtime information about a loaded plugin.
 type PluginInfo struct {
 	ID      string
 	Version string
@@ -84,5 +84,5 @@ type PluginInfo struct {
 	Error   error
 }
 
-// ValidationRule 验证规则
+// ValidationRule is a function that validates fingerprint data.
 type ValidationRule func(data *FingerprintData) error

@@ -1,64 +1,47 @@
-# Fingerprint Go v3.0 - Multi-stage Docker Build
+# Fingerprint Gateway Docker Image
+# Multi-stage build for minimal production image
+# For full deployment with monitoring, see deploy/docker/
+
+# Build stage
 FROM golang:1.25-alpine AS builder
 
-# 安装构建依赖
 RUN apk add --no-cache git ca-certificates tzdata
 
-# 设置工作目录
 WORKDIR /build
 
-# 复制 go mod 文件
-COPY go.mod go.sum go.work ./
-COPY modules/core/go.mod modules/core/
-COPY modules/profiles/go.mod modules/profiles/
-COPY modules/tls/go.mod modules/tls/
-COPY modules/http/go.mod modules/http/
-COPY modules/ml/go.mod modules/ml/
-COPY modules/defense/go.mod modules/defense/
-COPY modules/frontend/go.mod modules/frontend/
-COPY modules/gateway/go.mod modules/gateway/
-COPY modules/metrics/go.mod modules/metrics/
+# Copy workspace and module definition files
+COPY go.work go.work.sum ./
+COPY go.mod go.sum ./
 
-# 下载依赖
+# Copy all submodule sources (needed for workspace)
+COPY examples examples/
+COPY modules modules/
+COPY cmd cmd/
+
+# Download dependencies
 RUN go work sync && go mod download
 
-# 复制源代码
+# Copy remaining source code
 COPY . .
 
-# 构建二进制文件
+# Build the gateway binary
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-    -ldflags='-w -s -extldflags "-static"' \
-    -a -installsuffix cgo \
+    -ldflags="-w -s" \
     -o fingerprint-gateway \
     ./cmd/gateway
 
-# 构建示例程序
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-    -ldflags='-w -s' \
-    -o fingerprint-demo \
-    ./examples/v3
-
-# 运行时镜像
+# Runtime stage — minimal scratch image
 FROM scratch
 
-# 从 builder 复制证书
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=builder /build/fingerprint-gateway /fingerprint-gateway
 
-# 复制二进制文件
-COPY --from=builder /build/fingerprint-gateway /usr/local/bin/
-COPY --from=builder /build/fingerprint-demo /usr/local/bin/
-
-# 非 root 用户运行
-USER 65534:65534
-
-# 暴露端口
 EXPOSE 8080 9090
 
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["/usr/local/bin/fingerprint-gateway", "-health-check"] || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD ["/fingerprint-gateway", "-health"]
 
-# 入口
-ENTRYPOINT ["/usr/local/bin/fingerprint-gateway"]
-CMD ["-http-port=8080", "-grpc-port=9090"]
+USER 65534:65534
+
+ENTRYPOINT ["/fingerprint-gateway"]
