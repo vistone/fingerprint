@@ -1,3 +1,15 @@
+// Package plugin is the public API for the fingerprint plugin subsystem.
+//
+// It bridges three internal subsystems that serve distinct domains:
+//
+//   - internal/plugin: Generic plugin lifecycle (Analyzer, Transformer, Exporter,
+//     Validator) with a Manager for registration and discovery.
+//   - internal/extension: TLS extension analysis framework (Parser, Analyzer,
+//     Handler) with a global ExtensionRegistry.
+//   - internal/plugins: Fingerprint profile data model (FingerprintMetadata,
+//     ClientHelloSpec) used internally by the contrib builder; not re-exported here.
+//
+// Callers should use this package rather than importing internal packages directly.
 package plugin
 
 import (
@@ -33,80 +45,80 @@ func NewManager() *Manager {
 	return ip.NewManager()
 }
 
-// ExtensionType 扩展类型。
+// ExtensionType represents a TLS extension type identifier
 type ExtensionType = ie.ExtensionType
 
-// ExtensionMetadata 扩展元数据。
+// ExtensionMetadata holds metadata for a registered extension
 type ExtensionMetadata = ie.ExtensionMetadata
 
-// ExtensionData 扩展数据接口。
+// ExtensionData is the interface for parsed extension data
 type ExtensionData = ie.ExtensionData
 
-// Parser 解析器接口。
+// Parser parses raw extension bytes into structured data
 type Parser = ie.Parser
 
-// Analyzer 分析器接口。
+// Analyzer analyzes parsed extension data
 type Analyzer = ie.Analyzer
 
-// Handler 处理器接口。
+// Handler processes extension events in a streaming/event-driven fashion
 type Handler = ie.Handler
 
-// Plugin 插件接口。
+// Plugin represents a third-party extension plugin
 type Plugin = ie.Plugin
 
-// PluginInfo 插件信息。
+// PluginInfo holds plugin metadata and status
 type PluginInfo = ie.PluginInfo
 
-// ExtensionEvent 扩展事件。
+// ExtensionEvent represents an event for handler processing
 type ExtensionEvent = ie.ExtensionEvent
 
-// EventResult 事件处理结果。
+// EventResult holds the result of event processing
 type EventResult = ie.EventResult
 
-// ExtensionRegistry 扩展注册表。
+// ExtensionRegistry is the global registry for extensions
 type ExtensionRegistry = ie.ExtensionRegistry
 
-// RegisterExtension 注册扩展元数据。
+// RegisterExtension registers extension metadata in the global registry.
 func RegisterExtension(metadata *ExtensionMetadata) error {
 	return ie.RegisterExtension(metadata)
 }
 
-// RegisterParser 注册解析器。
+// RegisterParser registers a parser for the given extension type.
 func RegisterParser(extType ExtensionType, parser Parser) error {
 	return ie.RegisterParser(extType, parser)
 }
 
-// RegisterAnalyzer 注册分析器。
+// RegisterAnalyzer registers an analyzer for the given extension type.
 func RegisterAnalyzer(extType ExtensionType, analyzer Analyzer) error {
 	return ie.RegisterAnalyzer(extType, analyzer)
 }
 
-// RegisterHandler 注册处理器。
+// RegisterHandler registers a handler for the given extension type.
 func RegisterHandler(extType ExtensionType, handler Handler) error {
 	return ie.RegisterHandler(extType, handler)
 }
 
-// RegisterPlugin 注册插件。
+// RegisterPlugin registers a named plugin.
 func RegisterPlugin(name string, plugin Plugin) error {
 	return ie.RegisterPlugin(name, plugin)
 }
 
-// GetPlugin 获取插件。
+// GetPlugin retrieves a plugin by name.
 func GetPlugin(name string) (Plugin, error) {
 	return ie.GetPlugin(name)
 }
 
-// LoadPlugins 从配置加载插件。
+// LoadPlugins loads plugins from the given config path.
 func LoadPlugins(configPath string) error {
 	return ie.LoadPlugins(configPath)
 }
 
-// GetRegistry 获取全局扩展注册表。
+// GetRegistry returns the global extension registry.
 func GetRegistry() *ExtensionRegistry {
 	return ie.GetRegistry()
 }
 
-// GetRegistryStats 获取注册表统计。
+// GetRegistryStats returns registry statistics.
 func GetRegistryStats() map[string]interface{} {
 	return ie.GetRegistryStats()
 }

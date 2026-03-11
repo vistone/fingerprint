@@ -1,4 +1,4 @@
-// Package plugins 实现插件注册表
+// Package plugins implements the fingerprint plugin registry.
 package plugins
 
 import (
@@ -6,20 +6,20 @@ import (
 	"sync"
 )
 
-// Registry 插件注册表
+// Registry is a thread-safe registry for fingerprint plugins.
 type Registry struct {
 	plugins map[string]*PluginInfo
 	mu      sync.RWMutex
 }
 
-// NewRegistry 创建注册表
+// NewRegistry creates a new empty plugin registry.
 func NewRegistry() *Registry {
 	return &Registry{
 		plugins: make(map[string]*PluginInfo),
 	}
 }
 
-// Register 注册插件
+// Register adds a plugin to the registry with the given ID and source.
 func (r *Registry) Register(id string, plugin Plugin, source PluginSource) error {
 	if id == "" || plugin == nil {
 		return fmt.Errorf("invalid parameters")
@@ -45,7 +45,7 @@ func (r *Registry) Register(id string, plugin Plugin, source PluginSource) error
 	return nil
 }
 
-// Get 获取插件
+// Get retrieves a plugin by ID.
 func (r *Registry) Get(id string) (Plugin, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -58,7 +58,7 @@ func (r *Registry) Get(id string) (Plugin, error) {
 	return info.Plugin, nil
 }
 
-// List 列出所有插件
+// List returns all registered plugins.
 func (r *Registry) List() map[string]*PluginInfo {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -70,7 +70,7 @@ func (r *Registry) List() map[string]*PluginInfo {
 	return result
 }
 
-// ListByCategory 按分类列出
+// ListByCategory returns plugins matching the given category.
 func (r *Registry) ListByCategory(category FingerprintCategory) map[string]*PluginInfo {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -84,7 +84,7 @@ func (r *Registry) ListByCategory(category FingerprintCategory) map[string]*Plug
 	return result
 }
 
-// Count 获取数量
+// Count returns the number of registered plugins.
 func (r *Registry) Count() int {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -92,7 +92,7 @@ func (r *Registry) Count() int {
 	return len(r.plugins)
 }
 
-// Exists 检查是否存在
+// Exists reports whether a plugin with the given ID is registered.
 func (r *Registry) Exists(id string) bool {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -101,7 +101,7 @@ func (r *Registry) Exists(id string) bool {
 	return exists
 }
 
-// Unregister 注销插件
+// Unregister removes a plugin from the registry.
 func (r *Registry) Unregister(id string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()

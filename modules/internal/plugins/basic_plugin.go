@@ -1,4 +1,4 @@
-// Package plugins 实现基础插件类型
+// Package plugins implements basic plugin types.
 package plugins
 
 import (
@@ -7,17 +7,17 @@ import (
 	tls "github.com/bogdanfinn/utls"
 )
 
-// BasicPlugin 基础插件实现
+// BasicPlugin is the default Plugin implementation backed by FingerprintData.
 type BasicPlugin struct {
 	data *FingerprintData
 }
 
-// NewBasicPlugin 创建新指纹
+// NewBasicPlugin creates a new BasicPlugin from the given fingerprint data.
 func NewBasicPlugin(data *FingerprintData) *BasicPlugin {
 	return &BasicPlugin{data: data}
 }
 
-// Metadata 返回元数据
+// Metadata returns the fingerprint metadata.
 func (bp *BasicPlugin) Metadata() *FingerprintMetadata {
 	if bp.data == nil {
 		return nil
@@ -25,12 +25,12 @@ func (bp *BasicPlugin) Metadata() *FingerprintMetadata {
 	return &bp.data.Metadata
 }
 
-// Data 返回指纹数据
+// Data returns the full fingerprint data.
 func (bp *BasicPlugin) Data() *FingerprintData {
 	return bp.data
 }
 
-// Validate 验证指纹
+// Validate checks that all required fields are present in the fingerprint data.
 func (bp *BasicPlugin) Validate() error {
 	if bp.data == nil {
 		return fmt.Errorf("fingerprint data is nil")
@@ -63,14 +63,14 @@ func (bp *BasicPlugin) Validate() error {
 	return nil
 }
 
-// ToClientHelloSpec 转换为 utls spec
+// ToClientHelloSpec converts the fingerprint data to a utls ClientHelloSpec.
 func (bp *BasicPlugin) ToClientHelloSpec() (*tls.ClientHelloSpec, error) {
 	if bp.data == nil || bp.data.ClientHello == nil {
 		return nil, fmt.Errorf("no client hello data")
 	}
 
-	// 返回一个基本的 ClientHelloSpec
-	// 注意：这是一个简化版本，实际用途需要根据 utls 库的要求调整
+	// Return a basic ClientHelloSpec.
+	// Note: this is a simplified version; production use should adapt to utls requirements.
 	spec := &tls.ClientHelloSpec{
 		TLSVersMin:         bp.data.ClientHello.TLSVersion,
 		TLSVersMax:         bp.data.ClientHello.TLSVersion,
@@ -81,7 +81,7 @@ func (bp *BasicPlugin) ToClientHelloSpec() (*tls.ClientHelloSpec, error) {
 	return spec, nil
 }
 
-// GetUserAgent 获取 User-Agent
+// GetUserAgent returns the user-agent string.
 func (bp *BasicPlugin) GetUserAgent() string {
 	if bp.data == nil {
 		return ""
@@ -89,7 +89,7 @@ func (bp *BasicPlugin) GetUserAgent() string {
 	return bp.data.UserAgent
 }
 
-// Clone 克隆插件
+// Clone returns a shallow copy of the plugin.
 func (bp *BasicPlugin) Clone() Plugin {
 	if bp.data == nil {
 		return &BasicPlugin{}
