@@ -4,6 +4,29 @@ This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+## [v1.0.9] - 2026-03-11
+
+### Added
+
+- **API key authentication middleware** (`modules/gateway/auth.go`)
+  - Constant-time API key validation via `X-API-Key` header or `api_key` query parameter
+  - Configurable skip paths for health/metrics endpoints
+  - JSON error responses with proper `Content-Type: application/json`
+  - 6 unit tests covering all authentication scenarios
+
+### Security
+
+- **SSRF protection for reverse proxy** (`modules/gateway/injector.go`)
+  - Add `validateProxyTarget()` to block loopback, link-local, and cloud metadata endpoints
+  - Support `AllowPrivateTarget` config for Docker/Kubernetes environments
+  - 4 SSRF validation tests (loopback rejection, public allow, empty host, allowPrivate)
+
+### Changed
+
+- **HTML injector performance optimization** (`modules/gateway/injector.go`)
+  - Replace per-request `regexp.MustCompile` + `QuoteMeta` with `strings.Index` for `CustomInjectionPoint` matching
+- **Translate all remaining Chinese comments to English** in `modules/gateway/injector.go`
+
 ## [v1.0.8] - 2026-03-10
 
 ### Changed
