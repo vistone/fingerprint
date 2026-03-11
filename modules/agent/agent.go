@@ -122,6 +122,12 @@ type AgentConfig struct {
 	RequestBurstThreshold float64 // Request burst anomaly threshold (req/s)
 	RiskEscalationFactor  float64 // Risk escalation factor
 
+	// Reinforcement learning
+	RLConfig *RLConfig // Q-learning config (nil = disabled)
+
+	// Contextual bandit
+	BanditConfig *BanditConfig // LinUCB config (nil = disabled)
+
 	// Background goroutines
 	Enabled bool // Whether to enable the Agent
 }
@@ -150,6 +156,10 @@ type Agent struct {
 	knowledge *KnowledgeBase
 	anomaly   *AnomalyDetector
 
+	// Intelligence subsystems
+	rl     *ReinforcementEngine // Q-learning (nil if disabled)
+	bandit *ContextualBandit    // LinUCB strategy selector (nil if disabled)
+
 	stopCh chan struct{}
 	wg     sync.WaitGroup
 	mu     sync.RWMutex
@@ -164,7 +174,7 @@ func NewAgent(config *AgentConfig) *Agent {
 	mem := NewMemory(config.SessionWindow, config.MaxObservations)
 	kb := NewKnowledgeBase()
 
-	return &Agent{
+	a := &Agent{
 		config:    config,
 		behavior:  NewBehaviorAnalyzer(config, mem),
 		strategy:  NewStrategyEngine(config, mem),
@@ -173,6 +183,20 @@ func NewAgent(config *AgentConfig) *Agent {
 		anomaly:   NewAnomalyDetector(kb),
 		stopCh:    make(chan struct{}),
 	}
+
+	// Initialize intelligence subsystems
+	if config.RLConfig != nil {
+		a.rl = NewReinforcementEngine(config.RLConfig)
+	}
+	if config.BanditConfig != nil {
+		a.bandit = NewContextualBandit(config.BanditConfig)
+		// Register builtin strategies as bandit arms
+		for _, s := range a.strategy.ListActive() {
+			a.bandit.RegisterArm(s.ID)
+		}
+	}
+
+	return a
 }
 
 // Start initiates the agent's background goroutines (cleanup, strategy evolution, etc.)
@@ -222,6 +246,31 @@ func (a *Agent) Process(ctx context.Context, obs *Observation) *Decision {
 				len(matchResult.Contradictions), matchResult.SuspicionScore))
 	}
 
+	// RL override: if reinforcement learning is active, let it refine the action
+	if a.rl != nil {
+		state := DiscretizeState(obs, profile)
+		rlAction, explored := a.rl.SelectAction(state)
+		if explored {
+			decision.Insights = append(decision.Insights, "RL exploring alternative action")
+		}
+		// RL only escalates (never downgrades from strategy decision)
+		if actionIndex[rlAction] > actionIndex[decision.Action] {
+			decision.Action = rlAction
+			decision.Insights = append(decision.Insights,
+				fmt.Sprintf("RL escalated to %s (Q=%.3f)", rlAction, a.rl.QValue(state, rlAction)))
+		}
+	}
+
+	// Bandit-driven strategy prioritization: context-aware arm selection
+	if a.bandit != nil && len(decision.TriggeredStrategies) > 1 {
+		ctx := BuildContext(obs, profile, matchResult)
+		bestArm, score := a.bandit.SelectArmAmong(ctx, decision.TriggeredStrategies)
+		if bestArm != "" {
+			decision.Insights = append(decision.Insights,
+				fmt.Sprintf("Bandit selected strategy %s (UCB=%.3f)", bestArm, score))
+		}
+	}
+
 	decision.LatencyUs = time.Since(start).Microseconds()
 	return decision
 }
@@ -243,20 +292,55 @@ func (a *Agent) Knowledge() *KnowledgeBase {
 
 // Stats returns the agent's runtime statistics.
 func (a *Agent) Stats() AgentStats {
-	return AgentStats{
+	stats := AgentStats{
 		ActiveSessions:    a.memory.SessionCount(),
 		TotalObservations: a.memory.TotalObservations(),
 		ActiveStrategies:  len(a.strategy.ListActive()),
 		LearnedPatterns:   a.strategy.LearnedPatternCount(),
 	}
+	if a.rl != nil {
+		rlStats := a.rl.Stats()
+		stats.RLStats = &rlStats
+	}
+	if a.bandit != nil {
+		banditStats := a.bandit.Stats()
+		stats.BanditStats = &banditStats
+	}
+	return stats
 }
 
 // AgentStats contains runtime statistics.
 type AgentStats struct {
-	ActiveSessions    int `json:"active_sessions"`
-	TotalObservations int `json:"total_observations"`
-	ActiveStrategies  int `json:"active_strategies"`
-	LearnedPatterns   int `json:"learned_patterns"`
+	ActiveSessions    int          `json:"active_sessions"`
+	TotalObservations int          `json:"total_observations"`
+	ActiveStrategies  int          `json:"active_strategies"`
+	LearnedPatterns   int          `json:"learned_patterns"`
+	RLStats           *RLStats     `json:"rl_stats,omitempty"`
+	BanditStats       *BanditStats `json:"bandit_stats,omitempty"`
+}
+
+// ReportReward provides external feedback to the RL and Bandit subsystems.
+// Call this when the ground truth about an observation is known (e.g., confirmed threat or false positive).
+func (a *Agent) ReportReward(obs *Observation, profile *BehaviorSummary, action ActionType,
+	wasActualThreat bool, matchResult *MatchResult) {
+
+	if a.rl != nil {
+		state := DiscretizeState(obs, profile)
+		reward := ComputeReward(action, wasActualThreat, 0.8, 1.0)
+		// For terminal reward, nextState = state (no transition)
+		a.rl.Update(state, action, reward, state)
+	}
+
+	if a.bandit != nil {
+		ctx := BuildContext(obs, profile, matchResult)
+		reward := ComputeReward(action, wasActualThreat, 0.8, 1.0)
+		// Update all triggered strategies that led to this action
+		for _, s := range a.strategy.ListActive() {
+			if s.Action == action {
+				a.bandit.UpdateReward(s.ID, ctx, reward)
+			}
+		}
+	}
 }
 
 // cleanupLoop background goroutine for cleaning up expired sessions.

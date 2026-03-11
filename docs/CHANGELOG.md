@@ -4,6 +4,30 @@ This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+## [v1.0.12] - 2026-03-11
+
+### Added
+
+- **Agent Reinforcement Learning** (`modules/agent/reinforcement.go`)
+  - Tabular Q-learning with epsilon-greedy exploration for action selection
+  - `RLConfig` with tunable Alpha, Gamma, EpsilonMax/Min/Decay parameters
+  - Discretized state space (threat × risk × consistency × switch-rate buckets)
+  - `ComputeReward` function scoring true/false positive/negative outcomes
+  - Integrated into `Agent.Process()` for escalation-only RL override
+- **ML Online Learning** (`modules/ml/online.go`)
+  - `OnlineClassifier` with incremental centroid updates (online mean formula)
+  - `WeightedPartialFit` for importance-weighted sample ingestion
+  - Concept drift detection via sliding-window accuracy tracking
+  - `OnlineHierarchicalClassifier` with three-layer Protocol→Family→Version cascade
+- **Contextual Bandit Strategy Selection** (`modules/agent/bandit.go`)
+  - LinUCB algorithm with per-arm linear models for strategy prioritization
+  - 8-dimensional context vector from observation + behavior + ML signals
+  - `BuildContext` constructs normalized feature vector for bandit input
+  - `RandomBandit` baseline for A/B testing comparison
+  - Integrated into `Agent.Process()` to prioritize among triggered strategies
+- **External feedback loop** via `Agent.ReportReward()` method feeding both RL and Bandit subsystems
+- Unit tests for all three subsystems (`reinforcement_test.go`, `bandit_test.go`, `online_test.go`)
+
 ## [v1.0.11] - 2026-03-11
 
 ### Removed

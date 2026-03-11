@@ -4,6 +4,30 @@
 
 ## [Unreleased]
 
+## [v1.0.12] - 2026-03-11
+
+### 新增
+
+- **Agent 强化学习** (`modules/agent/reinforcement.go`)
+  - 表格式 Q-learning，epsilon-greedy 探索策略用于动作选择
+  - `RLConfig` 支持 Alpha、Gamma、EpsilonMax/Min/Decay 可调参数
+  - 离散化状态空间（威胁 × 风险 × 一致性 × 切换率分桶）
+  - `ComputeReward` 函数评分：真阳/假阳/真阴/假阴
+  - 集成到 `Agent.Process()` 实现仅升级 RL 覆盖
+- **ML 在线学习** (`modules/ml/online.go`)
+  - `OnlineClassifier` 增量质心更新（在线均值公式）
+  - `WeightedPartialFit` 支持重要性加权样本更新
+  - 概念漂移检测：滑动窗口准确率追踪
+  - `OnlineHierarchicalClassifier` 三层级联分类：协议→家族→版本
+- **Contextual Bandit 策略选择** (`modules/agent/bandit.go`)
+  - LinUCB 算法，每个策略臂维护线性模型进行策略优先级排序
+  - 8 维上下文向量：观测 + 行为 + ML 信号
+  - `BuildContext` 构造归一化特征向量作为 Bandit 输入
+  - `RandomBandit` 基线用于 A/B 测试对照
+  - 集成到 `Agent.Process()` 在触发策略中优先选择最优策略
+- **外部反馈环路**：`Agent.ReportReward()` 方法同时反馈 RL 和 Bandit 子系统
+- 三个子系统的单元测试（`reinforcement_test.go`、`bandit_test.go`、`online_test.go`）
+
 ## [v1.0.11] - 2026-03-11
 
 ### 移除
