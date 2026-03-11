@@ -3,12 +3,12 @@ module github.com/vistone/fingerprint/modules/agent
 go 1.25.7
 
 require (
-	github.com/vistone/fingerprint/modules/core v1.0.10
-	github.com/vistone/fingerprint/modules/defense v1.0.10
-	github.com/vistone/fingerprint/modules/ml v1.0.10
+	github.com/vistone/fingerprint/modules/core v1.0.11
+	github.com/vistone/fingerprint/modules/defense v1.0.11
+	github.com/vistone/fingerprint/modules/ml v1.0.11
 )
 
-require github.com/vistone/fingerprint/modules/profiles v1.0.10 // indirect
+require github.com/vistone/fingerprint/modules/profiles v1.0.11 // indirect
 
 replace (
 	github.com/vistone/fingerprint/modules/core => ../core
