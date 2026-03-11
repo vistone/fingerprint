@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// HealthStatus 健康检查状态
+// HealthStatus represents a health check status
 type HealthStatus string
 
 const (
@@ -14,7 +14,7 @@ const (
 	HealthCritical HealthStatus = "critical"
 )
 
-// HealthCheckResult 健康检查结果
+// HealthCheckResult represents a health check result
 type HealthCheckResult struct {
 	Status    HealthStatus
 	Message   string
@@ -23,7 +23,7 @@ type HealthCheckResult struct {
 	Overall   bool
 }
 
-// HealthCheckItem 单个健康检查项
+// HealthCheckItem represents a single health check item
 type HealthCheckItem struct {
 	Name        string
 	Status      HealthStatus
@@ -31,52 +31,52 @@ type HealthCheckItem struct {
 	LastChecked time.Time
 }
 
-// HealthChecker 配置健康检查器
+// HealthChecker is a configuration health checker
 type HealthChecker struct {
 	center *ConfigCenter
 	checks []HealthCheck
 }
 
-// HealthCheck 健康检查函数接口
+// HealthCheck is the health check function interface
 type HealthCheck interface {
-	// 执行健康检查
+	// Check performs a health check
 	Check() *HealthCheckItem
 }
 
-// NewHealthChecker 创建健康检查器
+// NewHealthChecker creates a new health checker
 func NewHealthChecker(center *ConfigCenter) *HealthChecker {
 	hc := &HealthChecker{
 		center: center,
 		checks: make([]HealthCheck, 0),
 	}
 
-	// 注册默认检查
+	// Register default checks
 	hc.registerDefaultChecks()
 
 	return hc
 }
 
-// registerDefaultChecks 注册默认检查
+// registerDefaultChecks registers default checks
 func (hc *HealthChecker) registerDefaultChecks() {
-	// 检查配置是否已加载
+	// Check whether the configuration has been loaded
 	hc.AddCheck(&loadedCheck{center: hc.center})
 
-	// 检查配置有效性
+	// Check configuration validity
 	hc.AddCheck(&validityCheck{center: hc.center})
 
-	// 检查历史版本
+	// Check version history
 	hc.AddCheck(&historyCheck{center: hc.center})
 
-	// 检查配置文件可访问性
+	// Check configuration file accessibility
 	hc.AddCheck(&fileAccessCheck{center: hc.center})
 }
 
-// AddCheck 添加健康检查
+// AddCheck adds a health check
 func (hc *HealthChecker) AddCheck(check HealthCheck) {
 	hc.checks = append(hc.checks, check)
 }
 
-// CheckHealth 执行所有健康检查
+// CheckHealth performs all health checks
 func (hc *HealthChecker) CheckHealth() *HealthCheckResult {
 	result := &HealthCheckResult{
 		Status:    HealthOK,
@@ -89,7 +89,7 @@ func (hc *HealthChecker) CheckHealth() *HealthCheckResult {
 		item := check.Check()
 		result.Checks = append(result.Checks, item)
 
-		// 更新整体状态
+		// Update overall status
 		if item.Status == HealthCritical {
 			result.Status = HealthCritical
 			result.Overall = false
@@ -98,7 +98,7 @@ func (hc *HealthChecker) CheckHealth() *HealthCheckResult {
 		}
 	}
 
-	// 生成消息
+	// Generate message
 	if result.Overall {
 		result.Message = "Configuration health is good"
 	} else {
@@ -114,7 +114,7 @@ func (hc *HealthChecker) CheckHealth() *HealthCheckResult {
 	return result
 }
 
-// loadedCheck 检查配置是否已加载
+// loadedCheck checks whether the configuration has been loaded
 type loadedCheck struct {
 	center *ConfigCenter
 }
@@ -136,7 +136,7 @@ func (lc *loadedCheck) Check() *HealthCheckItem {
 	return item
 }
 
-// validityCheck 检查配置有效性
+// validityCheck checks configuration validity
 type validityCheck struct {
 	center *ConfigCenter
 }
@@ -154,7 +154,7 @@ func (vc *validityCheck) Check() *HealthCheckItem {
 		return item
 	}
 
-	// 验证配置
+	// Validate configuration
 	validator := NewConfigValidator()
 	errs := validator.Validate(config)
 
@@ -169,7 +169,7 @@ func (vc *validityCheck) Check() *HealthCheckItem {
 	return item
 }
 
-// historyCheck 检查历史版本
+// historyCheck checks version history
 type historyCheck struct {
 	center *ConfigCenter
 }
@@ -193,7 +193,7 @@ func (hc *historyCheck) Check() *HealthCheckItem {
 	return item
 }
 
-// fileAccessCheck 检查配置文件可访问性
+// fileAccessCheck checks configuration file accessibility
 type fileAccessCheck struct {
 	center *ConfigCenter
 }
@@ -204,7 +204,7 @@ func (fac *fileAccessCheck) Check() *HealthCheckItem {
 		LastChecked: time.Now(),
 	}
 
-	// 尝试读取配置文件
+	// Try to read the configuration file
 	if err := fac.center.Load(); err == nil {
 		item.Status = HealthOK
 		item.Message = "Configuration file is accessible"

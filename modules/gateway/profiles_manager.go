@@ -1,5 +1,5 @@
 // Package gateway - Profile Configuration Manager
-// 管理多个 ClientProfile 配置文件
+// Manages multiple ClientProfile configuration files
 package gateway
 
 import (
@@ -15,23 +15,23 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles"
 )
 
-// ProfileManager Profile 配置管理器
+// ProfileManager is the Profile configuration manager
 type ProfileManager struct {
 	profiles   map[string]*profiles.ClientProfile // ProfileID -> Profile
-	defaultID  string                             // 默认 Profile ID
-	configDir  string                             // 配置文件目录
+	defaultID  string                             // Default Profile ID
+	configDir  string                             // Configuration file directory
 	mu         sync.RWMutex
-	autoReload bool // 是否自动重新加载配置
+	autoReload bool // Whether to automatically reload configuration
 }
 
-// ProfileManagerConfig ProfileManager 配置
+// ProfileManagerConfig is the ProfileManager configuration
 type ProfileManagerConfig struct {
-	ConfigDir  string // 配置文件目录
-	DefaultID  string // 默认 Profile ID
-	AutoReload bool   // 是否自动重新加载
+	ConfigDir  string // Configuration file directory
+	DefaultID  string // Default Profile ID
+	AutoReload bool   // Whether to automatically reload
 }
 
-// NewProfileManager 创建新的 ProfileManager
+// NewProfileManager creates a new ProfileManager
 func NewProfileManager(config *ProfileManagerConfig) *ProfileManager {
 	if config == nil {
 		config = &ProfileManagerConfig{
@@ -49,7 +49,7 @@ func NewProfileManager(config *ProfileManagerConfig) *ProfileManager {
 	}
 }
 
-// LoadProfile 从文件加载单个 Profile
+// LoadProfile loads a single Profile from a file
 func (pm *ProfileManager) LoadProfile(filename string) error {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
@@ -67,7 +67,7 @@ func (pm *ProfileManager) LoadProfile(filename string) error {
 			"failed to parse profile file", err).WithDetail("filename", filename)
 	}
 
-	// 验证 Profile ID
+	// Validate Profile ID
 	if profile.ID == "" {
 		return errors.ProfileInvalid(filename, "profile ID is empty")
 	}
@@ -76,24 +76,24 @@ func (pm *ProfileManager) LoadProfile(filename string) error {
 	return nil
 }
 
-// LoadAllProfiles 从目录加载所有 Profile，并汇总 profiles 模块中的所有 profiles
+// LoadAllProfiles loads all Profiles from directory and aggregates all profiles from the profiles module
 func (pm *ProfileManager) LoadAllProfiles() error {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
 
-	// 首先加载 profiles 模块中的所有 profiles（这是完整列表）
+	// First load all profiles from the profiles module (this is the complete list)
 	allProfiles := profiles.GetAll()
 	for _, p := range allProfiles {
 		profile := p // Copy to avoid reference issues
 		pm.profiles[profile.ID] = &profile
 	}
 
-	// 然后尝试从配置目录加载本地 profile 文件（可以覆盖内置的）
+	// Then try to load local profile files from config directory (can override built-in ones)
 	if _, err := os.Stat(pm.configDir); !os.IsNotExist(err) {
-		// 读取目录中的所有 JSON 文件
+		// Read all JSON files in the directory
 		files, err := filepath.Glob(filepath.Join(pm.configDir, "*.json"))
 		if err == nil {
-			// 加载每个文件（这会覆盖同 ID 的内置 profile）
+			// Load each file (this overrides built-in profiles with the same ID)
 			for _, file := range files {
 				if data, err := os.ReadFile(file); err == nil {
 					var profile profiles.ClientProfile
@@ -105,9 +105,9 @@ func (pm *ProfileManager) LoadAllProfiles() error {
 		}
 	}
 
-	// 如果仍然没有加载到任何 profiles（profiles 模块为空），加载默认的 3 个
+	// If still no profiles loaded (profiles module is empty), load 3 defaults
 	if len(pm.profiles) == 0 {
-		// 直接在这里初始化 3 个默认 profiles
+		// Initialize 3 default profiles directly here
 		defaultChrome := profiles.ClientProfile{
 			ID:             "chrome_134_default",
 			BrowserType:    core.BrowserChrome,
@@ -142,12 +142,12 @@ func (pm *ProfileManager) LoadAllProfiles() error {
 	return nil
 }
 
-// LoadDefaultProfiles 加载默认内置 Profile
+// LoadDefaultProfiles loads default built-in Profiles
 func (pm *ProfileManager) LoadDefaultProfiles() error {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
 
-	// 创建 Chrome 134 默认配置（带完整 P3 反检测）
+	// Create Chrome 134 default configuration (with full P3 anti-detection)
 	chrome134 := &profiles.ClientProfile{
 		ID:             "chrome_134_default",
 		BrowserType:    core.BrowserChrome,
@@ -155,9 +155,9 @@ func (pm *ProfileManager) LoadDefaultProfiles() error {
 		OS:             core.OSWindows10,
 		OSVersion:      "10.0.19045",
 
-		// P3 反检测配置
+		// P3 anti-detection configuration
 		JSAntiDetection: &profiles.JSAntiDetection{
-			// WebGPU 对抗点
+			// WebGPU anti-detection point
 			WebGPU: &profiles.WebGPUAntiDetect{
 				Available:   true,
 				AdapterName: "ANGLE (Intel, Intel(R) HD Graphics 630, OpenGL 4.5.0 - Build 31.0.101.2127)",
@@ -201,7 +201,7 @@ func (pm *ProfileManager) LoadDefaultProfiles() error {
 				BackendType: "d3d12",
 			},
 
-			// MediaDevices 对抗点
+			// MediaDevices anti-detection point
 			MediaDevices: &profiles.MediaDevicesAntiDetect{
 				VideoInputs: []*profiles.MediaDeviceInfo{
 					{
@@ -239,7 +239,7 @@ func (pm *ProfileManager) LoadDefaultProfiles() error {
 				},
 			},
 
-			// Permissions 对抗点
+			// Permissions anti-detection point
 			Permissions: &profiles.PermissionsAntiDetect{
 				PermissionState: map[string]string{
 					"camera":        "prompt",
@@ -252,7 +252,7 @@ func (pm *ProfileManager) LoadDefaultProfiles() error {
 				ShowNotification: true,
 			},
 
-			// Automation 对抗点
+			// Automation anti-detection point
 			Automation: &profiles.AutomationAntiDetect{
 				WebDriver:        false,
 				Headless:         false,
@@ -270,7 +270,7 @@ func (pm *ProfileManager) LoadDefaultProfiles() error {
 		},
 	}
 
-	// 创建 Firefox 默认配置（轻量级）
+	// Create Firefox default configuration (lightweight)
 	firefox := &profiles.ClientProfile{
 		ID:             "firefox_132_default",
 		BrowserType:    core.BrowserFirefox,
@@ -278,7 +278,7 @@ func (pm *ProfileManager) LoadDefaultProfiles() error {
 		OS:             core.OSWindows10,
 		OSVersion:      "10.0.19045",
 
-		// Firefox 只启用基础 Automation 对抗
+		// Firefox only enables basic Automation anti-detection
 		JSAntiDetection: &profiles.JSAntiDetection{
 			Automation: &profiles.AutomationAntiDetect{
 				WebDriver:       false,
@@ -288,7 +288,7 @@ func (pm *ProfileManager) LoadDefaultProfiles() error {
 		},
 	}
 
-	// 创建 Safari 默认配置（macOS）
+	// Create Safari default configuration (macOS)
 	safari := &profiles.ClientProfile{
 		ID:             "safari_17_default",
 		BrowserType:    core.BrowserSafari,
@@ -296,7 +296,7 @@ func (pm *ProfileManager) LoadDefaultProfiles() error {
 		OS:             core.OSMacOS14,
 		OSVersion:      "14.2",
 
-		// Safari 只启用基础对抗
+		// Safari only enables basic anti-detection
 		JSAntiDetection: &profiles.JSAntiDetection{
 			Permissions: &profiles.PermissionsAntiDetect{
 				PermissionState: map[string]string{
@@ -315,7 +315,7 @@ func (pm *ProfileManager) LoadDefaultProfiles() error {
 	return nil
 }
 
-// GetProfile 获取指定 ID 的 Profile（返回副本，防止外部修改内部状态）
+// GetProfile returns the Profile with the specified ID (returns a copy to prevent external modification of internal state)
 func (pm *ProfileManager) GetProfile(id string) (*profiles.ClientProfile, error) {
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
@@ -328,12 +328,12 @@ func (pm *ProfileManager) GetProfile(id string) (*profiles.ClientProfile, error)
 	return &clone, nil
 }
 
-// GetDefaultProfile 获取默认 Profile
+// GetDefaultProfile returns the default Profile
 func (pm *ProfileManager) GetDefaultProfile() (*profiles.ClientProfile, error) {
 	return pm.GetProfile(pm.defaultID)
 }
 
-// SetDefaultProfile 设置默认 Profile ID
+// SetDefaultProfile sets the default Profile ID
 func (pm *ProfileManager) SetDefaultProfile(id string) error {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
@@ -346,7 +346,7 @@ func (pm *ProfileManager) SetDefaultProfile(id string) error {
 	return nil
 }
 
-// ListProfiles 列出所有 Profile ID
+// ListProfiles lists all Profile IDs
 func (pm *ProfileManager) ListProfiles() []string {
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
@@ -359,7 +359,7 @@ func (pm *ProfileManager) ListProfiles() []string {
 	return ids
 }
 
-// AddProfile 动态添加 Profile
+// AddProfile dynamically adds a Profile
 func (pm *ProfileManager) AddProfile(profile *profiles.ClientProfile) error {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
@@ -372,7 +372,7 @@ func (pm *ProfileManager) AddProfile(profile *profiles.ClientProfile) error {
 	return nil
 }
 
-// RemoveProfile 移除 Profile
+// RemoveProfile removes a Profile
 func (pm *ProfileManager) RemoveProfile(id string) error {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
@@ -385,7 +385,7 @@ func (pm *ProfileManager) RemoveProfile(id string) error {
 	return nil
 }
 
-// SaveProfile 保存 Profile 到文件
+// SaveProfile saves a Profile to file
 func (pm *ProfileManager) SaveProfile(id string) error {
 	pm.mu.RLock()
 	profile, ok := pm.profiles[id]
@@ -395,20 +395,20 @@ func (pm *ProfileManager) SaveProfile(id string) error {
 		return errors.ProfileNotFound(id)
 	}
 
-	// 确保目录存在
+	// Ensure directory exists
 	if err := os.MkdirAll(pm.configDir, 0755); err != nil {
 		return errors.NewErrorWithCause(errors.ErrCodeProfileSaveFailed,
 			"failed to create config dir", err).WithDetail("profile_id", id)
 	}
 
-	// 序列化 Profile
+	// Serialize Profile
 	data, err := json.MarshalIndent(profile, "", "  ")
 	if err != nil {
 		return errors.NewErrorWithCause(errors.ErrCodeProfileSaveFailed,
 			"failed to marshal profile", err).WithDetail("profile_id", id)
 	}
 
-	// 写入文件
+	// Write to file
 	filename := filepath.Join(pm.configDir, fmt.Sprintf("%s.json", id))
 	if err := os.WriteFile(filename, data, 0644); err != nil {
 		return errors.NewErrorWithCause(errors.ErrCodeProfileSaveFailed,
@@ -418,14 +418,14 @@ func (pm *ProfileManager) SaveProfile(id string) error {
 	return nil
 }
 
-// ExportProfilesExample 导出示例配置文件（用于文档和初始化）
+// ExportProfilesExample exports example configuration files (for documentation and initialization)
 func (pm *ProfileManager) ExportProfilesExample() error {
-	// 加载默认配置
+	// Load default configuration
 	if err := pm.LoadDefaultProfiles(); err != nil {
 		return err
 	}
 
-	// 导出所有默认配置
+	// Export all default configurations
 	for id := range pm.profiles {
 		if err := pm.SaveProfile(id); err != nil {
 			return err
@@ -435,20 +435,20 @@ func (pm *ProfileManager) ExportProfilesExample() error {
 	return nil
 }
 
-// ReloadProfile 重新加载指定 Profile
+// ReloadProfile reloads the specified Profile
 func (pm *ProfileManager) ReloadProfile(id string) error {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
 
-	// 检查是否是内置 profile
+	// Check if it's a built-in profile
 	if _, ok := pm.profiles[id]; !ok {
 		return errors.ProfileNotFound(id)
 	}
 
-	// 尝试从文件重新加载
+	// Try to reload from file
 	filename := filepath.Join(pm.configDir, fmt.Sprintf("%s.json", id))
 	if _, err := os.Stat(filename); err != nil {
-		// 文件不存在，返回当前内存中的版本
+		// File doesn't exist, return current in-memory version
 		return nil
 	}
 
@@ -468,19 +468,19 @@ func (pm *ProfileManager) ReloadProfile(id string) error {
 	return nil
 }
 
-// ReloadAll 重新加载所有 Profile
+// ReloadAll reloads all Profiles
 func (pm *ProfileManager) ReloadAll() error {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
 
-	// 重新加载内置 profiles
+	// Reload built-in profiles
 	allProfiles := profiles.GetAll()
 	for _, p := range allProfiles {
 		profile := p
 		pm.profiles[profile.ID] = &profile
 	}
 
-	// 从配置目录加载本地 profile 文件
+	// Load local profile files from config directory
 	if _, err := os.Stat(pm.configDir); !os.IsNotExist(err) {
 		files, _ := filepath.Glob(filepath.Join(pm.configDir, "*.json"))
 		for _, file := range files {
@@ -496,7 +496,7 @@ func (pm *ProfileManager) ReloadAll() error {
 	return nil
 }
 
-// GetProfilesByBrowser 按浏览器类型获取 Profiles
+// GetProfilesByBrowser returns Profiles by browser type
 func (pm *ProfileManager) GetProfilesByBrowser(browser core.BrowserType) []*profiles.ClientProfile {
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
@@ -510,7 +510,7 @@ func (pm *ProfileManager) GetProfilesByBrowser(browser core.BrowserType) []*prof
 	return result
 }
 
-// GetProfilesByOS 按操作系统获取 Profiles
+// GetProfilesByOS returns Profiles by operating system
 func (pm *ProfileManager) GetProfilesByOS(os core.OperatingSystem) []*profiles.ClientProfile {
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
@@ -524,14 +524,14 @@ func (pm *ProfileManager) GetProfilesByOS(os core.OperatingSystem) []*profiles.C
 	return result
 }
 
-// Count 返回 Profile 数量
+// Count returns the number of Profiles
 func (pm *ProfileManager) Count() int {
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
 	return len(pm.profiles)
 }
 
-// CloneProfile 克隆 Profile
+// CloneProfile clones a Profile
 func (pm *ProfileManager) CloneProfile(sourceID, newID string) error {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
@@ -549,10 +549,10 @@ func (pm *ProfileManager) CloneProfile(sourceID, newID string) error {
 		return errors.ProfileNotFound(sourceID)
 	}
 
-	// 创建副本
+	// Create a copy
 	clone := *source
 	clone.ID = newID
-	// 修改名称以区分
+	// Modify name to distinguish
 	clone.Name = fmt.Sprintf("%s (Clone)", source.Name)
 
 	pm.profiles[newID] = &clone

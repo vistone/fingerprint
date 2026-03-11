@@ -7,81 +7,81 @@ import (
 	"sync"
 )
 
-// ExtensionType 定义扩展类型
+// ExtensionType defines the extension type
 type ExtensionType uint16
 
-// ExtensionMetadata 扩展元数据
+// ExtensionMetadata holds extension metadata
 type ExtensionMetadata struct {
-	// 扩展类型ID
+	// Extension type ID
 	Type ExtensionType
 
-	// 扩展名称（如 "Encrypted Client Hello"）
+	// Extension name (e.g. "Encrypted Client Hello")
 	Name string
 
-	// 扩展描述
+	// Extension description
 	Description string
 
-	// RFC 文档引用
+	// RFC document reference
 	RFC string
 
-	// IANA 注册编号
+	// IANA registration number
 	IANANumber uint16
 
-	// 最后更新时间
+	// Last update time
 	LastUpdated string
 
-	// 扩展类别（如 "encryption", "negotiation", "preference"）
+	// Extension category (e.g. "encryption", "negotiation", "preference")
 	Category string
 
-	// 是否为实验性扩展
+	// Whether this is an experimental extension
 	IsExperimental bool
 
-	// 兼容的 TLS 版本
+	// Compatible TLS versions
 	CompatibleTLSVersions []uint16
 }
 
-// ExtensionData 扩展数据接口
+// ExtensionData is the extension data interface
 type ExtensionData interface {
-	// 获取扩展类型
+	// Get extension type
 	GetType() ExtensionType
 
-	// 获取原始字节数据
+	// Get raw byte data
 	GetRawData() []byte
 
-	// 获取扩展名称
+	// Get extension name
 	GetName() string
 
-	// 转换为 map 用于序列化
+	// Convert to map for serialization
 	ToMap() map[string]interface{}
 }
 
-// AnalysisResult 通用分析结果接口
+// AnalysisResult is the general analysis result interface
 type AnalysisResult interface {
-	// 获取分析的扩展类型
+	// Get the analyzed extension type
 	GetExtensionType() ExtensionType
 
-	// 是否存在异常
+	// Whether anomalies exist
 	HasAnomalies() bool
 
-	// 获取异常信息
+	// Get anomaly details
 	GetAnomalies() []string
 
-	// 获取风险评分（0.0-1.0）
+	// Get risk score (0.0-1.0)
 	GetRiskScore() float64
 
-	// 转换为 map 用于序列化
+	// Convert to map for serialization
 	ToMap() map[string]interface{}
 }
 
-// ExtensionRegistry 全局扩展注册表
+// ExtensionRegistry is the global extension registry
 type ExtensionRegistry struct {
 	mu            sync.RWMutex
 	metadata      map[ExtensionType]*ExtensionMetadata
 	parsers       map[ExtensionType]Parser
 	analyzers     map[ExtensionType]Analyzer
 	handlers      map[ExtensionType][]Handler
-	typeNames     map[string]ExtensionType // 反向查找
-	customPlugins map[string]Plugin        // 第三方插件
+	typeNames     map[string]ExtensionType // reverse lookup
+	customPlugins map[string]Plugin        // third-party plugins
 }
 
 // Global registry instance
@@ -97,11 +97,11 @@ func init() {
 		customPlugins: make(map[string]Plugin),
 	}
 
-	// 初始化标准扩展
+	// Initialize standard extensions
 	initStandardExtensions()
 }
 
-// RegisterExtension 注册扩展类型及其元数据
+// RegisterExtension registers an extension type and its metadata
 func RegisterExtension(metadata *ExtensionMetadata) error {
 	globalRegistry.mu.Lock()
 	defer globalRegistry.mu.Unlock()
@@ -116,7 +116,7 @@ func RegisterExtension(metadata *ExtensionMetadata) error {
 	return nil
 }
 
-// RegisterParser 注册扩展解析器
+// RegisterParser registers an extension parser
 func RegisterParser(extType ExtensionType, parser Parser) error {
 	globalRegistry.mu.Lock()
 	defer globalRegistry.mu.Unlock()
@@ -133,7 +133,7 @@ func RegisterParser(extType ExtensionType, parser Parser) error {
 	return nil
 }
 
-// RegisterAnalyzer 注册扩展分析器
+// RegisterAnalyzer registers an extension analyzer
 func RegisterAnalyzer(extType ExtensionType, analyzer Analyzer) error {
 	globalRegistry.mu.Lock()
 	defer globalRegistry.mu.Unlock()
@@ -150,7 +150,7 @@ func RegisterAnalyzer(extType ExtensionType, analyzer Analyzer) error {
 	return nil
 }
 
-// RegisterHandler 注册扩展处理器（事件驱动）
+// RegisterHandler registers an extension handler (event-driven)
 func RegisterHandler(extType ExtensionType, handler Handler) error {
 	globalRegistry.mu.Lock()
 	defer globalRegistry.mu.Unlock()
@@ -167,7 +167,7 @@ func RegisterHandler(extType ExtensionType, handler Handler) error {
 	return nil
 }
 
-// GetMetadata 获取扩展元数据
+// GetMetadata returns extension metadata
 func GetMetadata(extType ExtensionType) (*ExtensionMetadata, error) {
 	globalRegistry.mu.RLock()
 	defer globalRegistry.mu.RUnlock()
@@ -180,7 +180,7 @@ func GetMetadata(extType ExtensionType) (*ExtensionMetadata, error) {
 	return metadata, nil
 }
 
-// GetParser 获取扩展解析器
+// GetParser returns the extension parser
 func GetParser(extType ExtensionType) (Parser, error) {
 	globalRegistry.mu.RLock()
 	defer globalRegistry.mu.RUnlock()
@@ -193,7 +193,7 @@ func GetParser(extType ExtensionType) (Parser, error) {
 	return parser, nil
 }
 
-// GetAnalyzer 获取扩展分析器
+// GetAnalyzer returns the extension analyzer
 func GetAnalyzer(extType ExtensionType) (Analyzer, error) {
 	globalRegistry.mu.RLock()
 	defer globalRegistry.mu.RUnlock()
@@ -206,19 +206,19 @@ func GetAnalyzer(extType ExtensionType) (Analyzer, error) {
 	return analyzer, nil
 }
 
-// GetHandlers 获取扩展处理器
+// GetHandlers returns extension handlers
 func GetHandlers(extType ExtensionType) []Handler {
 	globalRegistry.mu.RLock()
 	defer globalRegistry.mu.RUnlock()
 
 	handlers := globalRegistry.handlers[extType]
-	// 返回副本以避免并发修改
+	// Return a copy to avoid concurrent modification
 	result := make([]Handler, len(handlers))
 	copy(result, handlers)
 	return result
 }
 
-// ListAllExtensions 列举所有注册的扩展
+// ListAllExtensions lists all registered extensions
 func ListAllExtensions() []*ExtensionMetadata {
 	globalRegistry.mu.RLock()
 	defer globalRegistry.mu.RUnlock()
@@ -231,7 +231,7 @@ func ListAllExtensions() []*ExtensionMetadata {
 	return extensions
 }
 
-// FindExtensionByName 按名称查找扩展
+// FindExtensionByName finds an extension by name
 func FindExtensionByName(name string) (ExtensionType, error) {
 	globalRegistry.mu.RLock()
 	defer globalRegistry.mu.RUnlock()
@@ -244,7 +244,7 @@ func FindExtensionByName(name string) (ExtensionType, error) {
 	return extType, nil
 }
 
-// RegisterPlugin 注册第三方插件
+// RegisterPlugin registers a third-party plugin
 func RegisterPlugin(name string, plugin Plugin) error {
 	globalRegistry.mu.Lock()
 	defer globalRegistry.mu.Unlock()
@@ -253,7 +253,7 @@ func RegisterPlugin(name string, plugin Plugin) error {
 		return ErrInvalidPlugin
 	}
 
-	// 验证插件
+	// Validate the plugin
 	if err := plugin.Validate(); err != nil {
 		return err
 	}
@@ -262,7 +262,7 @@ func RegisterPlugin(name string, plugin Plugin) error {
 	return nil
 }
 
-// GetPlugin 获取第三方插件
+// GetPlugin returns a third-party plugin
 func GetPlugin(name string) (Plugin, error) {
 	globalRegistry.mu.RLock()
 	defer globalRegistry.mu.RUnlock()
@@ -275,7 +275,7 @@ func GetPlugin(name string) (Plugin, error) {
 	return plugin, nil
 }
 
-// LoadPlugins 加载配置文件中的所有插件
+// LoadPlugins loads all plugins from the configuration file
 func LoadPlugins(configPath string) error {
 	type pluginConfigItem struct {
 		Name    string                 `json:"name"`
@@ -341,12 +341,12 @@ func LoadPlugins(configPath string) error {
 	return nil
 }
 
-// GetRegistry 获取全局注册表实例
+// GetRegistry returns the global registry instance
 func GetRegistry() *ExtensionRegistry {
 	return globalRegistry
 }
 
-// GetRegistryStats 获取注册表统计信息
+// GetRegistryStats returns registry statistics
 func GetRegistryStats() map[string]interface{} {
 	globalRegistry.mu.RLock()
 	defer globalRegistry.mu.RUnlock()

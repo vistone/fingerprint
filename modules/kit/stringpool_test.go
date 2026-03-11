@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// TestStringPool_ToLower 测试字符串池小写转换
+// TestStringPool_ToLower tests string pool lowercase conversion
 func TestStringPool_ToLower(t *testing.T) {
 	pool := NewStringPool()
 
@@ -15,7 +15,7 @@ func TestStringPool_ToLower(t *testing.T) {
 	}{
 		{"HELLO", "hello"},
 		{"Hello", "hello"},
-		{"hello", "hello"},  // 已经是小写
+		{"hello", "hello"},  // Already lowercase
 		{"Test123", "test123"},
 		{"UPPER_CASE", "upper_case"},
 	}
@@ -26,7 +26,7 @@ func TestStringPool_ToLower(t *testing.T) {
 			t.Errorf("ToLower(%s) = %s, want %s", tt.input, result, tt.expected)
 		}
 
-		// 第二次获取应该返回缓存的值
+		// Second retrieval should return cached value
 		result2 := pool.ToLower(tt.input)
 		if result2 != tt.expected {
 			t.Errorf("ToLower cached(%s) = %s, want %s", tt.input, result2, tt.expected)
@@ -34,7 +34,7 @@ func TestStringPool_ToLower(t *testing.T) {
 	}
 }
 
-// TestIsAllLower 测试全小写检查
+// TestIsAllLower tests all-lowercase check
 func TestIsAllLower(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -57,7 +57,7 @@ func TestIsAllLower(t *testing.T) {
 	}
 }
 
-// TestCaseInsensitiveContains 测试不区分大小写的包含检查
+// TestCaseInsensitiveContains tests case-insensitive contains check
 func TestCaseInsensitiveContains(t *testing.T) {
 	tests := []struct {
 		text     string
@@ -82,7 +82,7 @@ func TestCaseInsensitiveContains(t *testing.T) {
 	}
 }
 
-// TestFastContains 测试快速包含检查
+// TestFastContains tests fast contains check
 func TestFastContains(t *testing.T) {
 	tests := []struct {
 		textLower   string
@@ -104,7 +104,7 @@ func TestFastContains(t *testing.T) {
 	}
 }
 
-// BenchmarkStringPool_ToLower 基准测试字符串池小写转换
+// BenchmarkStringPool_ToLower benchmarks string pool lowercase conversion
 func BenchmarkStringPool_ToLower(b *testing.B) {
 	pool := NewStringPool()
 	testStr := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
@@ -115,7 +115,7 @@ func BenchmarkStringPool_ToLower(b *testing.B) {
 	}
 }
 
-// BenchmarkStringsToLower 基准测试标准库小写转换
+// BenchmarkStringsToLower benchmarks standard library lowercase conversion
 func BenchmarkStringsToLower(b *testing.B) {
 	testStr := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 
@@ -125,7 +125,7 @@ func BenchmarkStringsToLower(b *testing.B) {
 	}
 }
 
-// BenchmarkCaseInsensitiveContains 基准测试不区分大小写的包含检查
+// BenchmarkCaseInsensitiveContains benchmarks case-insensitive contains check
 func BenchmarkCaseInsensitiveContains(b *testing.B) {
 	text := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 	substr := "windows"
@@ -136,7 +136,7 @@ func BenchmarkCaseInsensitiveContains(b *testing.B) {
 	}
 }
 
-// BenchmarkStringsContainsLower 基准测试标准库包含检查
+// BenchmarkStringsContainsLower benchmarks standard library contains check
 func BenchmarkStringsContainsLower(b *testing.B) {
 	text := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 	substr := "windows"

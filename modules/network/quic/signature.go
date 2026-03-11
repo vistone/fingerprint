@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// QUICSignatureResult QUIC 签名结果
+// QUICSignatureResult represents a QUIC signature analysis result
 type QUICSignatureResult struct {
 	Hash string
 
@@ -29,7 +29,7 @@ type QUICSignatureResult struct {
 	TransportLayer string
 }
 
-// QUICInitialData QUIC Initial 包数据
+// QUICInitialData represents QUIC Initial packet data
 type QUICInitialData struct {
 	Version uint32
 
@@ -43,12 +43,12 @@ type QUICInitialData struct {
 	InitialMaxStreamData    uint64
 }
 
-// QUICSignatureAnalyzer QUIC 签名分析器
+// QUICSignatureAnalyzer is a QUIC signature analyzer
 type QUICSignatureAnalyzer struct {
 	knownClientProfiles map[string]*QUICClientProfile
 }
 
-// QUICClientProfile 已知的 QUIC 客户端配置
+// QUICClientProfile represents a known QUIC client configuration
 type QUICClientProfile struct {
 	Name                   string
 	ClientName             string
@@ -59,14 +59,14 @@ type QUICClientProfile struct {
 	RiskScore              float64
 }
 
-// NewQUICSignatureAnalyzer 创建分析器
+// NewQUICSignatureAnalyzer creates a new QUIC signature analyzer
 func NewQUICSignatureAnalyzer() *QUICSignatureAnalyzer {
 	return &QUICSignatureAnalyzer{
 		knownClientProfiles: initKnownQUICClientProfiles(),
 	}
 }
 
-// AnalyzeQUICInitial 分析 QUIC Initial 包
+// AnalyzeQUICInitial analyzes a QUIC Initial packet
 func (a *QUICSignatureAnalyzer) AnalyzeQUICInitial(initial QUICInitialData) (*QUICSignatureResult, error) {
 	if initial.Version == 0 {
 		return nil, fmt.Errorf("QUIC version required")
@@ -139,7 +139,7 @@ func (a *QUICSignatureAnalyzer) detectAnomalies(result *QUICSignatureResult, ini
 	result.RiskScore = baseScore
 }
 
-// FindMatchingClients 查找匹配的已知客户端
+// FindMatchingClients finds matching known clients for a QUIC signature
 func (a *QUICSignatureAnalyzer) FindMatchingClients(result *QUICSignatureResult, maxResults int) []string {
 	var matches []string
 
@@ -379,18 +379,18 @@ func initKnownQUICClientProfiles() map[string]*QUICClientProfile {
 	}
 }
 
-// ComputeQUICSignature 便捷函数：计算 QUIC 签名
+// ComputeQUICSignature is a convenience function for computing a QUIC signature
 func ComputeQUICSignature(initial QUICInitialData) (*QUICSignatureResult, error) {
 	analyzer := NewQUICSignatureAnalyzer()
 	return analyzer.AnalyzeQUICInitial(initial)
 }
 
-// NewAnalyzer 创建 QUIC 签名分析器（模块统一命名）。
+// NewAnalyzer creates a QUIC signature analyzer (module-unified naming).
 func NewAnalyzer() *QUICSignatureAnalyzer {
 	return NewQUICSignatureAnalyzer()
 }
 
-// Compute 便捷函数：计算 QUIC 签名（模块统一命名）。
+// Compute is a convenience function for computing a QUIC signature (module-unified naming).
 func Compute(initial QUICInitialData) (*QUICSignatureResult, error) {
 	return ComputeQUICSignature(initial)
 }

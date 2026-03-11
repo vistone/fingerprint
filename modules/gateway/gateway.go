@@ -1,5 +1,5 @@
-// Package gateway 提供高性能 API 网关服务
-// 集成限流、cache、ML classifyand风险评估
+// Package gateway provides a high-performance API gateway service.
+// Integrates rate limiting, caching, ML classification, and risk assessment.
 package gateway
 
 import (
@@ -31,7 +31,7 @@ const (
 	AnalyzeTimeout = 5 * time.Second
 )
 
-// Gateway 指纹analyze网关
+// Gateway is the fingerprint analysis gateway
 type Gateway struct {
 	config         *GatewayConfig
 	classifier     *ml.HierarchicalClassifier
@@ -40,57 +40,57 @@ type Gateway struct {
 	cache          *FingerprintCache
 	limiter        *RateLimiter
 	sdk            *frontend.SDK
-	profileManager *ProfileManager // Profile configuration管理器
-	injector       *HTMLInjector   // HTML response注入器
-	agent          *agent.Agent    // 自主安全智能体
+	profileManager *ProfileManager // Profile configuration manager
+	injector       *HTMLInjector   // HTML response injector
+	agent          *agent.Agent    // Autonomous security agent
 	mu             sync.RWMutex
 }
 
-// GatewayConfig 网关configuration
+// GatewayConfig is the gateway configuration
 type GatewayConfig struct {
-	// 限流configuration
-	RateLimitRequests int           // 每秒request数
-	RateLimitBurst    int           // 突发request数
-	RateLimitWindow   time.Duration // 限流窗口
+	// Rate limiting configuration
+	RateLimitRequests int           // Requests per second
+	RateLimitBurst    int           // Burst request count
+	RateLimitWindow   time.Duration // Rate limit window
 
-	// cacheconfiguration
-	CacheSize    int           // cachesize
-	CacheTTL     time.Duration // cache过期时间
-	CacheEnabled bool          // whether启用cache
+	// Cache configuration
+	CacheSize    int           // Cache size
+	CacheTTL     time.Duration // Cache TTL
+	CacheEnabled bool          // Whether to enable cache
 
 	// ML configuration
-	MLClassifierPath string // classify器模型路径
-	MLTrainingData   string // 训练data路径
+	MLClassifierPath string // Classifier model path
+	MLTrainingData   string // Training data path
 
-	// 风险评估configuration
-	RiskThreshold float64 // 风险阈值
+	// Risk assessment configuration
+	RiskThreshold float64 // Risk threshold
 
-	// 服务端点
+	// Service endpoint
 	Endpoint string
 	Port     int
 
-	// P3 反检测configuration
-	P3Enabled       bool   // whether启用 P3 反检测注入
-	P3ProfileID     string // 默认使用的 Profile ID
-	P3ConfigDir     string // Profile configurationfiledirectory
-	P3ProxyTarget   string // proxy目标 URL（optional）
-	P3DirectProxy   bool   // whether将根路径作为透明proxy入口
-	P3InjectConsist bool   // whether注入一致性validate代码
+	// P3 anti-detection configuration
+	P3Enabled       bool   // Whether to enable P3 anti-detection injection
+	P3ProfileID     string // Default Profile ID to use
+	P3ConfigDir     string // Profile configuration file directory
+	P3ProxyTarget   string // Proxy target URL (optional)
+	P3DirectProxy   bool   // Whether to use root path as transparent proxy entry
+	P3InjectConsist bool   // Whether to inject consistency validation code
 
-	// 扫描器浏览器executeconfiguration
-	ScannerUseBrowser     bool          // whether优先使用浏览器execute抓取
-	ScannerBrowserWS      string        // 远程 Chrome DevTools WS 地址
-	ScannerBrowserTimeout time.Duration // 浏览器抓取timeout
+	// Scanner browser execution configuration
+	ScannerUseBrowser     bool          // Whether to prefer browser-based fetching
+	ScannerBrowserWS      string        // Remote Chrome DevTools WS address
+	ScannerBrowserTimeout time.Duration // Browser fetch timeout
 
-	// 安全configuration
-	TrustedProxies []string // 信任的反向proxy IP 列表，为空则不信任proxy头
+	// Security configuration
+	TrustedProxies []string // Trusted reverse proxy IP list; empty means proxy headers are not trusted
 
-	// Agent 智能体configuration
-	AgentEnabled bool               // whether启用自主安全智能体
-	AgentConfig  *agent.AgentConfig // 智能体详细configuration（nil 使用默认）
+	// Agent configuration
+	AgentEnabled bool               // Whether to enable autonomous security agent
+	AgentConfig  *agent.AgentConfig // Detailed agent configuration (nil uses defaults)
 }
 
-// DefaultGatewayConfig 默认网关configuration
+// DefaultGatewayConfig is the default gateway configuration
 var DefaultGatewayConfig = &GatewayConfig{
 	RateLimitRequests: core.DefaultRateLimit,
 	RateLimitBurst:    core.DefaultRateLimitBurst,
@@ -101,7 +101,7 @@ var DefaultGatewayConfig = &GatewayConfig{
 	RiskThreshold:     core.RiskThresholdHigh,
 	Endpoint:          "/api/v1",
 	Port:              8080,
-	// P3 默认configuration
+	// P3 default configuration
 	P3Enabled:             true,
 	P3ProfileID:           "chrome_134_default",
 	P3ConfigDir:           "./profiles",
@@ -114,7 +114,7 @@ var DefaultGatewayConfig = &GatewayConfig{
 	AgentEnabled:          true,
 }
 
-// NewGateway create新的网关
+// NewGateway creates a new gateway
 func NewGateway(config *GatewayConfig) *Gateway {
 	if config == nil {
 		config = DefaultGatewayConfig
@@ -132,19 +132,19 @@ func NewGateway(config *GatewayConfig) *Gateway {
 
 	g.classifier.Initialize()
 
-	// initialize Profile 管理器
+	// Initialize Profile manager
 	g.profileManager = NewProfileManager(&ProfileManagerConfig{
 		ConfigDir:  config.P3ConfigDir,
 		DefaultID:  config.P3ProfileID,
 		AutoReload: false,
 	})
 
-	// 加载 Profile configuration
+	// Load Profile configuration
 	if err := g.profileManager.LoadAllProfiles(); err != nil {
 		fmt.Printf("Warning: failed to load profiles: %v, using defaults\n", err)
 	}
 
-	// initialize HTML 注入器
+	// Initialize HTML injector
 	if config.P3Enabled {
 		profile, err := g.profileManager.GetDefaultProfile()
 		if err != nil {
@@ -168,7 +168,7 @@ func NewGateway(config *GatewayConfig) *Gateway {
 		}
 	}
 
-	// initialize自主安全智能体
+	// Initialize autonomous security agent
 	if config.AgentEnabled {
 		g.agent = agent.NewAgent(config.AgentConfig)
 		g.agent.Start()
@@ -177,7 +177,7 @@ func NewGateway(config *GatewayConfig) *Gateway {
 	return g
 }
 
-// AnalyzeRequest analyzerequest
+// AnalyzeRequest is the analysis request
 type AnalyzeRequest struct {
 	// TLS data
 	TLSVersion      uint16              `json:"tls_version"`
@@ -190,66 +190,66 @@ type AnalyzeRequest struct {
 	Method  string            `json:"method"`
 	Path    string            `json:"path"`
 
-	// 前端指纹（optional）
+	// Frontend fingerprint (optional)
 	Frontend *ml.FrontendFingerprintData `json:"frontend,omitempty"`
 
-	// 客户端 IP
+	// Client IP
 	ClientIP string `json:"client_ip"`
 }
 
-// AnalyzeResponse analyzeresponse
+// AnalyzeResponse is the analysis response
 type AnalyzeResponse struct {
-	// 指纹哈希
+	// Fingerprint hash
 	FingerprintHash string `json:"fingerprint_hash"`
 
-	// classifyresult
+	// Classification result
 	Classification *ml.ClassificationResult `json:"classification"`
 
-	// 风险评估
+	// Risk assessment
 	RiskAssessment *core.RiskAssessment `json:"risk_assessment"`
 
-	// 检测发现
+	// Detection findings
 	Findings []defense.Finding `json:"findings,omitempty"`
 
-	// JA3/JA4 指纹
+	// JA3/JA4 fingerprints
 	JA3 *JA3Info `json:"ja3,omitempty"`
 	JA4 *JA4Info `json:"ja4,omitempty"`
 
-	// JA4H 指纹
+	// JA4H fingerprint
 	JA4H *JA4HInfo `json:"ja4h,omitempty"`
 
-	// 防护建议
+	// Defense suggestions
 	DefenseHints []string `json:"defense_hints,omitempty"`
 
-	// Agent 智能体决策
+	// Agent decision
 	AgentDecision *agent.Decision `json:"agent_decision,omitempty"`
 
-	// cacheinfo
+	// Cache info
 	Cached    bool      `json:"cached"`
 	CacheTime time.Time `json:"cache_time,omitempty"`
 
-	// process时间
+	// Processing time
 	ProcessingTimeMs int64 `json:"processing_time_ms"`
 }
 
-// JA3Info JA3 指纹info
+// JA3Info contains JA3 fingerprint info
 type JA3Info struct {
 	Hash string `json:"hash"`
 	Raw  string `json:"raw"`
 }
 
-// JA4Info JA4 指纹info
+// JA4Info contains JA4 fingerprint info
 type JA4Info struct {
 	Fingerprint string `json:"fingerprint"`
 }
 
-// JA4HInfo JA4H 指纹info
+// JA4HInfo contains JA4H fingerprint info
 type JA4HInfo struct {
 	Fingerprint string   `json:"fingerprint"`
 	Headers     []string `json:"headers"`
 }
 
-// Close 优雅close网关，释放后台资源
+// Close gracefully shuts down the gateway and releases background resources
 func (g *Gateway) Close() {
 	if g.limiter != nil {
 		g.limiter.Close()
@@ -259,63 +259,63 @@ func (g *Gateway) Close() {
 	}
 }
 
-// GetAgent return自主安全智能体实例（供 Web 管理台query）
+// GetAgent returns the autonomous security agent instance (for web admin console queries)
 func (g *Gateway) GetAgent() *agent.Agent {
 	return g.agent
 }
 
-// GetClassifier return ML 分层classify器
+// GetClassifier returns the ML hierarchical classifier
 func (g *Gateway) GetClassifier() *ml.HierarchicalClassifier {
 	return g.classifier
 }
 
-// GetExtractor returnfeatureextract器
+// GetExtractor returns the feature extractor
 func (g *Gateway) GetExtractor() *ml.FeatureExtractor {
 	return g.extractor
 }
 
-// GetRiskEngine return风险评估引擎
+// GetRiskEngine returns the risk assessment engine
 func (g *Gateway) GetRiskEngine() *defense.RiskEngine {
 	return g.riskEngine
 }
 
-// GetSDK return前端 SDK
+// GetSDK returns the frontend SDK
 func (g *Gateway) GetSDK() *frontend.SDK {
 	return g.sdk
 }
 
-// GetInjector return HTML 注入器
+// GetInjector returns the HTML injector
 func (g *Gateway) GetInjector() *HTMLInjector {
 	return g.injector
 }
 
-// GetProfileManager return Profile 管理器
+// GetProfileManager returns the Profile manager
 func (g *Gateway) GetProfileManager() *ProfileManager {
 	return g.profileManager
 }
 
-// GetConfig return当前网关configuration（只读副本）
+// GetConfig returns the current gateway configuration (read-only copy)
 func (g *Gateway) GetConfig() *GatewayConfig {
 	g.mu.RLock()
 	defer g.mu.RUnlock()
 	return g.config
 }
 
-// UpdateConfig 热update网关configuration（线程安全）
+// UpdateConfig hot-updates the gateway configuration (thread-safe)
 func (g *Gateway) UpdateConfig(apply func(cfg *GatewayConfig)) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 	apply(g.config)
 }
 
-// Analyze execute完整的指纹analyze
+// Analyze executes a complete fingerprint analysis
 func (g *Gateway) Analyze(ctx context.Context, req *AnalyzeRequest) (*AnalyzeResponse, error) {
 	start := time.Now()
 
-	// generate指纹哈希
+	// Generate fingerprint hash
 	fingerprintHash := g.generateFingerprintHash(req)
 
-	// checkcache
+	// Check cache
 	if g.config.CacheEnabled {
 		if cached, ok := g.cache.Get(fingerprintHash); ok {
 			resp := cloneAnalyzeResponse(cached)
@@ -326,20 +326,20 @@ func (g *Gateway) Analyze(ctx context.Context, req *AnalyzeRequest) (*AnalyzeRes
 		}
 	}
 
-	// extractfeature
+	// Extract features
 	features := g.extractFeatures(req)
 
-	// ML classify
+	// ML classification
 	classification := g.classifier.Classify(features)
 
-	// 风险评估
+	// Risk assessment
 	risk := g.riskEngine.Evaluate(features, classification)
 
-	// 检测
+	// Detection
 	detector := defense.NewDetector()
 	detection := detector.Detect(features)
 
-	// generate JA3/JA4/JA4H
+	// Generate JA3/JA4/JA4H
 	ja3, ja4 := g.calculateTLSFingerprints(req)
 	ja4h := g.calculateHTTPFingerprint(req)
 
@@ -356,7 +356,7 @@ func (g *Gateway) Analyze(ctx context.Context, req *AnalyzeRequest) (*AnalyzeRes
 		ProcessingTimeMs: time.Since(start).Milliseconds(),
 	}
 
-	// Agent 智能体process
+	// Agent processing
 	if g.agent != nil {
 		obs := &agent.Observation{
 			ID:              fingerprintHash,
@@ -371,7 +371,7 @@ func (g *Gateway) Analyze(ctx context.Context, req *AnalyzeRequest) (*AnalyzeRes
 		response.AgentDecision = g.agent.Process(ctx, obs)
 	}
 
-	// 存入cache
+	// Store in cache
 	if g.config.CacheEnabled {
 		g.cache.Set(fingerprintHash, response)
 	}
@@ -379,16 +379,16 @@ func (g *Gateway) Analyze(ctx context.Context, req *AnalyzeRequest) (*AnalyzeRes
 	return response, nil
 }
 
-// extractFeatures extractfeature
+// extractFeatures extracts features
 func (g *Gateway) extractFeatures(req *AnalyzeRequest) *core.FeatureVector {
 	fv := core.NewFeatureVector()
 
-	// TLS feature
+	// TLS features
 	fv.Set(core.FeatureTLSVersion, float64(req.TLSVersion))
 	fv.Set(core.FeatureCipherSuites, float64(len(req.CipherSuites)))
 	fv.Set(core.FeatureExtensions, float64(len(req.Extensions)))
 
-	// HTTP feature
+	// HTTP features
 	if req.Headers != nil {
 		httpFV := g.extractor.ExtractFromHTTPHeaders(req.Headers)
 		for ft, v := range httpFV.Features {
@@ -396,7 +396,7 @@ func (g *Gateway) extractFeatures(req *AnalyzeRequest) *core.FeatureVector {
 		}
 	}
 
-	// 前端feature
+	// Frontend features
 	if req.Frontend != nil {
 		frontendFV := g.extractor.ExtractFromFrontend(*req.Frontend)
 		for ft, v := range frontendFV.Features {
@@ -407,7 +407,7 @@ func (g *Gateway) extractFeatures(req *AnalyzeRequest) *core.FeatureVector {
 	return fv
 }
 
-// calculateTLSFingerprints calculate TLS 指纹
+// calculateTLSFingerprints calculates TLS fingerprints
 func (g *Gateway) calculateTLSFingerprints(req *AnalyzeRequest) (*JA3Info, *JA4Info) {
 	spec := core.ClientHelloSpec{
 		TLSVersion:      req.TLSVersion,
@@ -430,13 +430,13 @@ func (g *Gateway) calculateTLSFingerprints(req *AnalyzeRequest) (*JA3Info, *JA4I
 		}
 }
 
-// calculateHTTPFingerprint calculate HTTP 指纹
+// calculateHTTPFingerprint calculates HTTP fingerprint
 func (g *Gateway) calculateHTTPFingerprint(req *AnalyzeRequest) *JA4HInfo {
 	if req.Headers == nil {
 		return nil
 	}
 
-	// 简化的 JA4H calculate
+	// Simplified JA4H calculation
 	headerMap := req.Headers.ToMap()
 	headers := make([]string, 0, len(headerMap))
 	for name := range headerMap {
@@ -449,7 +449,7 @@ func (g *Gateway) calculateHTTPFingerprint(req *AnalyzeRequest) *JA4HInfo {
 	}
 }
 
-// generateFingerprintHash generate指纹哈希
+// generateFingerprintHash generates a fingerprint hash
 func (g *Gateway) generateFingerprintHash(req *AnalyzeRequest) string {
 	data := fmt.Sprintf("%d:%v:%v:%s:%s",
 		req.TLSVersion,
@@ -462,9 +462,9 @@ func (g *Gateway) generateFingerprintHash(req *AnalyzeRequest) string {
 	return hex.EncodeToString(hash[:16])
 }
 
-// HTTPHandler HTTP process函数
+// HTTPHandler is the HTTP handler function
 func (g *Gateway) HTTPHandler(w http.ResponseWriter, r *http.Request) {
-	// 限流check
+	// Rate limit check
 	clientIP := g.getClientIP(r)
 	if !g.limiter.Allow(clientIP) {
 		writeJSONError(w, http.StatusTooManyRequests, "rate limit exceeded")
@@ -476,7 +476,7 @@ func (g *Gateway) HTTPHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// limitrequest体size，防止 DoS
+	// Limit request body size to prevent DoS
 	r.Body = http.MaxBytesReader(w, r.Body, core.MaxRequestBodySize)
 
 	var req AnalyzeRequest
@@ -485,10 +485,10 @@ func (g *Gateway) HTTPHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// setting客户端 IP
+	// Set client IP
 	req.ClientIP = clientIP
 
-	// executeanalyze
+	// Execute analysis
 	ctx, cancel := context.WithTimeout(r.Context(), AnalyzeTimeout)
 	defer cancel()
 
@@ -502,37 +502,37 @@ func (g *Gateway) HTTPHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// SDKHandler SDK 脚本process函数
+// SDKHandler is the SDK script handler function
 func (g *Gateway) SDKHandler(w http.ResponseWriter, r *http.Request) {
-	// 限流check
+	// Rate limit check
 	clientIP := g.getClientIP(r)
 	if !g.limiter.Allow(clientIP) {
 		http.Error(w, "rate limit exceeded", http.StatusTooManyRequests)
 		return
 	}
 
-	// generate SDK 代码
+	// Generate SDK code
 	js := g.sdk.GenerateJSInjector(g.config.Endpoint + "/collect")
 
 	w.Header().Set("Content-Type", "application/javascript")
 	w.Write([]byte(js))
 }
 
-// CollectHandler 前端data收集process函数
+// CollectHandler is the frontend data collection handler function
 func (g *Gateway) CollectHandler(w http.ResponseWriter, r *http.Request) {
-	// 使用 SDK 的process函数
+	// Use SDK's handler function
 	g.sdk.HandleCollect(w, r)
 }
 
-// getClientIP get客户端 IP
-// 仅当 RemoteAddr 在 TrustedProxies 列表中时才信任proxy头
+// getClientIP gets the client IP
+// Only trust proxy headers when RemoteAddr is in the TrustedProxies list
 func (g *Gateway) getClientIP(r *http.Request) string {
 	remoteIP := r.RemoteAddr
 	if host, _, err := net.SplitHostPort(remoteIP); err == nil && host != "" {
 		remoteIP = host
 	}
 
-	// 只有来自受信任proxyrequest才读取proxy头
+	// Only read proxy headers from trusted proxy requests
 	if g.isTrustedProxy(remoteIP) {
 		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
 			if idx := strings.Index(xff, ","); idx != -1 {
@@ -548,7 +548,7 @@ func (g *Gateway) getClientIP(r *http.Request) string {
 	return remoteIP
 }
 
-// isTrustedProxy check IP whether在受信任proxy列表中
+// isTrustedProxy checks if IP is in the trusted proxy list
 func (g *Gateway) isTrustedProxy(ip string) bool {
 	for _, trusted := range g.config.TrustedProxies {
 		if trusted == ip {
@@ -558,7 +558,7 @@ func (g *Gateway) isTrustedProxy(ip string) bool {
 	return false
 }
 
-// Start start网关服务
+// Start starts the gateway service
 func (g *Gateway) Start() error {
 	mux := http.NewServeMux()
 	mux.HandleFunc(g.config.Endpoint+"/analyze", g.HTTPHandler)
@@ -574,7 +574,7 @@ func (g *Gateway) Start() error {
 	return http.ListenAndServe(addr, mux)
 }
 
-// RateLimiter 限流器
+// RateLimiter is the rate limiter
 type RateLimiter struct {
 	rate     int
 	burst    int
@@ -584,14 +584,14 @@ type RateLimiter struct {
 	stopCh   chan struct{}
 }
 
-// Visitor visit者
+// Visitor represents a visitor
 type Visitor struct {
 	tokens     float64
 	lastRefill time.Time
 	lastSeen   time.Time
 }
 
-// NewRateLimiter create新的限流器
+// NewRateLimiter creates a new rate limiter
 func NewRateLimiter(rate, burst int, window time.Duration) *RateLimiter {
 	if rate <= 0 {
 		rate = 1000
@@ -614,7 +614,7 @@ func NewRateLimiter(rate, burst int, window time.Duration) *RateLimiter {
 	return rl
 }
 
-// Allow checkwhetherallowrequest
+// Allow checks whether the request is allowed
 func (rl *RateLimiter) Allow(key string) bool {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
@@ -636,7 +636,7 @@ func (rl *RateLimiter) Allow(key string) bool {
 		return true
 	}
 
-	// 按时间回填令牌
+	// Refill tokens based on elapsed time
 	if now.After(v.lastRefill) {
 		elapsed := now.Sub(v.lastRefill).Seconds()
 		v.tokens += elapsed * fillRatePerSec
@@ -656,7 +656,7 @@ func (rl *RateLimiter) Allow(key string) bool {
 	return true
 }
 
-// cleanup cleanup过期visit者
+// cleanup removes expired visitors
 func (rl *RateLimiter) cleanup() {
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
@@ -676,24 +676,24 @@ func (rl *RateLimiter) cleanup() {
 	}
 }
 
-// Close stop限流器的后台 goroutine
+// Close stops the rate limiter's background goroutine
 func (rl *RateLimiter) Close() {
 	close(rl.stopCh)
 }
 
-// FingerprintCache 指纹cache（基于 LRUCache implement）
+// FingerprintCache is a fingerprint cache (based on LRUCache implementation)
 type FingerprintCache struct {
 	lru *LRUCache
 }
 
-// NewFingerprintCache create新的指纹cache
+// NewFingerprintCache creates a new fingerprint cache
 func NewFingerprintCache(size int, ttl time.Duration) *FingerprintCache {
 	return &FingerprintCache{
 		lru: NewLRUCache(size, ttl),
 	}
 }
 
-// Get getcache
+// Get retrieves from cache
 func (c *FingerprintCache) Get(key string) (*AnalyzeResponse, bool) {
 	val, found := c.lru.Get(key)
 	if !found {
@@ -702,9 +702,9 @@ func (c *FingerprintCache) Get(key string) (*AnalyzeResponse, bool) {
 	return cloneAnalyzeResponse(val.(*AnalyzeResponse)), true
 }
 
-// Set settingcache
+// Set stores in cache
 func (c *FingerprintCache) Set(key string, response *AnalyzeResponse) {
-	c.lru.Set(key, cloneAnalyzeResponse(response), 0) // 使用 LRUCache 的默认 TTL
+	c.lru.Set(key, cloneAnalyzeResponse(response), 0) // Use LRUCache's default TTL
 }
 
 func cloneAnalyzeResponse(resp *AnalyzeResponse) *AnalyzeResponse {
@@ -736,36 +736,36 @@ func cloneAnalyzeResponse(resp *AnalyzeResponse) *AnalyzeResponse {
 	return &clone
 }
 
-// calculateJA3 calculate JA3 指纹（使用 tls 包implement）
+// calculateJA3 calculates JA3 fingerprint (using tls package implementation)
 func calculateJA3(spec core.ClientHelloSpec) *tlsmod.JA3Result {
 	return tlsmod.CalculateJA3(spec)
 }
 
-// calculateJA4 calculate JA4 指纹（使用 tls 包implement）
+// calculateJA4 calculates JA4 fingerprint (using tls package implementation)
 func calculateJA4(spec core.ClientHelloSpec) *tlsmod.JA4Result {
 	return tlsmod.CalculateJA4(spec)
 }
 
 // =====================================================================
-// P3 反检测功能 - HTML 注入 Handler
+// P3 Anti-Detection - HTML Injection Handler
 // =====================================================================
 
-// AntiDetectCodeHandler return P3 反检测 JavaScript 代码（单独interface）
+// AntiDetectCodeHandler returns P3 anti-detection JavaScript code (standalone endpoint)
 func (g *Gateway) AntiDetectCodeHandler(w http.ResponseWriter, r *http.Request) {
-	// 限流check
+	// Rate limit check
 	clientIP := g.getClientIP(r)
 	if !g.limiter.Allow(clientIP) {
 		http.Error(w, "rate limit exceeded", http.StatusTooManyRequests)
 		return
 	}
 
-	// checkwhether启用
+	// Check if enabled
 	if g.injector == nil {
 		http.Error(w, `{"error": "P3 anti-detection not enabled"}`, http.StatusServiceUnavailable)
 		return
 	}
 
-	// get Profile ID parameter（optional）
+	// Get Profile ID parameter (optional)
 	profileID := r.URL.Query().Get("profile")
 	var code string
 	if profileID != "" {
@@ -777,17 +777,17 @@ func (g *Gateway) AntiDetectCodeHandler(w http.ResponseWriter, r *http.Request) 
 		code = g.injector.GenerateInjectionCodeForProfile(profile)
 	}
 
-	// generate代码
+	// Generate code
 	if code == "" {
 		code = g.injector.GenerateInjectionCode()
 	}
 
 	w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
-	w.Header().Set("Cache-Control", "public, max-age=3600") // cache 1 小时
+	w.Header().Set("Cache-Control", "public, max-age=3600") // Cache for 1 hour
 	w.Write([]byte(code))
 }
 
-// ProfileListHandler return可用的 Profile 列表
+// ProfileListHandler returns the list of available Profiles
 func (g *Gateway) ProfileListHandler(w http.ResponseWriter, r *http.Request) {
 	if g.profileManager == nil {
 		http.Error(w, `{"error": "profile manager not initialized"}`, http.StatusServiceUnavailable)
@@ -804,7 +804,7 @@ func (g *Gateway) ProfileListHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// ProfileDetailHandler return指定 Profile 的详细info
+// ProfileDetailHandler returns detailed info for the specified Profile
 func (g *Gateway) ProfileDetailHandler(w http.ResponseWriter, r *http.Request) {
 	if g.profileManager == nil {
 		http.Error(w, `{"error": "profile manager not initialized"}`, http.StatusServiceUnavailable)
@@ -827,7 +827,7 @@ func (g *Gateway) ProfileDetailHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(profile)
 }
 
-// writeJSONError 安全地写入 JSON errorresponse，不泄露内部info
+// writeJSONError safely writes a JSON error response without leaking internal info
 func writeJSONError(w http.ResponseWriter, status int, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
@@ -835,14 +835,14 @@ func writeJSONError(w http.ResponseWriter, status int, msg string) {
 	w.Write(resp)
 }
 
-// V8ScannerHandler 扫描 JavaScript 中的指纹检测代码
+// V8ScannerHandler scans JavaScript for fingerprint detection code
 func (g *Gateway) V8ScannerHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		writeScannerJSONError(w, http.StatusMethodNotAllowed, "POST method required")
 		return
 	}
 
-	// limitrequest体size（maximum5MB）
+	// Limit request body size (maximum 5MB)
 	r.Body = http.MaxBytesReader(w, r.Body, 5*1024*1024)
 
 	var request struct {
@@ -865,7 +865,7 @@ func (g *Gateway) V8ScannerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 调用扫描器（带可configurationtimeout）
+	// Call scanner (with configurable timeout)
 	scanTimeout := 20 * time.Second
 	if request.ScanTimeout > 0 {
 		scanTimeout = time.Duration(request.ScanTimeout) * time.Second
@@ -893,7 +893,7 @@ func (g *Gateway) V8ScannerHandler(w http.ResponseWriter, r *http.Request) {
 		fetchMode = "http"
 		followRedirect := request.FollowRedirect
 		if !request.FollowRedirect {
-			// 默认启用重定向跟随
+			// Enable redirect following by default
 			followRedirect = true
 		}
 
@@ -917,7 +917,7 @@ func (g *Gateway) V8ScannerHandler(w http.ResponseWriter, r *http.Request) {
 				if browserTimeout <= 0 {
 					browserTimeout = 25 * time.Second
 				}
-				// 给 headless 抓取更多预算，但仍保留收尾时间给扫描与encodingreturn。
+				// Give headless fetch more time budget, but still reserve time for scan and encoding.
 				if scanTimeout > 8*time.Second {
 					candidate := scanTimeout - 3*time.Second
 					if candidate > browserTimeout {
@@ -995,7 +995,7 @@ func (g *Gateway) V8ScannerHandler(w http.ResponseWriter, r *http.Request) {
 		externalScriptsCaptured = externalScriptStats.Count
 	}
 
-	// 在goroutine中execute扫描，以便可以被ctx.Done()中断
+	// Execute scan in goroutine so it can be interrupted by ctx.Done()
 	type scanResult struct {
 		result *JSDetectionResult
 		err    error
@@ -1007,7 +1007,7 @@ func (g *Gateway) V8ScannerHandler(w http.ResponseWriter, r *http.Request) {
 		resultChan <- scanResult{result, err}
 	}()
 
-	// wait扫描completeortimeout
+	// Wait for scan to complete or timeout
 	select {
 	case <-ctx.Done():
 		writeScannerJSONError(w, http.StatusGatewayTimeout, "scan timeout")
@@ -1042,7 +1042,7 @@ func writeScannerJSONError(w http.ResponseWriter, statusCode int, msg string) {
 	_ = json.NewEncoder(w).Encode(map[string]string{"error": msg})
 }
 
-// fetchHTMLWithRedirects 抓取 URL 内容并return最终 URL 与重定向链
+// fetchHTMLWithRedirects fetches URL content and returns the final URL and redirect chain
 func fetchHTMLWithRedirects(ctx context.Context, rawURL string, followRedirect bool, maxRedirects int, requestTimeout time.Duration) (string, string, []string, error) {
 	redirectChain := []string{}
 	trimmedURL := strings.TrimSpace(rawURL)
@@ -1128,8 +1128,8 @@ func fetchHTMLWithRedirects(ctx context.Context, rawURL string, followRedirect b
 	return string(body), resp.Request.URL.String(), redirectChain, nil
 }
 
-// fetchHTMLWithClientSideRedirects 抓取页面并模拟execute常见客户端跳转。
-// 支持 meta refresh、window.location、location.href、location.replace 等跳转模式。
+// fetchHTMLWithClientSideRedirects fetches a page and emulates common client-side redirects.
+// Supports meta refresh, window.location, location.href, location.replace redirect patterns.
 func fetchHTMLWithClientSideRedirects(ctx context.Context, startURL string, maxHops int, waitMs int) (string, string, []string, error) {
 	if maxHops <= 0 {
 		maxHops = 5
@@ -1159,7 +1159,7 @@ func fetchHTMLWithClientSideRedirects(ctx context.Context, startURL string, maxH
 		chain = append(chain, httpChain...)
 		chain = append(chain, finalURL)
 
-		// 简单wait，模拟页面初始脚本execute窗口
+		// Simple wait, simulating initial page script execution window
 		if waitMs > 0 {
 			time.Sleep(time.Duration(waitMs) * time.Millisecond)
 		}
@@ -1215,7 +1215,7 @@ func resolveRedirectURL(baseURL, target string) (string, error) {
 	return baseParsed.ResolveReference(targetParsed).String(), nil
 }
 
-// InjectProxyHandler 提供 HTML proxyand自动注入功能（用于proxy模式）
+// InjectProxyHandler provides HTML proxy and auto-injection (for proxy mode)
 func (g *Gateway) InjectProxyHandler() http.Handler {
 	if g.injector == nil || g.config.P3ProxyTarget == "" {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -1225,10 +1225,10 @@ func (g *Gateway) InjectProxyHandler() http.Handler {
 	return g.injector
 }
 
-// GetInjectorMiddleware return注入器中间件（用于包装现有路由）
+// GetInjectorMiddleware returns the injector middleware (for wrapping existing routes)
 func (g *Gateway) GetInjectorMiddleware() func(http.Handler) http.Handler {
 	if g.injector == nil {
-		// return透明中间件
+		// Return transparent middleware
 		return func(next http.Handler) http.Handler {
 			return next
 		}

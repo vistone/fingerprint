@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// RegistryStatus 注册表状态快照
+// RegistryStatus represents a registry status snapshot
 type RegistryStatus struct {
 	Timestamp           time.Time
 	TotalExtensions     int
@@ -21,7 +21,7 @@ type RegistryStatus struct {
 	MissingAnalyzers    []string
 }
 
-// ExtensionStatusDetail 扩展状态详情
+// ExtensionStatusDetail holds extension status details
 type ExtensionStatusDetail struct {
 	Type           ExtensionType
 	Name           string
@@ -33,13 +33,13 @@ type ExtensionStatusDetail struct {
 	RFC            string
 }
 
-// RegistryDiagnostics 扩展注册表诊断工具
+// RegistryDiagnostics is the extension registry diagnostics tool
 type RegistryDiagnostics struct {
 	registry *ExtensionRegistry
 	mu       sync.RWMutex
 }
 
-// NewRegistryDiagnostics 创建诊断工具
+// NewRegistryDiagnostics creates a diagnostics tool
 func NewRegistryDiagnostics(registry *ExtensionRegistry) *RegistryDiagnostics {
 	if registry == nil {
 		registry = GetRegistry()
@@ -49,7 +49,7 @@ func NewRegistryDiagnostics(registry *ExtensionRegistry) *RegistryDiagnostics {
 	}
 }
 
-// GetStatus 获取当前注册表的完整状态快照
+// GetStatus returns the complete status snapshot of the current registry
 func (rd *RegistryDiagnostics) GetStatus() RegistryStatus {
 	rd.registry.mu.RLock()
 	defer rd.registry.mu.RUnlock()
@@ -66,14 +66,14 @@ func (rd *RegistryDiagnostics) GetStatus() RegistryStatus {
 		MissingAnalyzers:    make([]string, 0),
 	}
 
-	// 统计处理器
+	// Count handlers
 	handlersCount := 0
 	for _, handlers := range rd.registry.handlers {
 		handlersCount += len(handlers)
 	}
 	status.RegisteredHandlers = handlersCount
 
-	// 按 type 排序扩展
+	// Sort extensions by type
 	types := make([]ExtensionType, 0, len(rd.registry.metadata))
 	for extType := range rd.registry.metadata {
 		types = append(types, extType)
@@ -82,7 +82,7 @@ func (rd *RegistryDiagnostics) GetStatus() RegistryStatus {
 		return types[i] < types[j]
 	})
 
-	// 收集扩展详情
+	// Collect extension details
 	for _, extType := range types {
 		meta := rd.registry.metadata[extType]
 		detail := ExtensionStatusDetail{
@@ -102,7 +102,7 @@ func (rd *RegistryDiagnostics) GetStatus() RegistryStatus {
 			status.LoadedExtensions = append(status.LoadedExtensions, meta.Name)
 		}
 
-		// 记录缺失的parser/analyzer
+		// Record missing parser/analyzer
 		if !detail.HasParser {
 			status.MissingParsers = append(status.MissingParsers, fmt.Sprintf("%s (type:%d)", meta.Name, extType))
 		}
@@ -114,7 +114,7 @@ func (rd *RegistryDiagnostics) GetStatus() RegistryStatus {
 	return status
 }
 
-// ValidateRequiredExtensions 验证必需的扩展是否已加载
+// ValidateRequiredExtensions validates whether required extensions are loaded
 func (rd *RegistryDiagnostics) ValidateRequiredExtensions(required []ExtensionType) (valid bool, missing []ExtensionType) {
 	rd.registry.mu.RLock()
 	defer rd.registry.mu.RUnlock()
@@ -129,7 +129,7 @@ func (rd *RegistryDiagnostics) ValidateRequiredExtensions(required []ExtensionTy
 	return len(missing) == 0, missing
 }
 
-// GetExtensionStatus 获取指定扩展的详细状态
+// GetExtensionStatus returns the detailed status of a specific extension
 func (rd *RegistryDiagnostics) GetExtensionStatus(extType ExtensionType) (*ExtensionStatusDetail, error) {
 	rd.registry.mu.RLock()
 	defer rd.registry.mu.RUnlock()
@@ -151,13 +151,13 @@ func (rd *RegistryDiagnostics) GetExtensionStatus(extType ExtensionType) (*Exten
 	}, nil
 }
 
-// ListExtensions 获取所有已注册的扩展列表
+// ListExtensions returns a list of all registered extensions
 func (rd *RegistryDiagnostics) ListExtensions() []ExtensionStatusDetail {
 	status := rd.GetStatus()
 	return status.ExtensionDetails
 }
 
-// CountByCategory 按分类统计扩展数量
+// CountByCategory counts extensions by category
 func (rd *RegistryDiagnostics) CountByCategory() map[string]int {
 	rd.registry.mu.RLock()
 	defer rd.registry.mu.RUnlock()
@@ -174,7 +174,7 @@ func (rd *RegistryDiagnostics) CountByCategory() map[string]int {
 	return counts
 }
 
-// GetDiagnosticReport 获取完整的诊断报告（文本格式）
+// GetDiagnosticReport returns the complete diagnostic report (text format)
 func (rd *RegistryDiagnostics) GetDiagnosticReport() string {
 	status := rd.GetStatus()
 
@@ -223,7 +223,7 @@ func (rd *RegistryDiagnostics) GetDiagnosticReport() string {
 	return report
 }
 
-// HealthCheck 执行健康检查，返回任何发现的问题
+// HealthCheck performs a health check and returns any issues found
 func (rd *RegistryDiagnostics) HealthCheck() (healthy bool, issues []string) {
 	status := rd.GetStatus()
 

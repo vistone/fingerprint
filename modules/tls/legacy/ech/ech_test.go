@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// TestParseECHExtension 测试 ECH 扩展解析
+// TestParseECHExtension test ECH extension parsing
 func TestParseECHExtension(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -110,7 +110,7 @@ func TestParseECHExtension(t *testing.T) {
 	}
 }
 
-// TestECHExtensionSerialization 测试序列化
+// TestECHExtensionSerialization test serialization
 func TestECHExtensionSerialization(t *testing.T) {
 	t.Run("inner_hello", func(t *testing.T) {
 		ech := &ECHExtension{
@@ -123,7 +123,7 @@ func TestECHExtensionSerialization(t *testing.T) {
 			t.Fatalf("Serialize() error = %v", err)
 		}
 
-		// 解析并验证
+		// parse and verify
 		parsed, err := ParseECHExtension(ExtensionEncryptedClientHello, data)
 		if err != nil {
 			t.Fatalf("ParseECHExtension() error = %v", err)
@@ -170,7 +170,7 @@ func TestECHExtensionSerialization(t *testing.T) {
 	})
 }
 
-// TestECHAnalyzer 测试 ECH 分析器
+// TestECHAnalyzer test ECH analyzer
 func TestECHAnalyzer(t *testing.T) {
 	analyzer := NewECHAnalyzer()
 
@@ -201,7 +201,7 @@ func TestECHAnalyzer(t *testing.T) {
 	})
 
 	t.Run("with_ech_outer", func(t *testing.T) {
-		// 构造包含 ECH 扩展的数据
+		// construct data containing ECH extension
 		echData := make([]byte, 10)
 		echData[0] = 0xfe
 		echData[1] = 0x0d // Draft 13
@@ -221,7 +221,7 @@ func TestECHAnalyzer(t *testing.T) {
 				{Type: ExtensionEncryptedClientHello, Data: append(echData, []byte{0x00, 0x00}...)},
 			},
 			CompressionMethods: []uint8{0},
-			HasSNI:             false, // ECH 存在时 SNI 应该加密
+			HasSNI:             false, // SNI should be encrypted when ECH is present
 		}
 
 		result, err := analyzer.AnalyzeClientHello(data)
@@ -270,7 +270,7 @@ func TestECHAnalyzer(t *testing.T) {
 	})
 }
 
-// TestECHProfile 测试 ECH Profile
+// TestECHProfile test ECH Profile
 func TestECHProfile(t *testing.T) {
 	t.Run("default_profile", func(t *testing.T) {
 		profile := DefaultECHProfile()
@@ -338,7 +338,7 @@ func TestECHProfile(t *testing.T) {
 	})
 }
 
-// TestConfigGenerator 测试配置生成器
+// TestConfigGenerator test config generator
 func TestConfigGenerator(t *testing.T) {
 	opts := DefaultConfigOptions()
 	generator := NewConfigGenerator(opts)
@@ -382,7 +382,7 @@ func TestConfigGenerator(t *testing.T) {
 			t.Fatalf("SerializeECHConfigList() error = %v", err)
 		}
 
-		// 解析完整数据（包含长度前缀）
+		// parse complete data (including length prefix)
 		parsed, err := ParseECHConfigList(data)
 		if err != nil {
 			t.Fatalf("ParseECHConfigList() error = %v", err)
@@ -394,7 +394,7 @@ func TestConfigGenerator(t *testing.T) {
 	})
 }
 
-// TestECHKeyManager 测试密钥管理器
+// TestECHKeyManager test key manager
 func TestECHKeyManager(t *testing.T) {
 	manager := NewECHKeyManager()
 	opts := DefaultConfigOptions()
@@ -440,7 +440,7 @@ func TestECHKeyManager(t *testing.T) {
 	})
 }
 
-// TestProfileFromBrowser 测试浏览器特定 Profile
+// TestProfileFromBrowser test browser-specific profile
 func TestProfileFromBrowser(t *testing.T) {
 	tests := []struct {
 		browser  string
@@ -461,7 +461,7 @@ func TestProfileFromBrowser(t *testing.T) {
 			if profile == nil {
 				t.Fatal("Profile should not be nil")
 			}
-			// 对于特定浏览器，验证公共名称
+			// for specific browsers, verify public name
 			if tt.expected != "" && profile.PublicName != tt.expected {
 				t.Errorf("PublicName = %s, want %s", profile.PublicName, tt.expected)
 			}
@@ -469,7 +469,7 @@ func TestProfileFromBrowser(t *testing.T) {
 	}
 }
 
-// BenchmarkECHExtensionParse 基准测试
+// BenchmarkECHExtensionParse benchmark
 func BenchmarkECHExtensionParse(b *testing.B) {
 	data := make([]byte, 10)
 	data[0] = 0xfe
@@ -494,7 +494,7 @@ func BenchmarkECHExtensionParse(b *testing.B) {
 	}
 }
 
-// BenchmarkECHAnalyzer 分析器基准测试
+// BenchmarkECHAnalyzer analyzer benchmark
 func BenchmarkECHAnalyzer(b *testing.B) {
 	analyzer := NewECHAnalyzer()
 	data := ClientHelloData{
@@ -517,7 +517,7 @@ func BenchmarkECHAnalyzer(b *testing.B) {
 	}
 }
 
-// TestECHExtensionValidation 测试扩展验证
+// TestECHExtensionValidation test extension validation
 func TestECHExtensionValidation(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -578,7 +578,7 @@ func TestECHExtensionValidation(t *testing.T) {
 	}
 }
 
-// TestVersionHelpers 测试版本辅助函数
+// TestVersionHelpers test version helper functions
 func TestVersionHelpers(t *testing.T) {
 	t.Run("get_supported_versions", func(t *testing.T) {
 		versions := GetSupportedECHVersions()
@@ -617,12 +617,12 @@ func TestVersionHelpers(t *testing.T) {
 	})
 }
 
-// TestMergeWithBase 测试扩展合并
+// TestMergeWithBase test extension merging
 func TestMergeWithBase(t *testing.T) {
 	profile := DefaultECHProfile()
 
 	t.Run("merge_without_sni", func(t *testing.T) {
-		base := []uint16{10, 11, 13} // 不包含 SNI (0)
+		base := []uint16{10, 11, 13} // does not include SNI (0)
 		merged := profile.MergeWithBase(base)
 
 		found := false
@@ -638,10 +638,10 @@ func TestMergeWithBase(t *testing.T) {
 	})
 
 	t.Run("merge_with_sni", func(t *testing.T) {
-		base := []uint16{0, 10, 11} // 包含 SNI (0)
+		base := []uint16{0, 10, 11} // includes SNI (0)
 		merged := profile.MergeWithBase(base)
 
-		// 验证 SNI 后添加了 ECH
+		// verify ECH was added after SNI
 		sniIndex := -1
 		echIndex := -1
 		for i, ext := range merged {
@@ -668,7 +668,7 @@ func TestMergeWithBase(t *testing.T) {
 		base := []uint16{0, ExtensionEncryptedClientHello, 10}
 		merged := profile.MergeWithBase(base)
 
-		// 计数 ECH 扩展
+		// count ECH extensions
 		count := 0
 		for _, ext := range merged {
 			if ext == ExtensionEncryptedClientHello {
@@ -681,7 +681,7 @@ func TestMergeWithBase(t *testing.T) {
 	})
 }
 
-// TestAnalyzeECH 测试便捷函数
+// TestAnalyzeECH test convenience function
 func TestAnalyzeECH(t *testing.T) {
 	data := ClientHelloData{
 		TLSVersion:         0x0303,
@@ -701,7 +701,7 @@ func TestAnalyzeECH(t *testing.T) {
 	}
 }
 
-// TestImpactSummary 测试影响摘要
+// TestImpactSummary test impact summary
 func TestImpactSummary(t *testing.T) {
 	t.Run("no_ech", func(t *testing.T) {
 		result := &ECHAnalysisResult{
@@ -729,7 +729,7 @@ func TestImpactSummary(t *testing.T) {
 	})
 }
 
-// 辅助函数：hex 字符串转字节
+// helper function: hex string to bytes
 func mustHex(s string) []byte {
 	b, err := hex.DecodeString(s)
 	if err != nil {
@@ -738,10 +738,10 @@ func mustHex(s string) []byte {
 	return b
 }
 
-// TestParseECHConfigList 测试配置列表解析
+// TestParseECHConfigList test config list parsing
 func TestParseECHConfigList(t *testing.T) {
 	t.Run("empty_list", func(t *testing.T) {
-		// 空列表（只有长度 = 0）
+		// empty list (length = 0 only)
 		data := []byte{0x00, 0x00}
 		list, err := ParseECHConfigList(data)
 		if err != nil {
@@ -753,7 +753,7 @@ func TestParseECHConfigList(t *testing.T) {
 	})
 
 	t.Run("too_short", func(t *testing.T) {
-		data := []byte{0x00} // 只有 1 字节
+		data := []byte{0x00} // only 1 byte
 		_, err := ParseECHConfigList(data)
 		if err == nil {
 			t.Error("Expected error for too short data")

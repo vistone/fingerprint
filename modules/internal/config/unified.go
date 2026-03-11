@@ -6,20 +6,20 @@ import (
 	"time"
 )
 
-// UnifiedConfigManager 统一的配置管理器
-// 合并了 ConfigCenter、ConfigManager 和 EnhancedConfigCenter 的功能
+// UnifiedConfigManager is the unified configuration manager
+// Combines the functionality of ConfigCenter, ConfigManager, and EnhancedConfigCenter
 type UnifiedConfigManager struct {
-	// 核心配置中心（内嵌，直接访问）
+	// Core configuration center (embedded for direct access)
 	*ConfigCenter
 
-	// 可选的增强功能
+	// Optional enhanced features
 	enhanced *enhancedFeatures
 
-	// 保护 enhanced 字段的互斥锁
+	// Mutex to protect the enhanced field
 	mu sync.RWMutex
 }
 
-// enhancedFeatures 增强功能（可选）
+// enhancedFeatures represents optional enhanced features
 type enhancedFeatures struct {
 	broadcastCh   chan ConfigChangeEvent
 	subscribers   map[string]chan ConfigChangeEvent
@@ -27,17 +27,17 @@ type enhancedFeatures struct {
 	healthChecker *ConfigHealthChecker
 }
 
-// NewUnifiedConfigManager 创建统一的配置管理器
+// NewUnifiedConfigManager creates a new unified configuration manager
 func NewUnifiedConfigManager(configPath string) *UnifiedConfigManager {
 	return &UnifiedConfigManager{
 		ConfigCenter: NewConfigCenter(configPath),
 	}
 }
 
-// EnableEnhancedFeatures 启用增强功能（事件订阅、健康检查）
+// EnableEnhancedFeatures enables enhanced features (event subscription, health check)
 func (ucm *UnifiedConfigManager) EnableEnhancedFeatures() {
 	if ucm.enhanced != nil {
-		return // 已启用
+		return // Already enabled
 	}
 
 	ucm.enhanced = &enhancedFeatures{
@@ -45,7 +45,7 @@ func (ucm *UnifiedConfigManager) EnableEnhancedFeatures() {
 		subscribers: make(map[string]chan ConfigChangeEvent),
 	}
 
-	// 初始化健康检查器
+	// Initialize the health checker
 	ucm.enhanced.healthChecker = &ConfigHealthChecker{
 		center:     ucm.ConfigCenter,
 		checkFuncs: []HealthCheckFunc{defaultHealthCheck},
@@ -57,14 +57,14 @@ func (ucm *UnifiedConfigManager) EnableEnhancedFeatures() {
 		},
 	}
 
-	// 启动广播处理器
+	// Start the broadcast processor
 	go ucm.broadcastProcessor()
 
-	// 启动健康检查
+	// Start the health checker
 	go ucm.enhanced.healthChecker.start(ucm.enhanced.broadcastCh)
 }
 
-// DisableEnhancedFeatures 禁用增强功能
+// DisableEnhancedFeatures disables enhanced features
 func (ucm *UnifiedConfigManager) DisableEnhancedFeatures() {
 	ucm.mu.Lock()
 	defer ucm.mu.Unlock()
@@ -73,27 +73,27 @@ func (ucm *UnifiedConfigManager) DisableEnhancedFeatures() {
 		return
 	}
 
-	// 停止健康检查
+	// Stop the health checker
 	if ucm.enhanced.healthChecker != nil {
 		ucm.enhanced.healthChecker.stop()
 	}
 
-	// 关闭广播通道（如果还没关闭）
+	// Close the broadcast channel (if not already closed)
 	if ucm.enhanced.broadcastCh != nil {
 		select {
 		case <-ucm.enhanced.broadcastCh:
-			// 已经关闭
+			// Already closed
 		default:
 			close(ucm.enhanced.broadcastCh)
 		}
 	}
 
-	// 关闭所有订阅者通道
+	// Close all subscriber channels
 	ucm.enhanced.subscriberMu.Lock()
 	for _, ch := range ucm.enhanced.subscribers {
 		select {
 		case <-ch:
-			// 已经关闭
+			// Already closed
 		default:
 			close(ch)
 		}
@@ -104,7 +104,7 @@ func (ucm *UnifiedConfigManager) DisableEnhancedFeatures() {
 	ucm.enhanced = nil
 }
 
-// Subscribe 订阅配置变更事件（需要启用增强功能）
+// Subscribe subscribes to configuration change events (requires enhanced features to be enabled)
 func (ucm *UnifiedConfigManager) Subscribe(subscriberID string) (<-chan ConfigChangeEvent, error) {
 	if ucm.enhanced == nil {
 		return nil, fmt.Errorf("enhanced features not enabled, call EnableEnhancedFeatures() first")
@@ -120,7 +120,7 @@ func (ucm *UnifiedConfigManager) Subscribe(subscriberID string) (<-chan ConfigCh
 	eventCh := make(chan ConfigChangeEvent, 10)
 	ucm.enhanced.subscribers[subscriberID] = eventCh
 
-	// 发送订阅确认事件
+	// Send subscription confirmation event
 	ucm.enhanced.broadcastCh <- ConfigChangeEvent{
 		Type:        ConfigChangeTypeSubscribe,
 		Timestamp:   time.Now(),
@@ -131,7 +131,7 @@ func (ucm *UnifiedConfigManager) Subscribe(subscriberID string) (<-chan ConfigCh
 	return eventCh, nil
 }
 
-// Unsubscribe 取消订阅
+// Unsubscribe unsubscribes from configuration change events
 func (ucm *UnifiedConfigManager) Unsubscribe(subscriberID string) error {
 	if ucm.enhanced == nil {
 		return fmt.Errorf("enhanced features not enabled")
@@ -151,10 +151,10 @@ func (ucm *UnifiedConfigManager) Unsubscribe(subscriberID string) error {
 	return nil
 }
 
-// broadcastProcessor 广播事件处理器
+// broadcastProcessor is the broadcast event processor
 func (ucm *UnifiedConfigManager) broadcastProcessor() {
 	for {
-		// 检查 enhanced 是否存在
+		// Check whether enhanced features exist
 		ucm.mu.RLock()
 		enhanced := ucm.enhanced
 		ucm.mu.RUnlock()
@@ -163,14 +163,14 @@ func (ucm *UnifiedConfigManager) broadcastProcessor() {
 			return
 		}
 		
-		// 安全的从广播通道读取事件
+		// Safely read events from the broadcast channel
 		event, ok := <-enhanced.broadcastCh
 		if !ok {
-			// 通道已关闭，退出
+			// Channel is closed, exit
 			return
 		}
 		
-		// 复制订阅者列表（避免在发送时持有锁）
+		// Copy subscriber list (to avoid holding the lock while sending)
 		enhanced.subscriberMu.RLock()
 		subscribers := make(map[string]chan ConfigChangeEvent, len(enhanced.subscribers))
 		for k, v := range enhanced.subscribers {
@@ -178,27 +178,27 @@ func (ucm *UnifiedConfigManager) broadcastProcessor() {
 		}
 		enhanced.subscriberMu.RUnlock()
 
-		// 异步发送给所有订阅者
+		// Asynchronously send to all subscribers
 		for subscriberID, ch := range subscribers {
 			select {
 			case ch <- event:
-				// 发送成功
+				// Sent successfully
 			default:
-				// 通道已满或关闭，跳过
+				// Channel is full or closed, skip
 				_ = subscriberID
 			}
 		}
 	}
 }
 
-// Update 重写更新方法，添加事件广播
+// Update overrides the update method to add event broadcasting
 func (ucm *UnifiedConfigManager) Update(newConfig *ManagedConfig, reason, changedBy string) error {
-	// 调用基类方法
+	// Call the base method
 	if err := ucm.ConfigCenter.Update(newConfig, reason, changedBy); err != nil {
 		return err
 	}
 
-	// 如果启用了增强功能，广播更新事件
+	// If enhanced features are enabled, broadcast the update event
 	if ucm.enhanced != nil {
 		ucm.enhanced.broadcastCh <- ConfigChangeEvent{
 			Type:        ConfigChangeTypeUpdate,
@@ -212,7 +212,7 @@ func (ucm *UnifiedConfigManager) Update(newConfig *ManagedConfig, reason, change
 	return nil
 }
 
-// GetHealthStatus 获取健康状态
+// GetHealthStatus returns the health status
 func (ucm *UnifiedConfigManager) GetHealthStatus() (ConfigHealthStatus, error) {
 	if ucm.enhanced == nil {
 		return ConfigHealthStatus{}, fmt.Errorf("enhanced features not enabled")
@@ -223,7 +223,7 @@ func (ucm *UnifiedConfigManager) GetHealthStatus() (ConfigHealthStatus, error) {
 	return ucm.enhanced.healthChecker.lastStatus, nil
 }
 
-// AddHealthCheck 添加健康检查函数
+// AddHealthCheck adds a health check function
 func (ucm *UnifiedConfigManager) AddHealthCheck(checkFunc HealthCheckFunc) error {
 	if ucm.enhanced == nil {
 		return fmt.Errorf("enhanced features not enabled")
@@ -236,10 +236,10 @@ func (ucm *UnifiedConfigManager) AddHealthCheck(checkFunc HealthCheckFunc) error
 }
 
 // ============================================
-// 便捷的获取配置方法（原 ConfigManager 功能）
+// Convenient configuration getter methods (original ConfigManager functionality)
 // ============================================
 
-// GetBehaviorAnalysisConfig 获取行为分析配置
+// GetBehaviorAnalysisConfig returns the behavior analysis configuration
 func (ucm *UnifiedConfigManager) GetBehaviorAnalysisConfig() *BehaviorAnalysisConfig {
 	config := ucm.ConfigCenter.Get()
 	if config.BehaviorAnalysis == nil {
@@ -255,7 +255,7 @@ func (ucm *UnifiedConfigManager) GetBehaviorAnalysisConfig() *BehaviorAnalysisCo
 	return config.BehaviorAnalysis
 }
 
-// GetRiskScoringConfig 获取风险评分配置
+// GetRiskScoringConfig returns the risk scoring configuration
 func (ucm *UnifiedConfigManager) GetRiskScoringConfig() *RiskScoringConfig {
 	config := ucm.ConfigCenter.Get()
 	if config.RiskScoring == nil {
@@ -280,7 +280,7 @@ func (ucm *UnifiedConfigManager) GetRiskScoringConfig() *RiskScoringConfig {
 	return config.RiskScoring
 }
 
-// GetFeatureExtractionConfig 获取特征提取配置
+// GetFeatureExtractionConfig returns the feature extraction configuration
 func (ucm *UnifiedConfigManager) GetFeatureExtractionConfig() *FeatureExtractionConfig {
 	config := ucm.ConfigCenter.Get()
 	if config.Features == nil {
@@ -296,7 +296,7 @@ func (ucm *UnifiedConfigManager) GetFeatureExtractionConfig() *FeatureExtraction
 	return config.Features
 }
 
-// GetQUICConfig 获取 QUIC 配置
+// GetQUICConfig returns the QUIC configuration
 func (ucm *UnifiedConfigManager) GetQUICConfig() *QUICConfig {
 	config := ucm.ConfigCenter.Get()
 	if config.QUIC == nil {
@@ -310,7 +310,7 @@ func (ucm *UnifiedConfigManager) GetQUICConfig() *QUICConfig {
 	return config.QUIC
 }
 
-// GetTLSConfig 获取 TLS 配置
+// GetTLSConfig returns the TLS configuration
 func (ucm *UnifiedConfigManager) GetTLSConfig() *TLSConfig {
 	config := ucm.ConfigCenter.Get()
 	if config.TLS == nil {
@@ -324,7 +324,7 @@ func (ucm *UnifiedConfigManager) GetTLSConfig() *TLSConfig {
 	return config.TLS
 }
 
-// GetGlobalConfig 获取全局配置
+// GetGlobalConfig returns the global configuration
 func (ucm *UnifiedConfigManager) GetGlobalConfig() *GlobalConfig {
 	config := ucm.ConfigCenter.Get()
 	if config.Global == nil {
@@ -340,24 +340,24 @@ func (ucm *UnifiedConfigManager) GetGlobalConfig() *GlobalConfig {
 }
 
 // ============================================
-// 便捷的更新配置方法
+// Convenient configuration update methods
 // ============================================
 
-// UpdateBehaviorAnalysisConfig 更新行为分析配置
+// UpdateBehaviorAnalysisConfig updates the behavior analysis configuration
 func (ucm *UnifiedConfigManager) UpdateBehaviorAnalysisConfig(newConfig *BehaviorAnalysisConfig, reason, changedBy string) error {
 	config := ucm.ConfigCenter.Get()
 	config.BehaviorAnalysis = newConfig
 	return ucm.Update(config, reason, changedBy)
 }
 
-// UpdateRiskScoringConfig 更新风险评分配置
+// UpdateRiskScoringConfig updates the risk scoring configuration
 func (ucm *UnifiedConfigManager) UpdateRiskScoringConfig(newConfig *RiskScoringConfig, reason, changedBy string) error {
 	config := ucm.ConfigCenter.Get()
 	config.RiskScoring = newConfig
 	return ucm.Update(config, reason, changedBy)
 }
 
-// UpdateFeatureExtractionConfig 更新特征提取配置
+// UpdateFeatureExtractionConfig updates the feature extraction configuration
 func (ucm *UnifiedConfigManager) UpdateFeatureExtractionConfig(newConfig *FeatureExtractionConfig, reason, changedBy string) error {
 	config := ucm.ConfigCenter.Get()
 	config.Features = newConfig
@@ -365,7 +365,7 @@ func (ucm *UnifiedConfigManager) UpdateFeatureExtractionConfig(newConfig *Featur
 }
 
 // ============================================
-// 兼容性适配层
+// Compatibility adaptation layer
 // ============================================
 
 

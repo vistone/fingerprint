@@ -2011,7 +2011,7 @@ func TestCanaryHealthCheck_CheckHealth(t *testing.T) {
 			},
 			wantHealthy:    false,
 			wantAlertCount: 0, // Critical returns immediately
-			wantCritique:   "严重错误率",
+			wantCritique:   "Critical error rate",
 		},
 	}
 
@@ -2092,7 +2092,7 @@ func TestGenerateCanaryReport_Recommendations(t *testing.T) {
 					c.RecordRequest("req", true, 10*time.Millisecond, i < 90) // 10% error rate
 				}
 			},
-			wantContains: "回滚",
+			wantContains: "Rollback",
 		},
 		{
 			name: "moderate error rate should recommend slow down",
@@ -2101,7 +2101,7 @@ func TestGenerateCanaryReport_Recommendations(t *testing.T) {
 					c.RecordRequest("req", true, 10*time.Millisecond, i < 97) // 3% error rate
 				}
 			},
-			wantContains: "延缓",
+			wantContains: "delaying",
 		},
 		{
 			name: "high success rate should recommend upgrade",
@@ -2110,7 +2110,7 @@ func TestGenerateCanaryReport_Recommendations(t *testing.T) {
 					c.RecordRequest("req", true, 10*time.Millisecond, true) // 0% error rate
 				}
 			},
-			wantContains: "升级",
+			wantContains: "upgrade",
 		},
 		{
 			name: "low cache hit rate should recommend checking cache",
@@ -2123,7 +2123,7 @@ func TestGenerateCanaryReport_Recommendations(t *testing.T) {
 				c.metrics.CacheMisses = 90
 				c.metrics.CacheHitRate = 0.1
 			},
-			wantContains: "缓存",
+			wantContains: "cache",
 		},
 	}
 

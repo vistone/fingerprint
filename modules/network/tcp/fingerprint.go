@@ -6,136 +6,136 @@ import (
 	"strings"
 )
 
-// TCPFlags TCP 标志位
+// TCPFlags TCP flag bits
 type TCPFlags struct {
-	SYN bool // 同步标志（建立连接）
-	ACK bool // 确认标志
-	FIN bool // 结束标志
-	RST bool // 重置标志
-	PSH bool // 推送标志
-	URG bool // 紧急标志
+	SYN bool // Synchronize flag (connection establishment)
+	ACK bool // Acknowledgment flag
+	FIN bool // Finish flag
+	RST bool // Reset flag
+	PSH bool // Push flag
+	URG bool // Urgent flag
 }
 
-// IPHeader IP 包头参数
+// IPHeader IP packet header parameters
 type IPHeader struct {
-	Version    uint8  // IP 版本（4 或 6）
-	TTL        uint8  // 生存时间
-	TotalLen   uint16 // 总长度
-	Flags      uint8  // 标志位（DF、MF、RF）
-	FragOffset uint16 // 分片偏移
-	ID         uint16 // 标识符
-	Protocol   uint8  // 协议号（6=TCP, 17=UDP）
-	Checksum   uint16 // 校验和
-	Src        string // 源 IP
-	Dst        string // 目标 IP
+	Version    uint8  // IP version (4 or 6)
+	TTL        uint8  // Time to Live
+	TotalLen   uint16 // Total length
+	Flags      uint8  // Flags (DF, MF, RF)
+	FragOffset uint16 // Fragment offset
+	ID         uint16 // Identifier
+	Protocol   uint8  // Protocol number (6=TCP, 17=UDP)
+	Checksum   uint16 // Checksum
+	Src        string // Source IP
+	Dst        string // Destination IP
 }
 
-// TCPOptions TCP 选项
+// TCPOptions TCP options
 type TCPOptions struct {
-	MSS           *uint16 // 最大段大小
-	WindowScale   *uint8  // 窗口缩放因子
-	SACK          bool    // 选择性确认
-	Timestamps    bool    // 时间戳
-	SAckPermitted bool    // SACK 许可
-	NoOperation   int     // NOP 数量
-	EndOfOptions  bool    // 选项列表结束
-	WindowSize    uint16  // 窗口大小
-	OptionsMD5    string  // 选项的哈希指纹
+	MSS           *uint16 // Maximum Segment Size
+	WindowScale   *uint8  // Window scale factor
+	SACK          bool    // Selective Acknowledgment
+	Timestamps    bool    // Timestamps
+	SAckPermitted bool    // SACK Permitted
+	NoOperation   int     // NOP count
+	EndOfOptions  bool    // End of option list
+	WindowSize    uint16  // Window size
+	OptionsMD5    string  // Options hash fingerprint
 }
 
-// TCPPacket TCP 数据包参数
+// TCPPacket TCP packet parameters
 type TCPPacket struct {
-	// IP 层
+	// IP layer
 	IPHeader IPHeader
 
-	// TCP 层
-	SrcPort    uint16   // 源端口
-	DstPort    uint16   // 目标端口
-	SeqNum     uint32   // 序列号
-	AckNum     uint32   // 确认号
-	Flags      TCPFlags // 标志位
-	WindowSize uint16   // 窗口大小
-	Checksum   uint16   // TCP 校验和
-	UrgentPtr  uint16   // 紧急指针
-	DataLen    uint16   // 数据长度
+	// TCP layer
+	SrcPort    uint16   // Source port
+	DstPort    uint16   // Destination port
+	SeqNum     uint32   // Sequence number
+	AckNum     uint32   // Acknowledgment number
+	Flags      TCPFlags // Flags
+	WindowSize uint16   // Window size
+	Checksum   uint16   // TCP checksum
+	UrgentPtr  uint16   // Urgent pointer
+	DataLen    uint16   // Data length
 
-	// TCP 选项
+	// TCP options
 	Options TCPOptions
 
-	// 时间和统计
-	Timestamp   int64 // 数据包时间戳
-	RoundTripMs int64 // 往返时间（毫秒）
+	// Timing and statistics
+	Timestamp   int64 // Packet timestamp
+	RoundTripMs int64 // Round-trip time (milliseconds)
 }
 
-// TCPIPSignature TCP/IP 指纹签名
+// TCPIPSignature TCP/IP fingerprint signature
 type TCPIPSignature struct {
-	Hash              string            // MD5 哈希
-	RawSignature      string            // 原始签名字符串
-	OS                string            // 识别的操作系统
-	OSVersion         string            // 操作系统版本
-	Confidence        float64           // 置信度（0.0-1.0）
-	MatchedProfiles   []string          // 匹配的指纹配置文件
-	TTLValue          int               // TTL 值
-	WindowSizeFamily  string            // 窗口大小系列（如 "Linux", "Windows"）
-	MSS               int               // 最大段大小
-	OptimizationLevel string            // 优化级别
-	Features          map[string]string // 其他特征
+	Hash              string            // MD5 hash
+	RawSignature      string            // Raw signature string
+	OS                string            // Identified operating system
+	OSVersion         string            // Operating system version
+	Confidence        float64           // Confidence level (0.0-1.0)
+	MatchedProfiles   []string          // Matched fingerprint profiles
+	TTLValue          int               // TTL value
+	WindowSizeFamily  string            // Window size family (e.g., "Linux", "Windows")
+	MSS               int               // Maximum Segment Size
+	OptimizationLevel string            // Optimization level
+	Features          map[string]string // Additional features
 }
 
-// OSFingerprint 操作系统指纹
+// OSFingerprint operating system fingerprint
 type OSFingerprint struct {
-	Name           string  // 操作系统名称（如 "Windows 11"）
-	Family         string  // OS 系列（Windows、Linux、macOS 等）
-	Version        string  // 版本号
-	DefaultTTL     int     // 默认 TTL 值
-	WindowSizes    []int   // 常见窗口大小（从小到大）
-	MSS            int     // 典型的 MSS 值
-	TCPOptions     string  // TCP 选项特征
-	IPFlags        uint8   // IP 标志特征
-	Quirks         string  // 操作系统特性和古怪行为
-	SYNACKSequence string  // SYN-ACK 序列特征
-	Probability    float64 // 匹配概率
+	Name           string  // Operating system name (e.g., "Windows 11")
+	Family         string  // OS family (Windows, Linux, macOS, etc.)
+	Version        string  // Version number
+	DefaultTTL     int     // Default TTL value
+	WindowSizes    []int   // Common window sizes (ascending order)
+	MSS            int     // Typical MSS value
+	TCPOptions     string  // TCP option characteristics
+	IPFlags        uint8   // IP flag characteristics
+	Quirks         string  // OS quirks and peculiarities
+	SYNACKSequence string  // SYN-ACK sequence characteristics
+	Probability    float64 // Match probability
 }
 
-// TCPIPAnalyzer TCP/IP 指纹分析器
+// TCPIPAnalyzer TCP/IP fingerprint analyzer
 type TCPIPAnalyzer struct {
-	packets    []TCPPacket              // 数据包列表
-	signatures []TCPIPSignature         // 签名列表
-	osDatabase []OSFingerprint          // 操作系统数据库
-	matchCache map[string]OSFingerprint // 匹配缓存
+	packets    []TCPPacket              // Packet list
+	signatures []TCPIPSignature         // Signature list
+	osDatabase []OSFingerprint          // Operating system database
+	matchCache map[string]OSFingerprint // Match cache
 }
 
-// TCPIPResult TCP/IP 分析结果
+// TCPIPResult TCP/IP analysis result
 type TCPIPResult struct {
-	// 操作系统识别
-	OS            string   // 识别的操作系统
-	OSFamily      string   // 操作系统家族
-	Confidence    float64  // 识别置信度
-	CandidateOSes []string // 候选操作系统列表
+	// Operating system identification
+	OS            string   // Identified operating system
+	OSFamily      string   // Operating system family
+	Confidence    float64  // Identification confidence
+	CandidateOSes []string // Candidate operating system list
 
-	// 网络特征
-	InitialTTL        int   // 初始 TTL 值
-	AverageWindowSize int   // 平均窗口大小
-	MSS               int   // 最大段大小
-	NetworkLatency    int64 // 网络延迟（毫秒）
+	// Network characteristics
+	InitialTTL        int   // Initial TTL value
+	AverageWindowSize int   // Average window size
+	MSS               int   // Maximum Segment Size
+	NetworkLatency    int64 // Network latency (milliseconds)
 
-	// TCP 行为
-	SeqNumberBehavior string // 序列号生成行为
-	AckBehavior       string // ACK 号行为
-	ResetBehavior     string // 重置行为
+	// TCP behavior
+	SeqNumberBehavior string // Sequence number generation behavior
+	AckBehavior       string // ACK number behavior
+	ResetBehavior     string // Reset behavior
 
-	// 安全指标
-	RiskScore      float64  // 风险评分
-	AnomaliesFound []string // 发现的异常
-	IsVPN          bool     // 是否使用 VPN
-	IsProxy        bool     // 是否使用代理
-	IsNAT          bool     // 是否使用 NAT
+	// Security indicators
+	RiskScore      float64  // Risk score
+	AnomaliesFound []string // Detected anomalies
+	IsVPN          bool     // Whether VPN is used
+	IsProxy        bool     // Whether proxy is used
+	IsNAT          bool     // Whether NAT is used
 
-	// 详细签名
+	// Detailed signature
 	Signature TCPIPSignature
 }
 
-// NewTCPIPAnalyzer 创建新的分析器
+// NewTCPIPAnalyzer creates a new analyzer
 func NewTCPIPAnalyzer() *TCPIPAnalyzer {
 	return &TCPIPAnalyzer{
 		packets:    []TCPPacket{},
@@ -145,12 +145,12 @@ func NewTCPIPAnalyzer() *TCPIPAnalyzer {
 	}
 }
 
-// AddPacket 添加 TCP/IP 数据包
+// AddPacket adds a TCP/IP packet
 func (t *TCPIPAnalyzer) AddPacket(packet TCPPacket) {
 	t.packets = append(t.packets, packet)
 }
 
-// AnalyzePacket 分析单个数据包
+// AnalyzePacket analyzes a single packet
 func (t *TCPIPAnalyzer) AnalyzePacket(packet TCPPacket) (TCPIPSignature, error) {
 	sigStr, err := t.ComputeSignature(packet)
 	if err != nil {
@@ -166,14 +166,14 @@ func (t *TCPIPAnalyzer) AnalyzePacket(packet TCPPacket) (TCPIPSignature, error) 
 		Features:     make(map[string]string),
 	}
 
-	// OS 推测
+	// OS guessing
 	sig.OS, sig.OSVersion, sig.Confidence = guessOSFromPacket(packet)
 	sig.WindowSizeFamily = windowSizeFamily(packet.WindowSize)
 
 	return sig, nil
 }
 
-// AnalyzeStream 分析数据包流
+// AnalyzeStream analyzes a packet stream
 func (t *TCPIPAnalyzer) AnalyzeStream() (TCPIPResult, error) {
 	result := TCPIPResult{
 		CandidateOSes:  []string{},
@@ -184,7 +184,7 @@ func (t *TCPIPAnalyzer) AnalyzeStream() (TCPIPResult, error) {
 		return result, nil
 	}
 
-	// 分析每个数据包
+	// Analyze each packet
 	osCounts := make(map[string]int)
 	var totalWindowSize int64
 	var totalLatency int64
@@ -208,7 +208,7 @@ func (t *TCPIPAnalyzer) AnalyzeStream() (TCPIPResult, error) {
 		}
 	}
 
-	// 确定最可能的操作系统
+	// Determine the most probable operating system
 	maxCount := 0
 	for os, count := range osCounts {
 		if count > maxCount {
@@ -222,31 +222,31 @@ func (t *TCPIPAnalyzer) AnalyzeStream() (TCPIPResult, error) {
 		result.Confidence = float64(maxCount) / float64(len(t.packets))
 	}
 
-	// 平均窗口大小
+	// Average window size
 	if len(t.packets) > 0 {
 		result.AverageWindowSize = int(totalWindowSize / int64(len(t.packets)))
 	}
 
-	// 网络延迟
+	// Network latency
 	if latencyCount > 0 {
 		result.NetworkLatency = totalLatency / int64(latencyCount)
 	}
 
-	// 获取首包特征
+	// Get first packet characteristics
 	if len(t.packets) > 0 {
 		first := t.packets[0]
 		result.InitialTTL = nearestDefaultTTL(first.IPHeader.TTL)
 		result.MSS = getMSSValue(first.Options)
 	}
 
-	// 异常检测
+	// Anomaly detection
 	result.AnomaliesFound = t.DetectAnomalies()
 	result.RiskScore = t.GetRiskScore()
 	result.IsVPN = t.DetectVPN()
 	result.IsProxy = t.DetectProxy()
 	result.IsNAT = t.DetectNAT()
 
-	// 生成综合签名
+	// Generate comprehensive signature
 	if len(t.signatures) > 0 {
 		result.Signature = t.signatures[0]
 	}
@@ -254,19 +254,19 @@ func (t *TCPIPAnalyzer) AnalyzeStream() (TCPIPResult, error) {
 	return result, nil
 }
 
-// ComputeSignature 计算 TCP/IP 签名
+// ComputeSignature computes the TCP/IP signature
 func (t *TCPIPAnalyzer) ComputeSignature(packet TCPPacket) (string, error) {
-	// 签名格式: TTL:WindowSize:DF:Options:MSS:WindowScale
+	// Signature format: TTL:WindowSize:DF:Options:MSS:WindowScale
 	var b strings.Builder
 	b.Grow(64)
 
-	// TTL (推测初始 TTL)
+	// TTL (estimate initial TTL)
 	fmt.Fprintf(&b, "%d:", nearestDefaultTTL(packet.IPHeader.TTL))
 
-	// 窗口大小
+	// Window size
 	fmt.Fprintf(&b, "%d:", packet.WindowSize)
 
-	// DF 标志
+	// DF flag
 	if packet.IPHeader.Flags&0x02 != 0 {
 		b.WriteByte('1')
 	} else {
@@ -274,30 +274,30 @@ func (t *TCPIPAnalyzer) ComputeSignature(packet TCPPacket) (string, error) {
 	}
 	b.WriteByte(':')
 
-	// TCP 选项指纹
+	// TCP options fingerprint
 	b.WriteString(formatTCPOptions(packet.Options))
 	b.WriteByte(':')
 
 	// MSS
 	fmt.Fprintf(&b, "%d:", getMSSValue(packet.Options))
 
-	// 窗口缩放
+	// Window scale
 	fmt.Fprintf(&b, "%d", getWindowScale(packet.Options))
 
 	return b.String(), nil
 }
 
-// GetOSFingerprints 获取操作系统指纹库
+// GetOSFingerprints returns the operating system fingerprint database
 func (t *TCPIPAnalyzer) GetOSFingerprints() []OSFingerprint {
 	return t.osDatabase
 }
 
-// SetOSDatabase 设置操作系统数据库
+// SetOSDatabase sets the operating system database
 func (t *TCPIPAnalyzer) SetOSDatabase(db []OSFingerprint) {
 	t.osDatabase = db
 }
 
-// GetRiskScore 计算风险评分
+// GetRiskScore computes the risk score
 func (t *TCPIPAnalyzer) GetRiskScore() float64 {
 	if len(t.packets) == 0 {
 		return 0.0
@@ -306,23 +306,23 @@ func (t *TCPIPAnalyzer) GetRiskScore() float64 {
 	score := 0.0
 
 	for _, packet := range t.packets {
-		// TTL 异常
+		// TTL anomaly
 		if packet.IPHeader.TTL > 0 && packet.IPHeader.TTL < 32 {
 			score += 0.15
 		}
 
-		// 窗口大小异常
+		// Window size anomaly
 		if packet.WindowSize == 0 {
 			score += 0.2
 		}
 
-		// RST 泛滥
+		// RST flood
 		if packet.Flags.RST {
 			score += 0.1
 		}
 	}
 
-	// 归一化
+	// Normalize
 	score = score / float64(len(t.packets))
 	if score > 1.0 {
 		score = 1.0
@@ -330,7 +330,7 @@ func (t *TCPIPAnalyzer) GetRiskScore() float64 {
 	return score
 }
 
-// DetectAnomalies 检测网络异常
+// DetectAnomalies detects network anomalies
 func (t *TCPIPAnalyzer) DetectAnomalies() []string {
 	var anomalies []string
 
@@ -338,7 +338,7 @@ func (t *TCPIPAnalyzer) DetectAnomalies() []string {
 		return anomalies
 	}
 
-	// 检测 TTL 不一致（可能表示路由变更或中间人）
+	// Detect TTL inconsistency (may indicate route changes or man-in-the-middle)
 	ttlSet := make(map[uint8]bool)
 	for _, p := range t.packets {
 		if p.IPHeader.TTL > 0 {
@@ -349,7 +349,7 @@ func (t *TCPIPAnalyzer) DetectAnomalies() []string {
 		anomalies = append(anomalies, "TTL_INCONSISTENCY")
 	}
 
-	// 检测异常的 RST 数量
+	// Detect abnormal RST count
 	rstCount := 0
 	for _, p := range t.packets {
 		if p.Flags.RST {
@@ -360,7 +360,7 @@ func (t *TCPIPAnalyzer) DetectAnomalies() []string {
 		anomalies = append(anomalies, "EXCESSIVE_RST")
 	}
 
-	// 检测窗口大小为 0 的包（窗口探测或异常）
+	// Detect packets with zero window size (window probes or anomaly)
 	zeroWindowCount := 0
 	for _, p := range t.packets {
 		if p.WindowSize == 0 && !p.Flags.RST {
@@ -374,25 +374,25 @@ func (t *TCPIPAnalyzer) DetectAnomalies() []string {
 	return anomalies
 }
 
-// DetectVPN 检测 VPN 使用
+// DetectVPN detects VPN usage
 func (t *TCPIPAnalyzer) DetectVPN() bool {
 	if len(t.packets) == 0 {
 		return false
 	}
 
 	for _, p := range t.packets {
-		// VPN 常见特征: MSS 值较低（因为封装开销）
+		// Common VPN characteristic: lower MSS value (due to encapsulation overhead)
 		mss := getMSSValue(p.Options)
 		if mss > 0 && mss < 1400 && mss != 1460 {
 			return true
 		}
 
-		// TTL 异常跳动
+		// Abnormal TTL fluctuation
 		ttl := p.IPHeader.TTL
 		if ttl > 0 && ttl != 64 && ttl != 128 && ttl != 255 {
 			initialTTL := nearestDefaultTTL(ttl)
 			hops := initialTTL - int(ttl)
-			// VPN 通常增加 1-2 跳
+			// VPN typically adds 1-2 extra hops
 			if hops > 20 {
 				return true
 			}
@@ -401,14 +401,14 @@ func (t *TCPIPAnalyzer) DetectVPN() bool {
 	return false
 }
 
-// DetectProxy 检测代理使用
+// DetectProxy detects proxy usage
 func (t *TCPIPAnalyzer) DetectProxy() bool {
 	if len(t.packets) == 0 {
 		return false
 	}
 
-	// 代理特征: 多个不同的 IP ID 序列模式
-	// 或者窗口大小突变
+	// Proxy characteristics: multiple different IP ID sequence patterns
+	// or sudden window size changes
 	if len(t.packets) < 2 {
 		return false
 	}
@@ -425,18 +425,18 @@ func (t *TCPIPAnalyzer) DetectProxy() bool {
 		}
 	}
 
-	// 频繁的窗口大小突变可能表示代理
+	// Frequent sudden window size changes may indicate a proxy
 	return windowChanges > len(t.packets)/2
 }
 
-// DetectNAT 检测 NAT 使用
+// DetectNAT detects NAT usage
 func (t *TCPIPAnalyzer) DetectNAT() bool {
 	if len(t.packets) < 2 {
 		return false
 	}
 
-	// NAT 特征: IP ID 字段不连续或重叠
-	// 多个主机共享同一 IP 时 ID 会有间隙
+	// NAT characteristics: non-sequential or overlapping IP ID field
+	// When multiple hosts share the same IP, ID values will have gaps
 	ids := make([]uint16, 0, len(t.packets))
 	for _, p := range t.packets {
 		if p.IPHeader.ID > 0 {
@@ -448,7 +448,7 @@ func (t *TCPIPAnalyzer) DetectNAT() bool {
 		return false
 	}
 
-	// 检测 ID 间隙（大于 1000 的跳跃可能表示多主机 NAT）
+	// Detect ID gaps (jumps greater than 1000 may indicate multi-host NAT)
 	gapCount := 0
 	for i := 1; i < len(ids); i++ {
 		var gap uint16
@@ -465,16 +465,16 @@ func (t *TCPIPAnalyzer) DetectNAT() bool {
 	return gapCount > len(ids)/3
 }
 
-// NewAnalyzer 创建 TCP/IP 分析器（模块统一命名）。
+// NewAnalyzer creates a TCP/IP analyzer (unified module naming).
 func NewAnalyzer() *TCPIPAnalyzer {
 	return NewTCPIPAnalyzer()
 }
 
-// Helper 函数：从字节流创建数据包
+// Helper functions: create packets from byte stream
 // ParseTCPPacket(data []byte) (TCPPacket, error) { ... }
 // ParseIPHeader(data []byte) (IPHeader, error) { ... }
 
-// nearestDefaultTTL 推测初始 TTL
+// nearestDefaultTTL estimates the initial TTL
 func nearestDefaultTTL(ttl uint8) int {
 	switch {
 	case ttl <= 32:
@@ -488,7 +488,7 @@ func nearestDefaultTTL(ttl uint8) int {
 	}
 }
 
-// getMSSValue 从 TCP 选项中获取 MSS 值
+// getMSSValue retrieves the MSS value from TCP options
 func getMSSValue(options TCPOptions) int {
 	if options.MSS != nil {
 		return int(*options.MSS)
@@ -496,7 +496,7 @@ func getMSSValue(options TCPOptions) int {
 	return 0
 }
 
-// getWindowScale 从 TCP 选项中获取窗口缩放值
+// getWindowScale retrieves the window scale value from TCP options
 func getWindowScale(options TCPOptions) int {
 	if options.WindowScale != nil {
 		return int(*options.WindowScale)
@@ -504,7 +504,7 @@ func getWindowScale(options TCPOptions) int {
 	return 0
 }
 
-// formatTCPOptions 格式化 TCP 选项为指纹字符串
+// formatTCPOptions formats TCP options into a fingerprint string
 func formatTCPOptions(options TCPOptions) string {
 	var parts []string
 
@@ -533,7 +533,7 @@ func formatTCPOptions(options TCPOptions) string {
 	return strings.Join(parts, ",")
 }
 
-// guessOSFromPacket 根据数据包特征推测操作系统
+// guessOSFromPacket guesses the operating system based on packet characteristics
 func guessOSFromPacket(packet TCPPacket) (os, version string, confidence float64) {
 	ttl := packet.IPHeader.TTL
 	ws := packet.WindowSize
@@ -572,7 +572,7 @@ func guessOSFromPacket(packet TCPPacket) (os, version string, confidence float64
 	}
 }
 
-// windowSizeFamily 根据窗口大小判断操作系统家族
+// windowSizeFamily determines the OS family based on window size
 func windowSizeFamily(ws uint16) string {
 	switch {
 	case ws == 65535:

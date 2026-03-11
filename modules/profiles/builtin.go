@@ -1,12 +1,12 @@
-// Package profiles 提供内置浏览器指纹配置
+// Package profiles provides built-in browser fingerprint profiles
 package profiles
 
 import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// 内置 Chrome 指纹配置
-// builtinTCPIP 返回 TCP/IP 指纹
+// built-in Chrome fingerprint profile
+// builtinTCPIP returns TCP/IP fingerprint
 func builtinTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
 	return CreateTCPIP(osType)
 }
@@ -235,7 +235,7 @@ var (
 	}
 )
 
-// init 初始化默认指纹注册表
+// init initializes the default fingerprint registry
 func init() {
 	profiles := []*ClientProfile{
 		&Chrome133,
@@ -244,18 +244,18 @@ func init() {
 		&Safari180,
 	}
 
-	// 为每个 profile 填充缺失的 UserAgent
+	// for each profile fills in missing UserAgent
 	for _, p := range profiles {
 		if p.Headers == nil {
 			p.Headers = &core.HTTPHeaders{}
 		}
 
-		// 自动构建 UserAgent（如果未设置）
+		// auto-builds UserAgent (if not set)
 		if p.Headers.UserAgent == "" {
 			p.Headers.UserAgent = buildUserAgent(p)
 		}
 
-		// 确保 TCP/IP 指纹存在
+		// ensure TCP/IP fingerprint exists
 		if p.TCPIP == nil {
 			p.TCPIP = builtinTCPIP(p.OS)
 		}
@@ -264,43 +264,43 @@ func init() {
 	}
 }
 
-// buildUserAgent 根据浏览器类型和版本构建 User-Agent 字符串
+// buildUserAgent builds based on browser type and version User-Agent string
 func buildUserAgent(p *ClientProfile) string {
 	osStr := string(p.OS)
 
 	switch p.BrowserType {
 	case core.BrowserChrome:
-		// Chrome User-Agent 格式
+		// Chrome User-Agent format
 		return "Mozilla/5.0 (" + osStr + ") AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" +
 			p.BrowserVersion + " Safari/537.36"
 
 	case core.BrowserFirefox:
-		// Firefox User-Agent 格式
+		// Firefox User-Agent format
 		version := p.BrowserVersion
 		return "Mozilla/5.0 (" + osStr + "; rv:" + version + ") Gecko/20100101 Firefox/" + version
 
 	case core.BrowserSafari:
-		// Safari User-Agent 格式
+		// Safari User-Agent format
 		return "Mozilla/5.0 (" + osStr + ") AppleWebKit/605.1.15 (KHTML, like Gecko) Version/" +
 			p.BrowserVersion + " Safari/605.1.15"
 
 	case core.BrowserEdge:
-		// Edge User-Agent 格式
+		// Edge User-Agent format
 		return "Mozilla/5.0 (" + osStr + ") AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" +
 			p.BrowserVersion + " Safari/537.36 Edg/" + p.BrowserVersion
 
 	case core.BrowserBrave:
-		// Brave User-Agent 格式（类似Chrome）
+		// Brave User-Agent format (similar to Chrome)
 		return "Mozilla/5.0 (" + osStr + ") AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" +
 			p.BrowserVersion + " Safari/537.36"
 
 	case core.BrowserOpera:
-		// Opera User-Agent 格式
+		// Opera User-Agent format
 		return "Mozilla/5.0 (" + osStr + ") AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" +
 			p.BrowserVersion + " Safari/537.36 OPR/" + p.BrowserVersion
 
 	default:
-		// 默认 User-Agent
+		// default User-Agent
 		return "Mozilla/5.0 (" + osStr + ") AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" +
 			p.BrowserVersion + " Safari/537.36"
 	}

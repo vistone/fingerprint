@@ -5,7 +5,6 @@ go 1.25.7
 require github.com/vistone/fingerprint/modules/internal v1.0.8
 
 require (
-	github.com/bogdanfinn/utls v1.7.7-barnius // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect

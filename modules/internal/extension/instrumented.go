@@ -16,7 +16,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// InstrumentedProcessingEngine 为 ProcessingEngine 添加可观测能力
+// InstrumentedProcessingEngine adds observability capabilities to ProcessingEngine
 type InstrumentedProcessingEngine struct {
 	inner   *ProcessingEngine
 	tracer  trace.Tracer
@@ -25,7 +25,7 @@ type InstrumentedProcessingEngine struct {
 	mu      sync.RWMutex
 }
 
-// ProcessingEngineMetrics 处理引擎指标
+// ProcessingEngineMetrics holds processing engine metrics
 type ProcessingEngineMetrics struct {
 	TotalRequests      int64
 	SuccessfulRequests int64
@@ -34,14 +34,14 @@ type ProcessingEngineMetrics struct {
 	LastDuration       time.Duration
 	LastRequestTime    time.Time
 
-	// 按步骤的耗时
+	// Elapsed time by step
 	ParseDuration     time.Duration
 	AnalyzeDuration   time.Duration
 	TransformDuration time.Duration
 	HandleDuration    time.Duration
 }
 
-// NewInstrumentedProcessingEngine 创建可观测的处理引擎
+// NewInstrumentedProcessingEngine creates an instrumented processing engine
 func NewInstrumentedProcessingEngine(
 	engine *ProcessingEngine,
 	tracer trace.Tracer,
@@ -59,7 +59,7 @@ func NewInstrumentedProcessingEngine(
 	}
 }
 
-// Process 处理扩展请求（添加追踪和指标）
+// Process processes extension requests (with tracing and metrics)
 func (ipe *InstrumentedProcessingEngine) Process(request *ProcessingRequest) *ProcessingResult {
 	ctx := request.Context
 	if ctx == nil {
@@ -78,7 +78,7 @@ func (ipe *InstrumentedProcessingEngine) Process(request *ProcessingRequest) *Pr
 		attribute.Int("raw_data_size", len(request.RawData)),
 	)
 
-	// 处理请求
+	// Process request
 	result := ipe.inner.Process(request)
 
 	duration := time.Since(startTime)
@@ -109,32 +109,32 @@ func (ipe *InstrumentedProcessingEngine) Process(request *ProcessingRequest) *Pr
 	return result
 }
 
-// RegisterInterceptor 注册拦截器（代理）
+// RegisterInterceptor registers an interceptor (proxy)
 func (ipe *InstrumentedProcessingEngine) RegisterInterceptor(phase string, interceptor Interceptor) error {
 	return ipe.inner.RegisterInterceptor(phase, interceptor)
 }
 
-// GetConfig 获取配置（代理）
+// GetConfig returns the configuration (proxy)
 func (ipe *InstrumentedProcessingEngine) GetConfig() *EngineConfig {
 	return ipe.inner.GetConfig()
 }
 
-// SetConfig 设置配置（代理）
+// SetConfig sets the configuration (proxy)
 func (ipe *InstrumentedProcessingEngine) SetConfig(config *EngineConfig) error {
 	return ipe.inner.SetConfig(config)
 }
 
-// PassthroughToInner 获取底层引擎以访问原始接口
+// PassthroughToInner returns the underlying engine for accessing the original interface
 func (ipe *InstrumentedProcessingEngine) PassthroughToInner() *ProcessingEngine {
 	return ipe.inner
 }
 
-// GetMetrics 获取指标快照
+// GetMetrics returns a metrics snapshot
 func (ipe *InstrumentedProcessingEngine) GetMetrics() *ProcessingEngineMetrics {
 	ipe.mu.RLock()
 	defer ipe.mu.RUnlock()
 
-	// 返回快照（避免并发修改）
+	// Return a snapshot (to avoid concurrent modification)
 	snapshot := &ProcessingEngineMetrics{
 		TotalRequests:      atomic.LoadInt64(&ipe.metrics.TotalRequests),
 		SuccessfulRequests: atomic.LoadInt64(&ipe.metrics.SuccessfulRequests),
@@ -150,7 +150,7 @@ func (ipe *InstrumentedProcessingEngine) GetMetrics() *ProcessingEngineMetrics {
 	return snapshot
 }
 
-// GetMetricsSnapshot 获取 JSON 格式的指标快照
+// GetMetricsSnapshot returns a JSON-formatted metrics snapshot
 func (ipe *InstrumentedProcessingEngine) GetMetricsSnapshot() map[string]interface{} {
 	metrics := ipe.GetMetrics()
 
@@ -173,21 +173,21 @@ func (ipe *InstrumentedProcessingEngine) GetMetricsSnapshot() map[string]interfa
 	}
 }
 
-// SetLogger 设置日志记录器
+// SetLogger sets the logger
 func (ipe *InstrumentedProcessingEngine) SetLogger(logger *zap.SugaredLogger) {
 	ipe.mu.Lock()
 	defer ipe.mu.Unlock()
 	ipe.logger = logger
 }
 
-// SetTracer 设置追踪器
+// SetTracer sets the tracer
 func (ipe *InstrumentedProcessingEngine) SetTracer(tracer trace.Tracer) {
 	ipe.mu.Lock()
 	defer ipe.mu.Unlock()
 	ipe.tracer = tracer
 }
 
-// 私有方法
+// Private methods
 
 func (ipe *InstrumentedProcessingEngine) recordRequestMetrics(result *ProcessingResult, duration time.Duration) {
 	ipe.mu.Lock()

@@ -1,11 +1,11 @@
 package extension
 
-// ConfigProvider 运行配置提供端口
+// ConfigProvider is the runtime configuration provider port
 type ConfigProvider interface {
 	NewConfigFromEnv() *Config
 }
 
-// RulesProvider 规则配置提供端口
+// RulesProvider is the rules configuration provider port
 type RulesProvider interface {
 	LoadRules(path string) (*RulesConfig, error)
 	LoadRulesByFilename(filename string) (*RulesConfig, error)

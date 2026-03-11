@@ -6,36 +6,36 @@ import (
 	"path/filepath"
 )
 
-// GlobalConfigCenter 全局配置中心实例
+// GlobalConfigCenter is the global configuration center instance
 var GlobalConfigCenter *ConfigCenter
 var GlobalConfigManager *ConfigManager
 var GlobalHealthChecker *HealthChecker
 
-// InitializeConfigCenter 初始化全局配置中心
-// 支持环境变量 FINGERPRINT_CONFIG_PATH 来指定配置文件路径
+// InitializeConfigCenter initializes the global configuration center
+// Supports the FINGERPRINT_CONFIG_PATH environment variable to specify the configuration file path
 func InitializeConfigCenter() error {
-	// 获取配置文件路径
+	// Get the configuration file path
 	configPath := os.Getenv("FINGERPRINT_CONFIG_PATH")
 	if configPath == "" {
-		// 默认路径
+		// Default path
 		configPath = filepath.Join("internal", "config", "config.json")
 	}
 
-	// 创建配置中心
+	// Create the configuration center
 	center := NewConfigCenter(configPath)
 
-	// 加载配置
+	// Load the configuration
 	if err := center.Load(); err != nil {
 		return fmt.Errorf("failed to initialize config center: %w", err)
 	}
 
-	// 创建配置管理器
+	// Create the configuration manager
 	manager := NewConfigManager(center)
 
-	// 创建健康检查器
+	// Create the health checker
 	healthChecker := NewHealthChecker(center)
 
-	// 保存全局实例
+	// Save global instances
 	GlobalConfigCenter = center
 	GlobalConfigManager = manager
 	GlobalHealthChecker = healthChecker
@@ -43,16 +43,16 @@ func InitializeConfigCenter() error {
 	return nil
 }
 
-// InitializeConfigCenterWithDefaults 使用默认配置初始化
+// InitializeConfigCenterWithDefaults initializes with default configuration
 func InitializeConfigCenterWithDefaults() error {
 	center := NewConfigCenter("")
 
-	// 设置默认配置
+	// Set default configuration
 	center.current = DefaultManagedConfig()
 	center.loaded = true
 	center.recordVersion(center.current, "initialization", "system")
 
-	// 创建管理器和检查器
+	// Create the manager and checker
 	GlobalConfigCenter = center
 	GlobalConfigManager = NewConfigManager(center)
 	GlobalHealthChecker = NewHealthChecker(center)
@@ -60,19 +60,19 @@ func InitializeConfigCenterWithDefaults() error {
 	return nil
 }
 
-// GetConfigCenter 获取全局配置中心
+// GetConfigCenter returns the global configuration center
 func GetConfigCenter() *ConfigCenter {
 	if GlobalConfigCenter == nil {
-		// 尝试初始化
+		// Try to initialize
 		if err := InitializeConfigCenter(); err != nil {
-			// 如果初始化失败，使用默认配置
+			// If initialization fails, use default configuration
 			InitializeConfigCenterWithDefaults()
 		}
 	}
 	return GlobalConfigCenter
 }
 
-// GetConfigManager 获取全局配置管理器
+// GetConfigManager returns the global configuration manager
 func GetConfigManager() *ConfigManager {
 	if GlobalConfigManager == nil {
 		GetConfigCenter()
@@ -80,7 +80,7 @@ func GetConfigManager() *ConfigManager {
 	return GlobalConfigManager
 }
 
-// GetHealthChecker 获取全局健康检查器
+// GetHealthChecker returns the global health checker
 func GetHealthChecker() *HealthChecker {
 	if GlobalHealthChecker == nil {
 		GetConfigCenter()

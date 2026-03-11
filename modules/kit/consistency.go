@@ -1,5 +1,5 @@
 // Fingerprint Kit Utilities
-// consistency.go - 跨层指纹一致性校验
+// consistency.go - Cross-layer fingerprint consistency validation
 package utils
 
 import (
@@ -9,37 +9,37 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles"
 )
 
-// ConsistencyValidator 跨层一致性校验器
+// ConsistencyValidator is a cross-layer consistency validator
 type ConsistencyValidator struct {
 	profile *profiles.ClientProfile
 }
 
-// NewConsistencyValidator 创建新的一致性校验器
+// NewConsistencyValidator creates a new consistency validator
 func NewConsistencyValidator(profile *profiles.ClientProfile) *ConsistencyValidator {
 	return &ConsistencyValidator{
 		profile: profile,
 	}
 }
 
-// ConsistencyReport 跨层一致性校验报告
+// ConsistencyReport is a cross-layer consistency validation report
 type ConsistencyReport struct {
-	// 总体结果
+	// Overall results
 	IsConsistent bool
-	Score        float64 // 0.0 - 1.0, 1.0 表示完全一致
+	Score        float64 // 0.0 - 1.0, 1.0 means fully consistent
 
-	// 各层检查结果
+	// Per-layer check results
 	HTTPLayer   *LayerCheckResult
 	ClientHints *LayerCheckResult
 	JSLayer     *LayerCheckResult
 	TCPIPLayer  *LayerCheckResult
 
-	// 详细信息
+	// Details
 	Mismatches []string
 	Warnings   []string
 	Details    map[string]interface{}
 }
 
-// LayerCheckResult 单个层的检查结果
+// LayerCheckResult is the check result for a single layer
 type LayerCheckResult struct {
 	LayerName    string
 	IsConsistent bool
@@ -47,7 +47,7 @@ type LayerCheckResult struct {
 	Issues       []string
 }
 
-// Validate 执行跨层一致性校验
+// Validate performs cross-layer consistency validation
 func (cv *ConsistencyValidator) Validate() *ConsistencyReport {
 	report := &ConsistencyReport{
 		Details:    make(map[string]interface{}),
@@ -55,28 +55,28 @@ func (cv *ConsistencyValidator) Validate() *ConsistencyReport {
 		Warnings:   []string{},
 	}
 
-	// 1. 验证 HTTP 层
+	// 1. Validate HTTP layer
 	report.HTTPLayer = cv.validateHTTPLayer()
 
-	// 2. 验证 Client Hints 层
+	// 2. Validate Client Hints layer
 	report.ClientHints = cv.validateClientHintsLayer()
 
-	// 3. 验证 JavaScript 层
+	// 3. Validate JavaScript layer
 	report.JSLayer = cv.validateJSLayer()
 
-	// 4. 验证 TCP/IP 层
+	// 4. Validate TCP/IP layer
 	report.TCPIPLayer = cv.validateTCPIPLayer()
 
-	// 5. 交叉验证各层之间的一致性
+	// 5. Cross-validate consistency between layers
 	cv.crossLayerValidation(report)
 
-	// 6. 计算总体得分
+	// 6. Calculate overall score
 	cv.calculateScore(report)
 
 	return report
 }
 
-// validateHTTPLayer 验证 HTTP 层一致性
+// validateHTTPLayer validates HTTP layer consistency
 func (cv *ConsistencyValidator) validateHTTPLayer() *LayerCheckResult {
 	result := &LayerCheckResult{
 		LayerName: "HTTP",
@@ -84,30 +84,30 @@ func (cv *ConsistencyValidator) validateHTTPLayer() *LayerCheckResult {
 	}
 
 	if cv.profile.Headers == nil {
-		result.Issues = append(result.Issues, "Headers 配置缺失")
+		result.Issues = append(result.Issues, "Headers configuration missing")
 		return result
 	}
 
 	headers := cv.profile.Headers
 
-	// 检查必要字段
+	// Check required fields
 	result.Data["User-Agent"] = headers.UserAgent
 	result.Data["Accept-Language"] = headers.AcceptLanguage
 	result.Data["Sec-CH-UA"] = headers.SecCHUA
 	result.Data["Sec-CH-UA-Mobile"] = headers.SecCHUAMobile
 	result.Data["Sec-CH-UA-Platform"] = headers.SecCHUAPlatform
 
-	// 验证 User-Agent 有效性
+	// Validate User-Agent
 	if headers.UserAgent == "" {
-		result.Issues = append(result.Issues, "User-Agent 为空")
+		result.Issues = append(result.Issues, "User-Agent is empty")
 	} else if !cv.isValidUserAgent(headers.UserAgent) {
-		result.Issues = append(result.Issues, "User-Agent 格式无效")
+		result.Issues = append(result.Issues, "User-Agent format is invalid")
 	}
 
-	// 验证 Accept-Language 有效性
+	// Validate Accept-Language
 	if headers.AcceptLanguage != "" {
 		if !cv.isValidLanguageTag(headers.AcceptLanguage) {
-			result.Issues = append(result.Issues, "Accept-Language 格式无效")
+			result.Issues = append(result.Issues, "Accept-Language format is invalid")
 		}
 	}
 
@@ -116,7 +116,7 @@ func (cv *ConsistencyValidator) validateHTTPLayer() *LayerCheckResult {
 	return result
 }
 
-// validateClientHintsLayer 验证 Client Hints 层一致性
+// validateClientHintsLayer validates Client Hints layer consistency
 func (cv *ConsistencyValidator) validateClientHintsLayer() *LayerCheckResult {
 	result := &LayerCheckResult{
 		LayerName: "ClientHints",
@@ -124,27 +124,27 @@ func (cv *ConsistencyValidator) validateClientHintsLayer() *LayerCheckResult {
 	}
 
 	if cv.profile.Headers == nil {
-		result.Issues = append(result.Issues, "Headers 配置缺失")
+		result.Issues = append(result.Issues, "Headers configuration missing")
 		return result
 	}
 
 	headers := cv.profile.Headers
 
-	// Sec-CH-UA 格式验证
+	// Sec-CH-UA format validation
 	result.Data["Sec-CH-UA"] = headers.SecCHUA
 	if headers.SecCHUA != "" {
 		if !cv.isValidSecCHUA(headers.SecCHUA) {
-			result.Issues = append(result.Issues, "Sec-CH-UA 格式无效")
+			result.Issues = append(result.Issues, "Sec-CH-UA format is invalid")
 		}
 	}
 
-	// Sec-CH-UA-Mobile 验证
+	// Sec-CH-UA-Mobile validation
 	result.Data["Sec-CH-UA-Mobile"] = headers.SecCHUAMobile
 	if headers.SecCHUAMobile != "" && headers.SecCHUAMobile != "true" && headers.SecCHUAMobile != "false" {
-		result.Issues = append(result.Issues, "Sec-CH-UA-Mobile 值无效")
+		result.Issues = append(result.Issues, "Sec-CH-UA-Mobile value is invalid")
 	}
 
-	// Sec-CH-UA-Platform 验证
+	// Sec-CH-UA-Platform validation
 	result.Data["Sec-CH-UA-Platform"] = headers.SecCHUAPlatform
 	validPlatforms := map[string]bool{
 		"Windows":   true,
@@ -155,7 +155,7 @@ func (cv *ConsistencyValidator) validateClientHintsLayer() *LayerCheckResult {
 		"Chrome OS": true,
 	}
 	if headers.SecCHUAPlatform != "" && !validPlatforms[strings.Trim(headers.SecCHUAPlatform, `"`)] {
-		result.Issues = append(result.Issues, fmt.Sprintf("Sec-CH-UA-Platform 无效: %s", headers.SecCHUAPlatform))
+		result.Issues = append(result.Issues, fmt.Sprintf("Sec-CH-UA-Platform invalid: %s", headers.SecCHUAPlatform))
 	}
 
 	result.IsConsistent = len(result.Issues) == 0
@@ -163,26 +163,26 @@ func (cv *ConsistencyValidator) validateClientHintsLayer() *LayerCheckResult {
 	return result
 }
 
-// validateJSLayer 验证 JavaScript 层一致性
+// validateJSLayer validates JavaScript layer consistency
 func (cv *ConsistencyValidator) validateJSLayer() *LayerCheckResult {
 	result := &LayerCheckResult{
 		LayerName: "JavaScript",
 		Data:      make(map[string]string),
 	}
 
-	// 检查 JSAntiDetection 配置
+	// Check JSAntiDetection configuration
 	if cv.profile.JSAntiDetection == nil {
-		result.Issues = append(result.Issues, "JSAntiDetection 配置缺失")
+		result.Issues = append(result.Issues, "JSAntiDetection configuration missing")
 		return result
 	}
 
 	antiDetect := cv.profile.JSAntiDetection
 
-	// 验证各对抗点配置
+	// Validate each anti-detection point configuration
 	if antiDetect.WebGPU != nil {
 		result.Data["WebGPU.Available"] = fmt.Sprintf("%v", antiDetect.WebGPU.Available)
 		if antiDetect.WebGPU.Available && antiDetect.WebGPU.AdapterName == "" {
-			result.Issues = append(result.Issues, "WebGPU 启用但 AdapterName 为空")
+			result.Issues = append(result.Issues, "WebGPU enabled but AdapterName is empty")
 		}
 	}
 
@@ -190,7 +190,7 @@ func (cv *ConsistencyValidator) validateJSLayer() *LayerCheckResult {
 		result.Data["MediaDevices.Devices"] = fmt.Sprintf("%d", len(antiDetect.MediaDevices.VideoInputs)+len(antiDetect.MediaDevices.AudioInputs))
 		if (len(antiDetect.MediaDevices.VideoInputs) > 0 || len(antiDetect.MediaDevices.AudioInputs) > 0) &&
 			len(antiDetect.MediaDevices.VideoInputs) == 0 && len(antiDetect.MediaDevices.AudioInputs) == 0 {
-			result.Issues = append(result.Issues, "MediaDevices 配置不完整")
+			result.Issues = append(result.Issues, "MediaDevices configuration incomplete")
 		}
 	}
 
@@ -208,7 +208,7 @@ func (cv *ConsistencyValidator) validateJSLayer() *LayerCheckResult {
 	return result
 }
 
-// validateTCPIPLayer 验证 TCP/IP 层一致性
+// validateTCPIPLayer validates TCP/IP layer consistency
 func (cv *ConsistencyValidator) validateTCPIPLayer() *LayerCheckResult {
 	result := &LayerCheckResult{
 		LayerName: "TCP/IP",
@@ -216,37 +216,37 @@ func (cv *ConsistencyValidator) validateTCPIPLayer() *LayerCheckResult {
 	}
 
 	if cv.profile.TCPIP == nil {
-		result.Issues = append(result.Issues, "TCPIP 配置缺失")
+		result.Issues = append(result.Issues, "TCPIP configuration missing")
 		return result
 	}
 
 	tcpip := cv.profile.TCPIP
 
-	// 验证 TCP/IP 参数有效性
+	// Validate TCP/IP parameter validity
 	result.Data["TTL"] = fmt.Sprintf("%d", tcpip.TTL)
 	result.Data["WindowSize"] = fmt.Sprintf("%d", tcpip.WindowSize)
 	result.Data["MSS"] = fmt.Sprintf("%d", tcpip.MSS)
 	result.Data["OS"] = string(cv.profile.OS)
 
-	// TTL 值验证
+	// TTL value validation
 	if tcpip.TTL == 0 {
-		result.Issues = append(result.Issues, "TTL 值为 0")
+		result.Issues = append(result.Issues, "TTL value is 0")
 	}
 
-	// Windows 应该有 TTL 128
+	// Windows should have TTL 128
 	if strings.Contains(string(cv.profile.OS), "Windows") && tcpip.TTL != 128 {
-		result.Issues = append(result.Issues, fmt.Sprintf("Windows 期望 TTL 128，实际 %d", tcpip.TTL))
+		result.Issues = append(result.Issues, fmt.Sprintf("Windows expects TTL 128, got %d", tcpip.TTL))
 	}
 
-	// Linux/Mac 应该有 TTL 64
+	// Linux/Mac should have TTL 64
 	if (strings.Contains(string(cv.profile.OS), "Linux") || strings.Contains(string(cv.profile.OS), "Mac OS")) &&
 		tcpip.TTL != 64 {
-		result.Issues = append(result.Issues, fmt.Sprintf("Unix 类系统期望 TTL 64，实际 %d", tcpip.TTL))
+		result.Issues = append(result.Issues, fmt.Sprintf("Unix-like system expects TTL 64, got %d", tcpip.TTL))
 	}
 
-	// JA4T 指纹有效性验证
+	// JA4T fingerprint validity validation
 	if tcpip.JA4T == "" {
-		result.Issues = append(result.Issues, "JA4T 指纹为空")
+		result.Issues = append(result.Issues, "JA4T fingerprint is empty")
 	}
 
 	result.IsConsistent = len(result.Issues) == 0
@@ -254,7 +254,7 @@ func (cv *ConsistencyValidator) validateTCPIPLayer() *LayerCheckResult {
 	return result
 }
 
-// crossLayerValidation 执行跨层交叉验证
+// crossLayerValidation performs cross-layer cross-validation
 func (cv *ConsistencyValidator) crossLayerValidation(report *ConsistencyReport) {
 	if cv.profile.Headers == nil {
 		return
@@ -263,35 +263,35 @@ func (cv *ConsistencyValidator) crossLayerValidation(report *ConsistencyReport) 
 	headers := cv.profile.Headers
 	ua := headers.UserAgent
 
-	// 1. UA 中的浏览器信息 vs BrowserType
+	// 1. Browser info in UA vs BrowserType
 	if !cv.isUAConsistentWithBrowser(ua) {
-		report.Mismatches = append(report.Mismatches, "User-Agent 与 BrowserType 不一致")
+		report.Mismatches = append(report.Mismatches, "User-Agent inconsistent with BrowserType")
 	}
 
-	// 2. UA 中的 OS 信息 vs OS 字段
+	// 2. OS info in UA vs OS field
 	if !cv.isUAConsistentWithOS(ua) {
-		report.Mismatches = append(report.Mismatches, "User-Agent 与 OS 信息不一致")
+		report.Mismatches = append(report.Mismatches, "User-Agent inconsistent with OS info")
 	}
 
-	// 3. Sec-CH-UA 与 UA 一致性
+	// 3. Sec-CH-UA consistency with UA
 	if !cv.isSecCHUAConsistentWithUA(ua, headers.SecCHUA) {
-		report.Mismatches = append(report.Mismatches, "Sec-CH-UA 与 User-Agent 不一致")
+		report.Mismatches = append(report.Mismatches, "Sec-CH-UA inconsistent with User-Agent")
 	}
 
-	// 4. 语言信息一致性
+	// 4. Language information consistency
 	if !cv.isLanguageConsistent() {
-		report.Warnings = append(report.Warnings, "语言信息可能不一致")
+		report.Warnings = append(report.Warnings, "Language information may be inconsistent")
 	}
 
-	// 5. TCP/IP 与 OS 一致性
+	// 5. TCP/IP consistency with OS
 	if cv.profile.TCPIP != nil {
 		if !cv.isTCPIPConsistentWithOS() {
-			report.Mismatches = append(report.Mismatches, "TCP/IP 配置与 OS 不一致")
+			report.Mismatches = append(report.Mismatches, "TCP/IP configuration inconsistent with OS")
 		}
 	}
 }
 
-// calculateScore 计算一致性得分
+// calculateScore calculates the consistency score
 func (cv *ConsistencyValidator) calculateScore(report *ConsistencyReport) {
 	totalLayers := 4
 	consistentLayers := 0
@@ -309,10 +309,10 @@ func (cv *ConsistencyValidator) calculateScore(report *ConsistencyReport) {
 		consistentLayers++
 	}
 
-	// 基础分
+	// Base score
 	baseiScore := float64(consistentLayers) / float64(totalLayers)
 
-	// 根据不匹配数调整
+	// Adjust based on mismatch count
 	mismatchPenalty := float64(len(report.Mismatches)) * 0.1
 	warningPenalty := float64(len(report.Warnings)) * 0.05
 
@@ -321,14 +321,14 @@ func (cv *ConsistencyValidator) calculateScore(report *ConsistencyReport) {
 		report.Score = 0
 	}
 
-	// 确定总体一致性
+	// Determine overall consistency
 	report.IsConsistent = report.Score >= 0.8 && len(report.Mismatches) == 0
 }
 
-// 辅助方法
+// Helper methods
 
 func (cv *ConsistencyValidator) isValidUserAgent(ua string) bool {
-	// User-Agent 应该包含浏览器标识
+	// User-Agent should contain browser identifier
 	browsers := []string{"Chrome", "Firefox", "Safari", "Edge", "Opera", "Brave"}
 	for _, b := range browsers {
 		if strings.Contains(ua, b) {
@@ -339,7 +339,7 @@ func (cv *ConsistencyValidator) isValidUserAgent(ua string) bool {
 }
 
 func (cv *ConsistencyValidator) isValidLanguageTag(lang string) bool {
-	// 基本的语言标签验证 (如 "en-US", "zh-CN")
+	// Basic language tag validation (e.g. "en-US", "zh-CN")
 	parts := strings.Split(lang, "-")
 	if len(parts) >= 1 && len(parts[0]) == 2 {
 		return true
@@ -348,7 +348,7 @@ func (cv *ConsistencyValidator) isValidLanguageTag(lang string) bool {
 }
 
 func (cv *ConsistencyValidator) isValidSecCHUA(secCHUA string) bool {
-	// Sec-CH-UA 应该遵循格式: "brand";v="version", ...
+	// Sec-CH-UA should follow format: "brand";v="version", ...
 	return strings.Contains(secCHUA, "v=") || strings.Contains(secCHUA, "Not")
 }
 
@@ -389,7 +389,7 @@ func (cv *ConsistencyValidator) isUAConsistentWithOS(ua string) bool {
 }
 
 func (cv *ConsistencyValidator) isSecCHUAConsistentWithUA(ua, secCHUA string) bool {
-	// 简单的一致性检查：如果 UA 中有品牌，Sec-CH-UA 也应该有
+	// Simple consistency check: if UA contains a brand, Sec-CH-UA should too
 	if strings.Contains(ua, "Chrome") {
 		return strings.Contains(secCHUA, "Chrome") || strings.Contains(secCHUA, "Chromium")
 	}
@@ -412,8 +412,8 @@ func (cv *ConsistencyValidator) isLanguageConsistent() bool {
 		return true
 	}
 
-	// 语言应该与 UA 中的 OS 或其他线索一致
-	// 这里只做基本的非空检查
+	// Language should be consistent with OS or other clues in UA
+	// Only doing basic non-empty check here
 	return true
 }
 

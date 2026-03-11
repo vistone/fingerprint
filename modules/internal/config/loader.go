@@ -2,66 +2,66 @@ package config
 
 import "github.com/vistone/fingerprint/modules/internal/extension"
 
-// 兼容层说明：
-// 规则配置主入口已收敛到 extension 包。
-// 本包保留同名类型与函数，便于历史调用方平滑迁移。
+// Compatibility layer notes:
+// The main entry point for rule configuration has been consolidated into the extension package.
+// This package retains types and functions with the same names to facilitate smooth migration for existing callers.
 
-// RulesConfig 兼容别名（迁移到 extension.RulesConfig）
+// RulesConfig is a compatibility alias (migrated to extension.RulesConfig)
 type RulesConfig = extension.RulesConfig
 
-// EntropyConfig 兼容别名
+// EntropyConfig is a compatibility alias
 type EntropyConfig = extension.EntropyConfig
 
-// ToolMarkersConfig 兼容别名
+// ToolMarkersConfig is a compatibility alias
 type ToolMarkersConfig = extension.ToolMarkersConfig
 
-// MarkerInfo 兼容别名
+// MarkerInfo is a compatibility alias
 type MarkerInfo = extension.MarkerInfo
 
-// HeadlessBrowserConfig 兼容别名
+// HeadlessBrowserConfig is a compatibility alias
 type HeadlessBrowserConfig = extension.HeadlessBrowserConfig
 
-// OSPlatformConfig 兼容别名
+// OSPlatformConfig is a compatibility alias
 type OSPlatformConfig = extension.OSPlatformConfig
 
-// OSRule 兼容别名
+// OSRule is a compatibility alias
 type OSRule = extension.OSRule
 
-// UAOSConfig 兼容别名
+// UAOSConfig is a compatibility alias
 type UAOSConfig = extension.UAOSConfig
 
-// UARuleOS 兼容别名
+// UARuleOS is a compatibility alias
 type UARuleOS = extension.UARuleOS
 
-// MobileScreenConfig 兼容别名
+// MobileScreenConfig is a compatibility alias
 type MobileScreenConfig = extension.MobileScreenConfig
 
-// MobileScreenRule 兼容别名
+// MobileScreenRule is a compatibility alias
 type MobileScreenRule = extension.MobileScreenRule
 
-// UAFeatureConfig 兼容别名
+// UAFeatureConfig is a compatibility alias
 type UAFeatureConfig = extension.UAFeatureConfig
 
-// UAFeatureRule 兼容别名
+// UAFeatureRule is a compatibility alias
 type UAFeatureRule = extension.UAFeatureRule
 
-// ScoringConfig 兼容别名（对应 extension.RulesScoringConfig）
+// ScoringConfig is a compatibility alias (corresponds to extension.RulesScoringConfig)
 type ScoringConfig = extension.RulesScoringConfig
 
-// RiskLevel 兼容别名
+// RiskLevel is a compatibility alias
 type RiskLevel = extension.RiskLevel
 
-// LoadRulesConfig 兼容转发
+// LoadRulesConfig is a compatibility forwarder
 func LoadRulesConfig(path string) (*RulesConfig, error) {
 	return extension.LoadRulesConfig(path)
 }
 
-// LoadRulesConfigByFilename 兼容转发
+// LoadRulesConfigByFilename is a compatibility forwarder
 func LoadRulesConfigByFilename(filename string) (*RulesConfig, error) {
 	return extension.LoadRulesConfigByFilename(filename)
 }
 
-// DefaultRulesConfig 兼容转发
+// DefaultRulesConfig is a compatibility forwarder
 func DefaultRulesConfig() *RulesConfig {
 	return extension.DefaultRulesConfig()
 }

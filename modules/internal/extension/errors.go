@@ -1,54 +1,54 @@
-// Package extension 提供扩展系统的核心功能：错误处理、验证、防御和日志记录
+// Package extension provides core functionality for the extension system: error handling, validation, defense, and logging
 //
-// # 错误处理
+// # Error Handling
 //
-// 使用 Error 结构体和 ErrorCode 枚举进行统一错误处理：
+// Uses the Error struct and ErrorCode enum for unified error handling:
 //
-//	err := extension.NewError(extension.ErrCodeInvalidInput, "输入无效")
+//	err := extension.NewError(extension.ErrCodeInvalidInput, "invalid input")
 //	err = err.WithContext("user_id", 123).WithContext("field", "email")
 //	if err.IsRecoverable() {
-//	    // 可以重试
+//	    // can retry
 //	    return retryOperation()
 //	}
 //	if err.IsFatal() {
 //	    return err
 //	}
 //
-// # 错误代码体系
+// # Error Code System
 //
-// 46 个错误代码分为 8 个类别（1000-8999）：
+// 46 error codes divided into 8 categories (1000-8999):
 //
-//	注册表错误  (1000-1999): NotFound, AlreadyRegistered, InvalidMetadata
-//	验证错误    (2000-2999): InvalidInput, FieldSizeMismatch, EncodingError
-//	解析错误    (3000-3999): ParseFailed, InvalidFormat, MalformedData
-//	分析错误    (4000-4999): AnalysisFailed, ResourceExhausted
-//	配置错误    (5000-5999): InvalidConfig, MissingConfig
-//	插件错误    (6000-6999): PluginNotFound, PluginLoadFailed
-//	系统错误    (7000-7999): SystemError, MemoryExhausted, Timeout
-//	安全错误    (8000-8999): SecurityViolation, Unauthorized
+//	Registry errors  (1000-1999): NotFound, AlreadyRegistered, InvalidMetadata
+//	Validation errors    (2000-2999): InvalidInput, FieldSizeMismatch, EncodingError
+//	Parsing errors    (3000-3999): ParseFailed, InvalidFormat, MalformedData
+//	Analysis errors    (4000-4999): AnalysisFailed, ResourceExhausted
+//	Configuration errors    (5000-5999): InvalidConfig, MissingConfig
+//	Plugin errors    (6000-6999): PluginNotFound, PluginLoadFailed
+//	System errors    (7000-7999): SystemError, MemoryExhausted, Timeout
+//	Security errors    (8000-8999): SecurityViolation, Unauthorized
 //
-// # 严重级别
+// # Severity Levels
 //
-// 5 级错误严重程度：
+// 5 error severity levels:
 //
-//	SeverityInfo      (0) - 信息，可恢复
-//	SeverityWarning   (1) - 警告，可恢复
-//	SeverityError     (2) - 错误，可恢复
-//	SeverityCritical  (3) - 严重，不可恢复
-//	SeverityFatal     (4) - 致命，不可恢复
+//	SeverityInfo      (0) - Info, recoverable
+//	SeverityWarning   (1) - Warning, recoverable
+//	SeverityError     (2) - Error, recoverable
+//	SeverityCritical  (3) - Critical, non-recoverable
+//	SeverityFatal     (4) - Fatal, non-recoverable
 //
-// # 输入验证
+// # Input Validation
 //
-// 使用 DefaultValidator 验证数据：
+// Using DefaultValidator for data validation:
 //
 //	validator := extension.NewDefaultValidator()
 //	if err := validator.ValidateData(data); err != nil {
 //	    return err
 //	}
 //
-// # 防御系统
+// # Defense System
 //
-// 使用 RequestGuard 保护 API 端点：
+// Using RequestGuard to protect API endpoints:
 //
 //	policy := extension.DefaultDefensePolicy()
 //	guard := extension.NewRequestGuard(policy)
@@ -56,9 +56,9 @@
 //	    return err
 //	}
 //
-// # 安全执行
+// # Safe Execution
 //
-// 捕获 panic 并恢复：
+// Catches panics and recovers:
 //
 //	extension.SafeExecuteWithRecovery(
 //	    func() error { return unsafeOp() },
@@ -70,11 +70,11 @@ import (
 	"fmt"
 )
 
-// ErrorCode 错误代码（便于系统集成和错误分类）
+// ErrorCode represents an error code (for system integration and error classification)
 type ErrorCode int
 
 const (
-	// 注册表错误（1000-1999）
+	// Registry errors (1000-1999)
 	ErrCodeNotFound ErrorCode = 1000 + iota
 	ErrCodeAlreadyRegistered
 	ErrCodeInvalidMetadata
@@ -82,7 +82,7 @@ const (
 )
 
 const (
-	// 验证错误（2000-2999）
+	// Validation errors (2000-2999)
 	ErrCodeValidationFailed ErrorCode = 2000 + iota
 	ErrCodeInvalidInput
 	ErrCodeMissingField
@@ -92,7 +92,7 @@ const (
 )
 
 const (
-	// 解析错误（3000-3999）
+	// Parsing errors (3000-3999)
 	ErrCodeParseFailed ErrorCode = 3000 + iota
 	ErrCodeInvalidFormat
 	ErrCodeUnexpectedEOF
@@ -101,7 +101,7 @@ const (
 )
 
 const (
-	// 分析错误（4000-4999）
+	// Analysis errors (4000-4999)
 	ErrCodeAnalysisFailed ErrorCode = 4000 + iota
 	ErrCodeAnalysisTimeout
 	ErrCodeResourceExhausted
@@ -109,14 +109,14 @@ const (
 )
 
 const (
-	// 配置错误（5000-5999）
+	// Configuration errors (5000-5999)
 	ErrCodeInvalidConfig ErrorCode = 5000 + iota
 	ErrCodeMissingConfig
 	ErrCodeConfigConflict
 )
 
 const (
-	// 插件错误（6000-6999）
+	// Plugin errors (6000-6999)
 	ErrCodePluginNotFound ErrorCode = 6000 + iota
 	ErrCodePluginInitFailed
 	ErrCodePluginLoadFailed
@@ -124,7 +124,7 @@ const (
 )
 
 const (
-	// 系统错误（7000-7999）
+	// System errors (7000-7999)
 	ErrCodeSystemError ErrorCode = 7000 + iota
 	ErrCodeMemoryExhausted
 	ErrCodeTimeout
@@ -132,62 +132,62 @@ const (
 )
 
 const (
-	// 安全错误（8000-8999）
+	// Security errors (8000-8999)
 	ErrCodeSecurityViolation ErrorCode = 8000 + iota
 	ErrCodeUnauthorized
 	ErrCodeForbidden
 )
 
-// Error 扩展系统的标准错误类型
+// Error is the standard error type for the extension system
 //
-// 字段说明：
+// Field descriptions:
 //
-//	Code       - 错误代码，便于分类和集成
-//	Message    - 人类可读的错误描述
-//	Cause      - 原始错误，支持错误链
-//	Context    - 错误上下文键值对（用于调试）
-//	Severity   - 错误严重级别（决定可恢复性）
-//	Timestamp  - 错误发生时间
+//	Code       - Error code for classification and integration
+//	Message    - Human-readable error description
+//	Cause      - Original error, supports error chaining
+//	Context    - Error context key-value pairs (for debugging)
+//	Severity   - Error severity level (determines recoverability)
+//	Timestamp  - Time when the error occurred
 //
-// 使用示例：
+// Usage example:
 //
-//	// 创建错误
+//	// Create error
 //	err := extension.NewError(
 //	    extension.ErrCodeInvalidInput,
-//	    "无效的用户输入",
+//	    "invalid user input",
 //	)
 //
-//	// 添加上下文信息（用于调试）
+//	// Add context information (for debugging)
 //	err = err.WithContext("user_id", 12345)
 //	err = err.WithContext("field", "email")
 //	err = err.WithContext("value", userEmail)
 //
-//	// 判断错误类型
+//	// Determine error type
 //	if err.IsRecoverable() {
-//	    // Info, Warning, Error 级别的错误可以恢复
+//	    // Info, Warning, Error level errors are recoverable
 //	    return retryOperation()
 //	}
 //
 //	if err.IsFatal() {
-//	    // Fatal 级别的错误无法恢复
+//	    // Fatal level errors are non-recoverable
 //	    return err
 //	}
 //
-// 创建变体：
+// Creation variants:
 //
-//	extension.NewError(code, message)                    // 标准错误
-//	extension.NewErrorWithCause(code, message, cause)   // 带原因的错误
-//	extension.NewFatalError(code, message)              // 致命错误
-//	extension.NewWarning(message)                       // 警告（不需要 code）
+//	extension.NewError(code, message)                    // Standard error
+//	extension.NewErrorWithCause(code, message, cause)   // Error with cause
+//	extension.NewFatalError(code, message)              // Fatal error
+//	extension.NewWarning(message)                       // Warning (no code needed)
 //
-// 错误链：
+// Error chaining:
 //
 //	err := processData(data)
 //	if err != nil {
 //	    return extension.NewErrorWithCause(
 //	        extension.ErrCodeAnalysisFailed,
-//	        "分析失败",
-//	        err,  // 原始错误作为链的下一个
+//	        "analysis failed",
+//	        err,  // original error as the next in the chain
 //	    )
 //	}
 type Error struct {
@@ -199,7 +199,7 @@ type Error struct {
 	Timestamp int64
 }
 
-// ErrorSeverity 错误严重程度
+// ErrorSeverity represents error severity level
 type ErrorSeverity int
 
 const (
@@ -210,7 +210,7 @@ const (
 	SeverityFatal
 )
 
-// String 实现 error 接口
+// String implements the error interface
 func (e *Error) Error() string {
 	msg := fmt.Sprintf("[%s] %s (code: %d)", e.Severity.String(), e.Message, e.Code)
 	if e.Cause != nil {
@@ -219,12 +219,12 @@ func (e *Error) Error() string {
 	return msg
 }
 
-// Unwrap 支持 error wrapping
+// Unwrap supports error wrapping
 func (e *Error) Unwrap() error {
 	return e.Cause
 }
 
-// WithContext 添加上下文信息
+// WithContext adds context information
 func (e *Error) WithContext(key string, value interface{}) *Error {
 	if e.Context == nil {
 		e.Context = make(map[string]interface{})
@@ -233,7 +233,7 @@ func (e *Error) WithContext(key string, value interface{}) *Error {
 	return e
 }
 
-// IsRecoverable 判断错误是否可恢复
+// IsRecoverable determines whether the error is recoverable
 func (e *Error) IsRecoverable() bool {
 	switch e.Severity {
 	case SeverityFatal, SeverityCritical:
@@ -243,12 +243,12 @@ func (e *Error) IsRecoverable() bool {
 	}
 }
 
-// IsFatal 判断错误是否致命
+// IsFatal determines whether the error is fatal
 func (e *Error) IsFatal() bool {
 	return e.Severity == SeverityFatal
 }
 
-// String 实现 Stringer 接口
+// String implements the Stringer interface
 func (es ErrorSeverity) String() string {
 	switch es {
 	case SeverityInfo:
@@ -266,7 +266,7 @@ func (es ErrorSeverity) String() string {
 	}
 }
 
-// NewError 创建新错误
+// NewError creates a new error
 func NewError(code ErrorCode, message string) *Error {
 	return &Error{
 		Code:     code,
@@ -276,21 +276,21 @@ func NewError(code ErrorCode, message string) *Error {
 	}
 }
 
-// NewErrorWithCause 创建包含原因的错误
+// NewErrorWithCause creates an error with a cause
 func NewErrorWithCause(code ErrorCode, message string, cause error) *Error {
 	err := NewError(code, message)
 	err.Cause = cause
 	return err
 }
 
-// NewFatalError 创建致命错误
+// NewFatalError creates a fatal error
 func NewFatalError(code ErrorCode, message string) *Error {
 	err := NewError(code, message)
 	err.Severity = SeverityFatal
 	return err
 }
 
-// NewWarning 创建警告
+// NewWarning creates a warning
 func NewWarning(message string) *Error {
 	err := &Error{
 		Code:     ErrCodeInvalidInput,
@@ -301,7 +301,7 @@ func NewWarning(message string) *Error {
 	return err
 }
 
-// ToError 将标准错误转换为扩展错误
+// ToError converts a standard error to an extension error
 func ToError(code ErrorCode, err error) *Error {
 	if extErr, ok := err.(*Error); ok {
 		return extErr
@@ -309,19 +309,19 @@ func ToError(code ErrorCode, err error) *Error {
 	return NewErrorWithCause(code, "operation failed", err)
 }
 
-// ErrorHandler 错误处理器接口
+// ErrorHandler is the error handler interface
 type ErrorHandler interface {
-	// 处理错误
+	// Handle the error
 	Handle(err *Error) error
 
-	// 判断是否能处理此错误
+	// Determine whether this error can be handled
 	CanHandle(err *Error) bool
 
-	// 获取处理器名称
+	// Get handler name
 	GetName() string
 }
 
-// PanicHandler panic 恢复处理器
+// PanicHandler is the panic recovery handler
 type PanicHandler struct {
 	name string
 }
@@ -332,26 +332,26 @@ func NewPanicHandler() *PanicHandler {
 
 func (ph *PanicHandler) Handle(err *Error) error {
 	if err.Severity == SeverityFatal {
-		// 记录致命错误，但不 panic
+		// Record fatal error, but do not panic
 		return fmt.Errorf("fatal error occurred: %w", err)
 	}
 	return err
 }
 
 func (ph *PanicHandler) CanHandle(err *Error) bool {
-	return true // 可以处理任何错误
+	return true // can handle any error
 }
 
 func (ph *PanicHandler) GetName() string {
 	return ph.name
 }
 
-// SafeExecute 安全执行函数，捕获 panic
-// 如果发生 panic，会返回一个包含 panic 信息的错误
+// SafeExecute safely executes a function, catching panics
+// If a panic occurs, it returns an error containing the panic information
 func SafeExecute(fn func() error) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			// panic 已被捕获，将 panic 转换为错误返回
+			// panic has been caught, convert panic to error and return
 			err = NewErrorWithCause(ErrCodeSystemError,
 				fmt.Sprintf("panic recovered: %v", r), nil)
 		}
@@ -360,7 +360,7 @@ func SafeExecute(fn func() error) (err error) {
 	return fn()
 }
 
-// SafeExecuteWithRecovery 安全执行函数，带恢复逻辑
+// SafeExecuteWithRecovery safely executes a function with recovery logic
 func SafeExecuteWithRecovery(fn func() error, handler func(interface{})) error {
 	defer func() {
 		if r := recover(); r != nil {

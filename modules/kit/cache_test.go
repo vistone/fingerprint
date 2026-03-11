@@ -5,14 +5,14 @@ import (
 	"time"
 )
 
-// TestCache_SetGet 测试缓存设置和获取
+// TestCache_SetGet tests cache set and get
 func TestCache_SetGet(t *testing.T) {
 	cache := NewCache()
 
-	// 设置值
+	// Set value
 	cache.Set("key1", "value1", 1*time.Minute)
 
-	// 获取值
+	// Get value
 	val, ok := cache.Get("key1")
 	if !ok {
 		t.Error("Expected to get value")
@@ -21,14 +21,14 @@ func TestCache_SetGet(t *testing.T) {
 		t.Errorf("Expected 'value1', got %v", val)
 	}
 
-	// 获取不存在的键
+	// Get non-existent key
 	_, ok = cache.Get("nonexistent")
 	if ok {
 		t.Error("Expected not to find nonexistent key")
 	}
 }
 
-// TestCache_GetString 测试获取字符串
+// TestCache_GetString tests getting a string
 func TestCache_GetString(t *testing.T) {
 	cache := NewCache()
 
@@ -42,13 +42,13 @@ func TestCache_GetString(t *testing.T) {
 		t.Errorf("Expected 'test string', got %s", str)
 	}
 
-	// 获取不存在的字符串
+	// Get non-existent string
 	_, ok = cache.GetString("nonexistent")
 	if ok {
 		t.Error("Expected not to find nonexistent key")
 	}
 
-	// 获取非字符串值
+	// Get non-string value
 	cache.Set("int", 123, 1*time.Minute)
 	_, ok = cache.GetString("int")
 	if ok {
@@ -56,30 +56,30 @@ func TestCache_GetString(t *testing.T) {
 	}
 }
 
-// TestCache_Expiration 测试缓存过期
+// TestCache_Expiration tests cache expiration
 func TestCache_Expiration(t *testing.T) {
 	cache := NewCache()
 
-	// 设置短过期时间的值
+	// Set a value with short expiration
 	cache.Set("short", "value", 1*time.Millisecond)
 
-	// 立即获取应该成功
+	// Getting immediately should succeed
 	_, ok := cache.Get("short")
 	if !ok {
 		t.Error("Expected to get value immediately")
 	}
 
-	// 等待过期
+	// Wait for expiration
 	time.Sleep(50 * time.Millisecond)
 
-	// 过期后获取应该失败
+	// Getting after expiration should fail
 	_, ok = cache.Get("short")
 	if ok {
 		t.Error("Expected value to be expired")
 	}
 }
 
-// TestCache_Delete 测试删除
+// TestCache_Delete tests deletion
 func TestCache_Delete(t *testing.T) {
 	cache := NewCache()
 
@@ -92,7 +92,7 @@ func TestCache_Delete(t *testing.T) {
 	}
 }
 
-// TestCache_Clear 测试清空
+// TestCache_Clear tests clearing
 func TestCache_Clear(t *testing.T) {
 	cache := NewCache()
 
@@ -111,20 +111,20 @@ func TestCache_Clear(t *testing.T) {
 	}
 }
 
-// TestLRUCache_SetGet 测试 LRU 缓存
+// TestLRUCache_SetGet tests LRU cache
 func TestLRUCache_SetGet(t *testing.T) {
 	cache := NewLRUCache(2)
 
 	cache.Set("key1", "value1", 1*time.Minute)
 	cache.Set("key2", "value2", 1*time.Minute)
 
-	// 获取值
+	// Get value
 	val, ok := cache.Get("key1")
 	if !ok || val != "value1" {
 		t.Error("Expected to get value1")
 	}
 
-	// 添加第三个值，应该淘汰最久未使用的 key2
+	// Add a third value, should evict the least recently used key2
 	cache.Set("key3", "value3", 1*time.Minute)
 
 	_, ok = cache.Get("key2")
@@ -132,7 +132,7 @@ func TestLRUCache_SetGet(t *testing.T) {
 		t.Error("Expected key2 to be evicted")
 	}
 
-	// key1 和 key3 应该还在
+	// key1 and key3 should still exist
 	val, ok = cache.Get("key1")
 	if !ok || val != "value1" {
 		t.Error("Expected key1 to still exist")
@@ -144,19 +144,19 @@ func TestLRUCache_SetGet(t *testing.T) {
 	}
 }
 
-// TestLRUCache_Expiration 测试 LRU 缓存过期
+// TestLRUCache_Expiration tests LRU cache expiration
 func TestLRUCache_Expiration(t *testing.T) {
 	cache := NewLRUCache(10)
 
 	cache.Set("key", "value", 1*time.Millisecond)
 
-	// 立即获取
+	// Get immediately
 	_, ok := cache.Get("key")
 	if !ok {
 		t.Error("Expected to get value immediately")
 	}
 
-	// 等待过期
+	// Wait for expiration
 	time.Sleep(50 * time.Millisecond)
 
 	_, ok = cache.Get("key")
@@ -165,7 +165,7 @@ func TestLRUCache_Expiration(t *testing.T) {
 	}
 }
 
-// BenchmarkCache_Set 基准测试缓存设置
+// BenchmarkCache_Set benchmarks cache set
 func BenchmarkCache_Set(b *testing.B) {
 	cache := NewCache()
 
@@ -175,7 +175,7 @@ func BenchmarkCache_Set(b *testing.B) {
 	}
 }
 
-// BenchmarkCache_Get 基准测试缓存获取
+// BenchmarkCache_Get benchmarks cache get
 func BenchmarkCache_Get(b *testing.B) {
 	cache := NewCache()
 	cache.Set("key", "value", 1*time.Minute)
@@ -186,7 +186,7 @@ func BenchmarkCache_Get(b *testing.B) {
 	}
 }
 
-// BenchmarkLRUCache_Set 基准测试 LRU 缓存设置
+// BenchmarkLRUCache_Set benchmarks LRU cache set
 func BenchmarkLRUCache_Set(b *testing.B) {
 	cache := NewLRUCache(1000)
 
@@ -196,7 +196,7 @@ func BenchmarkLRUCache_Set(b *testing.B) {
 	}
 }
 
-// BenchmarkLRUCache_Get 基准测试 LRU 缓存获取
+// BenchmarkLRUCache_Get benchmarks LRU cache get
 func BenchmarkLRUCache_Get(b *testing.B) {
 	cache := NewLRUCache(1000)
 	cache.Set("key", "value", 1*time.Minute)

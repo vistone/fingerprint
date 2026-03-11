@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// ECHExtensionData ECH 扩展数据结构
+// ECHExtensionData represents the ECH extension data structure
 type ECHExtensionData struct {
 	Type            ExtensionType
 	Version         uint16
@@ -37,7 +37,7 @@ func (e *ECHExtensionData) ToMap() map[string]interface{} {
 	}
 }
 
-// ECHAnalysisResultImpl ECH 分析结果实现
+// ECHAnalysisResultImpl is the ECH analysis result implementation
 type ECHAnalysisResultImpl struct {
 	ExtType       ExtensionType
 	Present       bool
@@ -85,7 +85,7 @@ func (r *ECHAnalysisResultImpl) ToMap() map[string]interface{} {
 	}
 }
 
-// ECHParser 新式 ECH 解析器实现
+// ECHParser is the new ECH parser implementation
 type ECHParser struct {
 	version string
 }
@@ -107,10 +107,10 @@ func (p *ECHParser) Parse(data []byte, parentContext context.Context) (Extension
 	}
 	copy(echData.RawData, data)
 
-	// 解析版本（前两字节）
+	// Parse version (first two bytes)
 	echData.Version = uint16(data[0])<<8 | uint16(data[1])
 
-	// 判断 ECH 类型
+	// Determine ECH type
 	if len(data) > 2 {
 		echData.ConfigID = data[2]
 	}
@@ -126,7 +126,7 @@ func (p *ECHParser) GetVersion() string {
 	return p.version
 }
 
-// ECHAnalyzerImpl 新式 ECH 分析器实现
+// ECHAnalyzerImpl is the new ECH analyzer implementation
 type ECHAnalyzerImpl struct {
 	version string
 }
@@ -151,14 +151,14 @@ func (a *ECHAnalyzerImpl) Analyze(data ExtensionData, config map[string]interfac
 		Metadata:      make(map[string]interface{}),
 	}
 
-	// 分析版本
+	// Analyze version
 	result.Version = echData.Version
 	a.detectECHType(echData, result)
 
-	// 计算风险评分
+	// Calculate risk score
 	result.RiskScore = a.calculateRiskScore(echData, result)
 
-	// 检测异常
+	// Detect anomalies
 	a.detectAnomalies(echData, result)
 
 	return result, nil
@@ -186,7 +186,7 @@ func (a *ECHAnalyzerImpl) detectECHType(data *ECHExtensionData, result *ECHAnaly
 		return
 	}
 
-	// 根据配置 ID 判断类型
+	// Determine type based on config ID
 	var configID uint8
 	if len(data.RawData) > 2 {
 		configID = data.RawData[2]
@@ -204,14 +204,14 @@ func (a *ECHAnalyzerImpl) detectECHType(data *ECHExtensionData, result *ECHAnaly
 func (a *ECHAnalyzerImpl) calculateRiskScore(data *ECHExtensionData, result *ECHAnalysisResultImpl) float64 {
 	var score float64
 
-	// GREASE 类型：低影响
+	// GREASE type: low impact
 	if result.ECHType == "grease" {
 		score = 0.2
 	} else if result.ECHType == "outer" {
-		// Outer ClientHello：高影响
+		// Outer ClientHello: high impact
 		score = 0.7
 	} else {
-		// Inner ClientHello：中等影响
+		// Inner ClientHello: medium impact
 		score = 0.5
 	}
 
@@ -219,17 +219,17 @@ func (a *ECHAnalyzerImpl) calculateRiskScore(data *ECHExtensionData, result *ECH
 }
 
 func (a *ECHAnalyzerImpl) detectAnomalies(data *ECHExtensionData, result *ECHAnalysisResultImpl) {
-	// 检查版本
+	// Check version
 	if result.Version == 0x0000 {
 		result.Anomalies = append(result.Anomalies, "invalid_version")
 	}
 
-	// 检查数据长度
+	// Check data length
 	if len(data.RawData) < 4 {
 		result.Anomalies = append(result.Anomalies, "insufficient_data")
 	}
 
-	// 检查与 SNI 的一致性
+	// Check consistency with SNI
 	if result.ECHType == "outer" && data.ClientHelloData != nil {
 		if sni, exists := data.ClientHelloData["sni"]; exists && sni != nil {
 			result.Anomalies = append(result.Anomalies, "ech_outer_with_visible_sni")
@@ -237,11 +237,11 @@ func (a *ECHAnalyzerImpl) detectAnomalies(data *ECHExtensionData, result *ECHAna
 	}
 }
 
-// InitializeECHExtension 初始化 ECH 扩展支持
+// InitializeECHExtension initializes ECH extension support
 func InitializeECHExtension() error {
-	// 注册元数据已在 initStandardExtensions 中完成
+	// Metadata registration is already done in initStandardExtensions
 
-	// 注册解析器
+	// Register parser
 	err := RegisterParserBuilder(ExtensionEncryptedClientHello, func() (Parser, error) {
 		return NewECHParser(), nil
 	})
@@ -249,7 +249,7 @@ func InitializeECHExtension() error {
 		return err
 	}
 
-	// 注册分析器
+	// Register analyzer
 	err = RegisterAnalyzerBuilder(ExtensionEncryptedClientHello, func() (Analyzer, error) {
 		return NewECHAnalyzerImpl(), nil
 	})

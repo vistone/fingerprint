@@ -3,7 +3,7 @@ package extension
 import "errors"
 
 var (
-	// 注册表错误
+	// Registry errors
 	ErrExtensionNotFound      = errors.New("extension not found")
 	ErrExtensionNotRegistered = errors.New("extension not registered")
 	ErrParserNotFound         = errors.New("parser not found")
@@ -11,26 +11,26 @@ var (
 	ErrHandlerNotFound        = errors.New("handler not found")
 	ErrPluginNotFound         = errors.New("plugin not found")
 
-	// 验证错误
+	// Validation errors
 	ErrInvalidMetadata = errors.New("invalid extension metadata")
 	ErrInvalidParser   = errors.New("invalid parser")
 	ErrInvalidAnalyzer = errors.New("invalid analyzer")
 	ErrInvalidHandler  = errors.New("invalid handler")
 	ErrInvalidPlugin   = errors.New("invalid plugin")
 
-	// 处理错误
+	// Processing errors
 	ErrParseFailure            = errors.New("failed to parse extension")
 	ErrAnalysisFailure         = errors.New("failed to analyze extension")
 	ErrHandleFailure           = errors.New("failed to handle extension")
 	ErrPluginInitFailure       = errors.New("failed to initialize plugin")
 	ErrPluginValidationFailure = errors.New("plugin validation failed")
 
-	// 配置错误
+	// Configuration errors
 	ErrInvalidConfig = errors.New("invalid configuration")
 	ErrMissingConfig = errors.New("missing required configuration")
 )
 
-// 标准扩展类型常量
+// Standard extension type constants
 const (
 	// TLS 1.3 Extensions
 	ExtensionServerName               ExtensionType = 0x0000
@@ -79,7 +79,7 @@ const (
 	ExtensionCustom ExtensionType = 0xffff
 )
 
-// 标准扩展类别
+// Standard extension categories
 const (
 	CategoryEncryption     = "encryption"
 	CategoryNegotiation    = "negotiation"
@@ -93,7 +93,7 @@ const (
 	CategoryClientHints    = "client_hints"
 )
 
-// initStandardExtensions 初始化标准扩展
+// initStandardExtensions initializes standard extensions
 func initStandardExtensions() {
 	// ECH (Encrypted Client Hello)
 	RegisterExtension(&ExtensionMetadata{

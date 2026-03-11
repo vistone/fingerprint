@@ -1,5 +1,5 @@
-// Package profiles 提供全面的浏览器指纹配置
-// 目标: 90+ 真实浏览器指纹
+// Package profiles provides comprehensive browser fingerprint profiles
+// target: 90+ real browser fingerprint
 package profiles
 
 import (
@@ -8,7 +8,7 @@ import (
 	"github.com/vistone/fingerprint/modules/core"
 )
 
-// createTCPIP 根据操作系统创建 TCP/IP 指纹
+// createTCPIP creates TCP/IP fingerprint based on operating system
 func createTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
 	base := &TCPIPFingerprint{
 		IPVersion:        4,
@@ -43,14 +43,14 @@ func createTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
 		base.NoOperation = 2
 		base.JA4T = "t13d1714h2_8daaf6152771_02713a6ec338"
 	} else if strings.Contains(osStr, "iPhone") || strings.Contains(osStr, "iPad") {
-		// iOS 特征
+		// iOS characteristics
 		base.TTL = 64
 		base.WindowSize = 65535
 		base.WindowScale = 6
 		base.NoOperation = 2
 		base.JA4T = "t13d1814h2_8daaf6152771_b0b889a3c9b7"
 	} else if strings.Contains(osStr, "Android") {
-		// Android 特征
+		// Android characteristics
 		base.TTL = 64
 		base.WindowSize = 65535
 		base.WindowScale = 6
@@ -67,12 +67,12 @@ func createTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
 	return base
 }
 
-// createChromeTCPIP 创建 Chrome 浏览器的 TCP/IP 指纹
+// createChromeTCPIP create Chrome browser's TCP/IP fingerprint
 func createChromeTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
 	return CreateTCPIP(osType)
 }
 
-// Chrome 全面配置 (30 profiles)
+// Chrome comprehensive profile (30 profiles)
 func initChromeProfiles() {
 	chromeVersions := []struct {
 		id      string
@@ -104,7 +104,7 @@ func initChromeProfiles() {
 		{"chrome_127", "127.0.6533.120", core.OSLinuxUbuntu, "22.04"},
 		{"chrome_128", "128.0.6613.138", core.OSLinuxUbuntu, "22.04"},
 		{"chrome_129", "129.0.6668.101", core.OSLinuxUbuntu, "22.04"},
-		// 已存在于其他文件中的版本
+		// versions already present in other files
 		// 120, 124, 130, 131, 132, 133
 	}
 
@@ -131,7 +131,7 @@ func initChromeProfiles() {
 				HeaderTableSize: 65536, EnablePush: 0,
 				MaxConcurrentStreams: 1000, InitialWindowSize: 6291456,
 			},
-			// HTTP/3 (QUIC) 配置 - Chrome 已支持 HTTP/3
+			// HTTP/3 (QUIC) profile - Chrome already supported HTTP/3
 			HTTP3Settings: &core.HTTP3Settings{
 				QUICVersion:            core.QUICVersion1,
 				InitialMaxData:         16777216,    // 16MB
@@ -161,7 +161,7 @@ func initChromeProfiles() {
 	}
 }
 
-// Firefox 全面配置 (25 profiles)
+// Firefox comprehensive profile (25 profiles)
 func initFirefoxProfiles() {
 	firefoxVersions := []struct {
 		id      string
@@ -193,7 +193,7 @@ func initFirefoxProfiles() {
 		{"firefox_126", "126.0", core.OSLinux},
 		{"firefox_127", "127.0", core.OSLinux},
 		{"firefox_128", "128.0", core.OSLinux},
-		// 120, 125, 130, 132, 133 已在其他文件中
+		// 120, 125, 130, 132, 133 already in other files
 	}
 
 	for _, v := range firefoxVersions {
@@ -213,7 +213,7 @@ func initFirefoxProfiles() {
 				HeaderTableSize: 65536, EnablePush: 0,
 				MaxConcurrentStreams: 100, InitialWindowSize: 131072,
 			},
-			// HTTP/3 (QUIC) 配置 - Firefox 已支持 HTTP/3
+			// HTTP/3 (QUIC) profile - Firefox already supported HTTP/3
 			HTTP3Settings: &core.HTTP3Settings{
 				QUICVersion:            core.QUICVersion1,
 				InitialMaxData:         16777216,    // 16MB
@@ -239,7 +239,7 @@ func initFirefoxProfiles() {
 	}
 }
 
-// Safari 全面配置 (20 profiles)
+// Safari comprehensive profile (20 profiles)
 func initSafariProfiles() {
 	safariVersions := []struct {
 		id      string
@@ -267,7 +267,7 @@ func initSafariProfiles() {
 		{"safari_17_4", "17.4", core.OSMacOS15, "15.3"},
 		{"safari_17_5", "17.5", core.OSMacOS15, "15.4"},
 		{"safari_17_6", "17.6", core.OSMacOS15, "15.5"},
-		// 15.0, 16.0, 17.0, 18.0, 18.1 已在其他文件中
+		// 15.0, 16.0, 17.0, 18.0, 18.1 already in other files
 	}
 
 	for _, v := range safariVersions {
@@ -285,7 +285,7 @@ func initSafariProfiles() {
 				HeaderTableSize: 4096, EnablePush: 1,
 				MaxConcurrentStreams: 100, InitialWindowSize: 2097152,
 			},
-			// HTTP/3 (QUIC) 配置 - Safari 已支持 HTTP/3
+			// HTTP/3 (QUIC) profile - Safari already supported HTTP/3
 			HTTP3Settings: &core.HTTP3Settings{
 				QUICVersion:            core.QUICVersion1,
 				InitialMaxData:         16777216,    // 16MB
@@ -332,7 +332,7 @@ func initiOSProfiles() {
 		{"safari_ios_16_4", "16.4", "16.4"},
 		{"safari_ios_16_5", "16.5", "16.5"},
 		{"safari_ios_16_6", "16.6", "16.6"},
-		// 15.5, 15.6, 16.0, 17.0, 18.0, 18.1 已在其他文件中
+		// 15.5, 15.6, 16.0, 17.0, 18.0, 18.1 already in other files
 	}
 
 	for _, v := range iosVersions {
@@ -363,7 +363,7 @@ func initiOSProfiles() {
 				MaxFrameSize:         16384,
 				MaxHeaderListSize:    262144,
 			},
-			// HTTP/3 (QUIC) 配置 - iOS Safari 已支持 HTTP/3
+			// HTTP/3 (QUIC) profile - iOS Safari already supported HTTP/3
 			HTTP3Settings: &core.HTTP3Settings{
 				QUICVersion:            core.QUICVersion1,
 				InitialMaxData:         16777216,
@@ -415,7 +415,7 @@ func initAndroidProfiles() {
 		{"chrome_android_127", "127.0.6533.103", "14", "Pixel 8a"},
 		{"chrome_android_129", "129.0.6668.81", "15", "Pixel 9"},
 		{"chrome_android_131", "131.0.6778.135", "15", "Pixel 9 Pro"},
-		// 120, 130 已在其他文件中
+		// 120, 130 already in other files
 	}
 
 	for _, v := range androidVersions {
@@ -446,7 +446,7 @@ func initAndroidProfiles() {
 				MaxFrameSize:         16384,
 				MaxHeaderListSize:    262144,
 			},
-			// HTTP/3 (QUIC) 配置 - Android Chrome 已支持 HTTP/3
+			// HTTP/3 (QUIC) profile - Android Chrome already supported HTTP/3
 			HTTP3Settings: &core.HTTP3Settings{
 				QUICVersion:            core.QUICVersion1,
 				InitialMaxData:         16777216,
@@ -475,7 +475,7 @@ func initAndroidProfiles() {
 	}
 }
 
-// Edge 更多版本 (8 profiles)
+// Edge more versions (8 profiles)
 func initEdgeProfiles() {
 	edgeVersions := []struct {
 		id      string
@@ -490,7 +490,7 @@ func initEdgeProfiles() {
 		{"edge_115", "115.0.1901.203", "stable"},
 		{"edge_125", "125.0.2535.92", "stable"},
 		{"edge_128", "128.0.2739.79", "stable"},
-		// 120, 130 已在其他文件中
+		// 120, 130 already in other files
 	}
 
 	for _, v := range edgeVersions {
@@ -521,7 +521,7 @@ func initEdgeProfiles() {
 				MaxFrameSize:         16384,
 				MaxHeaderListSize:    262144,
 			},
-			// HTTP/3 (QUIC) 配置 - Edge 已支持 HTTP/3
+			// HTTP/3 (QUIC) profile - Edge already supported HTTP/3
 			HTTP3Settings: &core.HTTP3Settings{
 				QUICVersion:            core.QUICVersion1,
 				InitialMaxData:         16777216,
@@ -550,7 +550,7 @@ func initEdgeProfiles() {
 	}
 }
 
-// Opera 更多版本 (5 profiles)
+// Opera more versions (5 profiles)
 func initOperaProfiles() {
 	operaVersions := []struct {
 		id      string
@@ -561,7 +561,7 @@ func initOperaProfiles() {
 		{"opera_97", "97.0.4719.63"},
 		{"opera_98", "98.0.4759.39"},
 		{"opera_99", "99.0.4788.77"},
-		// 100, 105 已在其他文件中
+		// 100, 105 already in other files
 	}
 
 	for _, v := range operaVersions {
@@ -592,7 +592,7 @@ func initOperaProfiles() {
 				MaxFrameSize:         16384,
 				MaxHeaderListSize:    262144,
 			},
-			// HTTP/3 (QUIC) 配置 - Opera 已支持 HTTP/3
+			// HTTP/3 (QUIC) profile - Opera already supported HTTP/3
 			HTTP3Settings: &core.HTTP3Settings{
 				QUICVersion:            core.QUICVersion1,
 				InitialMaxData:         16777216,
@@ -621,7 +621,7 @@ func initOperaProfiles() {
 	}
 }
 
-// helper 函数
+// helper function
 func platformString(os core.OperatingSystem) string {
 	osStr := string(os)
 	if contains(osStr, "Windows") {
@@ -640,7 +640,7 @@ func contains(s, substr string) bool {
 	return strings.Contains(s, substr)
 }
 
-// 初始化所有扩展配置
+// initializes all extended profiles
 func init() {
 	initChromeProfiles()
 	initFirefoxProfiles()

@@ -7,29 +7,29 @@ import (
 	"fmt"
 )
 
-// ApplicationBootstrapper 应用级别启动引导程序
-// 负责协调依赖初始化，确保单一组合根原则
-// 在应用启动时调用此包提供的工厂函数，而非直接调用各种 New* 函数
+// ApplicationBootstrapper is the application-level bootstrapper
+// It coordinates dependency initialization, ensuring the single composition root principle
+// Call the factory functions provided by this package at application startup, instead of calling various New* functions directly
 type ApplicationBootstrapper struct {
 	configProvider ConfigProvider
 	rulesProvider  RulesProvider
 	registryPort   RegistryPort
 
-	// 缓存的单例
+	// cached singletons
 	appConfig *Config
 	container *Container
 	engine    *ProcessingEngine
 
-	// 诊断工具
+	// diagnostics tool
 	registryDiagnostics *RegistryDiagnostics
 }
 
-// NewApplicationBootstrapper 创建应用引导程序（使用默认 provider）
+// NewApplicationBootstrapper creates an application bootstrapper (using default providers)
 func NewApplicationBootstrapper() *ApplicationBootstrapper {
 	return NewApplicationBootstrapperWithProviders(nil, nil, nil)
 }
 
-// NewApplicationBootstrapperWithProviders 创建应用引导程序（支持 provider 注入）
+// NewApplicationBootstrapperWithProviders creates an application bootstrapper (with provider injection support)
 func NewApplicationBootstrapperWithProviders(
 	configProvider ConfigProvider,
 	rulesProvider RulesProvider,
@@ -53,8 +53,8 @@ func NewApplicationBootstrapperWithProviders(
 	}
 }
 
-// BootstrapConfig 初始化应用配置
-// 调用一次，结果被缓存；若已初始化则返回缓存值
+// BootstrapConfig initializes the application configuration
+// Called once, the result is cached; returns the cached value if already initialized
 func (b *ApplicationBootstrapper) BootstrapConfig() (*Config, error) {
 	if b.appConfig != nil {
 		return b.appConfig, nil
@@ -72,8 +72,8 @@ func (b *ApplicationBootstrapper) BootstrapConfig() (*Config, error) {
 	return b.appConfig, nil
 }
 
-// BootstrapContainer 初始化DI容器
-// 调用一次，结果被缓存；若已初始化则返回缓存值
+// BootstrapContainer initializes the DI container
+// Called once, the result is cached; returns the cached value if already initialized
 func (b *ApplicationBootstrapper) BootstrapContainer() (*Container, error) {
 	if b.container != nil {
 		return b.container, nil
@@ -97,8 +97,8 @@ func (b *ApplicationBootstrapper) BootstrapContainer() (*Container, error) {
 	return b.container, nil
 }
 
-// BootstrapEngine 初始化处理引擎
-// 调用一次，结果被缓存；若已初始化则返回缓存值
+// BootstrapEngine initializes the processing engine
+// Called once, the result is cached; returns the cached value if already initialized
 func (b *ApplicationBootstrapper) BootstrapEngine(
 	engineConfig *EngineConfig,
 ) (*ProcessingEngine, error) {
@@ -123,7 +123,7 @@ func (b *ApplicationBootstrapper) BootstrapEngine(
 	return b.engine, nil
 }
 
-// GetConfig 获取缓存的应用配置（若未初始化则初始化）
+// GetConfig returns the cached application configuration (initializes if not yet initialized)
 func (b *ApplicationBootstrapper) GetConfig() (*Config, error) {
 	if b.appConfig == nil {
 		return b.BootstrapConfig()
@@ -131,7 +131,7 @@ func (b *ApplicationBootstrapper) GetConfig() (*Config, error) {
 	return b.appConfig, nil
 }
 
-// GetContainer 获取缓存的DI容器（若未初始化则初始化）
+// GetContainer returns the cached DI container (initializes if not yet initialized)
 func (b *ApplicationBootstrapper) GetContainer() (*Container, error) {
 	if b.container == nil {
 		return b.BootstrapContainer()
@@ -139,7 +139,7 @@ func (b *ApplicationBootstrapper) GetContainer() (*Container, error) {
 	return b.container, nil
 }
 
-// GetEngine 获取缓存的处理引擎（若未初始化则用默认配置初始化）
+// GetEngine returns the cached processing engine (initializes with default config if not yet initialized)
 func (b *ApplicationBootstrapper) GetEngine() (*ProcessingEngine, error) {
 	if b.engine == nil {
 		return b.BootstrapEngine(nil)
@@ -147,7 +147,7 @@ func (b *ApplicationBootstrapper) GetEngine() (*ProcessingEngine, error) {
 	return b.engine, nil
 }
 
-// Reset 重置所有缓存（仅用于测试或特殊场景）
+// Reset clears all cached instances (only for testing or special scenarios)
 func (b *ApplicationBootstrapper) Reset() {
 	b.appConfig = nil
 	b.container = nil
@@ -157,7 +157,7 @@ func (b *ApplicationBootstrapper) Reset() {
 	}
 }
 
-// SetConfigProvider 设置配置提供器（必须在任何 bootstrap 调用之前）
+// SetConfigProvider sets the configuration provider (must be called before any bootstrap call)
 func (b *ApplicationBootstrapper) SetConfigProvider(provider ConfigProvider) {
 	if b.appConfig == nil && b.container == nil && b.engine == nil {
 		if provider != nil {
@@ -166,7 +166,7 @@ func (b *ApplicationBootstrapper) SetConfigProvider(provider ConfigProvider) {
 	}
 }
 
-// SetRulesProvider 设置规则提供器（必须在任何 bootstrap 调用之前）
+// SetRulesProvider sets the rules provider (must be called before any bootstrap call)
 func (b *ApplicationBootstrapper) SetRulesProvider(provider RulesProvider) {
 	if b.appConfig == nil && b.container == nil && b.engine == nil {
 		if provider != nil {
@@ -175,7 +175,7 @@ func (b *ApplicationBootstrapper) SetRulesProvider(provider RulesProvider) {
 	}
 }
 
-// SetRegistryPort 设置注册表端口（必须在任何 bootstrap 调用之前）
+// SetRegistryPort sets the registry port (must be called before any bootstrap call)
 func (b *ApplicationBootstrapper) SetRegistryPort(port RegistryPort) {
 	if b.engine == nil {
 		if port != nil {
@@ -184,22 +184,22 @@ func (b *ApplicationBootstrapper) SetRegistryPort(port RegistryPort) {
 	}
 }
 
-// GetRegistryDiagnostics 获取注册表诊断工具
+// GetRegistryDiagnostics returns the registry diagnostics tool
 func (b *ApplicationBootstrapper) GetRegistryDiagnostics() *RegistryDiagnostics {
 	return b.registryDiagnostics
 }
 
-// ValidateStartup 执行启动验证，检查必需的扩展是否已加载
-// 返回诊断结果和任何检测到的问题
+// ValidateStartup performs startup validation, checking whether required extensions are loaded
+// Returns diagnostic results and any detected issues
 func (b *ApplicationBootstrapper) ValidateStartup(requiredExtensions []ExtensionType) (healthy bool, report string, issues []string) {
 	if b.registryDiagnostics == nil {
 		b.registryDiagnostics = NewRegistryDiagnostics(nil)
 	}
 
-	// 执行健康检查
+	// Perform health check
 	healthy, diagIssues := b.registryDiagnostics.HealthCheck()
 
-	// 验证必需的扩展
+	// Validate required extensions
 	if len(requiredExtensions) > 0 {
 		if valid, missing := b.registryDiagnostics.ValidateRequiredExtensions(requiredExtensions); !valid {
 			healthy = false
@@ -209,13 +209,13 @@ func (b *ApplicationBootstrapper) ValidateStartup(requiredExtensions []Extension
 		}
 	}
 
-	// 生成诊断报告
+	// Generate diagnostic report
 	report = b.registryDiagnostics.GetDiagnosticReport()
 
 	return healthy, report, diagIssues
 }
 
-// GetDiagnosticReport 获取完整的诊断报告
+// GetDiagnosticReport returns the complete diagnostic report
 func (b *ApplicationBootstrapper) GetDiagnosticReport() string {
 	if b.registryDiagnostics == nil {
 		b.registryDiagnostics = NewRegistryDiagnostics(nil)
@@ -223,10 +223,10 @@ func (b *ApplicationBootstrapper) GetDiagnosticReport() string {
 	return b.registryDiagnostics.GetDiagnosticReport()
 }
 
-// BootstrapWithValidation 启动应用并进行验证
-// 在启动前检查必需的扩展是否已加载
+// BootstrapWithValidation bootstraps the application with validation
+// Checks whether required extensions are loaded before startup
 func (b *ApplicationBootstrapper) BootstrapWithValidation(requiredExtensions []ExtensionType) error {
-	// 先进行启动
+	// Bootstrap first
 	if _, err := b.BootstrapConfig(); err != nil {
 		return err
 	}
@@ -234,7 +234,7 @@ func (b *ApplicationBootstrapper) BootstrapWithValidation(requiredExtensions []E
 		return err
 	}
 
-	// 再进行验证
+	// Then validate
 	if len(requiredExtensions) > 0 {
 		if valid, missing := b.registryDiagnostics.ValidateRequiredExtensions(requiredExtensions); !valid {
 			missingStr := make([]string, 0, len(missing))

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Cache 是一个简单的并发安全缓存
+// Cache is a simple concurrent-safe cache
 type Cache struct {
 	mu    sync.RWMutex
 	items map[string]cacheItem
@@ -16,17 +16,17 @@ type cacheItem struct {
 	expiration int64
 }
 
-// NewCache 创建新缓存
+// NewCache creates a new cache
 func NewCache() *Cache {
 	c := &Cache{
 		items: make(map[string]cacheItem),
 	}
-	// 启动清理 goroutine
+	// Start cleanup goroutine
 	go c.cleanup()
 	return c
 }
 
-// Set 设置缓存项
+// Set sets a cache item
 func (c *Cache) Set(key string, value interface{}, ttl time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -38,7 +38,7 @@ func (c *Cache) Set(key string, value interface{}, ttl time.Duration) {
 	}
 }
 
-// Get 获取缓存项
+// Get retrieves a cache item
 func (c *Cache) Get(key string) (interface{}, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -48,7 +48,7 @@ func (c *Cache) Get(key string) (interface{}, bool) {
 		return nil, false
 	}
 
-	// 检查是否过期
+	// Check if expired
 	if time.Now().UnixNano() > item.expiration {
 		return nil, false
 	}
@@ -56,7 +56,7 @@ func (c *Cache) Get(key string) (interface{}, bool) {
 	return item.value, true
 }
 
-// GetString 获取字符串缓存项
+// GetString retrieves a string cache item
 func (c *Cache) GetString(key string) (string, bool) {
 	val, ok := c.Get(key)
 	if !ok {
@@ -66,21 +66,21 @@ func (c *Cache) GetString(key string) (string, bool) {
 	return str, ok
 }
 
-// Delete 删除缓存项
+// Delete removes a cache item
 func (c *Cache) Delete(key string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	delete(c.items, key)
 }
 
-// Clear 清空缓存
+// Clear empties the cache
 func (c *Cache) Clear() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.items = make(map[string]cacheItem)
 }
 
-// cleanup 定期清理过期项
+// cleanup periodically removes expired items
 func (c *Cache) cleanup() {
 	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
@@ -97,7 +97,7 @@ func (c *Cache) cleanup() {
 	}
 }
 
-// LRUCache 是一个简单的 LRU 缓存
+// LRUCache is a simple LRU cache
 type LRUCache struct {
 	mu       sync.RWMutex
 	items    map[string]*lruItem
@@ -114,7 +114,7 @@ type lruItem struct {
 	next       *lruItem
 }
 
-// NewLRUCache 创建新的 LRU 缓存
+// NewLRUCache creates a new LRU cache
 func NewLRUCache(maxSize int) *LRUCache {
 	if maxSize <= 0 {
 		maxSize = 1000
@@ -125,7 +125,7 @@ func NewLRUCache(maxSize int) *LRUCache {
 	}
 }
 
-// Set 设置缓存项
+// Set sets a cache item
 func (c *LRUCache) Set(key string, value interface{}, ttl time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -155,7 +155,7 @@ func (c *LRUCache) Set(key string, value interface{}, ttl time.Duration) {
 	}
 }
 
-// Get 获取缓存项
+// Get retrieves a cache item
 func (c *LRUCache) Get(key string) (interface{}, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -165,7 +165,7 @@ func (c *LRUCache) Get(key string) (interface{}, bool) {
 		return nil, false
 	}
 
-	// 检查是否过期
+	// Check if expired
 	if time.Now().UnixNano() > item.expiration {
 		c.removeItem(item)
 		return nil, false
@@ -176,7 +176,7 @@ func (c *LRUCache) Get(key string) (interface{}, bool) {
 	return item.value, true
 }
 
-// addToHead 添加项到头部
+// addToHead adds an item to the head
 func (c *LRUCache) addToHead(item *lruItem) {
 	item.prev = nil
 	item.next = c.head
@@ -189,7 +189,7 @@ func (c *LRUCache) addToHead(item *lruItem) {
 	}
 }
 
-// moveToHead 移动项到头部
+// moveToHead moves an item to the head
 func (c *LRUCache) moveToHead(item *lruItem) {
 	if item == c.head {
 		return
@@ -198,7 +198,7 @@ func (c *LRUCache) moveToHead(item *lruItem) {
 	c.addToHead(item)
 }
 
-// removeItem 移除项
+// removeItem removes an item
 func (c *LRUCache) removeItem(item *lruItem) {
 	if item.prev != nil {
 		item.prev.next = item.next
@@ -212,7 +212,7 @@ func (c *LRUCache) removeItem(item *lruItem) {
 	}
 }
 
-// removeTail 移除尾部项（最久未使用）
+// removeTail removes the tail item (least recently used)
 func (c *LRUCache) removeTail() {
 	if c.tail == nil {
 		return

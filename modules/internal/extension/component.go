@@ -1,69 +1,69 @@
 package extension
 
-// Component 所有可治理组件的基础接口
+// Component is the base interface for all governable components
 //
-// 遵循单一职责原则，每个组件只定义最小必要的行为
-// 具体组件可通过组合来扩展功能
+// Follows the single responsibility principle, each component defines only minimal necessary behavior
+// Concrete components can extend functionality through composition
 //
-// 使用示例：
+// Usage example:
 //
 //	var comp Component = myParser
 //	info := comp.GetInfo()
 type Component interface {
-	// GetInfo 获取组件信息
+	// GetInfo returns component information
 	GetInfo() ComponentInfo
 }
 
-// ComponentInfo 组件信息
+// ComponentInfo holds component information
 type ComponentInfo struct {
-	// 组件名称
+	// Component name
 	Name string
 
-	// 组件版本
+	// Component version
 	Version string
 
-	// 组件描述
+	// Component description
 	Description string
 
-	// 组件作者
+	// Component author
 	Author string
 }
 
-// Auditable 可审计的组件接口
+// Auditable is the interface for auditable components
 //
-// 遵循 Go 的隐式接口设计，组件无需显式声明实现
+// Follows Go's implicit interface design, components need not explicitly declare implementation
 type Auditable interface {
-	// RecordEvent 记录事件
-	// 返回: 错误信息
+	// RecordEvent records an event
+	// Returns: error
 	RecordEvent(eventType, severity, message string, details map[string]interface{}) error
 }
 
-// Closeable 支持资源清理的组件接口
+// Closeable is the interface for components that support resource cleanup
 //
-// 任何需要释放资源的组件都可实现此接口
-// 与 io.Closer 一致，便于使用
+// Any component that needs to release resources can implement this interface
+// Consistent with io.Closer for ease of use
 type Closeable interface {
-	// Close 关闭组件并释放资源
+	// Close closes the component and releases resources
 	Close() error
 }
 
-// Initializable 支持初始化的组件接口
+// Initializable is the interface for components that support initialization
 //
-// 用于延迟初始化和复杂的设置过程
+// Used for lazy initialization and complex setup processes
 type Initializable interface {
-	// Initialize 初始化组件
-	// config: 初始化配置
-	// 返回: 错误信息
+	// Initialize initializes the component
+	// config: initialization configuration
+	// Returns: error
 	Initialize(config map[string]interface{}) error
 
-	// IsInitialized 检查是否已初始化
+	// IsInitialized checks whether the component is initialized
 	IsInitialized() bool
 }
 
-// Identifiable 可识别的组件接口
+// Identifiable is the interface for identifiable components
 //
-// 任何有唯一标识符的对象都应实现此接口
+// Any object with a unique identifier should implement this interface
 type Identifiable interface {
-	// GetID 获取唯一标识符
+	// GetID returns the unique identifier
 	GetID() string
 }

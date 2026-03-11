@@ -14,11 +14,11 @@ import (
 )
 
 // ========================================================================
-// Pipeline 适配器：ProcessingEngine 改造
+// Pipeline Adapter: ProcessingEngine Refactoring
 // ========================================================================
 
-// ProcessWithPipeline 使用 Pipeline 框架处理扩展请求（新方式）
-// 与 Process() 方法功能相同，但使用 Pipeline 框架
+// ProcessWithPipeline processes extension requests using the Pipeline framework (new approach).
+// Functionally equivalent to Process(), but uses the Pipeline framework.
 func (e *ProcessingEngine) ProcessWithPipeline(request *ProcessingRequest) *ProcessingResult {
 	result := &ProcessingResult{
 		Success:         true,
@@ -33,30 +33,30 @@ func (e *ProcessingEngine) ProcessWithPipeline(request *ProcessingRequest) *Proc
 		return result
 	}
 
-	// 创建上下文
+	// Create context
 	ctx := request.Context
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	// 执行 Pre 拦截器
+	// Execute pre-interceptors
 	if err := e.executeInterceptors("pre", request, result); err != nil {
 		result.Error = fmt.Sprintf("pre-interceptor error: %v", err)
 		result.Success = false
 		return result
 	}
 
-	// 创建 Pipeline
+	// Create pipeline
 	tracer := otel.Tracer("processing-engine")
 	pipeline := proc_pipeline.NewPipeline(tracer)
 
-	// 决定处理步骤
+	// Determine processing steps
 	steps := request.Steps
 	if len(steps) == 0 {
-		steps = []string{"parse", "analyze"} // 默认步骤
+		steps = []string{"parse", "analyze"} // default steps
 	}
 
-	// 根据请求的步骤添加相应的 Stage
+	// Add the corresponding Stage for each requested step
 	stageMap := map[string]proc_pipeline.Stage{
 		"parse":     NewParseStage(e.registry),
 		"analyze":   NewAnalyzeStage(e.registry),
@@ -74,7 +74,7 @@ func (e *ProcessingEngine) ProcessWithPipeline(request *ProcessingRequest) *Proc
 		pipeline.AddStage(stage)
 	}
 
-	// 执行 Pipeline
+	// Execute pipeline
 	startTime := time.Now()
 	stageData, err := pipeline.Execute(ctx, request)
 	duration := time.Since(startTime)
@@ -86,14 +86,14 @@ func (e *ProcessingEngine) ProcessWithPipeline(request *ProcessingRequest) *Proc
 		return result
 	}
 
-	// 从 Pipeline 的 StageData 提取结果
+	// Extract results from Pipeline StageData
 	if err := e.extractPipelineResults(stageData, result, steps); err != nil {
 		result.Error = fmt.Sprintf("result extraction error: %v", err)
 		result.Success = false
 		return result
 	}
 
-	// 执行 Post 拦截器
+	// Execute post-interceptors
 	if err := e.executeInterceptors("post", request, result); err != nil {
 		result.Error = fmt.Sprintf("post-interceptor error: %v", err)
 		result.Success = false
@@ -103,25 +103,25 @@ func (e *ProcessingEngine) ProcessWithPipeline(request *ProcessingRequest) *Proc
 	return result
 }
 
-// extractPipelineResults 从 Pipeline 的 StageData 中提取结果到 ProcessingResult
+// extractPipelineResults extracts results from Pipeline StageData into ProcessingResult
 func (e *ProcessingEngine) extractPipelineResults(
 	stageData *proc_pipeline.StageData,
 	result *ProcessingResult,
 	steps []string,
 ) error {
-	// 提取已解析的数据
+	// Extract parsed data
 	if parsedData, ok := stageData.Context["parsed_data"].(ExtensionData); ok {
 		result.ParsedData = parsedData
 	}
 
-	// 提取分析结果（如果请求了分析步骤）
+	// Extract analysis results (if analysis step was requested)
 	if contains(steps, "analyze") {
 		if analysisResult, ok := stageData.Context["analysis_result"].(AnalysisResult); ok {
 			result.AnalysisResults = append(result.AnalysisResults, analysisResult)
 		}
 	}
 
-	// 提取处理事件（如果请求了处理步骤）
+	// Extract handling events (if handle step was requested)
 	if contains(steps, "handle") {
 		if events, ok := stageData.Context["events"].([]*ExtensionEvent); ok {
 			result.Events = events
@@ -131,7 +131,7 @@ func (e *ProcessingEngine) extractPipelineResults(
 	return nil
 }
 
-// contains 检查字符串切片是否包含指定的元素
+// contains checks whether a string slice contains the specified element
 func contains(slice []string, item string) bool {
 	for _, v := range slice {
 		if v == item {
@@ -142,18 +142,18 @@ func contains(slice []string, item string) bool {
 }
 
 // ========================================================================
-// 混合模式：ProcessingEngineWithPipeline
+// Hybrid mode: ProcessingEngineWithPipeline
 // ========================================================================
 
-// ProcessingEngineWithPipeline 混合模式处理引擎：同时支持旧的 switch-case 和新的 Pipeline 方式
-// 用于从旧的 Process() 逐步迁移到新的 ProcessWithPipeline()
+// ProcessingEngineWithPipeline is a hybrid processing engine: supports both old switch-case and new Pipeline approaches
+// Used for gradual migration from old Process() to new ProcessWithPipeline()
 type ProcessingEngineWithPipeline struct {
 	engine      *ProcessingEngine
 	tracer      trace.Tracer
-	usePipeline bool // 是否使用 Pipeline 框架
+	usePipeline bool // whether to use the Pipeline framework
 }
 
-// NewProcessingEngineWithPipeline 创建混合模式处理引擎
+// NewProcessingEngineWithPipeline creates a hybrid processing engine
 func NewProcessingEngineWithPipeline(
 	engine *ProcessingEngine,
 	tracer trace.Tracer,
@@ -169,7 +169,7 @@ func NewProcessingEngineWithPipeline(
 	}
 }
 
-// Process 处理请求，根据 usePipeline 标志决定使用哪种方式
+// Process processes a request, choosing the approach based on the usePipeline flag
 func (pwp *ProcessingEngineWithPipeline) Process(request *ProcessingRequest) *ProcessingResult {
 	if pwp.usePipeline {
 		return pwp.engine.ProcessWithPipeline(request)
@@ -177,17 +177,17 @@ func (pwp *ProcessingEngineWithPipeline) Process(request *ProcessingRequest) *Pr
 	return pwp.engine.Process(request)
 }
 
-// SwitchPipelineMode 切换到 Pipeline 模式
+// SwitchPipelineMode switches to Pipeline mode
 func (pwp *ProcessingEngineWithPipeline) SwitchPipelineMode(enable bool) {
 	pwp.usePipeline = enable
 }
 
-// GetPipelineMode 获取当前是否使用 Pipeline 模式
+// GetPipelineMode returns whether Pipeline mode is currently active
 func (pwp *ProcessingEngineWithPipeline) GetPipelineMode() bool {
 	return pwp.usePipeline
 }
 
-// GetUnderlyingEngine 获取底层的 ProcessingEngine
+// GetUnderlyingEngine returns the underlying ProcessingEngine
 func (pwp *ProcessingEngineWithPipeline) GetUnderlyingEngine() *ProcessingEngine {
 	return pwp.engine
 }
