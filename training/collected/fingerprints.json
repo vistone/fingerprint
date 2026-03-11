@@ -1,0 +1,2480 @@
+{
+  "version": "1.0.0",
+  "collected_at": "2026-03-11T07:36:50Z",
+  "total_count": 55,
+  "sources": [
+    "builtin_knowledge"
+  ],
+  "fingerprints": [
+    {
+      "source": "ja3_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "chrome",
+      "browser_version": "120-130",
+      "os_name": "Windows",
+      "os_version": "",
+      "platform": "",
+      "ja3_hash": "cd08e31494f9531f560d64c695473da9"
+    },
+    {
+      "source": "ja3_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "chrome",
+      "browser_version": "110-119",
+      "os_name": "Windows",
+      "os_version": "",
+      "platform": "",
+      "ja3_hash": "b32309a26951912be7dba376398abc3b"
+    },
+    {
+      "source": "ja3_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "chrome",
+      "browser_version": "100-109",
+      "os_name": "macOS",
+      "os_version": "",
+      "platform": "",
+      "ja3_hash": "a0e9f5d64349fb13191bc781f81f42e1"
+    },
+    {
+      "source": "ja3_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "chrome",
+      "browser_version": "120+",
+      "os_name": "Linux",
+      "os_version": "",
+      "platform": "",
+      "ja3_hash": "3b5074b1b5d032e5620f69f9f700ff0e"
+    },
+    {
+      "source": "ja3_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "firefox",
+      "browser_version": "120+",
+      "os_name": "Windows",
+      "os_version": "",
+      "platform": "",
+      "ja3_hash": "839bbe3ed07fed922ded5aaf714d6842"
+    },
+    {
+      "source": "ja3_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "firefox",
+      "browser_version": "115-119",
+      "os_name": "macOS",
+      "os_version": "",
+      "platform": "",
+      "ja3_hash": "e058f2d45805cdf9e8e25af97b4a9a66"
+    },
+    {
+      "source": "ja3_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "firefox",
+      "browser_version": "100-114",
+      "os_name": "Linux",
+      "os_version": "",
+      "platform": "",
+      "ja3_hash": "457e3a2e7a3bde9e62c0e48a41a43617"
+    },
+    {
+      "source": "ja3_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "safari",
+      "browser_version": "17+",
+      "os_name": "macOS",
+      "os_version": "",
+      "platform": "",
+      "ja3_hash": "773906b0efdefa24a7f2b8eb6985bf37"
+    },
+    {
+      "source": "ja3_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "safari",
+      "browser_version": "16",
+      "os_name": "macOS",
+      "os_version": "",
+      "platform": "",
+      "ja3_hash": "7c02dbae662670edcf60231987fba071"
+    },
+    {
+      "source": "ja3_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "safari",
+      "browser_version": "17+",
+      "os_name": "iOS",
+      "os_version": "",
+      "platform": "",
+      "ja3_hash": "8a8a1c52f8d3e5d2a7fca8f08e52d3dd"
+    },
+    {
+      "source": "ja3_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "edge",
+      "browser_version": "120+",
+      "os_name": "Windows",
+      "os_version": "",
+      "platform": "",
+      "ja3_hash": "cd08e31494f9531f560d64c695473da9"
+    },
+    {
+      "source": "ja3_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "edge",
+      "browser_version": "110-119",
+      "os_name": "Windows",
+      "os_version": "",
+      "platform": "",
+      "ja3_hash": "b32309a26951912be7dba376398abc3b"
+    },
+    {
+      "source": "ja3_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "brave",
+      "browser_version": "1.60+",
+      "os_name": "Windows",
+      "os_version": "",
+      "platform": "",
+      "ja3_hash": "cd08e31494f9531f560d64c695473da9"
+    },
+    {
+      "source": "ja3_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "opera",
+      "browser_version": "100+",
+      "os_name": "Windows",
+      "os_version": "",
+      "platform": "",
+      "ja3_hash": "cd08e31494f9531f560d64c695473da9"
+    },
+    {
+      "source": "tls_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "chrome",
+      "browser_version": "130",
+      "os_name": "Windows",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49162,
+          49161,
+          49171,
+          49172,
+          47,
+          53,
+          10
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          16,
+          5,
+          13,
+          18,
+          43,
+          45,
+          28,
+          27,
+          51,
+          21
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24,
+          25
+        ],
+        "point_formats": null,
+        "alpn_protocols": [
+          "h2",
+          "http/1.1"
+        ],
+        "sni": true
+      }
+    },
+    {
+      "source": "tls_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "chrome",
+      "browser_version": "130",
+      "os_name": "macOS",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49162,
+          49161,
+          49171,
+          49172,
+          47,
+          53
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          16,
+          5,
+          13,
+          43,
+          45,
+          51,
+          27,
+          21
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "alpn_protocols": [
+          "h2",
+          "http/1.1"
+        ],
+        "sni": true
+      }
+    },
+    {
+      "source": "tls_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "firefox",
+      "browser_version": "130",
+      "os_name": "Windows",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4867,
+          4866,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49162,
+          49161,
+          49171,
+          49172
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          16,
+          5,
+          13,
+          43,
+          45,
+          51,
+          28
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24,
+          256
+        ],
+        "point_formats": null,
+        "alpn_protocols": [
+          "h2",
+          "http/1.1"
+        ],
+        "sni": true
+      }
+    },
+    {
+      "source": "tls_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "firefox",
+      "browser_version": "130",
+      "os_name": "macOS",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4867,
+          4866,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          16,
+          5,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24,
+          256
+        ],
+        "point_formats": null,
+        "alpn_protocols": [
+          "h2",
+          "http/1.1"
+        ],
+        "sni": true
+      }
+    },
+    {
+      "source": "tls_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "safari",
+      "browser_version": "17",
+      "os_name": "macOS",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49196,
+          49195,
+          49200,
+          49199,
+          52393,
+          52392,
+          49162,
+          49161,
+          49172,
+          49171,
+          47,
+          53
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          16,
+          5,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "alpn_protocols": [
+          "h2",
+          "http/1.1"
+        ],
+        "sni": true
+      }
+    },
+    {
+      "source": "tls_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "safari",
+      "browser_version": "17",
+      "os_name": "iOS",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49196,
+          49195,
+          49200,
+          49199,
+          52393,
+          52392,
+          49162,
+          49161,
+          49172,
+          49171
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          16,
+          5,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "alpn_protocols": [
+          "h2",
+          "http/1.1"
+        ],
+        "sni": true
+      }
+    },
+    {
+      "source": "bot_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "headless_chrome_puppeteer",
+      "browser_version": "",
+      "os_name": "",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172,
+          47,
+          53
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "ja3_hash": "b32309a26951912be7dba376398abc3b",
+      "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/120.0.0.0 Safari/537.36",
+      "metadata": {
+        "notes": "Headless mode detection: navigator.webdriver=true, missing plugins",
+        "tool": "puppeteer"
+      }
+    },
+    {
+      "source": "bot_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "playwright_chromium",
+      "browser_version": "",
+      "os_name": "",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172,
+          47,
+          53
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "ja3_hash": "b32309a26951912be7dba376398abc3b",
+      "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "metadata": {
+        "notes": "Playwright: CDP protocol, modified navigator properties",
+        "tool": "playwright"
+      }
+    },
+    {
+      "source": "bot_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "playwright_firefox",
+      "browser_version": "",
+      "os_name": "",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4867,
+          4866,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24,
+          256
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "ja3_hash": "e058f2d45805cdf9e8e25af97b4a9a66",
+      "user_agent": "Mozilla/5.0 (X11; Linux x86_64; rv:120.0) Gecko/20100101 Firefox/120.0",
+      "metadata": {
+        "notes": "",
+        "tool": "playwright"
+      }
+    },
+    {
+      "source": "bot_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "playwright_webkit",
+      "browser_version": "",
+      "os_name": "",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49196,
+          49195,
+          49200,
+          49199,
+          52393,
+          52392
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+      "metadata": {
+        "notes": "",
+        "tool": "playwright"
+      }
+    },
+    {
+      "source": "bot_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "selenium_chromedriver",
+      "browser_version": "",
+      "os_name": "",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172,
+          47,
+          53
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "ja3_hash": "cd08e31494f9531f560d64c695473da9",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "metadata": {
+        "notes": "ChromeDriver: $cdc_ variable, navigator.webdriver=true",
+        "tool": "selenium"
+      }
+    },
+    {
+      "source": "bot_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "selenium_geckodriver",
+      "browser_version": "",
+      "os_name": "",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4867,
+          4866,
+          49195,
+          49199,
+          52393,
+          52392
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24,
+          256
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0",
+      "metadata": {
+        "notes": "",
+        "tool": "selenium"
+      }
+    },
+    {
+      "source": "bot_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "curl",
+      "browser_version": "",
+      "os_name": "",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49162,
+          49161,
+          49171,
+          49172
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "ja3_hash": "456523fc94726331a4d5a2e1d40b2cd7",
+      "user_agent": "curl/8.4.0",
+      "metadata": {
+        "notes": "cURL: no HTTP/2 priorities, no cookie jar, no referer",
+        "tool": "curl"
+      }
+    },
+    {
+      "source": "bot_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "go_http_client",
+      "browser_version": "",
+      "os_name": "",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          49196,
+          49200,
+          52393,
+          52392
+        ],
+        "extensions": [
+          0,
+          10,
+          11,
+          13,
+          43,
+          45,
+          51,
+          65281
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "ja3_hash": "3cde22e692061f1f4fbc49407c839893",
+      "user_agent": "Go-http-client/2.0",
+      "metadata": {
+        "notes": "Go net/http: unique extension order, missing 0x0023 (session tickets)",
+        "tool": "go_net_http"
+      }
+    },
+    {
+      "source": "bot_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "python_requests",
+      "browser_version": "",
+      "os_name": "",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "ja3_hash": "6f2227e8c16baa0b4e40ab2e0ab87b2c",
+      "user_agent": "python-requests/2.31.0",
+      "metadata": {
+        "notes": "Python urllib3/OpenSSL: deterministic cipher order",
+        "tool": "python_requests"
+      }
+    },
+    {
+      "source": "bot_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "nodejs_http",
+      "browser_version": "",
+      "os_name": "",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49162,
+          49171
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "ja3_hash": "2d1eb5817ece335c24904642f6b9a210",
+      "user_agent": "node-fetch/1.0",
+      "metadata": {
+        "notes": "",
+        "tool": "nodejs"
+      }
+    },
+    {
+      "source": "bot_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "scrapy",
+      "browser_version": "",
+      "os_name": "",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "user_agent": "Scrapy/2.11",
+      "metadata": {
+        "notes": "",
+        "tool": "scrapy"
+      }
+    },
+    {
+      "source": "bot_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "cloudflare_worker",
+      "browser_version": "",
+      "os_name": "",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "user_agent": "Cloudflare-Worker",
+      "metadata": {
+        "notes": "",
+        "tool": "cloudflare"
+      }
+    },
+    {
+      "source": "bot_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "multilogin",
+      "browser_version": "",
+      "os_name": "",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172,
+          47,
+          53
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          16,
+          5,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "metadata": {
+        "notes": "Multilogin: spoofed canvas/WebGL, custom timezone",
+        "tool": "antidetect"
+      }
+    },
+    {
+      "source": "bot_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "gologin",
+      "browser_version": "",
+      "os_name": "",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "metadata": {
+        "notes": "GoLogin: Orbita browser with patched Chromium",
+        "tool": "antidetect"
+      }
+    },
+    {
+      "source": "bot_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "dolphin_anty",
+      "browser_version": "",
+      "os_name": "",
+      "os_version": "",
+      "platform": "",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51,
+          27
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "metadata": {
+        "notes": "Dolphin Anty: Chromium-based anti-detect",
+        "tool": "antidetect"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "yandex",
+      "browser_version": "24.7",
+      "os_name": "Windows",
+      "os_version": "",
+      "platform": "desktop",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172,
+          47,
+          53
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          16,
+          13,
+          43,
+          45,
+          51,
+          21
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 1000,
+        "initial_window_size": 6291456,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 YaBrowser/24.7.0.0 Safari/537.36",
+      "metadata": {
+        "region": "Russia/CIS"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "yandex",
+      "browser_version": "24.7",
+      "os_name": "macOS",
+      "os_version": "",
+      "platform": "desktop",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          16,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 1000,
+        "initial_window_size": 6291456,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 YaBrowser/24.7.0.0 Safari/537.36",
+      "metadata": {
+        "region": "Russia/CIS"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "uc_browser",
+      "browser_version": "16.5",
+      "os_name": "Android",
+      "os_version": "",
+      "platform": "mobile",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 100,
+        "initial_window_size": 4194304,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (Linux; U; Android 14; en-US; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/100.0.4896.127 UCBrowser/16.5.0.1 Mobile Safari/537.36",
+      "metadata": {
+        "region": "China/India/SEA"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "uc_browser",
+      "browser_version": "16.3",
+      "os_name": "iOS",
+      "os_version": "",
+      "platform": "mobile",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49196,
+          49195,
+          49200,
+          49199,
+          52393,
+          52392
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 100,
+        "initial_window_size": 2097152,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X; en-US) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1 UCBrowser/16.3.0.0",
+      "metadata": {
+        "region": "China/India/SEA"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "qq_browser",
+      "browser_version": "14.0",
+      "os_name": "Windows",
+      "os_version": "",
+      "platform": "desktop",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172,
+          47,
+          53
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          16,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 1000,
+        "initial_window_size": 6291456,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 QQBrowser/14.0.0.0",
+      "metadata": {
+        "region": "China"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "qq_browser",
+      "browser_version": "14.5",
+      "os_name": "Android",
+      "os_version": "",
+      "platform": "mobile",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 100,
+        "initial_window_size": 4194304,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (Linux; Android 14; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/122.0.0.0 Mobile MQQBrowser/14.5 QQ/9.0.0 Safari/537.36",
+      "metadata": {
+        "region": "China"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "baidu",
+      "browser_version": "7.65",
+      "os_name": "Android",
+      "os_version": "",
+      "platform": "mobile",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 100,
+        "initial_window_size": 4194304,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (Linux; Android 14; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Mobile Safari/537.36 baiduboxapp/7.65.0.10",
+      "metadata": {
+        "region": "China"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "vivaldi",
+      "browser_version": "6.8",
+      "os_name": "Windows",
+      "os_version": "",
+      "platform": "desktop",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172,
+          47,
+          53
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          16,
+          13,
+          43,
+          45,
+          51,
+          21
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 1000,
+        "initial_window_size": 6291456,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Vivaldi/6.8.3381.44",
+      "metadata": {
+        "region": "Europe"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "vivaldi",
+      "browser_version": "6.8",
+      "os_name": "macOS",
+      "os_version": "",
+      "platform": "desktop",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          16,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 1000,
+        "initial_window_size": 6291456,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Vivaldi/6.8.3381.44",
+      "metadata": {
+        "region": "Europe"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "vivaldi",
+      "browser_version": "6.8",
+      "os_name": "Linux",
+      "os_version": "",
+      "platform": "desktop",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          16,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 1000,
+        "initial_window_size": 6291456,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Vivaldi/6.8.3381.44",
+      "metadata": {
+        "region": "Europe"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "whale",
+      "browser_version": "3.28",
+      "os_name": "Windows",
+      "os_version": "",
+      "platform": "desktop",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172,
+          47,
+          53
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          16,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 1000,
+        "initial_window_size": 6291456,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Whale/3.28.266.11 Safari/537.36",
+      "metadata": {
+        "region": "South_Korea"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "arc",
+      "browser_version": "1.60",
+      "os_name": "macOS",
+      "os_version": "",
+      "platform": "desktop",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          16,
+          13,
+          43,
+          45,
+          51,
+          21
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 1000,
+        "initial_window_size": 6291456,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      "metadata": {
+        "region": "Global"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "sogou",
+      "browser_version": "12.4",
+      "os_name": "Windows",
+      "os_version": "",
+      "platform": "desktop",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172,
+          47,
+          53
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 1000,
+        "initial_window_size": 6291456,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 SogouMobileBrowser/12.4.0",
+      "metadata": {
+        "region": "China"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "360_safe",
+      "browser_version": "15.3",
+      "os_name": "Windows",
+      "os_version": "",
+      "platform": "desktop",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172,
+          47,
+          53
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 1000,
+        "initial_window_size": 6291456,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 360SE/15.3.1055.64",
+      "metadata": {
+        "region": "China"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "duckduckgo",
+      "browser_version": "0.70",
+      "os_name": "macOS",
+      "os_version": "",
+      "platform": "desktop",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49196,
+          49195,
+          49200,
+          49199,
+          52393,
+          52392
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 100,
+        "initial_window_size": 2097152,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 DuckDuckGo/7 Safari/605.1.15",
+      "metadata": {
+        "region": "Global"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "tor",
+      "browser_version": "13.5",
+      "os_name": "Linux",
+      "os_version": "",
+      "platform": "desktop",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4867,
+          4866,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24,
+          256
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 100,
+        "initial_window_size": 131072,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/115.0",
+      "metadata": {
+        "region": "Global"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "mi_browser",
+      "browser_version": "18.5",
+      "os_name": "Android",
+      "os_version": "",
+      "platform": "mobile",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 100,
+        "initial_window_size": 4194304,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (Linux; Android 14; 23113RKC6C) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36 MiuiBrowser/18.5.30110",
+      "metadata": {
+        "region": "China/India"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "huawei_browser",
+      "browser_version": "15.0",
+      "os_name": "Android",
+      "os_version": "",
+      "platform": "mobile",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 100,
+        "initial_window_size": 4194304,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (Linux; Android 14; NOH-AN00) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.88 HuaweiBrowser/15.0.3.300 Mobile Safari/537.36",
+      "metadata": {
+        "region": "China"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "oppo_browser",
+      "browser_version": "8.10",
+      "os_name": "Android",
+      "os_version": "",
+      "platform": "mobile",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392,
+          49196,
+          49200,
+          49171,
+          49172
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          35,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 100,
+        "initial_window_size": 4194304,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (Linux; Android 14; CPH2569) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36 OppoBrowser/8.10.0.0",
+      "metadata": {
+        "region": "China/SEA"
+      }
+    },
+    {
+      "source": "intl_knowledge",
+      "collected_at": "2026-03-11T07:36:50Z",
+      "browser_name": "puffin",
+      "browser_version": "10.2",
+      "os_name": "Android",
+      "os_version": "",
+      "platform": "mobile",
+      "tls": {
+        "version": 771,
+        "cipher_suites": [
+          4865,
+          4866,
+          4867,
+          49195,
+          49199,
+          52393,
+          52392
+        ],
+        "extensions": [
+          0,
+          23,
+          65281,
+          10,
+          11,
+          13,
+          43,
+          45,
+          51
+        ],
+        "supported_groups": [
+          29,
+          23,
+          24
+        ],
+        "point_formats": null,
+        "sni": true
+      },
+      "http2": {
+        "header_table_size": 65536,
+        "enable_push": 0,
+        "max_concurrent_streams": 100,
+        "initial_window_size": 4194304,
+        "max_frame_size": 16384,
+        "max_header_list_size": 0,
+        "pseudo_header_order": [
+          ":method",
+          ":authority",
+          ":scheme",
+          ":path"
+        ],
+        "connection_flow": 15663105
+      },
+      "user_agent": "Mozilla/5.0 (Linux; Android 14; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36 Puffin/10.2.0.51618AP",
+      "metadata": {
+        "region": "Global"
+      }
+    }
+  ],
+  "statistics": {
+    "builtin_knowledge": 55
+  }
+}

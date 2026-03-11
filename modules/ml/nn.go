@@ -281,18 +281,18 @@ type BatchNormLayer struct {
 // NewBatchNormLayer creates a batch normalization layer.
 func NewBatchNormLayer(dim int) *BatchNormLayer {
 	return &BatchNormLayer{
-		dim:        dim,
-		gamma:      Ones(1, dim),
-		beta:       Zeros(1, dim),
-		gammaG:     Zeros(1, dim),
-		betaG:      Zeros(1, dim),
-		runMean:    Zeros(1, dim),
-		runVar:     Ones(1, dim),
-		runMeanG:   Zeros(1, dim),
-		runVarG:    Zeros(1, dim),
-		momentum:   0.1,
-		eps:        1e-5,
-		training:   true,
+		dim:      dim,
+		gamma:    Ones(1, dim),
+		beta:     Zeros(1, dim),
+		gammaG:   Zeros(1, dim),
+		betaG:    Zeros(1, dim),
+		runMean:  Zeros(1, dim),
+		runVar:   Ones(1, dim),
+		runMeanG: Zeros(1, dim),
+		runVarG:  Zeros(1, dim),
+		momentum: 0.1,
+		eps:      1e-5,
+		training: true,
 	}
 }
 
