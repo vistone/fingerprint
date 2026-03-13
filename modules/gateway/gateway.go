@@ -311,16 +311,16 @@ type JA4TInfo struct {
 
 // NetworkAnalysisResult contains TCP/IP network analysis results
 type NetworkAnalysisResult struct {
-	OS              string   `json:"os,omitempty"`
-	OSFamily        string   `json:"os_family,omitempty"`
-	OSConfidence    float64  `json:"os_confidence,omitempty"`
-	IsVPN           bool     `json:"is_vpn"`
-	IsProxy         bool     `json:"is_proxy"`
-	IsNAT           bool     `json:"is_nat"`
-	NetworkRisk     float64  `json:"network_risk"`
-	InitialTTL      int      `json:"initial_ttl,omitempty"`
-	MSS             int      `json:"mss,omitempty"`
-	AnomaliesFound  []string `json:"anomalies_found,omitempty"`
+	OS             string   `json:"os,omitempty"`
+	OSFamily       string   `json:"os_family,omitempty"`
+	OSConfidence   float64  `json:"os_confidence,omitempty"`
+	IsVPN          bool     `json:"is_vpn"`
+	IsProxy        bool     `json:"is_proxy"`
+	IsNAT          bool     `json:"is_nat"`
+	NetworkRisk    float64  `json:"network_risk"`
+	InitialTTL     int      `json:"initial_ttl,omitempty"`
+	MSS            int      `json:"mss,omitempty"`
+	AnomaliesFound []string `json:"anomalies_found,omitempty"`
 }
 
 // PluginFinding contains a single plugin analysis result
