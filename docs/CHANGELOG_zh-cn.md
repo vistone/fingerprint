@@ -4,6 +4,36 @@
 
 ## [Unreleased]
 
+## [v1.0.18] - 2026-03-13
+
+### 新增
+
+- **MLService Web API 端点** (`modules/gateway/web/handler.go`、`handler_advanced.go`)
+  - 新增 9 个 REST API 端点 `/api/admin/ml/service/`，用于中央 ML 服务管理
+  - 端点：stats、health、infer、validate、generate、evolve、train、training-status、feedback
+  - 异步训练支持，含状态追踪（阶段、进度、错误报告）
+  - MLService 统计信息集成至仪表盘 `/api/admin/stats` 和 `/api/admin/ml/info`
+
+- **前端 MLService 仪表盘** (`modules/gateway/web/static/`)
+  - 仪表盘新增 ML Service 统计卡片（推理次数、反馈次数、进化次数、漂移状态）
+  - `api.js` 新增 MLService API 客户端方法（全部 9 个端点）
+  - `index.html` 新增 ML Service 区域，实时显示统计数据
+  - 系统状态新增 MLService 启用/就绪状态
+
+- **GPU 训练 Docker 支持** (`Dockerfile`、`docker-compose.yml`)
+  - Dockerfile 切换为 NVIDIA CUDA 12.6 运行时，含 Python 3 和 PyTorch
+  - docker-compose.yml 新增 NVIDIA runtime、GPU 环境变量和 models 卷挂载
+  - 新增 `training/gpu_train.py` GPU 训练脚本
+
+- **MLService 网关集成** (`cmd/gateway/main.go`、`modules/gateway/gateway.go`)
+  - 新增 `FP_ML_SERVICE_ENABLED` 环境变量，运行时切换 ML 服务
+  - 网关启动时输出 MLService 启用日志
+
+### 变更
+
+- **代码格式化** (`modules/ml/evolution.go`、`modules/generator/generator.go`、`modules/fingerprint/ml_api.go`、`modules/gateway/gateway.go`)
+  - 统一对齐 ML 和网关模块的结构体字段标签
+
 ## [v1.0.17] - 2026-03-12
 
 ### 新增
