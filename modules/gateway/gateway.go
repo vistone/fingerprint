@@ -385,11 +385,11 @@ func (g *Gateway) Analyze(ctx context.Context, req *AnalyzeRequest) (*AnalyzeRes
 		if result != nil {
 			vr := &ml.ValidationResult{
 				Valid:            !result.Forgery.IsForgery,
-				ForgeryProb:     result.Forgery.ForgeryProb,
-				ForgeryType:     result.Forgery.ForgeryType,
+				ForgeryProb:      result.Forgery.ForgeryProb,
+				ForgeryType:      result.Forgery.ForgeryType,
 				ConsistencyScore: 1.0 - result.Forgery.ForgeryProb,
-				BrowserFamily:   string(result.Browser.Family),
-				Confidence:      result.Browser.Confidence,
+				BrowserFamily:    string(result.Browser.Family),
+				Confidence:       result.Browser.Confidence,
 			}
 			response.MLValidation = vr
 			if !vr.Valid {

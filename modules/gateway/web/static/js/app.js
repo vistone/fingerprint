@@ -204,6 +204,9 @@ function updateDashboard() {
         uptimeEl.textContent = `uptime: ${state.stats.uptime}`;
     }
 
+    // Update ML Service stats on dashboard
+    updateMLServiceDashboard(state.stats.mlService);
+
     // Update recent classifications
     updateRecentClassifications(state.stats.recentClassifications || []);
 
@@ -551,10 +554,12 @@ function updateSystemStatus(stats) {
 
     const ss = stats.systemStatus || {};
     const agentInfo = stats.agent || {};
+    const mlSvc = stats.mlService || {};
 
     const items = [
         { label: t('status.apiServer'), online: true, detail: t('status.running') },
         { label: t('status.mlClassifier'), online: true, detail: t('status.active') },
+        { label: '🧠 ML Service', online: mlSvc.enabled && mlSvc.ready, detail: mlSvc.enabled ? (mlSvc.ready ? 'Ready' : 'Not Trained') : 'Disabled' },
         { label: t('status.cache'), online: ss.cache !== false, detail: ss.cache !== false ? t('config.enabled') : t('config.server') },
         { label: t('status.antidetect'), online: ss.antiDetectEnabled, detail: ss.antiDetectEnabled ? t('status.active') : t('status.error') },
         { label: '🤖 ' + t('status.agent'), online: agentInfo.enabled, detail: agentInfo.enabled ? `${t('status.active')} (${agentInfo.activeSessions || 0} sessions)` : t('status.error') },
@@ -1992,7 +1997,52 @@ async function runAnalyzeProfile() {
 //  ML ENGINE PAGE
 // =====================================================================
 async function loadMLPage() {
+    // Populate all profile selects on ML page
     populateProfileSelect('mlProfileSelect');
+    populateProfileSelect('mlSvcInferProfile');
+    populateProfileSelect('mlSvcValidateProfile');
+    populateProfileSelect('mlSvcFeedbackProfile');
+
+    // Load MLService stats
+    try {
+        const stats = await API.getMLServiceStats();
+        const el = id => document.getElementById(id);
+        if (stats.enabled) {
+            el('mlSvcStatus').textContent = stats.ready ? '🟢 Ready' : '🟡 Not Trained';
+            el('mlSvcReady').textContent = stats.modelReady ? 'Model Loaded' : 'No Model';
+            el('mlSvcInferCount').textContent = stats.inferCount || 0;
+            el('mlSvcFeedbackCount').textContent = stats.feedbackCount || 0;
+            el('mlSvcEvolveCount').textContent = stats.evolveCount || 0;
+            el('mlSvcModelVersions').textContent = `${stats.modelVersions || 0} versions`;
+
+            // Learner stats
+            if (stats.learner) {
+                const lr = stats.learner;
+                el('mlLearnerPanel').innerHTML = `
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-info"><h3>Total Samples</h3><p class="stat-value">${lr.totalSamples}</p></div></div>
+                        <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-info"><h3>Buffer Filled</h3><p class="stat-value">${lr.bufferFilled}</p></div></div>
+                        <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-info"><h3>Peak Accuracy</h3><p class="stat-value">${(lr.peakAccuracy * 100).toFixed(1)}%</p></div></div>
+                        <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-info"><h3>Recent Accuracy</h3><p class="stat-value">${(lr.recentAccuracy * 100).toFixed(1)}%</p></div></div>
+                    </div>
+                    <div style="margin-top:12px;">
+                        <span class="badge ${lr.driftDetected ? 'badge-warning' : 'badge-success'}">${lr.driftDetected ? '⚠️ Drift Detected' : '✅ No Drift'}</span>
+                        <span style="margin-left:12px;color:var(--gray-400);">Drift Events: ${lr.driftEventCount}</span>
+                    </div>
+                `;
+            } else {
+                el('mlLearnerPanel').innerHTML = '<p style="color:var(--gray-400);">No learner data available</p>';
+            }
+        } else {
+            el('mlSvcStatus').textContent = '⚫ Disabled';
+            el('mlSvcReady').textContent = 'Enable MLServiceEnabled in config';
+            el('mlLearnerPanel').innerHTML = '<p style="color:var(--gray-400);">MLService is disabled. Set MLServiceEnabled=true to activate.</p>';
+        }
+    } catch (e) {
+        console.error('Failed to load MLService stats:', e);
+    }
+
+    // Load classifier info
     try {
         const info = await API.getMLInfo();
         const layers = info.layers || [];
@@ -2014,6 +2064,245 @@ async function loadMLPage() {
         `;
     } catch (e) {
         document.getElementById('mlModelInfo').innerHTML = '<div class="card"><div class="card-body" style="color:var(--gray-400)">无法加载模型信息</div></div>';
+    }
+}
+
+// ===== MLService Operations =====
+async function runMLServiceInfer() {
+    const id = document.getElementById('mlSvcInferProfile').value;
+    if (!id) return alert('请选择 Profile');
+    const el = document.getElementById('mlSvcInferResult');
+    el.innerHTML = '<p style="color:var(--gray-400)">Running inference...</p>';
+    try {
+        const r = await API.mlServiceInfer(id);
+        el.innerHTML = `
+            <table class="kvtable">
+                <tr><td>Profile</td><td>${r.profileName}</td></tr>
+                <tr><td>Browser Family</td><td><strong>${r.browser?.family || '?'}</strong></td></tr>
+                <tr><td>Confidence</td><td>${((r.browser?.confidence || 0) * 100).toFixed(1)}%</td></tr>
+                <tr><td>Forgery Prob</td><td><span style="color:${riskColor(r.forgery?.forgeryProb || 0)}">${((r.forgery?.forgeryProb || 0) * 100).toFixed(1)}%</span></td></tr>
+                <tr><td>Forgery Type</td><td>${r.forgery?.forgeryType || 'none'}</td></tr>
+                <tr><td>Embedding Dim</td><td>${r.embeddingDim}</td></tr>
+                <tr><td>Cross-Layer Dim</td><td>${r.crossLayerDim}</td></tr>
+            </table>
+        `;
+    } catch (e) {
+        el.innerHTML = `<p style="color:var(--danger)">Error: ${e.message}</p>`;
+    }
+}
+
+async function runMLServiceValidate() {
+    const id = document.getElementById('mlSvcValidateProfile').value;
+    if (!id) return alert('请选择 Profile');
+    const el = document.getElementById('mlSvcValidateResult');
+    el.innerHTML = '<p style="color:var(--gray-400)">Validating...</p>';
+    try {
+        const r = await API.mlServiceValidate(id);
+        el.innerHTML = `
+            <div style="margin-bottom:12px;">
+                <span class="badge ${r.valid ? 'badge-success' : 'badge-warning'}" style="font-size:14px;">${r.valid ? '✅ Valid Fingerprint' : '⚠️ Invalid Fingerprint'}</span>
+            </div>
+            <table class="kvtable">
+                <tr><td>Profile</td><td>${r.profileName}</td></tr>
+                <tr><td>Browser</td><td>${r.browserFamily}</td></tr>
+                <tr><td>Confidence</td><td>${(r.confidence * 100).toFixed(1)}%</td></tr>
+                <tr><td>Forgery Prob</td><td><span style="color:${riskColor(r.forgeryProb)}">${(r.forgeryProb * 100).toFixed(1)}%</span></td></tr>
+                <tr><td>Forgery Type</td><td>${r.forgeryType || 'none'}</td></tr>
+                <tr><td>Consistency</td><td>${(r.consistencyScore * 100).toFixed(1)}%</td></tr>
+            </table>
+            ${(r.suggestions && r.suggestions.length > 0) ? `<div style="margin-top:8px;"><h5>Suggestions:</h5><ul>${r.suggestions.map(s => `<li>${s}</li>`).join('')}</ul></div>` : ''}
+        `;
+    } catch (e) {
+        el.innerHTML = `<p style="color:var(--danger)">Error: ${e.message}</p>`;
+    }
+}
+
+async function runMLServiceGenerate() {
+    const browser = document.getElementById('mlSvcGenBrowser').value;
+    const os = document.getElementById('mlSvcGenOS').value;
+    const noise = parseFloat(document.getElementById('mlSvcGenNoise').value) || 0.05;
+    const el = document.getElementById('mlSvcGenerateResult');
+    el.innerHTML = '<p style="color:var(--gray-400)">Generating fingerprint...</p>';
+    try {
+        const r = await API.mlServiceGenerate(browser, os, noise);
+        const p = r.profile || {};
+        const v = r.validation || {};
+        el.innerHTML = `
+            <div style="margin-bottom:12px;">
+                <span class="badge ${v.valid ? 'badge-success' : 'badge-warning'}" style="font-size:14px;">${v.valid ? '✅ Passed Validation' : '⚠️ Best Candidate'}</span>
+                <span style="margin-left:12px;color:var(--gray-400);">Attempts: ${r.attempts} | Source: ${r.sourceProfileID}</span>
+            </div>
+            <table class="kvtable">
+                <tr><td>Profile ID</td><td>${p.id || '?'}</td></tr>
+                <tr><td>Browser</td><td>${p.browser || '?'} ${p.version || ''}</td></tr>
+                <tr><td>OS</td><td>${p.os || '?'}</td></tr>
+                <tr><td>Forgery Prob</td><td><span style="color:${riskColor(v.forgeryProb || 0)}">${((v.forgeryProb || 0) * 100).toFixed(1)}%</span></td></tr>
+                <tr><td>Consistency</td><td>${((v.consistencyScore || 0) * 100).toFixed(1)}%</td></tr>
+                <tr><td>Confidence</td><td>${((v.confidence || 0) * 100).toFixed(1)}%</td></tr>
+            </table>
+        `;
+    } catch (e) {
+        el.innerHTML = `<p style="color:var(--danger)">Error: ${e.message}</p>`;
+    }
+}
+
+async function runMLServiceEvolve() {
+    const el = document.getElementById('mlSvcEvolveResult');
+    el.innerHTML = '<p style="color:var(--gray-400)">⏳ Starting evolution...</p>';
+    try {
+        const r = await API.mlServiceEvolve();
+        if (r.success) {
+            el.innerHTML = '<p style="color:var(--primary)">⏳ Evolution running in background...</p>';
+            pollTrainingStatus(el, 'evolve');
+        } else {
+            el.innerHTML = `<p style="color:var(--warning)">${r.message}</p>`;
+        }
+    } catch (e) {
+        el.innerHTML = `<p style="color:var(--danger)">Error: ${e.message}</p>`;
+    }
+}
+
+async function runMLServiceTrain() {
+    if (!confirm('Full GPU training will replace current model weights. Continue?')) return;
+    const el = document.getElementById('mlSvcTrainResult');
+    el.innerHTML = '<p style="color:var(--gray-400)">⏳ Starting GPU training...</p>';
+    try {
+        const r = await API.mlServiceTrain();
+        if (r.success) {
+            el.innerHTML = '<p style="color:var(--primary)">⏳ GPU training running in background (240 profiles)...</p>';
+            pollTrainingStatus(el, 'train');
+        } else {
+            el.innerHTML = `<p style="color:var(--warning)">${r.message}</p>`;
+        }
+    } catch (e) {
+        el.innerHTML = `<p style="color:var(--danger)">Error: ${e.message}</p>`;
+    }
+}
+
+function pollTrainingStatus(el, phase) {
+    const startTime = Date.now();
+    const poll = async () => {
+        try {
+            const s = await API.mlServiceTrainingStatus();
+            const elapsed = s.elapsed ? s.elapsed.toFixed(0) : Math.floor((Date.now() - startTime) / 1000);
+            if (s.active) {
+                let progressHtml = '';
+                const gp = s.gpuProgress;
+                if (gp && gp.phase) {
+                    const phaseName = {loading: 'Loading', encoder: 'Encoder (1/4)', classifier: 'Classifier (2/4)',
+                        forgery: 'Forgery Detector (3/4)', threat: 'Threat Assessor (4/4)', done: 'Done'}[gp.phase] || gp.phase;
+                    const pct = gp.totalEpochs > 0 ? Math.round(gp.epoch / gp.totalEpochs * 100) : 0;
+                    progressHtml = `
+                        <div style="margin-top:8px">
+                            <div style="font-size:0.85em;color:var(--gray-400)">
+                                Phase: <strong>${phaseName}</strong> | Device: <strong>${gp.device || 'cpu'}</strong>
+                            </div>
+                            <div style="margin-top:4px;background:var(--bg-secondary);border-radius:4px;height:20px;overflow:hidden">
+                                <div style="width:${pct}%;height:100%;background:var(--primary);transition:width 0.3s;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.75em">
+                                    ${pct}%
+                                </div>
+                            </div>
+                            <div style="font-size:0.8em;color:var(--gray-400);margin-top:2px">
+                                Epoch ${gp.epoch || 0}/${gp.totalEpochs || 0} | Loss: ${(gp.loss || 0).toFixed(4)}
+                                ${gp.valAccuracy ? ' | Acc: ' + (gp.valAccuracy * 100).toFixed(1) + '%' : ''}
+                            </div>
+                        </div>`;
+                }
+                const phaseLabel = s.phase || phase;
+                el.innerHTML = `<p style="color:var(--primary)">⏳ ${phaseLabel} (${elapsed}s elapsed)</p>${progressHtml}`;
+                setTimeout(poll, 2000);
+            } else if (s.done) {
+                if (s.error) {
+                    el.innerHTML = `<p style="color:var(--danger)">❌ ${s.error}</p>`;
+                } else if (s.result) {
+                    const r = s.result;
+                    if (phase === 'evolve' && r.metrics) {
+                        const m = r.metrics;
+                        el.innerHTML = `
+                            <div style="margin-bottom:8px;"><span class="badge badge-success">✅ Evolution Complete (${elapsed}s)</span></div>
+                            <table class="kvtable">
+                                <tr><td>Epoch</td><td>${m.epoch}</td></tr>
+                                <tr><td>Val Accuracy</td><td>${((m.valAccuracy || 0) * 100).toFixed(1)}%</td></tr>
+                                <tr><td>Encoder Loss</td><td>${(m.encoderLoss || 0).toFixed(4)}</td></tr>
+                                <tr><td>Class Loss</td><td>${(m.classLoss || 0).toFixed(4)}</td></tr>
+                                <tr><td>Forgery Loss</td><td>${(m.forgeryLoss || 0).toFixed(4)}</td></tr>
+                                <tr><td>Forgery AUC</td><td>${((m.forgeryAUC || 0) * 100).toFixed(1)}%</td></tr>
+                            </table>`;
+                    } else {
+                        let gpuResultHtml = '';
+                        const gp = r.gpuProgress;
+                        if (gp) {
+                            gpuResultHtml = `
+                                <tr><td>Device</td><td>${gp.device || 'cpu'}</td></tr>
+                                <tr><td>GPU Time</td><td>${(gp.totalElapsed || 0).toFixed(1)}s</td></tr>
+                                <tr><td>Val Accuracy</td><td>${((gp.valAccuracy || 0) * 100).toFixed(1)}%</td></tr>
+                                <tr><td>Encoder Loss</td><td>${(gp.encoderLoss || 0).toFixed(4)}</td></tr>
+                                <tr><td>Class Loss</td><td>${(gp.classLoss || 0).toFixed(4)}</td></tr>
+                                <tr><td>Forgery Loss</td><td>${(gp.forgeryLoss || 0).toFixed(4)}</td></tr>
+                                <tr><td>Threat Loss</td><td>${(gp.threatLoss || 0).toFixed(4)}</td></tr>`;
+                        }
+                        el.innerHTML = `
+                            <div style="margin-bottom:8px;"><span class="badge badge-success">✅ GPU Training Complete (${elapsed}s)</span></div>
+                            <table class="kvtable">
+                                <tr><td>Model Ready</td><td>${r.modelReady ? '✅ Yes' : '❌ No'}</td></tr>
+                                <tr><td>Model Versions</td><td>${r.modelVersions}</td></tr>
+                                <tr><td>Profiles</td><td>${r.profiles || '-'}</td></tr>
+                                ${gpuResultHtml}
+                            </table>`;
+                    }
+                    loadMLPage();
+                } else {
+                    el.innerHTML = '<span class="badge badge-success">✅ Completed</span>';
+                    loadMLPage();
+                }
+            }
+        } catch (e) {
+            el.innerHTML = `<p style="color:var(--danger)">Poll error: ${e.message}</p>`;
+        }
+    };
+    setTimeout(poll, 2000);
+}
+
+async function runMLServiceFeedback() {
+    const profileId = document.getElementById('mlSvcFeedbackProfile').value;
+    const label = document.getElementById('mlSvcFeedbackLabel').value;
+    const reward = parseFloat(document.getElementById('mlSvcFeedbackReward').value) || 0.8;
+    const el = document.getElementById('mlSvcFeedbackResult');
+    try {
+        const r = await API.mlServiceFeedback(profileId, label, reward);
+        el.innerHTML = `<span class="badge badge-success">✅ Feedback submitted (total: ${r.feedbackCount})</span>`;
+    } catch (e) {
+        el.innerHTML = `<p style="color:var(--danger)">Error: ${e.message}</p>`;
+    }
+}
+
+// ===== Dashboard ML Service Stats =====
+function updateMLServiceDashboard(mlSvc) {
+    const el = id => document.getElementById(id);
+    if (!mlSvc || !mlSvc.enabled) {
+        el('mlInferCount').textContent = '-';
+        el('mlServiceStatus').textContent = 'Disabled';
+        el('mlFeedbackCount').textContent = '-';
+        el('mlLearnerSamples').textContent = '-';
+        el('mlEvolveCount').textContent = '-';
+        el('mlModelVersions').textContent = '-';
+        el('mlAccuracy').textContent = '-';
+        el('mlDriftStatus').textContent = '-';
+        return;
+    }
+    el('mlInferCount').textContent = mlSvc.inferCount || 0;
+    el('mlServiceStatus').textContent = mlSvc.ready ? '🟢 Ready' : '🟡 Not Trained';
+    el('mlFeedbackCount').textContent = mlSvc.feedbackCount || 0;
+    el('mlEvolveCount').textContent = mlSvc.evolveCount || 0;
+    el('mlModelVersions').textContent = `${mlSvc.modelVersions || 0} versions`;
+    if (mlSvc.learner) {
+        el('mlLearnerSamples').textContent = `${mlSvc.learner.totalSamples || 0} samples`;
+        el('mlAccuracy').textContent = `${((mlSvc.learner.recentAccuracy || 0) * 100).toFixed(1)}%`;
+        el('mlDriftStatus').textContent = mlSvc.learner.driftDetected ? '⚠️ Drift' : '✅ Stable';
+    } else {
+        el('mlLearnerSamples').textContent = '-';
+        el('mlAccuracy').textContent = '-';
+        el('mlDriftStatus').textContent = '-';
     }
 }
 

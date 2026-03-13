@@ -1,5 +1,5 @@
 # Fingerprint Gateway Docker Image
-# Multi-stage build for minimal production image
+# Multi-stage build: Go builder + NVIDIA CUDA Python runtime for GPU training
 # For full deployment with monitoring, see deploy/docker/
 
 # Build stage
@@ -30,18 +30,33 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -o fingerprint-gateway \
     ./cmd/gateway
 
-# Runtime stage — minimal scratch image
-FROM scratch
+# Runtime stage — NVIDIA CUDA + Python for GPU training
+FROM nvidia/cuda:12.6.3-runtime-ubuntu22.04
 
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+# Avoid interactive prompts during package install
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Python 3 and pip
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-pip ca-certificates curl tzdata && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install PyTorch (CUDA 12.6) and numpy
+RUN pip3 install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu126 && \
+    pip3 install --no-cache-dir numpy
+
+# Copy Go binary
 COPY --from=builder /build/fingerprint-gateway /fingerprint-gateway
+
+# Copy GPU training script
+COPY training/gpu_train.py /app/gpu_train.py
+
+# Create models directory
+RUN mkdir -p /models /data /tmp
 
 EXPOSE 8080 9090
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD ["/fingerprint-gateway", "-health"]
-
-USER 65534:65534
+    CMD ["curl", "-f", "http://localhost:8080/health"]
 
 ENTRYPOINT ["/fingerprint-gateway"]

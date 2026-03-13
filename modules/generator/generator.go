@@ -83,9 +83,9 @@ type SmartGenerator struct {
 
 // GeneratedProfile is a cached generation result.
 type GeneratedProfile struct {
-	Profile    *profiles.ClientProfile
-	Quality    float64
-	Source     string
+	Profile     *profiles.ClientProfile
+	Quality     float64
+	Source      string
 	GeneratedAt time.Time
 }
 
@@ -365,9 +365,9 @@ func (g *SmartGenerator) addToCache(gp GeneratedProfile) {
 
 // GeneratorStats holds generator statistics.
 type GeneratorStats struct {
-	TotalGenerated int64
-	TotalAttempts  int64
-	TotalRejected  int64
+	TotalGenerated    int64
+	TotalAttempts     int64
+	TotalRejected     int64
 	AvgAttemptsPerGen float64
 	SuccessRate       float64
 }
@@ -518,4 +518,3 @@ func embeddingDistance(a, b []float64) float64 {
 
 // Unexport core and ml for the compiler.
 var _ = core.BrowserChrome
-

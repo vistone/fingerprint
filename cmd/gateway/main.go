@@ -152,6 +152,11 @@ func main() {
 			config.ScannerBrowserTimeout = time.Duration(ms) * time.Millisecond
 		}
 	}
+	if v := strings.TrimSpace(os.Getenv("FP_ML_SERVICE_ENABLED")); v != "" {
+		if parsed, err := strconv.ParseBool(v); err == nil {
+			config.MLServiceEnabled = parsed
+		}
+	}
 	gw := gateway.NewGateway(&config)
 
 	// write start log
@@ -166,6 +171,9 @@ func main() {
 	}
 	if config.ScannerUseBrowser {
 		web.WriteLog("INFO", "scanner", "Browser-based scanner enabled, WS: %s", config.ScannerBrowserWS)
+	}
+	if config.MLServiceEnabled {
+		web.WriteLog("INFO", "ml", "MLService enabled")
 	}
 
 	// Setup HTTP routes

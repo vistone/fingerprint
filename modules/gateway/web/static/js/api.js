@@ -132,6 +132,53 @@ const API = {
         return this.request('/api/admin/ml/batch');
     },
 
+    // ===== MLService — 中央 AI 服务 API =====
+    async getMLServiceStats() {
+        return this.request('/api/admin/ml/service/stats');
+    },
+    async getMLServiceHealth() {
+        return this.request('/api/admin/ml/service/health');
+    },
+    async mlServiceInfer(profileId) {
+        return this.request('/api/admin/ml/service/infer', {
+            method: 'POST',
+            body: JSON.stringify({ profileId }),
+        });
+    },
+    async mlServiceValidate(profileId) {
+        return this.request('/api/admin/ml/service/validate', {
+            method: 'POST',
+            body: JSON.stringify({ profileId }),
+        });
+    },
+    async mlServiceGenerate(targetBrowser, targetOS, noiseIntensity) {
+        return this.request('/api/admin/ml/service/generate', {
+            method: 'POST',
+            body: JSON.stringify({ targetBrowser, targetOS, noiseIntensity, maxAttempts: 10 }),
+        });
+    },
+    async mlServiceEvolve() {
+        return this.request('/api/admin/ml/service/evolve', {
+            method: 'POST',
+            body: JSON.stringify({}),
+        });
+    },
+    async mlServiceTrain() {
+        return this.request('/api/admin/ml/service/train', {
+            method: 'POST',
+            body: JSON.stringify({}),
+        });
+    },
+    async mlServiceTrainingStatus() {
+        return this.request('/api/admin/ml/service/training-status');
+    },
+    async mlServiceFeedback(profileId, label, reward) {
+        return this.request('/api/admin/ml/service/feedback', {
+            method: 'POST',
+            body: JSON.stringify({ profileId, label, reward }),
+        });
+    },
+
     // ===== 防御系统 API =====
     async getDefenseRules() {
         return this.request('/api/admin/defense/rules');

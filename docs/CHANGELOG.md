@@ -4,6 +4,36 @@ This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+## [v1.0.18] - 2026-03-13
+
+### Added
+
+- **MLService Web API Endpoints** (`modules/gateway/web/handler.go`, `handler_advanced.go`)
+  - 9 new REST API endpoints under `/api/admin/ml/service/` for central ML service management
+  - Endpoints: stats, health, infer, validate, generate, evolve, train, training-status, feedback
+  - Async training support with status tracking (phase, progress, error reporting)
+  - MLService stats integration into dashboard `/api/admin/stats` and `/api/admin/ml/info`
+
+- **Frontend MLService Dashboard** (`modules/gateway/web/static/`)
+  - ML Service stats cards on dashboard (infer count, feedback count, evolution count, drift status)
+  - MLService API client methods in `api.js` for all 9 new endpoints
+  - ML Service section in `index.html` with real-time stats display
+  - System status now shows MLService enabled/ready state
+
+- **GPU Training Docker Support** (`Dockerfile`, `docker-compose.yml`)
+  - Dockerfile switched to NVIDIA CUDA 12.6 runtime with Python 3 and PyTorch
+  - docker-compose.yml adds NVIDIA runtime, GPU environment variables, and models volume mount
+  - New `training/gpu_train.py` GPU training script
+
+- **MLService Gateway Integration** (`cmd/gateway/main.go`, `modules/gateway/gateway.go`)
+  - `FP_ML_SERVICE_ENABLED` environment variable for runtime ML service toggle
+  - MLService enabled logging on gateway startup
+
+### Changed
+
+- **Code Formatting** (`modules/ml/evolution.go`, `modules/generator/generator.go`, `modules/fingerprint/ml_api.go`, `modules/gateway/gateway.go`)
+  - Aligned struct field tags for consistent Go formatting across ML and gateway modules
+
 ## [v1.0.17] - 2026-03-12
 
 ### Added

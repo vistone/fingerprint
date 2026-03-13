@@ -103,7 +103,7 @@ func (f *MLFacade) Evolution() *ml.ProfileEvolutionEngine {
 // MLAnalyzeResult is a comprehensive ML analysis result.
 type MLAnalyzeResult struct {
 	// Browser identification
-	BrowserFamily string
+	BrowserFamily     string
 	BrowserConfidence float64
 
 	// Forgery detection

@@ -78,21 +78,21 @@ type ProfileEvolutionEngine struct {
 
 // ProfileStat tracks the health of a single profile.
 type ProfileStat struct {
-	ProfileID    string
-	BrowserType  string
-	LastSeen     time.Time
-	FirstSeen    time.Time
-	HitCount     int64
-	ForgeryRate  float64 // rolling average of forgery probability
+	ProfileID     string
+	BrowserType   string
+	LastSeen      time.Time
+	FirstSeen     time.Time
+	HitCount      int64
+	ForgeryRate   float64 // rolling average of forgery probability
 	AvgConfidence float64 // rolling average of classification confidence
-	IsStale      bool
+	IsStale       bool
 }
 
 // EvolutionEvent records a single evolution trigger.
 type EvolutionEvent struct {
-	Timestamp    time.Time
-	Trigger      string // "drift", "staleness", "version_gap", "manual"
-	Description  string
+	Timestamp       time.Time
+	Trigger         string // "drift", "staleness", "version_gap", "manual"
+	Description     string
 	ProfilesAdded   int
 	ProfilesRetired int
 	MetricsBefore   *TrainingMetrics

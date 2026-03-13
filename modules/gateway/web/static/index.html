@@ -149,6 +149,42 @@
                         </div>
                     </div>
 
+                    <!-- ML Service Stats -->
+                    <div class="stats-grid" id="mlServiceStatsGrid" style="margin-top: 12px;">
+                        <div class="stat-card">
+                            <div class="stat-icon">🧠</div>
+                            <div class="stat-info">
+                                <h3>ML Infer</h3>
+                                <p class="stat-value" id="mlInferCount">-</p>
+                                <span class="stat-change" id="mlServiceStatus">-</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📝</div>
+                            <div class="stat-info">
+                                <h3>Feedback</h3>
+                                <p class="stat-value" id="mlFeedbackCount">-</p>
+                                <span class="stat-change" id="mlLearnerSamples">-</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🔄</div>
+                            <div class="stat-info">
+                                <h3>Evolution</h3>
+                                <p class="stat-value" id="mlEvolveCount">-</p>
+                                <span class="stat-change" id="mlModelVersions">-</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🎯</div>
+                            <div class="stat-info">
+                                <h3>Accuracy</h3>
+                                <p class="stat-value" id="mlAccuracy">-</p>
+                                <span class="stat-change" id="mlDriftStatus">-</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="dashboard-grid">
                         <div class="card chart-card">
                             <div class="card-header">
@@ -749,9 +785,159 @@
                 <!-- ====== ML Engine Page ====== -->
                 <div class="page" id="ml-engine">
                     <div class="page-header">
-                        <h3 data-i18n="ml.title">🧠 ML Hierarchical Classification Engine</h3>
-                        <p class="page-desc" data-i18n="ml.desc">3-layer hierarchical classifier: Protocol → Family → Version | 18-dim feature vector | Batch classification</p>
+                        <h3 data-i18n="ml.title">🧠 ML Engine & AI Service</h3>
+                        <p class="page-desc" data-i18n="ml.desc">Central AI Brain: Neural Pipeline | Inference | Validation | Generation | Evolution | Online Learning</p>
                     </div>
+
+                    <!-- MLService Status Panel -->
+                    <div class="stats-grid" id="mlServicePanel">
+                        <div class="stat-card">
+                            <div class="stat-icon">🧠</div>
+                            <div class="stat-info">
+                                <h3>Service Status</h3>
+                                <p class="stat-value" id="mlSvcStatus">-</p>
+                                <span class="stat-change" id="mlSvcReady">-</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🔢</div>
+                            <div class="stat-info">
+                                <h3>Infer Count</h3>
+                                <p class="stat-value" id="mlSvcInferCount">-</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📝</div>
+                            <div class="stat-info">
+                                <h3>Feedback</h3>
+                                <p class="stat-value" id="mlSvcFeedbackCount">-</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🔄</div>
+                            <div class="stat-info">
+                                <h3>Evolve</h3>
+                                <p class="stat-value" id="mlSvcEvolveCount">-</p>
+                                <span class="stat-change" id="mlSvcModelVersions">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Online Learner Panel -->
+                    <div class="card" style="margin-top:16px;">
+                        <div class="card-header"><h4>📊 Online Learner</h4></div>
+                        <div class="card-body" id="mlLearnerPanel">
+                            <p style="color:var(--gray-400);">Loading learner stats...</p>
+                        </div>
+                    </div>
+
+                    <!-- MLService Operations -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+                        <!-- Inference -->
+                        <div class="card">
+                            <div class="card-header"><h4>🎯 AI Inference</h4></div>
+                            <div class="card-body">
+                                <label>Select Profile</label>
+                                <select id="mlSvcInferProfile" class="form-control" style="width:100%;padding:8px;margin:8px 0 12px;border:1px solid var(--gray-200);border-radius:6px;"></select>
+                                <button class="btn btn-primary" onclick="runMLServiceInfer()">🧠 Run AI Inference</button>
+                                <div id="mlSvcInferResult" style="margin-top:12px;"></div>
+                            </div>
+                        </div>
+                        <!-- Validation -->
+                        <div class="card">
+                            <div class="card-header"><h4>✅ AI Validation</h4></div>
+                            <div class="card-body">
+                                <label>Select Profile</label>
+                                <select id="mlSvcValidateProfile" class="form-control" style="width:100%;padding:8px;margin:8px 0 12px;border:1px solid var(--gray-200);border-radius:6px;"></select>
+                                <button class="btn btn-primary" onclick="runMLServiceValidate()">🔍 Validate Fingerprint</button>
+                                <div id="mlSvcValidateResult" style="margin-top:12px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generation -->
+                    <div class="card" style="margin-top:16px;">
+                        <div class="card-header"><h4>🏗️ AI Fingerprint Generation</h4></div>
+                        <div class="card-body">
+                            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+                                <div style="flex:1;">
+                                    <label>Target Browser</label>
+                                    <select id="mlSvcGenBrowser" class="form-control" style="width:100%;padding:8px;margin-top:4px;border:1px solid var(--gray-200);border-radius:6px;">
+                                        <option value="">Any</option>
+                                        <option value="Chrome">Chrome</option>
+                                        <option value="Firefox">Firefox</option>
+                                        <option value="Safari">Safari</option>
+                                        <option value="Edge">Edge</option>
+                                        <option value="Opera">Opera</option>
+                                    </select>
+                                </div>
+                                <div style="flex:1;">
+                                    <label>Target OS</label>
+                                    <select id="mlSvcGenOS" class="form-control" style="width:100%;padding:8px;margin-top:4px;border:1px solid var(--gray-200);border-radius:6px;">
+                                        <option value="">Any</option>
+                                        <option value="Windows">Windows</option>
+                                        <option value="macOS">macOS</option>
+                                        <option value="Linux">Linux</option>
+                                        <option value="iOS">iOS</option>
+                                        <option value="Android">Android</option>
+                                    </select>
+                                </div>
+                                <div style="flex:1;">
+                                    <label>Noise Intensity</label>
+                                    <input type="number" id="mlSvcGenNoise" value="0.05" min="0" max="1" step="0.01" class="form-control" style="width:100%;padding:8px;margin-top:4px;border:1px solid var(--gray-200);border-radius:6px;">
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="runMLServiceGenerate()">🏗️ Generate Fingerprint</button>
+                            <div id="mlSvcGenerateResult" style="margin-top:12px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Training & Evolution -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+                        <div class="card">
+                            <div class="card-header"><h4>🔄 Evolve Model</h4></div>
+                            <div class="card-body">
+                                <p style="margin-bottom:12px;color:var(--gray-400);font-size:13px;">Incremental evolution using current profile registry. Safe for production.</p>
+                                <button class="btn btn-primary" onclick="runMLServiceEvolve()">🔄 Evolve Model</button>
+                                <div id="mlSvcEvolveResult" style="margin-top:12px;"></div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><h4>🎓 Full Training</h4></div>
+                            <div class="card-body">
+                                <p style="margin-bottom:12px;color:var(--gray-400);font-size:13px;">Full training from scratch. Replaces current model weights.</p>
+                                <button class="btn" style="background:var(--warning);color:#fff;" onclick="runMLServiceTrain()">🎓 Train from Scratch</button>
+                                <div id="mlSvcTrainResult" style="margin-top:12px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feedback -->
+                    <div class="card" style="margin-top:16px;">
+                        <div class="card-header"><h4>📝 Submit Feedback</h4></div>
+                        <div class="card-body">
+                            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+                                <div style="flex:2;">
+                                    <label>Profile</label>
+                                    <select id="mlSvcFeedbackProfile" class="form-control" style="width:100%;padding:8px;margin-top:4px;border:1px solid var(--gray-200);border-radius:6px;"></select>
+                                </div>
+                                <div style="flex:1;">
+                                    <label>Label (browser family)</label>
+                                    <input type="text" id="mlSvcFeedbackLabel" placeholder="e.g. Chrome" class="form-control" style="width:100%;padding:8px;margin-top:4px;border:1px solid var(--gray-200);border-radius:6px;">
+                                </div>
+                                <div style="flex:1;">
+                                    <label>Reward (0-1)</label>
+                                    <input type="number" id="mlSvcFeedbackReward" value="0.8" min="0" max="1" step="0.1" class="form-control" style="width:100%;padding:8px;margin-top:4px;border:1px solid var(--gray-200);border-radius:6px;">
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="runMLServiceFeedback()">📝 Submit Feedback</button>
+                            <div id="mlSvcFeedbackResult" style="margin-top:12px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="nav-divider" style="margin:20px 0;"></div>
+
+                    <!-- Original ML Classifier Section -->
                     <div id="mlModelInfo"></div>
                     <div class="card" style="margin-top:20px;">
                         <div class="card-header"><h4 data-i18n="ml.featureExtract">Feature Extraction & Classification</h4></div>

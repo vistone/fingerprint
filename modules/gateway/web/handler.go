@@ -172,6 +172,15 @@ type Handler struct {
 	gateway  *gateway.Gateway
 	profiles []profiles.ClientProfile
 	mu       sync.RWMutex
+
+	// async training state
+	trainingMu     sync.Mutex
+	trainingActive bool
+	trainingPhase  string // "train" or "evolve"
+	trainingStart  time.Time
+	trainingErr    string
+	trainingDone   bool
+	trainingResult map[string]interface{}
 }
 
 // NewHandler creates a new web handler
@@ -223,6 +232,17 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/admin/ml/extract", h.handleMLExtract)
 	mux.HandleFunc("/api/admin/ml/classify", h.handleMLClassify)
 	mux.HandleFunc("/api/admin/ml/batch", h.handleMLBatch)
+
+	// MLService — 中央 AI 服务
+	mux.HandleFunc("/api/admin/ml/service/stats", h.handleMLServiceStats)
+	mux.HandleFunc("/api/admin/ml/service/health", h.handleMLServiceHealth)
+	mux.HandleFunc("/api/admin/ml/service/infer", h.handleMLServiceInfer)
+	mux.HandleFunc("/api/admin/ml/service/validate", h.handleMLServiceValidate)
+	mux.HandleFunc("/api/admin/ml/service/generate", h.handleMLServiceGenerate)
+	mux.HandleFunc("/api/admin/ml/service/evolve", h.handleMLServiceEvolve)
+	mux.HandleFunc("/api/admin/ml/service/train", h.handleMLServiceTrain)
+	mux.HandleFunc("/api/admin/ml/service/training-status", h.handleMLServiceTrainingStatus)
+	mux.HandleFunc("/api/admin/ml/service/feedback", h.handleMLServiceFeedback)
 
 	// 防御系统
 	mux.HandleFunc("/api/admin/defense/rules", h.handleDefenseRules)
@@ -304,8 +324,38 @@ func (h *Handler) handleStats(w http.ResponseWriter, r *http.Request) {
 		stats["agent"] = map[string]interface{}{"enabled": false}
 	}
 
+	// 添加 MLService 状态
+	if svc := h.gateway.GetMLService(); svc != nil {
+		svcStats := svc.Stats()
+		mlSvc := map[string]interface{}{
+			"enabled":       true,
+			"ready":         svc.IsReady(),
+			"inferCount":    svcStats.InferCount,
+			"feedbackCount": svcStats.FeedbackCount,
+			"evolveCount":   svcStats.EvolveCount,
+			"modelVersions": svcStats.ModelVersions,
+		}
+		if svcStats.LearnerStats != nil {
+			mlSvc["learner"] = map[string]interface{}{
+				"totalSamples":    svcStats.LearnerStats.TotalSamples,
+				"bufferFilled":    svcStats.LearnerStats.BufferFilled,
+				"peakAccuracy":    svcStats.LearnerStats.PeakAccuracy,
+				"recentAccuracy":  svcStats.LearnerStats.RecentAccuracy,
+				"driftDetected":   svcStats.LearnerStats.DriftDetected,
+				"driftEventCount": svcStats.LearnerStats.DriftEventCount,
+			}
+		}
+		stats["mlService"] = mlSvc
+	} else {
+		stats["mlService"] = map[string]interface{}{"enabled": false, "ready": false}
+	}
+
 	// 添加系统组件状态
 	cfg := h.gateway.GetConfig()
+	mlServiceReady := false
+	if svc := h.gateway.GetMLService(); svc != nil {
+		mlServiceReady = svc.IsReady()
+	}
 	stats["systemStatus"] = map[string]interface{}{
 		"apiServer":         true,
 		"mlClassifier":      true,
@@ -313,6 +363,8 @@ func (h *Handler) handleStats(w http.ResponseWriter, r *http.Request) {
 		"agent":             cfg.AgentEnabled,
 		"antiDetectEnabled": cfg.P3Enabled,
 		"scanner":           cfg.ScannerUseBrowser,
+		"mlServiceEnabled":  cfg.MLServiceEnabled,
+		"mlServiceReady":    mlServiceReady,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -578,6 +630,7 @@ func (h *Handler) handleConfig(w http.ResponseWriter, r *http.Request) {
 				"enabled":       true,
 				"riskThreshold": cfg.RiskThreshold,
 			},
+			"mlService": h.getMLServiceConfig(cfg),
 			"p3": map[string]interface{}{
 				"enabled":       cfg.P3Enabled,
 				"profileId":     cfg.P3ProfileID,
@@ -1099,4 +1152,27 @@ func testWithProfile(profile profiles.ClientProfile, url, method, body string, v
 	response["validation"] = validation
 
 	return response
+}
+
+// getMLServiceConfig 构建 MLService 配置信息
+func (h *Handler) getMLServiceConfig(cfg *gateway.GatewayConfig) map[string]interface{} {
+	result := map[string]interface{}{
+		"enabled": cfg.MLServiceEnabled,
+	}
+	if svc := h.gateway.GetMLService(); svc != nil {
+		result["ready"] = svc.IsReady()
+		st := svc.Stats()
+		result["inferCount"] = st.InferCount
+		result["feedbackCount"] = st.FeedbackCount
+		result["evolveCount"] = st.EvolveCount
+		result["modelVersions"] = st.ModelVersions
+	}
+	if cfg.MLServiceConfig != nil {
+		result["modelStorePath"] = cfg.MLServiceConfig.ModelStorePath
+		result["maxStoreVersions"] = cfg.MLServiceConfig.MaxStoreVersions
+		result["driftThreshold"] = cfg.MLServiceConfig.DriftThreshold
+		result["forgeryThreshold"] = cfg.MLServiceConfig.ValidationForgeryThreshold
+		result["consistencyMin"] = cfg.MLServiceConfig.ValidationConsistencyMin
+	}
+	return result
 }
