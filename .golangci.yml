@@ -1,20 +1,40 @@
-linters-settings:
-  govet:
-    enable-all: true
-    disable:
-      - composites  # 禁用对无键字段的检查，因为来自 utls 库
-
+version: "2"
 run:
   issues-exit-code: 1
-
-issues:
-  exclude-files:
-    - ".*_test.go$"
-  exclude-dirs:
-    - vendor
-
 linters:
-  enable-all: true
+  default: all
   disable:
     - cyclop
     - gochecknoglobals
+  settings:
+    govet:
+      disable:
+        - composites  # 禁用对无键字段的检查，因为来自 utls 库
+      enable-all: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - .*_test.go$
+      - vendor
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - .*_test.go$
+      - vendor
+      - third_party$
+      - builtin$
+      - examples$
