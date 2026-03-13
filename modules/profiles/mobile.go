@@ -29,7 +29,7 @@ var (
 			InitialWindowSize: 2097152, MaxFrameSize: 16384,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 			SecFetchDest: "document", SecFetchMode: "navigate",
 		},
@@ -45,7 +45,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
@@ -60,7 +60,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
@@ -76,7 +76,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
@@ -91,7 +91,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
@@ -106,7 +106,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
@@ -137,7 +137,7 @@ var (
 			InitialWindowSize: 6291456, MaxFrameSize: 16384,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
@@ -152,7 +152,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
@@ -167,7 +167,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
@@ -182,7 +182,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
@@ -197,7 +197,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
@@ -216,7 +216,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
@@ -231,7 +231,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
@@ -246,7 +246,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
@@ -261,7 +261,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
@@ -280,7 +280,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
@@ -295,7 +295,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),
@@ -310,7 +310,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSAndroid),

@@ -23,7 +23,7 @@ func createTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
 	}
 
 	osStr := string(osType)
-	
+
 	if strings.Contains(osStr, "Windows") {
 		base.TTL = 128
 		base.WindowSize = 64240
@@ -134,8 +134,8 @@ func initChromeProfiles() {
 			// HTTP/3 (QUIC) profile - Chrome already supported HTTP/3
 			HTTP3Settings: &core.HTTP3Settings{
 				QUICVersion:            core.QUICVersion1,
-				InitialMaxData:         16777216,    // 16MB
-				InitialMaxStreamData:   6291456,     // 6MB
+				InitialMaxData:         16777216, // 16MB
+				InitialMaxStreamData:   6291456,  // 6MB
 				InitialMaxStreamsBidi:  100,
 				InitialMaxStreamsUni:   100,
 				MaxUDPPayloadSize:      1472,
@@ -216,8 +216,8 @@ func initFirefoxProfiles() {
 			// HTTP/3 (QUIC) profile - Firefox already supported HTTP/3
 			HTTP3Settings: &core.HTTP3Settings{
 				QUICVersion:            core.QUICVersion1,
-				InitialMaxData:         16777216,    // 16MB
-				InitialMaxStreamData:   6291456,     // 6MB
+				InitialMaxData:         16777216, // 16MB
+				InitialMaxStreamData:   6291456,  // 6MB
 				InitialMaxStreamsBidi:  100,
 				InitialMaxStreamsUni:   100,
 				MaxUDPPayloadSize:      1472,
@@ -225,12 +225,12 @@ func initFirefoxProfiles() {
 				MaxAckDelay:            25,
 				DisableActiveMigration: false,
 			},
-			QUICVersions: []uint32{core.QUICVersion1},
+			QUICVersions:      []uint32{core.QUICVersion1},
 			PseudoHeaderOrder: []string{":method", ":path", ":authority", ":scheme"},
 			Headers: &core.HTTPHeaders{
-				Accept:          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-				AcceptLanguage:  "en-US,en;q=0.5",
-				AcceptEncoding:  "gzip, deflate, br",
+				Accept:                  "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+				AcceptLanguage:          "en-US,en;q=0.5",
+				AcceptEncoding:          "gzip, deflate, br",
 				UpgradeInsecureRequests: "1",
 			},
 			TCPIP: createTCPIP(v.os),
@@ -272,14 +272,14 @@ func initSafariProfiles() {
 
 	for _, v := range safariVersions {
 		p := ClientProfile{
-			ID:             v.id,
-			Name:           "Safari " + v.version,
-			BrowserType:    core.BrowserSafari,
-			BrowserVersion: v.version,
-			OS:             v.os,
-			OSVersion:      v.osVer,
-			TLSVersion:     0x0303,
-			CipherSuites:   []uint16{0x1301, 0x1302, 0x1303, 0xc02c, 0xc02b, 0xc030, 0xc02f},
+			ID:              v.id,
+			Name:            "Safari " + v.version,
+			BrowserType:     core.BrowserSafari,
+			BrowserVersion:  v.version,
+			OS:              v.os,
+			OSVersion:       v.osVer,
+			TLSVersion:      0x0303,
+			CipherSuites:    []uint16{0x1301, 0x1302, 0x1303, 0xc02c, 0xc02b, 0xc030, 0xc02f},
 			SupportedCurves: []core.CurveID{core.CurveX25519, core.CurveP256, core.CurveP384, core.CurveP521},
 			HTTP2Settings: core.HTTP2Settings{
 				HeaderTableSize: 4096, EnablePush: 1,
@@ -288,8 +288,8 @@ func initSafariProfiles() {
 			// HTTP/3 (QUIC) profile - Safari already supported HTTP/3
 			HTTP3Settings: &core.HTTP3Settings{
 				QUICVersion:            core.QUICVersion1,
-				InitialMaxData:         16777216,    // 16MB
-				InitialMaxStreamData:   6291456,     // 6MB
+				InitialMaxData:         16777216, // 16MB
+				InitialMaxStreamData:   6291456,  // 6MB
 				InitialMaxStreamsBidi:  100,
 				InitialMaxStreamsUni:   100,
 				MaxUDPPayloadSize:      1472,
@@ -297,12 +297,12 @@ func initSafariProfiles() {
 				MaxAckDelay:            25,
 				DisableActiveMigration: false,
 			},
-			QUICVersions: []uint32{core.QUICVersion1},
+			QUICVersions:      []uint32{core.QUICVersion1},
 			PseudoHeaderOrder: []string{":method", ":scheme", ":path", ":authority"},
 			Headers: &core.HTTPHeaders{
-				Accept:          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-				AcceptLanguage:  "en-US,en;q=0.9",
-				AcceptEncoding:  "gzip, deflate, br",
+				Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+				AcceptLanguage: "en-US,en;q=0.9",
+				AcceptEncoding: "gzip, deflate, br",
 			},
 			TCPIP: createTCPIP(v.os),
 		}
@@ -375,7 +375,7 @@ func initiOSProfiles() {
 				MaxAckDelay:            25,
 				DisableActiveMigration: false,
 			},
-			QUICVersions: []uint32{core.QUICVersion1},
+			QUICVersions:      []uint32{core.QUICVersion1},
 			PseudoHeaderOrder: []string{":method", ":scheme", ":authority", ":path"},
 			ConnectionFlow:    15663105,
 			Headers: &core.HTTPHeaders{
@@ -458,7 +458,7 @@ func initAndroidProfiles() {
 				MaxAckDelay:            25,
 				DisableActiveMigration: false,
 			},
-			QUICVersions: []uint32{core.QUICVersion1},
+			QUICVersions:      []uint32{core.QUICVersion1},
 			PseudoHeaderOrder: []string{":method", ":authority", ":scheme", ":path"},
 			ConnectionFlow:    15663105,
 			Headers: &core.HTTPHeaders{
@@ -533,7 +533,7 @@ func initEdgeProfiles() {
 				MaxAckDelay:            25,
 				DisableActiveMigration: false,
 			},
-			QUICVersions: []uint32{core.QUICVersion1},
+			QUICVersions:      []uint32{core.QUICVersion1},
 			PseudoHeaderOrder: []string{":method", ":authority", ":scheme", ":path"},
 			ConnectionFlow:    15663105,
 			Headers: &core.HTTPHeaders{
@@ -604,7 +604,7 @@ func initOperaProfiles() {
 				MaxAckDelay:            25,
 				DisableActiveMigration: false,
 			},
-			QUICVersions: []uint32{core.QUICVersion1},
+			QUICVersions:      []uint32{core.QUICVersion1},
 			PseudoHeaderOrder: []string{":method", ":authority", ":scheme", ":path"},
 			ConnectionFlow:    15663105,
 			Headers: &core.HTTPHeaders{

@@ -99,11 +99,11 @@ func (c *Cache) cleanup() {
 
 // LRUCache is a simple LRU cache
 type LRUCache struct {
-	mu       sync.RWMutex
-	items    map[string]*lruItem
-	maxSize  int
-	head     *lruItem
-	tail     *lruItem
+	mu      sync.RWMutex
+	items   map[string]*lruItem
+	maxSize int
+	head    *lruItem
+	tail    *lruItem
 }
 
 type lruItem struct {

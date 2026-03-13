@@ -469,7 +469,7 @@ func TestPassiveRecognizer_RecognizeFromHeaders(t *testing.T) {
 				t.Errorf("IsBot = %v, want %v", result.IsBot, tt.wantIsBot)
 			}
 
-			if result.Confidence < tt.wantConfidence - 0.01 {
+			if result.Confidence < tt.wantConfidence-0.01 {
 				t.Errorf("Confidence = %v, want >= %v", result.Confidence, tt.wantConfidence)
 			}
 		})
@@ -558,9 +558,9 @@ func TestRecognizeFromUserAgent(t *testing.T) {
 // TestDetectOSFromUA tests OS detection from UA
 func TestDetectOSFromUA(t *testing.T) {
 	tests := []struct {
-		name    string
-		ua      string
-		wantOS  string
+		name   string
+		ua     string
+		wantOS string
 	}{
 		{
 			name:   "windows 10",
@@ -705,7 +705,7 @@ func TestCalculateConfidence(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := calculateConfidence(tt.headers, tt.result)
 			// Use range comparison to handle floating point precision issues
-			if got < tt.wantConfidence - 0.01 || got > tt.wantConfidence + 0.01 {
+			if got < tt.wantConfidence-0.01 || got > tt.wantConfidence+0.01 {
 				t.Errorf("calculateConfidence() = %v, want ~%v", got, tt.wantConfidence)
 			}
 		})

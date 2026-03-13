@@ -132,10 +132,10 @@ func BenchmarkLegacyFeatureAdapter_RecognizeFromHeaders(b *testing.B) {
 // BenchmarkCalculateRiskScore 基准测试：风险分数计算
 func BenchmarkCalculateRiskScore(b *testing.B) {
 	scores := map[FeatureType]float64{
-		FeatureEntropy:                   0.8,
-		FeatureToolMarker:                0.9,
-		FeatureHeadlessBrowser:           0.7,
-		FeatureOSPlatformContradiction:   0.6,
+		FeatureEntropy:                 0.8,
+		FeatureToolMarker:              0.9,
+		FeatureHeadlessBrowser:         0.7,
+		FeatureOSPlatformContradiction: 0.6,
 	}
 
 	b.ResetTimer()

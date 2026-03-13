@@ -4,7 +4,7 @@ package profiles
 
 import (
 	"strings"
-	
+
 	"github.com/vistone/fingerprint/modules/core"
 )
 
@@ -38,7 +38,7 @@ var (
 			InitialWindowSize: 6291456, MaxFrameSize: 16384, MaxHeaderListSize: 262144,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 			UpgradeInsecureRequests: "1", SecFetchDest: "document",
 			SecFetchMode: "navigate", SecFetchSite: "none",
@@ -55,7 +55,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 			UpgradeInsecureRequests: "1",
 		},
@@ -71,7 +71,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -86,7 +86,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -101,7 +101,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -117,7 +117,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -132,7 +132,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -147,7 +147,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -162,7 +162,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -177,7 +177,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -193,7 +193,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -208,7 +208,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -223,7 +223,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -238,7 +238,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -253,7 +253,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -268,7 +268,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -283,7 +283,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -297,11 +297,11 @@ func init() {
 		Edge120, Edge121, Edge122, Edge123, Edge124,
 		Edge126, Edge128, Edge130, Edge131, Edge132, Edge133, Edge134,
 	}
-	
+
 	// for each profile fills in missing HTTP/2 and HTTP/3 profile
 	for i := range profiles {
 		p := &profiles[i]
-		
+
 		// padding HTTP/2 profile (if missing)
 		if p.HTTP2Settings.HeaderTableSize == 0 && p.HTTP2Settings.InitialWindowSize == 0 {
 			p.HTTP2Settings = core.HTTP2Settings{
@@ -314,12 +314,12 @@ func init() {
 			}
 			p.PseudoHeaderOrder = []string{":method", ":authority", ":scheme", ":path"}
 		}
-		
+
 		// padding ConnectionFlow (if missing)
 		if p.ConnectionFlow == 0 {
 			p.ConnectionFlow = 15663105
 		}
-		
+
 		// padding HTTP/3 (QUIC) profile (if missing)
 		if p.HTTP3Settings == nil {
 			p.HTTP3Settings = &core.HTTP3Settings{
@@ -335,7 +335,7 @@ func init() {
 			}
 			p.QUICVersions = []uint32{core.QUICVersion1}
 		}
-		
+
 		// padding Headers (if missing)
 		if p.Headers == nil {
 			p.Headers = &core.HTTPHeaders{}
@@ -374,7 +374,7 @@ func init() {
 		if h.UpgradeInsecureRequests == "" {
 			h.UpgradeInsecureRequests = "1"
 		}
-		
+
 		Register(*p)
 	}
 }

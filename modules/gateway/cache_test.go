@@ -35,7 +35,7 @@ func TestNewLRUCache(t *testing.T) {
 			cache := NewLRUCache(tt.maxEntries, time.Minute)
 			testhelpers.AssertNotNil(t, cache)
 			// MaxEntries is private, just verify cache was created
-testhelpers.AssertNotNil(t, cache)
+			testhelpers.AssertNotNil(t, cache)
 		})
 	}
 }

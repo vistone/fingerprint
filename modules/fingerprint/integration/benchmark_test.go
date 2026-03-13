@@ -3,12 +3,12 @@ package fingerprint_test
 import (
 	"testing"
 
+	"github.com/vistone/fingerprint/modules/core/types"
+	"github.com/vistone/fingerprint/modules/errors"
 	"github.com/vistone/fingerprint/modules/generator/random"
 	"github.com/vistone/fingerprint/modules/http/legacy/headers"
 	"github.com/vistone/fingerprint/modules/http/legacy/useragent"
-	"github.com/vistone/fingerprint/modules/errors"
 	"github.com/vistone/fingerprint/modules/profiles/legacy"
-	"github.com/vistone/fingerprint/modules/core/types"
 )
 
 // BenchmarkGetRandomFingerprint 基准测试：随机get指纹

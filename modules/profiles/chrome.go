@@ -24,7 +24,7 @@ func getChromeTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
 
 	// uses string containment check because some OS constant values are the same (e.g. OSWindows10 and OSWindows11)
 	osStr := string(osType)
-	
+
 	if strings.Contains(osStr, "Windows") {
 		// Windows characteristics
 		base.TTL = 128
@@ -82,12 +82,12 @@ var (
 			InitialWindowSize: 6291456, MaxFrameSize: 16384, MaxHeaderListSize: 262144,
 		},
 		PseudoHeaderOrder: []string{":method", ":authority", ":scheme", ":path"},
-		ConnectionFlow: 15663105,
+		ConnectionFlow:    15663105,
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 			SecFetchDest: "document", SecFetchMode: "navigate", SecFetchSite: "none",
-			SecCHUA: `"Google Chrome";v="115", "Not=A?Brand";v="24", "Chromium";v="115"`,
+			SecCHUA:       `"Google Chrome";v="115", "Not=A?Brand";v="24", "Chromium";v="115"`,
 			SecCHUAMobile: "?0", SecCHUAPlatform: `"Windows"`,
 			UpgradeInsecureRequests: "1",
 		},
@@ -103,7 +103,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 			SecCHUA: `"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"`,
 		},
@@ -119,7 +119,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 			SecCHUA: `"Google Chrome";v="117", "Not;A=Brand";v="8", "Chromium";v="117"`,
 		},
@@ -135,7 +135,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 			SecCHUA: `"Chromium";v="118", "Google Chrome";v="118", "Not=A?Brand";v="99"`,
 		},
@@ -151,7 +151,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSLinuxUbuntu),
@@ -167,7 +167,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSLinuxUbuntu),
@@ -182,7 +182,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSLinuxUbuntu),
@@ -197,7 +197,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSLinuxDebian),
@@ -212,7 +212,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSLinuxFedora),
@@ -227,7 +227,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSLinuxFedora),
@@ -242,7 +242,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSLinuxUbuntu),
@@ -257,7 +257,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSLinuxUbuntu),
@@ -272,7 +272,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSLinuxUbuntu),
@@ -288,7 +288,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSWindows10),
@@ -303,7 +303,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSWindows10),
@@ -318,7 +318,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSWindows10),
@@ -333,7 +333,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSWindows10),
@@ -348,7 +348,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSWindows10),
@@ -363,7 +363,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSWindows10),
@@ -378,7 +378,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSWindows10),
@@ -393,7 +393,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSWindows10),
@@ -408,7 +408,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSWindows10),
@@ -423,7 +423,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSWindows10),
@@ -438,7 +438,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: getChromeTCPIP(core.OSWindows10),
@@ -453,11 +453,11 @@ func init() {
 		Chrome134, Chrome135, Chrome136, Chrome137, Chrome138, Chrome139, Chrome140,
 		Chrome141, Chrome142, Chrome143, Chrome144,
 	}
-	
+
 	// for each profile fills in missing HTTP/2 and HTTP/3 profile
 	for i := range profiles {
 		p := &profiles[i]
-		
+
 		// padding HTTP/2 profile (if missing)
 		if p.HTTP2Settings.HeaderTableSize == 0 && p.HTTP2Settings.InitialWindowSize == 0 {
 			p.HTTP2Settings = core.HTTP2Settings{
@@ -470,12 +470,12 @@ func init() {
 			}
 			p.PseudoHeaderOrder = []string{":method", ":authority", ":scheme", ":path"}
 		}
-		
+
 		// padding ConnectionFlow (if missing)
 		if p.ConnectionFlow == 0 {
 			p.ConnectionFlow = 15663105
 		}
-		
+
 		// padding HTTP/3 (QUIC) profile (if missing)
 		if p.HTTP3Settings == nil {
 			p.HTTP3Settings = &core.HTTP3Settings{
@@ -491,7 +491,7 @@ func init() {
 			}
 			p.QUICVersions = []uint32{core.QUICVersion1}
 		}
-		
+
 		// padding Headers (if missing)
 		if p.Headers == nil {
 			p.Headers = &core.HTTPHeaders{}
@@ -530,7 +530,7 @@ func init() {
 		if h.UpgradeInsecureRequests == "" {
 			h.UpgradeInsecureRequests = "1"
 		}
-		
+
 		Register(*p)
 	}
 }

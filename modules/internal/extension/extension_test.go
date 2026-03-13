@@ -14,39 +14,39 @@ import (
 
 func TestNewContainer(t *testing.T) {
 	tests := []struct {
-		name        string
-		config      *Config
-		wantNil     bool
-		wantEnv     Environment
-		wantRules   bool
+		name      string
+		config    *Config
+		wantNil   bool
+		wantEnv   Environment
+		wantRules bool
 	}{
 		{
-			name:        "with nil config should create default",
-			config:      nil,
-			wantNil:     false,
-			wantEnv:     EnvDevelopment,
-			wantRules:   true,
+			name:      "with nil config should create default",
+			config:    nil,
+			wantNil:   false,
+			wantEnv:   EnvDevelopment,
+			wantRules: true,
 		},
 		{
-			name:        "with valid config should use it",
-			config:      NewConfig(EnvProduction),
-			wantNil:     false,
-			wantEnv:     EnvProduction,
-			wantRules:   true,
+			name:      "with valid config should use it",
+			config:    NewConfig(EnvProduction),
+			wantNil:   false,
+			wantEnv:   EnvProduction,
+			wantRules: true,
 		},
 		{
-			name:        "with development config",
-			config:      NewConfig(EnvDevelopment),
-			wantNil:     false,
-			wantEnv:     EnvDevelopment,
-			wantRules:   true,
+			name:      "with development config",
+			config:    NewConfig(EnvDevelopment),
+			wantNil:   false,
+			wantEnv:   EnvDevelopment,
+			wantRules: true,
 		},
 		{
-			name:        "with testing config",
-			config:      NewConfig(EnvTesting),
-			wantNil:     false,
-			wantEnv:     EnvTesting,
-			wantRules:   true,
+			name:      "with testing config",
+			config:    NewConfig(EnvTesting),
+			wantNil:   false,
+			wantEnv:   EnvTesting,
+			wantRules: true,
 		},
 	}
 
@@ -78,11 +78,11 @@ func TestContainer_Register(t *testing.T) {
 	container := NewContainer(NewConfig(EnvTesting))
 
 	tests := []struct {
-		name      string
-		regName   string
-		factory   func() (interface{}, error)
-		wantErr   bool
-		wantCode  ErrorCode
+		name     string
+		regName  string
+		factory  func() (interface{}, error)
+		wantErr  bool
+		wantCode ErrorCode
 	}{
 		{
 			name:    "register new factory should succeed",
@@ -233,24 +233,24 @@ func TestContainer_GetLogger(t *testing.T) {
 	container := NewContainer(NewConfig(EnvTesting))
 
 	tests := []struct {
-		name     string
+		name       string
 		loggerName string
-		wantErr  bool
+		wantErr    bool
 	}{
 		{
-			name:     "get new logger should succeed",
+			name:       "get new logger should succeed",
 			loggerName: "test_logger",
-			wantErr:  false,
+			wantErr:    false,
 		},
 		{
-			name:     "get same logger should return existing",
+			name:       "get same logger should return existing",
 			loggerName: "test_logger",
-			wantErr:  false,
+			wantErr:    false,
 		},
 		{
-			name:     "get different logger should create new",
+			name:       "get different logger should create new",
 			loggerName: "another_logger",
-			wantErr:  false,
+			wantErr:    false,
 		},
 	}
 
@@ -516,7 +516,7 @@ func TestContainer_Initialize(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			container := NewContainer(NewConfig(tt.env))
 			container.Reset() // Ensure fresh state
-			
+
 			err := container.Initialize()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Initialize() error = %v, wantErr %v", err, tt.wantErr)
@@ -524,7 +524,7 @@ func TestContainer_Initialize(t *testing.T) {
 			if err == nil && !container.initialized {
 				t.Error("Initialize() did not set initialized flag")
 			}
-			
+
 			// Second initialize should succeed (idempotent)
 			err = container.Initialize()
 			if err != nil {
@@ -616,17 +616,17 @@ func TestRateLimiter_Allow(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			limiter := NewRateLimiter(tt.maxRequests, time.Minute)
 			var lastErr error
-			
+
 			for i := 0; i < tt.requestCount; i++ {
 				lastErr = limiter.Allow()
 			}
-			
+
 			if (lastErr != nil) != tt.wantErr {
-				t.Errorf("Allow() after %d requests, error = %v, wantErr %v", 
+				t.Errorf("Allow() after %d requests, error = %v, wantErr %v",
 					tt.requestCount, lastErr, tt.wantErr)
 				return
 			}
-			
+
 			if lastErr != nil && tt.wantCode != 0 {
 				extErr, ok := lastErr.(*Error)
 				if !ok {
@@ -721,12 +721,12 @@ func TestNewResourceMonitor(t *testing.T) {
 
 func TestResourceMonitor_CheckMemory(t *testing.T) {
 	tests := []struct {
-		name      string
-		maxMemMB  int
-		label     string
-		sizes     []int64
-		wantErr   bool
-		wantCode  ErrorCode
+		name     string
+		maxMemMB int
+		label    string
+		sizes    []int64
+		wantErr  bool
+		wantCode ErrorCode
 	}{
 		{
 			name:     "allocation within limit should succeed",
@@ -756,16 +756,16 @@ func TestResourceMonitor_CheckMemory(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			monitor := NewResourceMonitor(tt.maxMemMB, 100, 30)
 			var lastErr error
-			
+
 			for _, size := range tt.sizes {
 				lastErr = monitor.CheckMemory(size, tt.label)
 			}
-			
+
 			if (lastErr != nil) != tt.wantErr {
 				t.Errorf("CheckMemory() error = %v, wantErr %v", lastErr, tt.wantErr)
 				return
 			}
-			
+
 			if lastErr != nil && tt.wantCode != 0 {
 				extErr, ok := lastErr.(*Error)
 				if !ok {
@@ -782,23 +782,23 @@ func TestResourceMonitor_CheckMemory(t *testing.T) {
 
 func TestResourceMonitor_ReleaseMemory(t *testing.T) {
 	monitor := NewResourceMonitor(10, 100, 30)
-	
+
 	// Allocate memory
 	if err := monitor.CheckMemory(5*1024*1024, "test"); err != nil {
 		t.Fatalf("Initial allocation failed: %v", err)
 	}
-	
+
 	// Release some memory
 	monitor.ReleaseMemory(2*1024*1024, "test")
-	
+
 	usage := monitor.GetMemoryUsage()
 	if usage["test"] != 3*1024*1024 {
 		t.Errorf("After release, memory usage = %d, want %d", usage["test"], 3*1024*1024)
 	}
-	
+
 	// Release more than allocated (should cap at 0)
 	monitor.ReleaseMemory(10*1024*1024, "test")
-	
+
 	usage = monitor.GetMemoryUsage()
 	if usage["test"] != 0 {
 		t.Errorf("After over-release, memory usage = %d, want 0", usage["test"])
@@ -807,11 +807,11 @@ func TestResourceMonitor_ReleaseMemory(t *testing.T) {
 
 func TestResourceMonitor_CheckTimeout(t *testing.T) {
 	tests := []struct {
-		name        string
-		timeoutSec  int
-		sleepTime   time.Duration
-		wantErr     bool
-		wantCode    ErrorCode
+		name       string
+		timeoutSec int
+		sleepTime  time.Duration
+		wantErr    bool
+		wantCode   ErrorCode
 	}{
 		{
 			name:       "immediate check should pass",
@@ -838,13 +838,13 @@ func TestResourceMonitor_CheckTimeout(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			monitor := NewResourceMonitor(100, 100, tt.timeoutSec)
 			time.Sleep(tt.sleepTime)
-			
+
 			err := monitor.CheckTimeout()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CheckTimeout() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			
+
 			if err != nil && tt.wantCode != 0 {
 				extErr, ok := err.(*Error)
 				if !ok {
@@ -861,7 +861,7 @@ func TestResourceMonitor_CheckTimeout(t *testing.T) {
 
 func TestDefaultDefensePolicy(t *testing.T) {
 	policy := DefaultDefensePolicy()
-	
+
 	tests := []struct {
 		name     string
 		got      interface{}
@@ -913,7 +913,7 @@ func TestDefaultDefensePolicy(t *testing.T) {
 			expected: true,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.got != tt.expected {
@@ -997,7 +997,7 @@ func TestSecurityAuditor_RecordEvent(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			auditor := NewSecurityAuditor(tt.maxEvents)
 			var lastErr error
-			
+
 			for i := 0; i < tt.eventCount; i++ {
 				// Use critical severity to test threshold
 				lastErr = auditor.RecordEvent("test_event", "critical", "test message", nil)
@@ -1005,12 +1005,12 @@ func TestSecurityAuditor_RecordEvent(t *testing.T) {
 					break
 				}
 			}
-			
+
 			if (lastErr != nil) != tt.wantErr {
 				t.Errorf("RecordEvent() error = %v, wantErr %v", lastErr, tt.wantErr)
 				return
 			}
-			
+
 			if lastErr != nil && tt.wantCode != 0 {
 				extErr, ok := lastErr.(*Error)
 				if !ok {
@@ -1027,19 +1027,19 @@ func TestSecurityAuditor_RecordEvent(t *testing.T) {
 
 func TestSecurityAuditor_GetAuditLog(t *testing.T) {
 	auditor := NewSecurityAuditor(100)
-	
+
 	// Record some events
 	for i := 0; i < 5; i++ {
 		if err := auditor.RecordEvent("test_event", "info", "test message", map[string]interface{}{"index": i}); err != nil {
 			t.Fatalf("Failed to record event: %v", err)
 		}
 	}
-	
+
 	logs := auditor.GetAuditLog()
 	if len(logs) != 5 {
 		t.Errorf("GetAuditLog() returned %d events, want 5", len(logs))
 	}
-	
+
 	// Verify log is a copy (modifying it shouldn't affect original)
 	logs[0].Message = "modified"
 	logs2 := auditor.GetAuditLog()
@@ -1050,17 +1050,17 @@ func TestSecurityAuditor_GetAuditLog(t *testing.T) {
 
 func TestSecurityAuditor_ClearAuditLog(t *testing.T) {
 	auditor := NewSecurityAuditor(100)
-	
+
 	// Record some events
 	for i := 0; i < 5; i++ {
 		if err := auditor.RecordEvent("test_event", "info", "test message", nil); err != nil {
 			t.Fatalf("Failed to record event: %v", err)
 		}
 	}
-	
+
 	// Clear the log
 	auditor.ClearAuditLog()
-	
+
 	logs := auditor.GetAuditLog()
 	if len(logs) != 0 {
 		t.Errorf("After ClearAuditLog(), GetAuditLog() returned %d events, want 0", len(logs))
@@ -1069,14 +1069,14 @@ func TestSecurityAuditor_ClearAuditLog(t *testing.T) {
 
 func TestSecurityAuditor_EventRotation(t *testing.T) {
 	auditor := NewSecurityAuditor(5) // Small max to test rotation
-	
+
 	// Record more events than max
 	for i := 0; i < 10; i++ {
 		if err := auditor.RecordEvent("test_event", "info", "test message", nil); err != nil {
 			t.Fatalf("Failed to record event: %v", err)
 		}
 	}
-	
+
 	logs := auditor.GetAuditLog()
 	if len(logs) > 5 {
 		t.Errorf("Event count %d exceeds max %d", len(logs), 5)
@@ -1152,11 +1152,11 @@ func TestNewRequestGuard(t *testing.T) {
 
 func TestRequestGuard_ValidateRequest(t *testing.T) {
 	tests := []struct {
-		name      string
-		policy    *DefensePolicy
-		data      []byte
-		wantErr   bool
-		wantCode  ErrorCode
+		name     string
+		policy   *DefensePolicy
+		data     []byte
+		wantErr  bool
+		wantCode ErrorCode
 	}{
 		{
 			name: "valid small data should pass",
@@ -1211,12 +1211,12 @@ func TestRequestGuard_ValidateRequest(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			guard := NewRequestGuard(tt.policy)
 			err := guard.ValidateRequest(tt.data)
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			
+
 			if err != nil && tt.wantCode != 0 {
 				extErr, ok := err.(*Error)
 				if !ok {
@@ -1239,7 +1239,7 @@ func TestRequestGuard_RateLimiting(t *testing.T) {
 		EnableTimeout:   false,
 	}
 	guard := NewRequestGuard(policy)
-	
+
 	// First 2 requests should succeed
 	if err := guard.ValidateRequest([]byte("test1")); err != nil {
 		t.Errorf("First request failed: %v", err)
@@ -1247,7 +1247,7 @@ func TestRequestGuard_RateLimiting(t *testing.T) {
 	if err := guard.ValidateRequest([]byte("test2")); err != nil {
 		t.Errorf("Second request failed: %v", err)
 	}
-	
+
 	// Third request should fail due to rate limiting
 	if err := guard.ValidateRequest([]byte("test3")); err == nil {
 		t.Error("Third request should have been rate limited")
@@ -1262,10 +1262,10 @@ func TestRequestGuard_Timeout(t *testing.T) {
 		TimeoutSec:      0, // Immediate timeout (int comparison)
 	}
 	guard := NewRequestGuard(policy)
-	
+
 	// Wait for > 1 second so int(elapsed_seconds) > 0
 	time.Sleep(1100 * time.Millisecond)
-	
+
 	// Request should fail due to timeout
 	err := guard.ValidateRequest([]byte("test"))
 	if err == nil {
@@ -1315,7 +1315,7 @@ func TestNewConfig(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			config := NewConfig(tt.env)
-			
+
 			if config.Environment != tt.wantEnv {
 				t.Errorf("Environment = %v, want %v", config.Environment, tt.wantEnv)
 			}
@@ -1334,39 +1334,39 @@ func TestNewConfig(t *testing.T) {
 
 func TestNewConfig_EnvironmentSpecificValues(t *testing.T) {
 	tests := []struct {
-		name           string
-		env            Environment
-		wantLogLevel   int
+		name            string
+		env             Environment
+		wantLogLevel    int
 		wantMaxDataSize int
-		wantStrictMode bool
+		wantStrictMode  bool
 	}{
 		{
-			name:           "development has debug level and large data size",
-			env:            EnvDevelopment,
-			wantLogLevel:   0, // DEBUG
+			name:            "development has debug level and large data size",
+			env:             EnvDevelopment,
+			wantLogLevel:    0,           // DEBUG
 			wantMaxDataSize: 1024 * 1024, // 1MB
-			wantStrictMode: false,
+			wantStrictMode:  false,
 		},
 		{
-			name:           "testing has warn level and medium data size",
-			env:            EnvTesting,
-			wantLogLevel:   2, // WARN
+			name:            "testing has warn level and medium data size",
+			env:             EnvTesting,
+			wantLogLevel:    2,     // WARN
 			wantMaxDataSize: 65536, // 64KB
-			wantStrictMode: true,
+			wantStrictMode:  true,
 		},
 		{
-			name:           "production has info level and small data size",
-			env:            EnvProduction,
-			wantLogLevel:   1, // INFO
+			name:            "production has info level and small data size",
+			env:             EnvProduction,
+			wantLogLevel:    1,    // INFO
 			wantMaxDataSize: 4096, // 4KB
-			wantStrictMode: true,
+			wantStrictMode:  true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			config := NewConfig(tt.env)
-			
+
 			if config.Logger.Level != tt.wantLogLevel {
 				t.Errorf("Logger.Level = %d, want %d", config.Logger.Level, tt.wantLogLevel)
 			}
@@ -1419,7 +1419,7 @@ func TestNewConfigFromEnv(t *testing.T) {
 			} else {
 				os.Unsetenv("FINGERPRINT_ENV")
 			}
-			
+
 			config := NewConfigFromEnv()
 			if config.Environment != tt.wantEnv {
 				t.Errorf("Environment = %v, want %v", config.Environment, tt.wantEnv)
@@ -1431,19 +1431,19 @@ func TestNewConfigFromEnv(t *testing.T) {
 func TestNewConfigFromEnv_WithOverrides(t *testing.T) {
 	// Save and restore environment variables
 	envVars := map[string]string{
-		"FINGERPRINT_ENV":           "",
-		"FINGERPRINT_LOG_LEVEL":     "",
+		"FINGERPRINT_ENV":            "",
+		"FINGERPRINT_LOG_LEVEL":      "",
 		"FINGERPRINT_MAX_INPUT_SIZE": "",
-		"FINGERPRINT_MAX_MEMORY_MB": "",
-		"FINGERPRINT_TIMEOUT_SEC":   "",
-		"FINGERPRINT_RATE_LIMIT":    "",
+		"FINGERPRINT_MAX_MEMORY_MB":  "",
+		"FINGERPRINT_TIMEOUT_SEC":    "",
+		"FINGERPRINT_RATE_LIMIT":     "",
 	}
-	
+
 	// Save original values
 	for key := range envVars {
 		envVars[key] = os.Getenv(key)
 	}
-	
+
 	// Restore after test
 	defer func() {
 		for key, val := range envVars {
@@ -1462,9 +1462,9 @@ func TestNewConfigFromEnv_WithOverrides(t *testing.T) {
 	os.Setenv("FINGERPRINT_MAX_MEMORY_MB", "512")
 	os.Setenv("FINGERPRINT_TIMEOUT_SEC", "60")
 	os.Setenv("FINGERPRINT_RATE_LIMIT", "500")
-	
+
 	config := NewConfigFromEnv()
-	
+
 	if config.Environment != EnvProduction {
 		t.Errorf("Environment = %v, want %v", config.Environment, EnvProduction)
 	}
@@ -1488,7 +1488,7 @@ func TestNewConfigFromEnv_WithOverrides(t *testing.T) {
 func TestConfig_LoadRulesByFilename(t *testing.T) {
 	// Create a temporary directory for test files
 	tmpDir := t.TempDir()
-	
+
 	// Create a test rules file
 	testRules := `{
 		"_metadata": {"version": "test"},
@@ -1498,12 +1498,12 @@ func TestConfig_LoadRulesByFilename(t *testing.T) {
 			"low_threshold": 100
 		}
 	}`
-	
+
 	testFile := filepath.Join(tmpDir, "test_rules.json")
 	if err := os.WriteFile(testFile, []byte(testRules), 0644); err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
-	
+
 	tests := []struct {
 		name       string
 		filename   string
@@ -1527,7 +1527,7 @@ func TestConfig_LoadRulesByFilename(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			config := NewConfig(EnvTesting)
-			
+
 			var err error
 			if tt.filename == testFile {
 				err = config.LoadRulesFromPath(tt.filename)
@@ -1540,12 +1540,12 @@ func TestConfig_LoadRulesByFilename(t *testing.T) {
 				config.Rules = rules
 				err = nil
 			}
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("LoadRulesByFilename() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			
+
 			if tt.wantConfig && config.Rules == nil {
 				t.Error("Rules config is nil")
 			}
@@ -1759,9 +1759,9 @@ func TestCanaryMetricsCollector_RecordRequest(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			collector.RecordRequest(tt.requestID, tt.useNewMethod, tt.duration, tt.success)
-			
+
 			metrics := collector.GetCurrentMetrics()
-			
+
 			if metrics.TotalRequests != tt.wantTotal {
 				t.Errorf("TotalRequests = %d, want %d", metrics.TotalRequests, tt.wantTotal)
 			}
@@ -1783,14 +1783,14 @@ func TestCanaryMetricsCollector_RecordRequest(t *testing.T) {
 
 func TestCanaryMetricsCollector_RecordCacheHit(t *testing.T) {
 	collector := NewCanaryMetricsCollector(nil)
-	
+
 	// Record some cache hits and misses
 	collector.RecordCacheHit(true)
 	collector.RecordCacheHit(true)
 	collector.RecordCacheHit(false)
-	
+
 	metrics := collector.GetCurrentMetrics()
-	
+
 	if metrics.CacheHits != 2 {
 		t.Errorf("CacheHits = %d, want %d", metrics.CacheHits, 2)
 	}
@@ -1804,33 +1804,33 @@ func TestCanaryMetricsCollector_RecordCacheHit(t *testing.T) {
 
 func TestCanaryMetricsCollector_GetCurrentMetrics(t *testing.T) {
 	collector := NewCanaryMetricsCollector(nil)
-	
+
 	// Record some requests
 	collector.RecordRequest("req1", true, 10*time.Millisecond, true)
 	collector.RecordRequest("req2", false, 20*time.Millisecond, true)
 	collector.RecordRequest("req3", true, 30*time.Millisecond, false)
-	
+
 	metrics := collector.GetCurrentMetrics()
-	
+
 	// Check calculated values
 	if metrics.TotalRequests != 3 {
 		t.Errorf("TotalRequests = %d, want %d", metrics.TotalRequests, 3)
 	}
-	
+
 	expectedAvgLatency := (10 + 20 + 30) * time.Millisecond / 3
 	if metrics.AvgLatency != expectedAvgLatency {
 		t.Errorf("AvgLatency = %v, want %v", metrics.AvgLatency, expectedAvgLatency)
 	}
-	
+
 	expectedErrorRate := 1.0 / 3.0
 	if metrics.ErrorRate != expectedErrorRate {
 		t.Errorf("ErrorRate = %f, want %f", metrics.ErrorRate, expectedErrorRate)
 	}
-	
+
 	if metrics.MinLatency != 10*time.Millisecond {
 		t.Errorf("MinLatency = %v, want %v", metrics.MinLatency, 10*time.Millisecond)
 	}
-	
+
 	if metrics.MaxLatency != 30*time.Millisecond {
 		t.Errorf("MaxLatency = %v, want %v", metrics.MaxLatency, 30*time.Millisecond)
 	}
@@ -1838,13 +1838,13 @@ func TestCanaryMetricsCollector_GetCurrentMetrics(t *testing.T) {
 
 func TestCanaryMetricsCollector_SnapshotMetrics(t *testing.T) {
 	collector := NewCanaryMetricsCollector(nil)
-	
+
 	// Record some requests and take snapshots
 	for i := 0; i < 5; i++ {
 		collector.RecordRequest("req", true, 10*time.Millisecond, true)
 		collector.SnapshotMetrics()
 	}
-	
+
 	history := collector.GetMetricsHistory(1)
 	if len(history) != 5 {
 		t.Errorf("History length = %d, want %d", len(history), 5)
@@ -1853,24 +1853,24 @@ func TestCanaryMetricsCollector_SnapshotMetrics(t *testing.T) {
 
 func TestCanaryMetricsCollector_GetMetricsHistory(t *testing.T) {
 	collector := NewCanaryMetricsCollector(nil)
-	
+
 	// Create old snapshot by directly manipulating history (since SnapshotMetrics uses time.Now())
 	oldSnapshot := &CanaryMetrics{
 		TotalRequests: 1,
 		CollectedAt:   time.Now().Add(-2 * time.Hour),
 	}
 	collector.history = append(collector.history, oldSnapshot)
-	
+
 	// Create new snapshot
 	collector.RecordRequest("req", true, 10*time.Millisecond, true)
 	collector.SnapshotMetrics()
-	
+
 	// Get last hour history - should only have the new snapshot
 	history := collector.GetMetricsHistory(1)
 	if len(history) != 1 {
 		t.Errorf("Recent history length = %d, want %d", len(history), 1)
 	}
-	
+
 	// Get last 3 hours history - should have both snapshots
 	allHistory := collector.GetMetricsHistory(3)
 	if len(allHistory) != 2 {
@@ -1880,7 +1880,7 @@ func TestCanaryMetricsCollector_GetMetricsHistory(t *testing.T) {
 
 func TestDefaultCanaryThresholds(t *testing.T) {
 	thresholds := DefaultCanaryThresholds()
-	
+
 	tests := []struct {
 		name     string
 		got      interface{}
@@ -1917,7 +1917,7 @@ func TestDefaultCanaryThresholds(t *testing.T) {
 			expected: 500 * time.Millisecond,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.got != tt.expected {
@@ -1929,7 +1929,7 @@ func TestDefaultCanaryThresholds(t *testing.T) {
 
 func TestNewCanaryHealthCheck(t *testing.T) {
 	collector := NewCanaryMetricsCollector(nil)
-	
+
 	tests := []struct {
 		name      string
 		collector *CanaryMetricsCollector
@@ -2019,10 +2019,10 @@ func TestCanaryHealthCheck_CheckHealth(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			collector := NewCanaryMetricsCollector(nil)
 			tt.setupMetrics(collector)
-			
+
 			check := NewCanaryHealthCheck(collector)
 			healthy, alerts, critique := check.CheckHealth(context.Background())
-			
+
 			if healthy != tt.wantHealthy {
 				t.Errorf("CheckHealth() healthy = %v, want %v", healthy, tt.wantHealthy)
 			}
@@ -2043,16 +2043,16 @@ func TestGenerateCanaryReport(t *testing.T) {
 		Enabled:          true,
 	}
 	collector := NewCanaryMetricsCollector(config)
-	
+
 	// Record some requests
 	collector.RecordRequest("req1", true, 10*time.Millisecond, true)
 	collector.RecordRequest("req2", true, 15*time.Millisecond, true)
 	collector.RecordRequest("req3", false, 20*time.Millisecond, true)
 	collector.RecordRequest("req4", true, 12*time.Millisecond, false)
-	
+
 	startTime := time.Now().Add(-1 * time.Hour)
 	report := collector.GenerateCanaryReport(startTime)
-	
+
 	// Verify report fields
 	if report.Stage != CanaryStage25Percent {
 		t.Errorf("Stage = %v, want %v", report.Stage, CanaryStage25Percent)
@@ -2081,9 +2081,9 @@ func TestGenerateCanaryReport(t *testing.T) {
 
 func TestGenerateCanaryReport_Recommendations(t *testing.T) {
 	tests := []struct {
-		name             string
-		setupMetrics     func(*CanaryMetricsCollector)
-		wantContains     string
+		name         string
+		setupMetrics func(*CanaryMetricsCollector)
+		wantContains string
 	}{
 		{
 			name: "high error rate should recommend rollback",
@@ -2131,9 +2131,9 @@ func TestGenerateCanaryReport_Recommendations(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			collector := NewCanaryMetricsCollector(nil)
 			tt.setupMetrics(collector)
-			
+
 			report := collector.GenerateCanaryReport(time.Now().Add(-1 * time.Hour))
-			
+
 			if report.Recommendation == "" {
 				t.Error("Recommendation is empty")
 			}
@@ -2179,9 +2179,9 @@ func TestCanaryRouter_ShouldUseNewMethod(t *testing.T) {
 					Enabled:          tt.enabled,
 				},
 			}
-			
+
 			result := router.ShouldUseNewMethod(tt.requestID)
-			
+
 			if !tt.enabled {
 				if result {
 					t.Error("ShouldUseNewMethod() should return false when disabled")
@@ -2197,7 +2197,7 @@ func TestCanaryRouter_ShouldUseNewMethod(t *testing.T) {
 
 func TestCanaryLifecycle(t *testing.T) {
 	lifecycle := NewCanaryLifecycle()
-	
+
 	if lifecycle.collector == nil {
 		t.Error("lifecycle.collector is nil")
 	}
@@ -2207,7 +2207,7 @@ func TestCanaryLifecycle(t *testing.T) {
 	if len(lifecycle.stages) != 4 {
 		t.Errorf("lifecycle.stages length = %d, want %d", len(lifecycle.stages), 4)
 	}
-	
+
 	// Test StartStage
 	lifecycle.StartStage(CanaryStage5Percent, 1*time.Hour)
 	if !lifecycle.collector.config.Enabled {
@@ -2216,17 +2216,17 @@ func TestCanaryLifecycle(t *testing.T) {
 	if lifecycle.collector.config.Stage != CanaryStage5Percent {
 		t.Errorf("Stage = %v, want %v", lifecycle.collector.config.Stage, CanaryStage5Percent)
 	}
-	
+
 	// Test CanUpgrade (no data, should be true)
 	canUpgrade := lifecycle.CanUpgrade()
 	if !canUpgrade {
 		t.Error("CanUpgrade() should return true with no data")
 	}
-	
+
 	// Record some data and test EndStage
 	lifecycle.collector.RecordRequest("req1", true, 10*time.Millisecond, true)
 	report := lifecycle.EndStage()
-	
+
 	if report == nil {
 		t.Error("EndStage() returned nil report")
 	}

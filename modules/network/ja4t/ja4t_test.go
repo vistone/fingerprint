@@ -6,10 +6,10 @@ import (
 
 func TestComputeJA4T(t *testing.T) {
 	tests := []struct {
-		name       string
-		data       TCPSYNData
-		wantEmpty  bool
-		checkFunc  func(t *testing.T, result *JA4TResult)
+		name      string
+		data      TCPSYNData
+		wantEmpty bool
+		checkFunc func(t *testing.T, result *JA4TResult)
 	}{
 		{
 			name: "windows_typical",

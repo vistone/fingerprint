@@ -81,13 +81,13 @@ type TCPSYNData struct {
 
 // TCPOptionKind TCP option type constants
 const (
-	TCPOptionEndOfList  uint8 = 0  // End of option list
-	TCPOptionNOP        uint8 = 1  // No operation (padding)
-	TCPOptionMSS        uint8 = 2  // Maximum Segment Size
-	TCPOptionWindowScale uint8 = 3  // Window scale
-	TCPOptionSACKPermit uint8 = 4  // Selective Acknowledgment Permitted
-	TCPOptionSACK       uint8 = 5  // Selective Acknowledgment
-	TCPOptionTimestamps uint8 = 8  // Timestamps
+	TCPOptionEndOfList   uint8 = 0 // End of option list
+	TCPOptionNOP         uint8 = 1 // No operation (padding)
+	TCPOptionMSS         uint8 = 2 // Maximum Segment Size
+	TCPOptionWindowScale uint8 = 3 // Window scale
+	TCPOptionSACKPermit  uint8 = 4 // Selective Acknowledgment Permitted
+	TCPOptionSACK        uint8 = 5 // Selective Acknowledgment
+	TCPOptionTimestamps  uint8 = 8 // Timestamps
 )
 
 // tcpOptionName TCP option type name

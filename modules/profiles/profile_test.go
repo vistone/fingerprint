@@ -10,16 +10,16 @@ import (
 func TestProfileRegistry(t *testing.T) {
 	// 使用新的注册表实例进行测试
 	reg := NewProfileRegistry()
-	
+
 	profile := ClientProfile{
 		ID:          "test_profile",
 		Name:        "Test Profile",
 		BrowserType: core.BrowserChrome,
 	}
-	
+
 	// 注册
 	reg.Register(profile)
-	
+
 	// 获取
 	got, ok := reg.Get("test_profile")
 	if !ok {
@@ -28,7 +28,7 @@ func TestProfileRegistry(t *testing.T) {
 	if got.ID != "test_profile" {
 		t.Errorf("ID mismatch: got %s, want test_profile", got.ID)
 	}
-	
+
 	// 不存在的配置
 	_, ok = reg.Get("nonexistent")
 	if ok {
@@ -38,17 +38,17 @@ func TestProfileRegistry(t *testing.T) {
 
 func TestGetByBrowser(t *testing.T) {
 	reg := NewProfileRegistry()
-	
+
 	// 注册多个 Chrome 配置
 	reg.Register(ClientProfile{ID: "chrome_1", BrowserType: core.BrowserChrome})
 	reg.Register(ClientProfile{ID: "chrome_2", BrowserType: core.BrowserChrome})
 	reg.Register(ClientProfile{ID: "firefox_1", BrowserType: core.BrowserFirefox})
-	
+
 	chromeProfiles := reg.GetByBrowser(core.BrowserChrome)
 	if len(chromeProfiles) != 2 {
 		t.Errorf("should have 2 Chrome profiles, got %d", len(chromeProfiles))
 	}
-	
+
 	firefoxProfiles := reg.GetByBrowser(core.BrowserFirefox)
 	if len(firefoxProfiles) != 1 {
 		t.Errorf("should have 1 Firefox profile, got %d", len(firefoxProfiles))
@@ -57,17 +57,17 @@ func TestGetByBrowser(t *testing.T) {
 
 func TestGetByOS(t *testing.T) {
 	reg := NewProfileRegistry()
-	
+
 	reg.Register(ClientProfile{ID: "win_1", OS: core.OSWindows10})
 	reg.Register(ClientProfile{ID: "mac_1", OS: core.OSMacOS14})
 	reg.Register(ClientProfile{ID: "linux_1", OS: core.OSLinux})
-	
+
 	winProfiles := reg.GetByOS(core.OSWindows10)
 	// Windows 10 和 Windows 11 常量相同，所以可能有多个
 	if len(winProfiles) < 1 {
 		t.Errorf("should have at least 1 Windows profile, got %d", len(winProfiles))
 	}
-	
+
 	macProfiles := reg.GetByOS(core.OSMacOS14)
 	if len(macProfiles) != 1 {
 		t.Errorf("should have 1 macOS profile, got %d", len(macProfiles))
@@ -83,7 +83,7 @@ func TestClientProfileGetters(t *testing.T) {
 			UserAgent: "Mozilla/5.0",
 		},
 	}
-	
+
 	if profile.GetID() != "test_id" {
 		t.Error("GetID() failed")
 	}
@@ -104,7 +104,7 @@ func TestDefaultRegistry(t *testing.T) {
 	if count == 0 {
 		t.Error("Default registry should have profiles loaded")
 	}
-	
+
 	t.Logf("Default registry has %d profiles", count)
 }
 
@@ -115,7 +115,7 @@ func TestGetRandom(t *testing.T) {
 		p := GetRandom()
 		profiles[p.ID] = true
 	}
-	
+
 	// 应该有多种不同的配置被选中
 	if len(profiles) < 2 {
 		t.Error("GetRandom should return varied results")
@@ -127,7 +127,7 @@ func TestGetRandomByBrowser(t *testing.T) {
 	if chrome.BrowserType != core.BrowserChrome {
 		t.Errorf("Expected Chrome, got %s", chrome.BrowserType)
 	}
-	
+
 	firefox := GetRandomByBrowser(core.BrowserFirefox)
 	if firefox.BrowserType != core.BrowserFirefox {
 		t.Errorf("Expected Firefox, got %s", firefox.BrowserType)
@@ -147,7 +147,7 @@ func TestGetProfilesByBrowser(t *testing.T) {
 	if len(chromeProfiles) < 40 {
 		t.Errorf("Should have at least 40 Chrome profiles, got %d", len(chromeProfiles))
 	}
-	
+
 	firefoxProfiles := GetProfilesByBrowser(core.BrowserFirefox)
 	if len(firefoxProfiles) < 20 {
 		t.Errorf("Should have at least 20 Firefox profiles, got %d", len(firefoxProfiles))
@@ -157,7 +157,7 @@ func TestGetProfilesByBrowser(t *testing.T) {
 func BenchmarkProfileRegistryGet(b *testing.B) {
 	reg := NewProfileRegistry()
 	reg.Register(ClientProfile{ID: "bench_profile", BrowserType: core.BrowserChrome})
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, _ = reg.Get("bench_profile")

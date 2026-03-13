@@ -19,14 +19,14 @@ type SimpleIPGeoDB struct {
 
 // IPRange represents an IP range to geolocation mapping
 type IPRange struct {
-	StartIP   uint32
-	EndIP     uint32
-	Country   string
-	Region    string
-	City      string
-	ISP       string
-	ASN       int
-	Timezone  string
+	StartIP  uint32
+	EndIP    uint32
+	Country  string
+	Region   string
+	City     string
+	ISP      string
+	ASN      int
+	Timezone string
 }
 
 // NewSimpleIPGeoDB creates a simple IP geolocation database
@@ -45,18 +45,18 @@ func (db *SimpleIPGeoDB) Lookup(ipStr string) (*GeoLocation, error) {
 	if ip == nil {
 		return nil, fmt.Errorf("invalid IP address: %s", ipStr)
 	}
-	
+
 	// Convert to IPv4
 	ip = ip.To4()
 	if ip == nil {
 		return nil, fmt.Errorf("not an IPv4 address: %s", ipStr)
 	}
-	
+
 	ipNum := ipToUint32(ip)
-	
+
 	db.mu.RLock()
 	defer db.mu.RUnlock()
-	
+
 	// Linear search
 	for _, r := range db.ipv4Ranges {
 		if ipNum >= r.StartIP && ipNum <= r.EndIP {
@@ -71,7 +71,7 @@ func (db *SimpleIPGeoDB) Lookup(ipStr string) (*GeoLocation, error) {
 			}, nil
 		}
 	}
-	
+
 	return nil, fmt.Errorf("IP not found in database: %s", ipStr)
 }
 
@@ -87,16 +87,16 @@ func (db *SimpleIPGeoDB) LoadFromCSV(filepath string) error {
 		return err
 	}
 	defer file.Close()
-	
+
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 	if err != nil {
 		return err
 	}
-	
+
 	db.mu.Lock()
 	defer db.mu.Unlock()
-	
+
 	// Skip header row
 	for i, record := range records {
 		if i == 0 {
@@ -105,7 +105,7 @@ func (db *SimpleIPGeoDB) LoadFromCSV(filepath string) error {
 		if len(record) < 5 {
 			continue
 		}
-		
+
 		range_ := IPRange{
 			Country:  record[2],
 			Region:   record[3],
@@ -113,7 +113,7 @@ func (db *SimpleIPGeoDB) LoadFromCSV(filepath string) error {
 			ISP:      getField(record, 5),
 			Timezone: getField(record, 6),
 		}
-		
+
 		// Parse IP range
 		if strings.Contains(record[0], "-") {
 			parts := strings.Split(record[0], "-")
@@ -130,12 +130,12 @@ func (db *SimpleIPGeoDB) LoadFromCSV(filepath string) error {
 				range_.EndIP = range_.StartIP | (^mask)
 			}
 		}
-		
+
 		if range_.StartIP != 0 && range_.EndIP != 0 {
 			db.ipv4Ranges = append(db.ipv4Ranges, range_)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -188,7 +188,7 @@ func (db *SimpleIPGeoDB) loadDefaultRanges() {
 		{startIP("221.0.0.0"), endIP("221.255.255.255"), "China", "Beijing", "Beijing", "China Telecom", 4134, "Asia/Shanghai"},
 		{startIP("222.0.0.0"), endIP("222.255.255.255"), "China", "Beijing", "Beijing", "China Telecom", 4134, "Asia/Shanghai"},
 		{startIP("223.0.0.0"), endIP("223.255.255.255"), "China", "Beijing", "Beijing", "China Telecom", 4134, "Asia/Shanghai"},
-		
+
 		// United States
 		{startIP("3.0.0.0"), endIP("3.255.255.255"), "United States", "Virginia", "Ashburn", "Amazon", 14618, "America/New_York"},
 		{startIP("8.0.0.0"), endIP("8.255.255.255"), "United States", "California", "San Jose", "Level 3", 3356, "America/Los_Angeles"},
@@ -239,7 +239,7 @@ func (db *SimpleIPGeoDB) loadDefaultRanges() {
 		{startIP("207.0.0.0"), endIP("207.255.255.255"), "United States", "Various", "Various", "Various", 0, "America/New_York"},
 		{startIP("208.0.0.0"), endIP("208.255.255.255"), "United States", "Various", "Various", "Various", 0, "America/New_York"},
 		{startIP("209.0.0.0"), endIP("209.255.255.255"), "United States", "Various", "Various", "Various", 0, "America/New_York"},
-		
+
 		// Japan
 		{startIP("1.0.16.0"), endIP("1.0.31.255"), "Japan", "Tokyo", "Tokyo", "NTT", 4713, "Asia/Tokyo"},
 		{startIP("14.3.0.0"), endIP("14.15.255.255"), "Japan", "Tokyo", "Tokyo", "NTT", 4713, "Asia/Tokyo"},
@@ -277,7 +277,7 @@ func (db *SimpleIPGeoDB) loadDefaultRanges() {
 		{startIP("221.0.0.0"), endIP("221.255.255.255"), "Japan", "Tokyo", "Tokyo", "NTT", 4713, "Asia/Tokyo"},
 		{startIP("222.0.0.0"), endIP("222.255.255.255"), "Japan", "Tokyo", "Tokyo", "NTT", 4713, "Asia/Tokyo"},
 		{startIP("223.0.0.0"), endIP("223.255.255.255"), "Japan", "Tokyo", "Tokyo", "NTT", 4713, "Asia/Tokyo"},
-		
+
 		// Singapore
 		{startIP("8.128.0.0"), endIP("8.191.255.255"), "Singapore", "Singapore", "Singapore", "Alibaba", 45102, "Asia/Singapore"},
 		{startIP("43.224.0.0"), endIP("43.255.255.255"), "Singapore", "Singapore", "Singapore", "Various", 0, "Asia/Singapore"},

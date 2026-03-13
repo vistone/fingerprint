@@ -25,9 +25,11 @@ jobs:
       run: |
         mkdir -p dist
         # Build example binary for multiple platforms
-        GOOS=linux GOARCH=amd64 go build -o dist/fingerprint-demo-linux-amd64 ./examples/v3
-        GOOS=darwin GOARCH=amd64 go build -o dist/fingerprint-demo-darwin-amd64 ./examples/v3
-        GOOS=windows GOARCH=amd64 go build -o dist/fingerprint-demo-windows-amd64.exe ./examples/v3
+        cd examples/basic
+        go mod download
+        GOOS=linux GOARCH=amd64 go build -o ../../dist/fingerprint-demo-linux-amd64 .
+        GOOS=darwin GOARCH=amd64 go build -o ../../dist/fingerprint-demo-darwin-amd64 .
+        GOOS=windows GOARCH=amd64 go build -o ../../dist/fingerprint-demo-windows-amd64.exe .
 
     - name: Create Release
       uses: softprops/action-gh-release@v2

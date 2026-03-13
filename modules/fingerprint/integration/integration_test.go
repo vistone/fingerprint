@@ -11,12 +11,12 @@ import (
 
 	tls "github.com/bogdanfinn/utls"
 
+	"github.com/vistone/fingerprint/modules/core/types"
+	"github.com/vistone/fingerprint/modules/errors"
 	"github.com/vistone/fingerprint/modules/generator/random"
 	"github.com/vistone/fingerprint/modules/http/legacy/headers"
 	"github.com/vistone/fingerprint/modules/http/legacy/useragent"
-	"github.com/vistone/fingerprint/modules/errors"
 	"github.com/vistone/fingerprint/modules/profiles/legacy"
-	"github.com/vistone/fingerprint/modules/core/types"
 )
 
 // TestGetRandomFingerprintIntegration 集成测试：随机指纹完整流程

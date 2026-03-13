@@ -224,7 +224,7 @@ func ComputeJA3FromSpec(spec tls.ClientHelloSpec) (*JA3Result, error) {
 
 	// Extract cipher suites (GREASE filtered)
 	ciphers := filterGREASEUint16(spec.CipherSuites)
-	
+
 	// Validate cipher suite list
 	if len(ciphers) == 0 {
 		return nil, fmt.Errorf("%w: no valid cipher suites", ErrInvalidClientHelloSpec)
@@ -240,7 +240,7 @@ func ComputeJA3FromSpec(spec tls.ClientHelloSpec) (*JA3Result, error) {
 		if ext == nil {
 			continue // Skip nil extension
 		}
-		
+
 		switch e := ext.(type) {
 		case *tls.SupportedVersionsExtension:
 			// Validate extension data

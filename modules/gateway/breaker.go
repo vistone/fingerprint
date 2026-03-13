@@ -8,9 +8,9 @@ import (
 
 // Circuit breaker states
 const (
-	StateClosed    = "closed"
-	StateOpen      = "open"
-	StateHalfOpen  = "half-open"
+	StateClosed   = "closed"
+	StateOpen     = "open"
+	StateHalfOpen = "half-open"
 )
 
 // ErrCircuitOpen is returned when the circuit breaker is open
@@ -138,10 +138,10 @@ func (cb *CircuitBreaker) RecordFailure() {
 
 // CircuitBreakerMetrics holds metrics for the circuit breaker
 type CircuitBreakerMetrics struct {
-	State            string
-	FailureCount     int
-	SuccessCount     int
-	LastFailureTime  time.Time
+	State           string
+	FailureCount    int
+	SuccessCount    int
+	LastFailureTime time.Time
 }
 
 // Metrics returns the current metrics
@@ -150,10 +150,10 @@ func (cb *CircuitBreaker) Metrics() CircuitBreakerMetrics {
 	defer cb.mu.RUnlock()
 
 	return CircuitBreakerMetrics{
-		State:            cb.state,
-		FailureCount:     cb.failureCount,
-		SuccessCount:     cb.successCount,
-		LastFailureTime:  cb.lastFailureTime,
+		State:           cb.state,
+		FailureCount:    cb.failureCount,
+		SuccessCount:    cb.successCount,
+		LastFailureTime: cb.lastFailureTime,
 	}
 }
 

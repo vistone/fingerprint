@@ -12,16 +12,16 @@ import (
 // IntegratedFingerprinter is an integrated fingerprint analyzer
 type IntegratedFingerprinter struct {
 	// Per-layer analyzers
-	 tcpipAnalyzer *TCPIPAnalyzer
-	 
-	 // Association databases
-	osUAMapping     map[string][]string // OS -> common UA patterns
-	ipRegionDB      IPRegionDatabase    // IP geolocation database
+	tcpipAnalyzer *TCPIPAnalyzer
+
+	// Association databases
+	osUAMapping     map[string][]string    // OS -> common UA patterns
+	ipRegionDB      IPRegionDatabase       // IP geolocation database
 	osTCPSignatures map[string]OSSignature // OS -> TCP signature features
-	 
-	 // Consistency rules
+
+	// Consistency rules
 	consistencyRules []ConsistencyRule
-	 
+
 	mu sync.RWMutex
 }
 
@@ -35,22 +35,22 @@ type ConsistencyRule struct {
 // FingerprintContext represents a fingerprint analysis context
 type FingerprintContext struct {
 	// TCP/IP layer information
-	TCPPacket *TCPPacket
+	TCPPacket    *TCPPacket
 	TCPSignature *TCPIPSignature
-	 
+
 	// Application layer information
-	UserAgent    string
-	HTTPHeaders  map[string]string
-	 
+	UserAgent   string
+	HTTPHeaders map[string]string
+
 	// Network layer information
-	SourceIP     string
-	DestIP       string
-	 
+	SourceIP string
+	DestIP   string
+
 	// Geolocation information
-	GeoLocation  *GeoLocation
-	 
+	GeoLocation *GeoLocation
+
 	// Inferred results
-	DetectedOS   string
+	DetectedOS     string
 	DetectedDevice string
 }
 
@@ -88,43 +88,43 @@ type IntegratedResult struct {
 	TCPResult      *TCPIPResult
 	ParsedOSFromUA string
 	GeoInfo        *GeoLocation
-	 
+
 	// Cross-validation results
 	OSCrossValidation OSCrossValidationResult
 	IPUAConsistency   bool
 	GeoUAConsistency  bool
-	 
+
 	// Inconsistency report
 	Inconsistencies []Inconsistency
-	 
+
 	// Overall assessment
 	OverallConfidence float64
 	RiskScore         float64
 	FinalOS           string
 	FinalDeviceType   string
-	 
+
 	// Raw data summary
-	SourceIP      string
-	UserAgent     string
-	TCPSignature  string
+	SourceIP     string
+	UserAgent    string
+	TCPSignature string
 }
 
 // OSCrossValidationResult represents OS cross-validation results
 type OSCrossValidationResult struct {
-	OSFromTCP      string
-	OSFromUA       string
-	OSFromGeo      string
-	ConsensusOS    string
-	MatchScore     float64 // 0-1, higher means more consistency across layers
+	OSFromTCP   string
+	OSFromUA    string
+	OSFromGeo   string
+	ConsensusOS string
+	MatchScore  float64 // 0-1, higher means more consistency across layers
 }
 
 // NewIntegratedFingerprinter creates an integrated fingerprint analyzer
 func NewIntegratedFingerprinter() *IntegratedFingerprinter {
 	ia := &IntegratedFingerprinter{
-		tcpipAnalyzer:     NewTCPIPAnalyzer(),
-		osUAMapping:       buildOSUAMapping(),
-		osTCPSignatures:   BuildOSDatabase(),
-		consistencyRules:  buildConsistencyRules(),
+		tcpipAnalyzer:    NewTCPIPAnalyzer(),
+		osUAMapping:      buildOSUAMapping(),
+		osTCPSignatures:  BuildOSDatabase(),
+		consistencyRules: buildConsistencyRules(),
 	}
 	return ia
 }
@@ -140,38 +140,38 @@ func (ia *IntegratedFingerprinter) Analyze(
 		UserAgent:   userAgent,
 		HTTPHeaders: headers,
 	}
-	
+
 	if packet != nil && packet.IPHeader != nil {
 		ctx.SourceIP = packet.IPHeader.SourceAddress
 		ctx.DestIP = packet.IPHeader.DestAddress
 	}
-	
+
 	result := &IntegratedResult{
-		SourceIP:      ctx.SourceIP,
-		UserAgent:     userAgent,
+		SourceIP:        ctx.SourceIP,
+		UserAgent:       userAgent,
 		Inconsistencies: []Inconsistency{},
 	}
-	
+
 	// 1. TCP/IP layer analysis
 	if packet != nil {
 		ia.analyzeTCPLayer(ctx, result)
 	}
-	
+
 	// 2. User-Agent parsing
 	ia.parseUserAgent(ctx, result)
-	
+
 	// 3. IP geolocation analysis
 	ia.analyzeIPGeolocation(ctx, result)
-	
+
 	// 4. Cross-validation
 	ia.crossValidate(ctx, result)
-	
+
 	// 5. Consistency check
 	ia.checkConsistency(ctx, result)
-	
+
 	// 6. Overall assessment
 	ia.calculateOverallConfidence(result)
-	
+
 	return result, nil
 }
 
@@ -179,15 +179,15 @@ func (ia *IntegratedFingerprinter) Analyze(
 func (ia *IntegratedFingerprinter) analyzeTCPLayer(ctx *FingerprintContext, result *IntegratedResult) {
 	// Add packet to analyzer
 	ia.tcpipAnalyzer.AddPacket(ctx.TCPPacket)
-	
+
 	// Analyze TCP features
 	tcpResult := ia.tcpipAnalyzer.AnalyzePacket(ctx.TCPPacket)
 	result.TCPResult = tcpResult
-	
+
 	// Infer OS
 	if tcpResult != nil && tcpResult.OS != "" {
 		ctx.DetectedOS = tcpResult.OS
-		result.TCPSignature = fmt.Sprintf("TTL:%d,MSS:%d,Win:%d", 
+		result.TCPSignature = fmt.Sprintf("TTL:%d,MSS:%d,Win:%d",
 			ctx.TCPPacket.IPHeader.TimeToLive,
 			len(ctx.TCPPacket.Options),
 			ctx.TCPPacket.WindowSize)
@@ -200,9 +200,9 @@ func (ia *IntegratedFingerprinter) parseUserAgent(ctx *FingerprintContext, resul
 	if ua == "" {
 		return
 	}
-	
+
 	uaLower := strings.ToLower(ua)
-	
+
 	// Extract OS information
 	osFromUA := ""
 	switch {
@@ -219,10 +219,10 @@ func (ia *IntegratedFingerprinter) parseUserAgent(ctx *FingerprintContext, resul
 	case strings.Contains(uaLower, "iphone") || strings.Contains(uaLower, "ipad"):
 		osFromUA = "iOS"
 	}
-	
+
 	result.ParsedOSFromUA = osFromUA
 	ctx.DetectedOS = osFromUA
-	
+
 	// Extract device type
 	if strings.Contains(uaLower, "mobile") {
 		ctx.DetectedDevice = "Mobile"
@@ -238,13 +238,13 @@ func (ia *IntegratedFingerprinter) analyzeIPGeolocation(ctx *FingerprintContext,
 	if ctx.SourceIP == "" {
 		return
 	}
-	
+
 	// Parse IP
 	ip := net.ParseIP(ctx.SourceIP)
 	if ip == nil {
 		return
 	}
-	
+
 	// Check if it is a private address
 	if isPrivateIP(ip) {
 		result.GeoInfo = &GeoLocation{
@@ -253,7 +253,7 @@ func (ia *IntegratedFingerprinter) analyzeIPGeolocation(ctx *FingerprintContext,
 		}
 		return
 	}
-	
+
 	// If IP region database is available, perform lookup
 	if ia.ipRegionDB != nil {
 		geo, err := ia.ipRegionDB.Lookup(ctx.SourceIP)
@@ -270,12 +270,12 @@ func (ia *IntegratedFingerprinter) crossValidate(ctx *FingerprintContext, result
 		OSFromTCP: result.TCPResult.OS,
 		OSFromUA:  result.ParsedOSFromUA,
 	}
-	
+
 	// Infer OS from geolocation (some regions/ISPs have specific preferences)
 	if result.GeoInfo != nil {
 		validation.OSFromGeo = ia.inferOSFromGeography(result.GeoInfo)
 	}
-	
+
 	// Calculate consensus OS
 	osVotes := make(map[string]int)
 	if validation.OSFromTCP != "" {
@@ -287,7 +287,7 @@ func (ia *IntegratedFingerprinter) crossValidate(ctx *FingerprintContext, result
 	if validation.OSFromGeo != "" {
 		osVotes[validation.OSFromGeo]++
 	}
-	
+
 	// Find the OS with the most votes
 	maxVotes := 0
 	for os, votes := range osVotes {
@@ -296,11 +296,11 @@ func (ia *IntegratedFingerprinter) crossValidate(ctx *FingerprintContext, result
 			validation.ConsensusOS = os
 		}
 	}
-	
+
 	// Calculate match score
 	matchCount := 0
 	totalLayers := 0
-	
+
 	if validation.OSFromTCP != "" {
 		totalLayers++
 		if validation.OSFromTCP == validation.ConsensusOS {
@@ -319,18 +319,18 @@ func (ia *IntegratedFingerprinter) crossValidate(ctx *FingerprintContext, result
 			matchCount++
 		}
 	}
-	
+
 	if totalLayers > 0 {
 		validation.MatchScore = float64(matchCount) / float64(totalLayers)
 	}
-	
+
 	result.OSCrossValidation = validation
 	result.FinalOS = validation.ConsensusOS
 	result.FinalDeviceType = ctx.DetectedDevice
-	
+
 	// IP-UA consistency: check if the language/region in UA matches IP geolocation
 	result.IPUAConsistency = ia.checkIPUAConsistency(ctx, result)
-	
+
 	// Geolocation-UA consistency
 	result.GeoUAConsistency = ia.checkGeoUAConsistency(ctx, result)
 }
@@ -347,20 +347,20 @@ func (ia *IntegratedFingerprinter) checkConsistency(ctx *FingerprintContext, res
 // calculateOverallConfidence calculates overall confidence
 func (ia *IntegratedFingerprinter) calculateOverallConfidence(result *IntegratedResult) {
 	confidence := 0.5 // base confidence
-	
+
 	// TCP layer contribution (0.3)
 	if result.TCPResult != nil && result.TCPResult.Confidence > 0 {
 		confidence += result.TCPResult.Confidence * 0.3
 	}
-	
+
 	// UA layer contribution (0.3)
 	if result.ParsedOSFromUA != "" {
 		confidence += 0.3
 	}
-	
+
 	// Cross-validation consistency contribution (0.4)
 	confidence += result.OSCrossValidation.MatchScore * 0.4
-	
+
 	// If inconsistencies are severe, reduce confidence
 	for _, inc := range result.Inconsistencies {
 		switch inc.Severity {
@@ -372,7 +372,7 @@ func (ia *IntegratedFingerprinter) calculateOverallConfidence(result *Integrated
 			confidence -= 0.05
 		}
 	}
-	
+
 	// Clamp to 0-1 range
 	if confidence < 0 {
 		confidence = 0
@@ -380,9 +380,9 @@ func (ia *IntegratedFingerprinter) calculateOverallConfidence(result *Integrated
 	if confidence > 1 {
 		confidence = 1
 	}
-	
+
 	result.OverallConfidence = confidence
-	
+
 	// Calculate risk score
 	result.RiskScore = ia.calculateRiskScore(result)
 }
@@ -390,7 +390,7 @@ func (ia *IntegratedFingerprinter) calculateOverallConfidence(result *Integrated
 // calculateRiskScore calculates risk score
 func (ia *IntegratedFingerprinter) calculateRiskScore(result *IntegratedResult) float64 {
 	risk := 0.0
-	
+
 	// Calculate risk based on inconsistencies
 	for _, inc := range result.Inconsistencies {
 		switch inc.Severity {
@@ -402,23 +402,23 @@ func (ia *IntegratedFingerprinter) calculateRiskScore(result *IntegratedResult) 
 			risk += 0.05
 		}
 	}
-	
+
 	// Low confidence increases risk
 	if result.OverallConfidence < 0.3 {
 		risk += 0.3
 	} else if result.OverallConfidence < 0.5 {
 		risk += 0.15
 	}
-	
+
 	// IP-UA inconsistency increases risk
 	if !result.IPUAConsistency {
 		risk += 0.2
 	}
-	
+
 	if risk > 1 {
 		risk = 1
 	}
-	
+
 	return risk
 }
 
@@ -435,12 +435,12 @@ func (ia *IntegratedFingerprinter) checkIPUAConsistency(ctx *FingerprintContext,
 	if ctx.GeoLocation == nil || ctx.HTTPHeaders == nil {
 		return true // unable to check, default to consistent
 	}
-	
+
 	acceptLang := ctx.HTTPHeaders["Accept-Language"]
 	if acceptLang == "" {
 		return true
 	}
-	
+
 	// Simple check: if IP is in China but UA language is only en-US, it may be inconsistent
 	// Real applications need more complex language-region mapping
 	return true
@@ -459,7 +459,7 @@ func isPrivateIP(ip net.IP) bool {
 		"192.168.0.0/16",
 		"127.0.0.0/8",
 	}
-	
+
 	for _, cidr := range privateRanges {
 		_, ipNet, err := net.ParseCIDR(cidr)
 		if err == nil && ipNet.Contains(ip) {
@@ -507,10 +507,10 @@ func buildConsistencyRules() []ConsistencyRule {
 				if ctx.TCPPacket == nil || ctx.TCPPacket.IPHeader == nil {
 					return nil
 				}
-				
+
 				ttl := ctx.TCPPacket.IPHeader.TimeToLive
 				uaOS := ""
-				
+
 				// Infer OS from UA
 				uaLower := strings.ToLower(ctx.UserAgent)
 				switch {
@@ -521,7 +521,7 @@ func buildConsistencyRules() []ConsistencyRule {
 				case strings.Contains(uaLower, "linux"):
 					uaOS = "Linux"
 				}
-				
+
 				// Windows typically uses TTL 128, Linux/macOS uses 64
 				if uaOS == "Windows" && ttl <= 64 {
 					return &Inconsistency{
@@ -532,7 +532,7 @@ func buildConsistencyRules() []ConsistencyRule {
 						Actual:      fmt.Sprintf("TTL %d", ttl),
 					}
 				}
-				
+
 				return nil
 			},
 		},
@@ -543,10 +543,10 @@ func buildConsistencyRules() []ConsistencyRule {
 				if ctx.TCPPacket == nil {
 					return nil
 				}
-				
+
 				isMobile := strings.Contains(strings.ToLower(ctx.UserAgent), "mobile")
 				windowSize := ctx.TCPPacket.WindowSize
-				
+
 				// Mobile devices typically have smaller window sizes
 				if isMobile && windowSize > 65000 {
 					return &Inconsistency{
@@ -557,7 +557,7 @@ func buildConsistencyRules() []ConsistencyRule {
 						Actual:      fmt.Sprintf("Window size %d", windowSize),
 					}
 				}
-				
+
 				return nil
 			},
 		},

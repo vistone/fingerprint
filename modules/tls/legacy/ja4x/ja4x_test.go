@@ -131,11 +131,11 @@ func TestComputeJA4XFromData(t *testing.T) {
 				{OID: "2.5.4.3", Value: "example.com"},
 			},
 			ExtensionOIDs: []string{
-				"2.5.29.15",  // Key Usage
-				"2.5.29.37",  // Extended Key Usage
-				"2.5.29.14",  // Subject Key Identifier
-				"2.5.29.35",  // Authority Key Identifier
-				"2.5.29.17",  // Subject Alternative Name
+				"2.5.29.15",         // Key Usage
+				"2.5.29.37",         // Extended Key Usage
+				"2.5.29.14",         // Subject Key Identifier
+				"2.5.29.35",         // Authority Key Identifier
+				"2.5.29.17",         // Subject Alternative Name
 				"1.3.6.1.5.5.7.1.1", // Authority Info Access
 			},
 			Version:            3,

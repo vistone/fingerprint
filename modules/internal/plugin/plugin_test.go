@@ -90,7 +90,7 @@ func TestRegistry_Register(t *testing.T) {
 func TestRegistry_Unregister(t *testing.T) {
 	registry := NewRegistry()
 	plugin := NewMockPlugin("test-unregister", TypeAnalyzer)
-	
+
 	err := registry.Register(plugin)
 	testhelpers.AssertNoError(t, err)
 
@@ -112,7 +112,7 @@ func TestRegistry_Unregister(t *testing.T) {
 func TestRegistry_EnableDisable(t *testing.T) {
 	registry := NewRegistry()
 	plugin := NewMockPlugin("test-enable", TypeAnalyzer)
-	
+
 	err := registry.Register(plugin)
 	testhelpers.AssertNoError(t, err)
 
@@ -136,10 +136,10 @@ func TestRegistry_EnableDisable(t *testing.T) {
 
 func TestRegistry_List(t *testing.T) {
 	registry := NewRegistry()
-	
+
 	plugin1 := NewMockPlugin("plugin-1", TypeAnalyzer)
 	plugin2 := NewMockPlugin("plugin-2", TypeTransformer)
-	
+
 	registry.Register(plugin1)
 	registry.Register(plugin2)
 
@@ -151,10 +151,10 @@ func TestRegistry_List(t *testing.T) {
 
 func TestRegistry_ListByType(t *testing.T) {
 	registry := NewRegistry()
-	
+
 	analyzer := NewMockPlugin("analyzer-1", TypeAnalyzer)
 	transformer := NewMockPlugin("transformer-1", TypeTransformer)
-	
+
 	registry.Register(analyzer)
 	registry.Register(transformer)
 
@@ -185,7 +185,7 @@ func TestNewManager(t *testing.T) {
 
 func TestManager_ExecuteAnalyzers(t *testing.T) {
 	manager := NewManager()
-	
+
 	analyzer := NewMockAnalyzer("test-analyzer")
 	manager.Registry().Register(analyzer)
 
@@ -247,9 +247,9 @@ func TestBasePlugin(t *testing.T) {
 
 func TestAnalysisResult(t *testing.T) {
 	result := &AnalysisResult{
-		Score:      0.9,
-		Confidence: 0.85,
-		Labels:     map[string]string{"browser": "chrome"},
+		Score:       0.9,
+		Confidence:  0.85,
+		Labels:      map[string]string{"browser": "chrome"},
 		Annotations: map[string]interface{}{"version": 120},
 	}
 

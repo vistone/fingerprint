@@ -68,7 +68,7 @@ func (ucm *UnifiedConfigManager) EnableEnhancedFeatures() {
 func (ucm *UnifiedConfigManager) DisableEnhancedFeatures() {
 	ucm.mu.Lock()
 	defer ucm.mu.Unlock()
-	
+
 	if ucm.enhanced == nil {
 		return
 	}
@@ -158,18 +158,18 @@ func (ucm *UnifiedConfigManager) broadcastProcessor() {
 		ucm.mu.RLock()
 		enhanced := ucm.enhanced
 		ucm.mu.RUnlock()
-		
+
 		if enhanced == nil {
 			return
 		}
-		
+
 		// Safely read events from the broadcast channel
 		event, ok := <-enhanced.broadcastCh
 		if !ok {
 			// Channel is closed, exit
 			return
 		}
-		
+
 		// Copy subscriber list (to avoid holding the lock while sending)
 		enhanced.subscriberMu.RLock()
 		subscribers := make(map[string]chan ConfigChangeEvent, len(enhanced.subscribers))
@@ -367,5 +367,3 @@ func (ucm *UnifiedConfigManager) UpdateFeatureExtractionConfig(newConfig *Featur
 // ============================================
 // Compatibility adaptation layer
 // ============================================
-
-

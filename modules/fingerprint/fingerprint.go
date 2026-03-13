@@ -28,7 +28,6 @@
 //	github.com/vistone/fingerprint/defense  - Security defense
 //	github.com/vistone/fingerprint/frontend - Frontend SDK
 //	github.com/vistone/fingerprint/gateway  - API gateway
-//
 package fingerprint
 
 import (
@@ -40,10 +39,10 @@ import (
 	"github.com/vistone/fingerprint/modules/defense"
 	"github.com/vistone/fingerprint/modules/frontend"
 	"github.com/vistone/fingerprint/modules/gateway"
+	httpmod "github.com/vistone/fingerprint/modules/http"
 	"github.com/vistone/fingerprint/modules/ml"
 	"github.com/vistone/fingerprint/modules/profiles"
 	"github.com/vistone/fingerprint/modules/tls"
-	httpmod "github.com/vistone/fingerprint/modules/http"
 )
 
 // ==================== Type aliases ====================
@@ -467,7 +466,7 @@ func CalculateSimilarity(a, b *core.FeatureVector) float64 {
 // HTTPHandler creates an HTTP handler
 func HTTPHandler() http.Handler {
 	gw := gateway.NewGateway(nil)
-	
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/v1/analyze", gw.HTTPHandler)
 	mux.HandleFunc("/api/v1/sdk.js", gw.SDKHandler)
@@ -476,8 +475,6 @@ func HTTPHandler() http.Handler {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{"status":"ok","version":"2.1.0"}`))
 	})
-	
+
 	return mux
 }
-
-

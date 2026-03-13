@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/vistone/fingerprint/modules/core/types"
 	"github.com/vistone/fingerprint/modules/http/legacy/headers"
 	"github.com/vistone/fingerprint/modules/http/legacy/useragent"
 	"github.com/vistone/fingerprint/modules/internal/metrics"
 	"github.com/vistone/fingerprint/modules/kit"
 	"github.com/vistone/fingerprint/modules/profiles/legacy"
-	"github.com/vistone/fingerprint/modules/core/types"
 )
 
 // browserProfileIndex 浏览器类型索引（预计算，避免每次遍历）

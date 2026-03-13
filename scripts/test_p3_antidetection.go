@@ -1,3 +1,5 @@
+//go:build ignore
+
 // Package main - P3 现代 JS 高熵对抗点集成测试
 //
 // 测试场景：

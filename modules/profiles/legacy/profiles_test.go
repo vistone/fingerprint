@@ -269,18 +269,18 @@ func TestGetClientProfile_Concurrent(t *testing.T) {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
-			
+
 			// 随机获取不同的 profile
 			profileName := "chrome_133"
 			if id%2 == 0 {
 				profileName = "firefox_135"
 			}
-			
+
 			profile, ok := GetClientProfile(profileName)
 			if !ok {
 				return
 			}
-			
+
 			// 尝试获取 spec（可能失败，但不应该 panic）
 			_, err := profile.GetClientHelloSpec()
 			if err != nil && err.Error() != "please implement this method" {
@@ -376,7 +376,7 @@ func TestGetClientProfile(t *testing.T) {
 			if ok != tt.wantOK {
 				t.Errorf("GetClientProfile(%q) ok = %v, want %v", tt.name, ok, tt.wantOK)
 			}
-			
+
 			if ok {
 				// 如果获取成功，尝试获取 spec
 				_, err := profile.GetClientHelloSpec()

@@ -1,3 +1,5 @@
+//go:build ignore
+
 // Gateway P3 集成测试 - HTML 注入功能验证
 // 测试网关的 P3 反检测代码自动注入功能
 package main

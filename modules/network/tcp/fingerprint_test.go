@@ -5,7 +5,7 @@ import (
 )
 
 func ptrUint16(v uint16) *uint16 { return &v }
-func ptrUint8(v uint8) *uint8   { return &v }
+func ptrUint8(v uint8) *uint8    { return &v }
 
 func TestComputeSignature(t *testing.T) {
 	analyzer := NewTCPIPAnalyzer()

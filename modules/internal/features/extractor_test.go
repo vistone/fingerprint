@@ -11,33 +11,33 @@ func TestBaseFeatureExtractor_ExtractFeature_Entropy(t *testing.T) {
 	extractor := NewBaseFeatureExtractor(nil)
 
 	tests := []struct {
-		name       string
-		data       interface{}
-		wantScore  float64
+		name        string
+		data        interface{}
+		wantScore   float64
 		wantAnomaly bool
 	}{
 		{
-			name:       "normal data",
-			data:       []byte("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"),
-			wantScore:  0.0,
+			name:        "normal data",
+			data:        []byte("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"),
+			wantScore:   0.0,
 			wantAnomaly: false,
 		},
 		{
-			name:       "low entropy data (repeated bytes)",
-			data:       []byte("aaaaaaaaaaaaaaaaaaaa"),
-			wantScore:  0.95,
+			name:        "low entropy data (repeated bytes)",
+			data:        []byte("aaaaaaaaaaaaaaaaaaaa"),
+			wantScore:   0.95,
 			wantAnomaly: true,
 		},
 		{
-			name:       "short data (skip)",
-			data:       []byte("short"),
-			wantScore:  0.0,
+			name:        "short data (skip)",
+			data:        []byte("short"),
+			wantScore:   0.0,
 			wantAnomaly: false,
 		},
 		{
-			name:       "empty data",
-			data:       []byte{},
-			wantScore:  0.0,
+			name:        "empty data",
+			data:        []byte{},
+			wantScore:   0.0,
 			wantAnomaly: false,
 		},
 	}
@@ -237,8 +237,8 @@ func TestBaseFeatureExtractor_ExtractFeature_OSPlatformContradiction(t *testing.
 			wantAnomaly: false,
 		},
 		{
-			name: "invalid data type",
-			data: "invalid",
+			name:        "invalid data type",
+			data:        "invalid",
 			wantAnomaly: false,
 		},
 	}
@@ -509,10 +509,10 @@ func TestBaseFeatureExtractor_ExtractFeatureVector_Anomalous(t *testing.T) {
 	// 异常数据：UA 和 OS 矛盾
 	data := map[string]interface{}{
 		"user_agent":   "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0_0) Chrome/133.0.0.0", // Mac UA
-		"os":           "Windows NT 10.0",                                                // Windows OS - 矛盾！
+		"os":           "Windows NT 10.0",                                                 // Windows OS - 矛盾！
 		"platform":     "Win32",
-		"is_mobile":    "true",          // 移动设备
-		"screen_width": "2560",          // 移动设备大屏幕 - 矛盾！
+		"is_mobile":    "true", // 移动设备
+		"screen_width": "2560", // 移动设备大屏幕 - 矛盾！
 		"features":     "WebGL2",
 	}
 
@@ -620,9 +620,9 @@ func TestCalculateRiskScore(t *testing.T) {
 		{
 			name: "multiple anomalies",
 			scores: map[FeatureType]float64{
-				FeatureEntropy:                   0.9,
-				FeatureHeadlessBrowser:           0.95,
-				FeatureOSPlatformContradiction:   0.8,
+				FeatureEntropy:                 0.9,
+				FeatureHeadlessBrowser:         0.95,
+				FeatureOSPlatformContradiction: 0.8,
 			},
 			want: 1.0, // 应该被限制在 1.0
 		},
@@ -632,7 +632,7 @@ func TestCalculateRiskScore(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := calculateRiskScore(tt.scores)
 			// 使用范围比较处理浮点数精度问题
-			if got < tt.want - 0.001 || got > tt.want + 0.001 {
+			if got < tt.want-0.001 || got > tt.want+0.001 {
 				t.Errorf("calculateRiskScore() = %v, want ~%v", got, tt.want)
 			}
 		})

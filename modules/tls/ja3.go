@@ -80,7 +80,7 @@ func CalculateJA3FromProfile(profile profiles.ClientProfile) *JA3Result {
 func IsGREASEUint16(v uint16) bool {
 	// GREASE pattern: 0x0A0A, 0x1A1A, 0x2A2A, ..., 0xFAFA
 	// High and low bytes are equal, and the low byte has the form 0xXA
-	return ((v >> 8) & 0xFF) == (v & 0xFF) && (v&0x0F) == 0x0A
+	return ((v>>8)&0xFF) == (v&0xFF) && (v&0x0F) == 0x0A
 }
 
 // filterGREASEUint16 filters out GREASE values from a uint16 slice

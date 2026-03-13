@@ -226,17 +226,17 @@ func (s *Sanitizer) SanitizeLogValue(input string) string {
 
 // SecurityConfig holds security configuration
 type SecurityConfig struct {
-	MaxRequestSize      int64
-	MaxHeaderSize       int
-	MaxHeaders          int
-	RateLimitEnabled    bool
-	RateLimitRequests   int
-	RateLimitWindow     int // seconds
-	RequireTLS          bool
-	AllowedHosts        []string
-	BlockedIPs          []string
-	SanitizeInput       bool
-	ValidateInput       bool
+	MaxRequestSize    int64
+	MaxHeaderSize     int
+	MaxHeaders        int
+	RateLimitEnabled  bool
+	RateLimitRequests int
+	RateLimitWindow   int // seconds
+	RequireTLS        bool
+	AllowedHosts      []string
+	BlockedIPs        []string
+	SanitizeInput     bool
+	ValidateInput     bool
 }
 
 // DefaultSecurityConfig returns default security configuration
