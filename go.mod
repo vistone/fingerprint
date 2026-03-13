@@ -6,9 +6,7 @@ require (
 	github.com/bogdanfinn/fhttp v0.6.8
 	github.com/bogdanfinn/utls v1.7.7-barnius
 	github.com/vistone/fingerprint/modules/core v1.0.19
-	github.com/vistone/fingerprint/modules/frontend v1.0.19
 	github.com/vistone/fingerprint/modules/gateway v1.0.19
-	github.com/vistone/fingerprint/modules/kit v1.0.19
 	github.com/vistone/fingerprint/modules/ml v1.0.19
 	github.com/vistone/fingerprint/modules/profiles v1.0.19
 	golang.org/x/sys v0.39.0
@@ -32,7 +30,9 @@ require (
 	github.com/vistone/fingerprint/modules/agent v1.0.19 // indirect
 	github.com/vistone/fingerprint/modules/defense v1.0.19 // indirect
 	github.com/vistone/fingerprint/modules/errors v1.0.19 // indirect
+	github.com/vistone/fingerprint/modules/frontend v1.0.19 // indirect
 	github.com/vistone/fingerprint/modules/internal v1.0.19 // indirect
+	github.com/vistone/fingerprint/modules/kit v1.0.19 // indirect
 	github.com/vistone/fingerprint/modules/network v1.0.19 // indirect
 	github.com/vistone/fingerprint/modules/plugin v1.0.19 // indirect
 	github.com/vistone/fingerprint/modules/tls v1.0.19 // indirect
