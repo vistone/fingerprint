@@ -157,6 +157,26 @@ func main() {
 			config.MLServiceEnabled = parsed
 		}
 	}
+	if v := strings.TrimSpace(os.Getenv("FP_ML_CLASSIFIER_PATH")); v != "" {
+		config.MLClassifierPath = v
+	}
+	if v := strings.TrimSpace(os.Getenv("FP_ML_TRAINING_DATA")); v != "" {
+		config.MLTrainingData = v
+	}
+	if v := strings.TrimSpace(os.Getenv("FP_RISK_THRESHOLD")); v != "" {
+		if parsed, err := strconv.ParseFloat(v, 64); err == nil && parsed > 0 {
+			config.RiskThreshold = parsed
+		}
+	}
+	if v := strings.TrimSpace(os.Getenv("FP_TRUSTED_PROXIES")); v != "" {
+		config.TrustedProxies = strings.Split(v, ",")
+		for i := range config.TrustedProxies {
+			config.TrustedProxies[i] = strings.TrimSpace(config.TrustedProxies[i])
+		}
+	}
+	if v := strings.TrimSpace(os.Getenv("FP_PLUGIN_CONFIG_PATH")); v != "" {
+		config.PluginConfigPath = v
+	}
 	gw := gateway.NewGateway(&config)
 
 	// write start log
@@ -174,6 +194,12 @@ func main() {
 	}
 	if config.MLServiceEnabled {
 		web.WriteLog("INFO", "ml", "MLService enabled")
+	}
+	if config.PluginConfigPath != "" {
+		web.WriteLog("INFO", "plugin", "Plugin system enabled, config: %s", config.PluginConfigPath)
+	}
+	if config.RiskThreshold > 0 {
+		web.WriteLog("INFO", "risk", "Risk threshold set to %.2f", config.RiskThreshold)
 	}
 
 	// Setup HTTP routes

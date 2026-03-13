@@ -4,6 +4,45 @@ This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+## [v1.0.19] - 2026-03-13
+
+### Added
+
+- **Network Module Integration** (`modules/gateway/gateway.go`)
+  - Integrated JA4T transport fingerprinting (ja4t package) into Gateway Analyze pipeline
+  - Integrated TCP/IP stream analysis (tcp package) with OS detection, VPN/proxy/NAT identification
+  - New `TCPRequestData` and `TCPPackets` fields in AnalyzeRequest for network-layer input
+  - New `JA4TInfo` and `NetworkAnalysisResult` in AnalyzeResponse for transport-layer results
+  - TCP features (window size, MSS, TTL, DF) merged into FeatureVector for ML classification
+
+- **Plugin Pipeline Integration** (`modules/gateway/gateway.go`)
+  - Plugin Manager initialized in NewGateway with optional config-based loading
+  - Plugin analyzers and validators executed in Analyze pipeline, results in PluginResults field
+  - New `GetPluginManager()` accessor on Gateway
+  - New `PluginConfigPath` configuration field with `FP_PLUGIN_CONFIG_PATH` env var
+
+- **Risk Threshold Enforcement** (`modules/gateway/gateway.go`)
+  - `RiskBlocked` field in AnalyzeResponse, set when risk score exceeds configured threshold
+  - `RiskThreshold` config now actively evaluated during Analyze
+
+- **ML Drift Auto-Evolution** (`modules/ml/service.go`)
+  - `Feedback()` now checks `OnlineLearner.DriftDetected()` and triggers auto `Evolve()` on drift
+  - New `Learner()` accessor on MLService for external drift monitoring
+  - `MLClassifierPath` config wired into MLService model store path
+
+- **Environment Variable Wiring** (`cmd/gateway/main.go`)
+  - `FP_ML_CLASSIFIER_PATH`: ML classifier model path
+  - `FP_ML_TRAINING_DATA`: ML training data path
+  - `FP_RISK_THRESHOLD`: Risk score threshold (float)
+  - `FP_TRUSTED_PROXIES`: Comma-separated trusted proxy IP list
+  - `FP_PLUGIN_CONFIG_PATH`: Plugin configuration file path
+  - Startup logging for plugin, risk threshold configuration
+
+### Changed
+
+- **Gateway go.mod** (`modules/gateway/go.mod`)
+  - Added dependency on `modules/network` for ja4t and tcp packages
+
 ## [v1.0.18] - 2026-03-13
 
 ### Added

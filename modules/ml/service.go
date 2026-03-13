@@ -19,6 +19,7 @@ package ml
 
 import (
 	"fmt"
+	"log/slog"
 	"math"
 	"math/rand"
 	"sync"
@@ -293,11 +294,25 @@ type FeedbackSample struct {
 }
 
 // Feedback records an observation for online learning.
+// After recording, it checks for accuracy drift and triggers auto-evolution
+// if the learner has detected a significant accuracy drop.
 func (s *MLService) Feedback(sample *FeedbackSample) {
 	s.feedbackCount.Add(1)
 	if s.learner != nil {
 		s.learner.AddSample(sample)
+		// Auto-evolve when drift is detected
+		if s.learner.DriftDetected() {
+			slog.Info("ml: accuracy drift detected, triggering auto-evolution")
+			if _, err := s.Evolve(nil); err != nil {
+				slog.Warn("ml: auto-evolution failed", "error", err)
+			}
+		}
 	}
+}
+
+// Learner returns the online learner instance (nil if not configured).
+func (s *MLService) Learner() *OnlineLearner {
+	return s.learner
 }
 
 // =========================================================================

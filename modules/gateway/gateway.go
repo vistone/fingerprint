@@ -23,6 +23,9 @@ import (
 	"github.com/vistone/fingerprint/modules/defense"
 	"github.com/vistone/fingerprint/modules/frontend"
 	"github.com/vistone/fingerprint/modules/ml"
+	"github.com/vistone/fingerprint/modules/network/ja4t"
+	"github.com/vistone/fingerprint/modules/network/tcp"
+	"github.com/vistone/fingerprint/modules/plugin"
 	tlsmod "github.com/vistone/fingerprint/modules/tls"
 )
 
@@ -44,6 +47,7 @@ type Gateway struct {
 	injector       *HTMLInjector   // HTML response injector
 	agent          *agent.Agent    // Autonomous security agent
 	mlService      *ml.MLService   // Central ML service (optional)
+	pluginManager  *plugin.Manager // Plugin subsystem manager
 	mu             sync.RWMutex
 }
 
@@ -93,6 +97,9 @@ type GatewayConfig struct {
 	// ML Service configuration
 	MLServiceEnabled bool              // Whether to enable central ML service
 	MLServiceConfig  *ml.ServiceConfig // ML service configuration (nil uses defaults)
+
+	// Plugin configuration
+	PluginConfigPath string // Plugin configuration path; empty disables plugin loading
 }
 
 // DefaultGatewayConfig is the default gateway configuration
@@ -181,11 +188,27 @@ func NewGateway(config *GatewayConfig) *Gateway {
 
 	// Initialize central ML service
 	if config.MLServiceEnabled {
-		svc, err := ml.NewMLService(config.MLServiceConfig)
+		scfg := config.MLServiceConfig
+		if scfg == nil {
+			scfg = ml.DefaultServiceConfig
+		}
+		// Wire MLClassifierPath into model store if provided
+		if config.MLClassifierPath != "" {
+			scfg.ModelStorePath = config.MLClassifierPath
+		}
+		svc, err := ml.NewMLService(scfg)
 		if err != nil {
 			fmt.Printf("Warning: failed to initialize ML service: %v\n", err)
 		} else {
 			g.mlService = svc
+		}
+	}
+
+	// Initialize plugin manager
+	g.pluginManager = plugin.NewManager()
+	if config.PluginConfigPath != "" {
+		if err := plugin.LoadPlugins(config.PluginConfigPath); err != nil {
+			fmt.Printf("Warning: failed to load plugins from %s: %v\n", config.PluginConfigPath, err)
 		}
 	}
 
@@ -208,8 +231,24 @@ type AnalyzeRequest struct {
 	// Frontend fingerprint (optional)
 	Frontend *ml.FrontendFingerprintData `json:"frontend,omitempty"`
 
+	// TCP/IP network layer data (optional)
+	TCPData *TCPRequestData `json:"tcp_data,omitempty"`
+
+	// Structured TCP packets for deep TCP/IP analysis (optional)
+	TCPPackets []tcp.TCPPacket `json:"tcp_packets,omitempty"`
+
 	// Client IP
 	ClientIP string `json:"client_ip"`
+}
+
+// TCPRequestData carries TCP SYN parameters for JA4T and TCP/IP fingerprinting
+type TCPRequestData struct {
+	WindowSize  uint16 `json:"window_size"`
+	MSS         uint16 `json:"mss"`
+	WindowScale uint8  `json:"window_scale"`
+	TTL         uint8  `json:"ttl"`
+	DF          bool   `json:"df"`
+	Options     []byte `json:"options,omitempty"`
 }
 
 // AnalyzeResponse is the analysis response
@@ -223,6 +262,9 @@ type AnalyzeResponse struct {
 	// Risk assessment
 	RiskAssessment *core.RiskAssessment `json:"risk_assessment"`
 
+	// Risk blocked (true when risk exceeds configured threshold)
+	RiskBlocked bool `json:"risk_blocked"`
+
 	// Detection findings
 	Findings []defense.Finding `json:"findings,omitempty"`
 
@@ -232,6 +274,15 @@ type AnalyzeResponse struct {
 
 	// JA4H fingerprint
 	JA4H *JA4HInfo `json:"ja4h,omitempty"`
+
+	// JA4T transport fingerprint
+	JA4T *JA4TInfo `json:"ja4t,omitempty"`
+
+	// TCP/IP network analysis
+	NetworkAnalysis *NetworkAnalysisResult `json:"network_analysis,omitempty"`
+
+	// Plugin analysis results
+	PluginResults []PluginFinding `json:"plugin_results,omitempty"`
 
 	// Defense suggestions
 	DefenseHints []string `json:"defense_hints,omitempty"`
@@ -248,6 +299,36 @@ type AnalyzeResponse struct {
 
 	// Processing time
 	ProcessingTimeMs int64 `json:"processing_time_ms"`
+}
+
+// JA4TInfo contains JA4T transport fingerprint info
+type JA4TInfo struct {
+	Hash      string   `json:"hash"`
+	Raw       string   `json:"raw"`
+	Anomalies []string `json:"anomalies,omitempty"`
+	GuessedOS string   `json:"guessed_os,omitempty"`
+}
+
+// NetworkAnalysisResult contains TCP/IP network analysis results
+type NetworkAnalysisResult struct {
+	OS              string   `json:"os,omitempty"`
+	OSFamily        string   `json:"os_family,omitempty"`
+	OSConfidence    float64  `json:"os_confidence,omitempty"`
+	IsVPN           bool     `json:"is_vpn"`
+	IsProxy         bool     `json:"is_proxy"`
+	IsNAT           bool     `json:"is_nat"`
+	NetworkRisk     float64  `json:"network_risk"`
+	InitialTTL      int      `json:"initial_ttl,omitempty"`
+	MSS             int      `json:"mss,omitempty"`
+	AnomaliesFound  []string `json:"anomalies_found,omitempty"`
+}
+
+// PluginFinding contains a single plugin analysis result
+type PluginFinding struct {
+	PluginName string  `json:"plugin_name"`
+	Category   string  `json:"category"`
+	Message    string  `json:"message"`
+	RiskScore  float64 `json:"risk_score"`
 }
 
 // JA3Info contains JA3 fingerprint info
@@ -317,6 +398,11 @@ func (g *Gateway) GetMLService() *ml.MLService {
 	return g.mlService
 }
 
+// GetPluginManager returns the plugin manager
+func (g *Gateway) GetPluginManager() *plugin.Manager {
+	return g.pluginManager
+}
+
 // GetConfig returns the current gateway configuration (read-only copy)
 func (g *Gateway) GetConfig() *GatewayConfig {
 	g.mu.RLock()
@@ -366,14 +452,134 @@ func (g *Gateway) Analyze(ctx context.Context, req *AnalyzeRequest) (*AnalyzeRes
 	ja3, ja4 := g.calculateTLSFingerprints(req)
 	ja4h := g.calculateHTTPFingerprint(req)
 
+	// Network layer: JA4T transport fingerprint + TCP/IP analysis
+	var ja4tInfo *JA4TInfo
+	var netAnalysis *NetworkAnalysisResult
+	if req.TCPData != nil {
+		// Compute JA4T fingerprint from TCP SYN data
+		synData := ja4t.TCPSYNData{
+			WindowSize:  req.TCPData.WindowSize,
+			Options:     req.TCPData.Options,
+			MSS:         req.TCPData.MSS,
+			WindowScale: req.TCPData.WindowScale,
+			TTL:         req.TCPData.TTL,
+			DF:          req.TCPData.DF,
+		}
+		ja4tResult := ja4t.ComputeJA4T(synData)
+		if ja4tResult != nil {
+			ja4tInfo = &JA4TInfo{
+				Hash:      ja4tResult.Hash,
+				Raw:       ja4tResult.RawFingerprint,
+				Anomalies: ja4tResult.AnomalyFlags,
+				GuessedOS: ja4tResult.ProbableOS,
+			}
+			// Merge TCP features into the feature vector
+			features.Set(core.FeatureType("tcp_window_size"), float64(synData.WindowSize))
+			features.Set(core.FeatureType("tcp_mss"), float64(synData.MSS))
+			features.Set(core.FeatureType("tcp_ttl"), float64(synData.TTL))
+			if synData.DF {
+				features.Set(core.FeatureType("tcp_df"), 1.0)
+			}
+		}
+	}
+
+	// TCP/IP packet-level analysis (if structured packets provided)
+	if len(req.TCPPackets) > 0 {
+		analyzer := tcp.NewTCPIPAnalyzer()
+		for _, pkt := range req.TCPPackets {
+			analyzer.AddPacket(pkt)
+		}
+		tcpResult, err := analyzer.AnalyzeStream()
+		if err == nil {
+			netAnalysis = &NetworkAnalysisResult{
+				OS:             tcpResult.OS,
+				OSFamily:       tcpResult.OSFamily,
+				OSConfidence:   tcpResult.Confidence,
+				IsVPN:          tcpResult.IsVPN,
+				IsProxy:        tcpResult.IsProxy,
+				IsNAT:          tcpResult.IsNAT,
+				NetworkRisk:    tcpResult.RiskScore,
+				InitialTTL:     tcpResult.InitialTTL,
+				MSS:            tcpResult.MSS,
+				AnomaliesFound: tcpResult.AnomaliesFound,
+			}
+			features.Set(core.FeatureType("network_risk"), tcpResult.RiskScore)
+			if tcpResult.IsVPN {
+				features.Set(core.FeatureType("is_vpn"), 1.0)
+			}
+			if tcpResult.IsProxy {
+				features.Set(core.FeatureType("is_proxy"), 1.0)
+			}
+		}
+	}
+
+	// Plugin analysis pipeline
+	var pluginFindings []PluginFinding
+	if g.pluginManager != nil {
+		pluginData := map[string]interface{}{
+			"fingerprint_hash": fingerprintHash,
+			"client_ip":        req.ClientIP,
+			"tls_version":      req.TLSVersion,
+			"cipher_suites":    req.CipherSuites,
+			"classification":   classification,
+			"risk":             risk,
+		}
+		if results, err := g.pluginManager.ExecuteAnalyzers(ctx, pluginData); err == nil {
+			for _, r := range results {
+				msg := fmt.Sprintf("score=%.2f confidence=%.2f", r.Score, r.Confidence)
+				category := ""
+				if cat, ok := r.Labels["category"]; ok {
+					category = cat
+				}
+				pluginName := ""
+				if name, ok := r.Labels["plugin"]; ok {
+					pluginName = name
+				}
+				pluginFindings = append(pluginFindings, PluginFinding{
+					PluginName: pluginName,
+					Category:   category,
+					Message:    msg,
+					RiskScore:  r.Score,
+				})
+			}
+		}
+		// Run validators
+		if vResult, err := g.pluginManager.ExecuteValidators(ctx, pluginData); err == nil && vResult != nil && !vResult.Valid {
+			for _, issue := range vResult.Errors {
+				pluginFindings = append(pluginFindings, PluginFinding{
+					PluginName: "validator",
+					Category:   "validation",
+					Message:    issue,
+				})
+			}
+			for _, warn := range vResult.Warnings {
+				pluginFindings = append(pluginFindings, PluginFinding{
+					PluginName: "validator",
+					Category:   "warning",
+					Message:    warn,
+				})
+			}
+		}
+	}
+
+	// Check risk threshold
+	riskBlocked := false
+	if g.config.RiskThreshold > 0 && risk != nil && risk.Score >= g.config.RiskThreshold {
+		riskBlocked = true
+	}
+
 	response := &AnalyzeResponse{
 		FingerprintHash:  fingerprintHash,
 		Classification:   classification,
 		RiskAssessment:   risk,
+		RiskBlocked:      riskBlocked,
 		Findings:         detection.Findings,
 		JA3:              ja3,
 		JA4:              ja4,
 		JA4H:             ja4h,
+		JA4T:             ja4tInfo,
+		NetworkAnalysis:  netAnalysis,
+		PluginResults:    pluginFindings,
 		DefenseHints:     risk.Suggestions,
 		Cached:           false,
 		ProcessingTimeMs: time.Since(start).Milliseconds(),

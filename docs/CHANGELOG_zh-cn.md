@@ -4,6 +4,45 @@
 
 ## [Unreleased]
 
+## [v1.0.19] - 2026-03-13
+
+### 新增
+
+- **网络模块集成** (`modules/gateway/gateway.go`)
+  - 集成 JA4T 传输层指纹（ja4t 包）到 Gateway Analyze 管道
+  - 集成 TCP/IP 流分析（tcp 包），支持操作系统识别、VPN/代理/NAT 检测
+  - AnalyzeRequest 新增 `TCPRequestData` 和 `TCPPackets` 字段用于网络层输入
+  - AnalyzeResponse 新增 `JA4TInfo` 和 `NetworkAnalysisResult` 传输层分析结果
+  - TCP 特征（窗口大小、MSS、TTL、DF）合并到 FeatureVector 供 ML 分类
+
+- **插件管道集成** (`modules/gateway/gateway.go`)
+  - NewGateway 中初始化 Plugin Manager，支持基于配置文件加载
+  - Analyze 管道中执行插件分析器和验证器，结果写入 PluginResults 字段
+  - Gateway 新增 `GetPluginManager()` 访问器
+  - 新增 `PluginConfigPath` 配置字段及 `FP_PLUGIN_CONFIG_PATH` 环境变量
+
+- **风险阈值强制执行** (`modules/gateway/gateway.go`)
+  - AnalyzeResponse 新增 `RiskBlocked` 字段，风险分数超过阈值时设为 true
+  - `RiskThreshold` 配置现在在 Analyze 中实际被评估
+
+- **ML 漂移自动进化** (`modules/ml/service.go`)
+  - `Feedback()` 检测 `OnlineLearner.DriftDetected()` 并在漂移时自动触发 `Evolve()`
+  - MLService 新增 `Learner()` 访问器，用于外部漂移监控
+  - `MLClassifierPath` 配置连接到 MLService 模型存储路径
+
+- **环境变量接入** (`cmd/gateway/main.go`)
+  - `FP_ML_CLASSIFIER_PATH`：ML 分类器模型路径
+  - `FP_ML_TRAINING_DATA`：ML 训练数据路径
+  - `FP_RISK_THRESHOLD`：风险分数阈值（浮点数）
+  - `FP_TRUSTED_PROXIES`：逗号分隔的可信代理 IP 列表
+  - `FP_PLUGIN_CONFIG_PATH`：插件配置文件路径
+  - 启动时输出插件和风险阈值配置日志
+
+### 变更
+
+- **Gateway go.mod** (`modules/gateway/go.mod`)
+  - 新增对 `modules/network` 模块的依赖（ja4t 和 tcp 包）
+
 ## [v1.0.18] - 2026-03-13
 
 ### 新增
