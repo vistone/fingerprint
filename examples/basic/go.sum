@@ -2,7 +2,7 @@ github.com/vistone/fingerprint/modules/core v1.0.19 h1:PkPu6NLGb1W4XfAVaAdVBZEa3
 github.com/vistone/fingerprint/modules/core v1.0.19/go.mod h1:aA/kkmCvayoi/dRFSC3+kykDTWZROndST8pU5ujLFvI=
 github.com/vistone/fingerprint/modules/errors v1.0.19 h1:zd09u4x5UIVNZl4+QvQTxP08URYa3Le1jyxeF6S79sE=
 github.com/vistone/fingerprint/modules/errors v1.0.19/go.mod h1:dRwXR4+yrNnXjKF1CFCvBVrvUqNpRe2XuYiZFqSN6dQ=
-github.com/vistone/fingerprint/modules/ml v1.0.19 h1:FbTljZ8IfkXgGK7e90+goRyjmFoD9jRgAkPh0P4m8Ts=
-github.com/vistone/fingerprint/modules/ml v1.0.19/go.mod h1:vPGuAbusy5USAsvGB7VKbfkWPAercyNOihFQqtRwPVw=
 github.com/vistone/fingerprint/modules/profiles v1.0.19 h1:a8u8WNn3tIH6140blg0wsTFHc/7iAVM7ER/anZIjC1k=
 github.com/vistone/fingerprint/modules/profiles v1.0.19/go.mod h1:CJLHRtDfECpBaXENV6Vefs2cNlx2BoTYz1u1qkECxQQ=
+github.com/vistone/fingerprint/modules/tls v1.0.19 h1:o+0txY6SXSfYvKeNYH4TPfAYQck+0aAYmbKYV4J29SQ=
+github.com/vistone/fingerprint/modules/tls v1.0.19/go.mod h1:ASRZRM4t+zpdFPZv7kEHLgQOKKAhsyOvqoT0VMDfh5M=

@@ -26,12 +26,12 @@ func TestComputeJA4SFromRealProfiles(t *testing.T) {
 	// Construct ServerHello data (based on real ClientHello response)
 	// Use TLS 1.3 configuration compatible with Chrome 133
 	serverHello := ServerHelloData{
-		TLSVersion:     0x0304,                       // TLS 1.3
-		CipherSuite:    0x1301,                       // TLS_AES_128_GCM_SHA256 (Chrome preferred)
-		Extensions:     []uint16{0x002b, 0x0033},     // supported_versions, key_share
-		Compression:    0,
-		ServerName:     "www.google.com",
-		SelectedALPN:   "h2",
+		TLSVersion:   0x0304,                   // TLS 1.3
+		CipherSuite:  0x1301,                   // TLS_AES_128_GCM_SHA256 (Chrome preferred)
+		Extensions:   []uint16{0x002b, 0x0033}, // supported_versions, key_share
+		Compression:  0,
+		ServerName:   "www.google.com",
+		SelectedALPN: "h2",
 	}
 
 	result, err := ComputeJA4S(serverHello)
@@ -59,8 +59,8 @@ func TestComputeJA4SFromMultipleProfiles(t *testing.T) {
 		extensions  []uint16
 	}{
 		{"chrome_133", 0x1301, []uint16{0x002b, 0x0033, 0x002d}}, // TLS_AES_128_GCM_SHA256
-		{"firefox_135", 0x1302, []uint16{0x002b, 0x0033}},       // TLS_AES_256_GCM_SHA384
-		{"safari_16_0", 0x1301, []uint16{0x002b, 0x0033}},       // TLS_AES_128_GCM_SHA256
+		{"firefox_135", 0x1302, []uint16{0x002b, 0x0033}},        // TLS_AES_256_GCM_SHA384
+		{"safari_16_0", 0x1301, []uint16{0x002b, 0x0033}},        // TLS_AES_128_GCM_SHA256
 	}
 
 	for _, tc := range testCases {
@@ -235,24 +235,24 @@ func TestAnalyzeServerHelloBytes(t *testing.T) {
 		// HandshakeType(1) + Length(3) + Version(2) + Random(32) + SessionIDLen(1) + SessionID(0) + CipherSuite(2) + Compression(1)
 		// Total 42 bytes base, plus 2 bytes extension length
 		data := make([]byte, 64)
-		data[0] = 0x02                                           // Server Hello
-		data[1], data[2], data[3] = 0x00, 0x00, 0x3d             // Length: 61 bytes
-		data[4], data[5] = 0x03, 0x04                            // Version: TLS 1.3
-		copy(data[6:38], make([]byte, 32))                       // Random (32 bytes of zeros)
-		data[38] = 0x00                                          // Session ID Length: 0
-		data[39], data[40] = 0x13, 0x01                          // Cipher Suite: TLS_AES_128_GCM_SHA256
-		data[41] = 0x00                                          // Compression: null
-		data[42], data[43] = 0x00, 0x12                          // Extensions Length: 18 bytes
+		data[0] = 0x02                               // Server Hello
+		data[1], data[2], data[3] = 0x00, 0x00, 0x3d // Length: 61 bytes
+		data[4], data[5] = 0x03, 0x04                // Version: TLS 1.3
+		copy(data[6:38], make([]byte, 32))           // Random (32 bytes of zeros)
+		data[38] = 0x00                              // Session ID Length: 0
+		data[39], data[40] = 0x13, 0x01              // Cipher Suite: TLS_AES_128_GCM_SHA256
+		data[41] = 0x00                              // Compression: null
+		data[42], data[43] = 0x00, 0x12              // Extensions Length: 18 bytes
 		// Extension 1: supported_versions (0x002b)
-		data[44], data[45] = 0x00, 0x2b                          // Type
-		data[46], data[47] = 0x00, 0x02                          // Length
-		data[48], data[49] = 0x03, 0x04                          // TLS 1.3
+		data[44], data[45] = 0x00, 0x2b // Type
+		data[46], data[47] = 0x00, 0x02 // Length
+		data[48], data[49] = 0x03, 0x04 // TLS 1.3
 		// Extension 2: key_share (0x0033)
-		data[50], data[51] = 0x00, 0x33                          // Type
-		data[52], data[53] = 0x00, 0x06                          // Length
-		data[54], data[55] = 0x00, 0x17                          // Named Group: secp256r1
-		data[56], data[57] = 0x00, 0x02                          // Length
-		data[58], data[59] = 0x00, 0x00                          // Key exchange data
+		data[50], data[51] = 0x00, 0x33 // Type
+		data[52], data[53] = 0x00, 0x06 // Length
+		data[54], data[55] = 0x00, 0x17 // Named Group: secp256r1
+		data[56], data[57] = 0x00, 0x02 // Length
+		data[58], data[59] = 0x00, 0x00 // Key exchange data
 
 		result, err := analyzer.AnalyzeServerHelloBytes(data)
 		if err != nil {
@@ -273,38 +273,38 @@ func TestAnalyzeServerHelloBytes(t *testing.T) {
 	t.Run("parse extension list", func(t *testing.T) {
 		// Build a ServerHello with multiple extensions
 		data := make([]byte, 80)
-		data[0] = 0x02                                           // Server Hello
-		data[1], data[2], data[3] = 0x00, 0x00, 0x49             // Length
-		data[4], data[5] = 0x03, 0x03                            // Version: TLS 1.2
-		copy(data[6:38], make([]byte, 32))                       // Random
-		data[38] = 0x00                                          // Session ID Length: 0
-		data[39], data[40] = 0x00, 0x2f                          // Cipher Suite: TLS_RSA_WITH_AES_128_CBC_SHA
-		data[41] = 0x00                                          // Compression: null
-		data[42], data[43] = 0x00, 0x20                          // Extensions Length: 32 bytes
+		data[0] = 0x02                               // Server Hello
+		data[1], data[2], data[3] = 0x00, 0x00, 0x49 // Length
+		data[4], data[5] = 0x03, 0x03                // Version: TLS 1.2
+		copy(data[6:38], make([]byte, 32))           // Random
+		data[38] = 0x00                              // Session ID Length: 0
+		data[39], data[40] = 0x00, 0x2f              // Cipher Suite: TLS_RSA_WITH_AES_128_CBC_SHA
+		data[41] = 0x00                              // Compression: null
+		data[42], data[43] = 0x00, 0x20              // Extensions Length: 32 bytes
 
 		// Extension 1: server_name (0x0000)
-		data[44], data[45] = 0x00, 0x00                          // Type
-		data[46], data[47] = 0x00, 0x00                          // Length: 0
+		data[44], data[45] = 0x00, 0x00 // Type
+		data[46], data[47] = 0x00, 0x00 // Length: 0
 
 		// Extension 2: supported_groups (0x000a)
-		data[48], data[49] = 0x00, 0x0a                          // Type
-		data[50], data[51] = 0x00, 0x04                          // Length
-		data[52], data[53] = 0x00, 0x02                          // List Length
-		data[54], data[55] = 0x00, 0x17                          // secp256r1
+		data[48], data[49] = 0x00, 0x0a // Type
+		data[50], data[51] = 0x00, 0x04 // Length
+		data[52], data[53] = 0x00, 0x02 // List Length
+		data[54], data[55] = 0x00, 0x17 // secp256r1
 
 		// Extension 3: ec_point_formats (0x000b)
-		data[56], data[57] = 0x00, 0x0b                          // Type
-		data[58], data[59] = 0x00, 0x02                          // Length
-		data[60], data[61] = 0x01, 0x00                          // Length 1, uncompressed
+		data[56], data[57] = 0x00, 0x0b // Type
+		data[58], data[59] = 0x00, 0x02 // Length
+		data[60], data[61] = 0x01, 0x00 // Length 1, uncompressed
 
 		// Extension 4: session_ticket (0x0023)
-		data[62], data[63] = 0x00, 0x23                          // Type
-		data[64], data[65] = 0x00, 0x00                          // Length: 0
+		data[62], data[63] = 0x00, 0x23 // Type
+		data[64], data[65] = 0x00, 0x00 // Length: 0
 
 		// Extension 5: renegotiation_info (0xff01)
-		data[66], data[67] = 0xff, 0x01                         // Type
-		data[68], data[69] = 0x00, 0x01                          // Length
-		data[70] = 0x00                                          // Info
+		data[66], data[67] = 0xff, 0x01 // Type
+		data[68], data[69] = 0x00, 0x01 // Length
+		data[70] = 0x00                 // Info
 
 		result, err := analyzer.AnalyzeServerHelloBytes(data)
 		if err != nil {
@@ -396,9 +396,9 @@ func TestGenerateServerHelloSignature(t *testing.T) {
 			tlsVersion:        0x0301, // Deprecated
 			cipherSuite:       0x000a, // Weak cipher
 			extensions:        []uint16{0x002b},
-			compressionMethod: 1,      // Unsafe compression
+			compressionMethod: 1, // Unsafe compression
 			expectHashLen:     64,
-			expectRiskScore:   0.85,   // 0.2 + 0.25 + 0.2 + 0.2
+			expectRiskScore:   0.85, // 0.2 + 0.25 + 0.2 + 0.2
 			expectAnomalies:   []string{"DEPRECATED_TLS_VERSION", "WEAK_CIPHER_SUITE", "MINIMAL_EXTENSIONS", "UNSAFE_COMPRESSION"},
 		},
 	}
@@ -607,13 +607,13 @@ func TestFormatTLSVersion(t *testing.T) {
 		input    uint16
 		expected string
 	}{
-		{0x0303, "773"},    // TLS 1.2
-		{0x0304, "774"},    // TLS 1.3
-		{0x0301, "769"},    // TLS 1.0
-		{0x0302, "770"},    // TLS 1.1
-		{0x0300, "768"},    // SSL 3.0
-		{0x0000, "0"},      // Unknown
-		{0xffff, "65535"},  // Unknown
+		{0x0303, "773"},   // TLS 1.2
+		{0x0304, "774"},   // TLS 1.3
+		{0x0301, "769"},   // TLS 1.0
+		{0x0302, "770"},   // TLS 1.1
+		{0x0300, "768"},   // SSL 3.0
+		{0x0000, "0"},     // Unknown
+		{0xffff, "65535"}, // Unknown
 	}
 
 	for _, tc := range tests {
@@ -632,13 +632,13 @@ func TestTLSVersionString(t *testing.T) {
 		input    uint16
 		expected string
 	}{
-		{0x0301, "1.0"},      // TLS 1.0
-		{0x0302, "1.1"},      // TLS 1.1
-		{0x0303, "1.2"},      // TLS 1.2
-		{0x0304, "1.3"},      // TLS 1.3
-		{0x0300, "0x0300"},   // SSL 3.0
-		{0x0000, "0x0000"},   // Unknown
-		{0xffff, "0xffff"},   // Unknown
+		{0x0301, "1.0"},    // TLS 1.0
+		{0x0302, "1.1"},    // TLS 1.1
+		{0x0303, "1.2"},    // TLS 1.2
+		{0x0304, "1.3"},    // TLS 1.3
+		{0x0300, "0x0300"}, // SSL 3.0
+		{0x0000, "0x0000"}, // Unknown
+		{0xffff, "0xffff"}, // Unknown
 	}
 
 	for _, tc := range tests {
@@ -657,13 +657,13 @@ func TestFormatCipherCode(t *testing.T) {
 		input    uint16
 		expected string
 	}{
-		{0x002f, "1"},       // TLS_RSA_WITH_AES_128_CBC_SHA
-		{0x007c, "2"},       // TLS_RSA_WITH_AES_256_CBC_SHA
-		{0x1301, "3"},       // TLS_AES_128_GCM_SHA256
-		{0x1302, "4"},       // TLS_AES_256_GCM_SHA384
-		{0x1303, "4867"},    // Unknown
-		{0x0000, "0"},       // TLS_NULL_WITH_NULL_NULL
-		{0xffff, "65535"},   // Unknown
+		{0x002f, "1"},     // TLS_RSA_WITH_AES_128_CBC_SHA
+		{0x007c, "2"},     // TLS_RSA_WITH_AES_256_CBC_SHA
+		{0x1301, "3"},     // TLS_AES_128_GCM_SHA256
+		{0x1302, "4"},     // TLS_AES_256_GCM_SHA384
+		{0x1303, "4867"},  // Unknown
+		{0x0000, "0"},     // TLS_NULL_WITH_NULL_NULL
+		{0xffff, "65535"}, // Unknown
 	}
 
 	for _, tc := range tests {
@@ -788,9 +788,9 @@ func TestIsWeakCipherSuite(t *testing.T) {
 // TestHasValidExtensionOrder tests extension order validation
 func TestHasValidExtensionOrder(t *testing.T) {
 	tests := []struct {
-		name     string
+		name       string
 		extensions []uint16
-		expected bool
+		expected   bool
 	}{
 		{"empty list", []uint16{}, true},
 		{"single extension", []uint16{0x002b}, true},
@@ -816,10 +816,10 @@ func TestDetectAnomalies_DeprecatedTLS(t *testing.T) {
 	analyzer := NewJA4SAnalyzer()
 
 	tests := []struct {
-		name           string
-		version        uint16
-		expectAnomaly  string
-		expectedScore  float64
+		name          string
+		version       uint16
+		expectAnomaly string
+		expectedScore float64
 	}{
 		{"SSL 3.0", 0x0300, "DEPRECATED_TLS_VERSION", 0.2},
 		{"TLS 1.0", 0x0301, "DEPRECATED_TLS_VERSION", 0.2},
@@ -914,9 +914,9 @@ func TestDetectAnomalies_Extensions(t *testing.T) {
 	analyzer := NewJA4SAnalyzer()
 
 	tests := []struct {
-		name            string
-		extensions      []uint16
-		expectAnomaly   string
+		name          string
+		extensions    []uint16
+		expectAnomaly string
 	}{
 		{"too few extensions", []uint16{0x002b}, "MINIMAL_EXTENSIONS"},
 		{"normal extensions", []uint16{0x002b, 0x0033, 0x002d}, ""},
@@ -1028,9 +1028,9 @@ func TestComputeJA4SFromBytes(t *testing.T) {
 // TestComputeJA4SFromProfileData tests computing JA4S from profile data
 func TestComputeJA4SFromProfileData(t *testing.T) {
 	result, err := ComputeJA4SFromProfileData(
-		0x0304,                       // TLS 1.3
-		0x1301,                       // TLS_AES_128_GCM_SHA256
-		[]uint16{0x002b, 0x0033},     // supported_versions, key_share
+		0x0304,                   // TLS 1.3
+		0x1301,                   // TLS_AES_128_GCM_SHA256
+		[]uint16{0x002b, 0x0033}, // supported_versions, key_share
 	)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)

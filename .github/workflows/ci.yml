@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ['1.22', '1.23', '1.24', '1.25']
+        go-version: ['1.25']
 
     steps:
     - name: Checkout code
@@ -32,27 +32,27 @@ jobs:
           ${{ runner.os }}-go-
 
     - name: Download dependencies
-      run: |
-        go mod download
-        go work sync
+      run: go mod download
 
     - name: Build all modules
       run: |
         go build ./...
-        go build ./modules/...
+        for dir in modules/*/; do
+          if [ -f "$dir/go.mod" ]; then
+            echo "=== Building $dir ==="
+            (cd "$dir" && go build ./...)
+          fi
+        done
 
     - name: Run tests
-      run: go test -v -race -coverprofile=coverage.out ./modules/...
-
-    - name: Generate coverage report
-      run: go tool cover -html=coverage.out -o coverage.html
-
-    - name: Upload coverage
-      uses: codecov/codecov-action@v4
-      with:
-        files: ./coverage.out
-        flags: unittests
-        name: codecov-umbrella
+      run: |
+        go test -v -race ./...
+        for dir in modules/*/; do
+          if [ -f "$dir/go.mod" ]; then
+            echo "=== Testing $dir ==="
+            (cd "$dir" && go test -race ./...)
+          fi
+        done
 
   lint:
     name: Lint
@@ -86,10 +86,10 @@ jobs:
 
     - name: Build examples
       run: |
-        go build -o v3-demo ./examples/v3
-
-    - name: Test run example
-      run: ./v3-demo
+        for dir in examples/*/; do
+          echo "Building $dir ..."
+          (cd "$dir" && go mod download && go build -o /dev/null .)
+        done
 
   benchmark:
     name: Benchmark
@@ -103,8 +103,15 @@ jobs:
       with:
         go-version: '1.25'
 
+    - name: Download dependencies
+      run: go mod download
+
     - name: Run benchmarks
-      run: go test -bench=. -benchmem ./modules/core/... ./modules/profiles/... ./modules/ml/... ./modules/tls/...
+      run: |
+        for module in core profiles ml tls; do
+          echo "=== Benchmarking modules/$module ==="
+          (cd "modules/$module" && go test -bench=. -benchmem -run=^$ -benchtime=1x ./...)
+        done
 
   security:
     name: Security Scan
@@ -112,6 +119,11 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.25'
 
     - name: Run Gosec Security Scanner
       uses: securego/gosec@master

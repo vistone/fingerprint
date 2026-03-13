@@ -5,15 +5,16 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/vistone/fingerprint/modules/core"
 	"github.com/vistone/fingerprint/modules/ml"
 	"github.com/vistone/fingerprint/modules/profiles"
 )
 
 func main() {
 	// Make sure profiles are registered.
-	_ = profiles.AllProfiles()
+	_ = profiles.GetAll()
 
-	pipeline := ml.NewModelPipeline(nil)
+	pipeline := ml.NewModelPipeline()
 
 	weightsPath := "models/weights.json"
 	if len(os.Args) > 1 {
@@ -28,32 +29,26 @@ func main() {
 	fmt.Println("Weights loaded successfully.")
 
 	// Run inference on a few profiles.
-	allProfiles := profiles.AllProfiles()
-	testCases := []string{}
-	families := map[string]bool{}
-	for id, p := range allProfiles {
+	allProfiles := profiles.GetAll()
+	families := map[core.BrowserType]bool{}
+	var testProfiles []profiles.ClientProfile
+	for _, p := range allProfiles {
 		fam := p.BrowserType
-		if !families[fam] && len(testCases) < 7 {
+		if !families[fam] && len(testProfiles) < 7 {
 			families[fam] = true
-			testCases = append(testCases, id)
+			testProfiles = append(testProfiles, p)
 		}
 	}
 
-	for _, id := range testCases {
-		p := allProfiles[id]
-
-		result, err := pipeline.Analyze(p)
-		if err != nil {
-			fmt.Printf("  %s (%s): ERROR %v\n", id, p.BrowserType, err)
-			continue
-		}
+	for _, p := range testProfiles {
+		result := pipeline.Infer(&p, nil)
 
 		fmt.Printf("  %-35s (%s)  predicted=%-8s conf=%.1f%%  forgery=%.1f%%  threat=%s\n",
-			id, p.BrowserType,
-			result.Classification.PredictedFamily,
-			result.Classification.Confidence*100,
-			result.ForgeryAnalysis.ForgeryProbability*100,
-			result.ThreatAssessment.ThreatLevel,
+			p.ID, p.BrowserType,
+			result.Browser.Family,
+			result.Browser.Confidence*100,
+			result.Forgery.ForgeryProb*100,
+			result.Threat.ThreatClass,
 		)
 	}
 

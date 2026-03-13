@@ -41,7 +41,7 @@ func NewRateLimiter(maxRequests int, windowSeconds int) *RateLimiter {
 // Allow checks if a request is allowed
 func (rl *RateLimiter) Allow(clientID string) bool {
 	now := time.Now()
-	
+
 	entry, exists := rl.requests[clientID]
 	if !exists || now.After(entry.ResetTime) {
 		rl.requests[clientID] = &RateLimitEntry{
@@ -131,9 +131,9 @@ func (m *Middleware) ValidateRequest(next http.Handler) http.Handler {
 		if r.ContentLength > m.config.MaxRequestSize {
 			if m.logger != nil {
 				m.logger.Warning("request", "validate", "api", "rejected", map[string]interface{}{
-					"reason":          "content_too_large",
-					"content_length":  r.ContentLength,
-					"max_size":        m.config.MaxRequestSize,
+					"reason":         "content_too_large",
+					"content_length": r.ContentLength,
+					"max_size":       m.config.MaxRequestSize,
 				})
 			}
 			http.Error(w, "Request too large", http.StatusRequestEntityTooLarge)
@@ -151,8 +151,8 @@ func (m *Middleware) ValidateRequest(next http.Handler) http.Handler {
 			if err := m.validator.ValidateUserAgent(ua); err != nil {
 				if m.logger != nil {
 					m.logger.Warning("request", "validate", "api", "rejected", map[string]interface{}{
-						"reason":       "invalid_user_agent",
-						"user_agent":   ua,
+						"reason":     "invalid_user_agent",
+						"user_agent": ua,
 					})
 				}
 				http.Error(w, "Invalid User-Agent", http.StatusBadRequest)
@@ -247,10 +247,10 @@ func (m *Middleware) AuditLogging(next http.Handler) http.Handler {
 			}
 
 			m.logger.Log(level, "http", r.Method, r.URL.Path, result, map[string]interface{}{
-				"client_ip":   m.getClientIP(r),
-				"user_agent":  r.UserAgent(),
-				"status_code": rw.statusCode,
-				"duration_ms": duration.Milliseconds(),
+				"client_ip":    m.getClientIP(r),
+				"user_agent":   r.UserAgent(),
+				"status_code":  rw.statusCode,
+				"duration_ms":  duration.Milliseconds(),
 				"request_size": r.ContentLength,
 			})
 		}

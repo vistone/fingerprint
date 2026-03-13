@@ -73,12 +73,12 @@ func TestNewNetworkBehaviorAnalyzer(t *testing.T) {
 // TestNetworkBehaviorAnalyzer_RecordPacket tests recording packets
 func TestNetworkBehaviorAnalyzer_RecordPacket(t *testing.T) {
 	tests := []struct {
-		name         string
-		packetCount  int
-		maxSamples   int
-		expectedLen  int
-		expectedSeq  uint32
-		expectedRTT  time.Duration
+		name        string
+		packetCount int
+		maxSamples  int
+		expectedLen int
+		expectedSeq uint32
+		expectedRTT time.Duration
 	}{
 		{
 			name:        "record single packet",
@@ -201,14 +201,14 @@ func TestAppendWithLimit(t *testing.T) {
 // TestNetworkBehaviorAnalyzer_AnalyzeBehavior tests analyzing network behavior
 func TestNetworkBehaviorAnalyzer_AnalyzeBehavior(t *testing.T) {
 	tests := []struct {
-		name           string
-		setupFunc      func(*NetworkBehaviorAnalyzer)
+		name            string
+		setupFunc       func(*NetworkBehaviorAnalyzer)
 		expectedPackets int
-		checkResult    func(*testing.T, *NetworkBehaviorResult)
+		checkResult     func(*testing.T, *NetworkBehaviorResult)
 	}{
 		{
-			name:           "empty analyzer returns empty result",
-			setupFunc:      func(nba *NetworkBehaviorAnalyzer) {},
+			name:            "empty analyzer returns empty result",
+			setupFunc:       func(nba *NetworkBehaviorAnalyzer) {},
 			expectedPackets: 0,
 			checkResult: func(t *testing.T, result *NetworkBehaviorResult) {
 				if result.TotalPackets != 0 {
@@ -454,28 +454,28 @@ func TestAnalyzeSequenceNumbers(t *testing.T) {
 // TestAnalyzeIPIDs tests IP ID analysis
 func TestAnalyzeIPIDs(t *testing.T) {
 	tests := []struct {
-		name       string
-		ipIDs      []uint16
+		name        string
+		ipIDs       []uint16
 		wantPattern string
 	}{
 		{
-			name:       "insufficient data",
-			ipIDs:      []uint16{1},
+			name:        "insufficient data",
+			ipIDs:       []uint16{1},
 			wantPattern: "insufficient_data",
 		},
 		{
-			name:       "linear counter pattern",
-			ipIDs:      []uint16{1, 2, 3, 4, 5},
+			name:        "linear counter pattern",
+			ipIDs:       []uint16{1, 2, 3, 4, 5},
 			wantPattern: "linear_counter",
 		},
 		{
-			name:       "random pattern",
-			ipIDs:      []uint16{1, 5000, 100, 9999, 50},
+			name:        "random pattern",
+			ipIDs:       []uint16{1, 5000, 100, 9999, 50},
 			wantPattern: "random",
 		},
 		{
-			name:       "mixed pattern",
-			ipIDs:      []uint16{1, 2, 100, 101, 102},
+			name:        "mixed pattern",
+			ipIDs:       []uint16{1, 2, 100, 101, 102},
 			wantPattern: "mixed_pattern",
 		},
 	}
@@ -682,15 +682,15 @@ func TestAnalyzeTimingPattern(t *testing.T) {
 // TestComputeBehaviorCharacteristics tests behavior characteristics computation
 func TestComputeBehaviorCharacteristics(t *testing.T) {
 	tests := []struct {
-		name           string
-		packetCount    int
-		setupFunc      func(*NetworkBehaviorAnalyzer)
+		name                string
+		packetCount         int
+		setupFunc           func(*NetworkBehaviorAnalyzer)
 		wantCharacteristics []string
 	}{
 		{
-			name:           "empty packets",
-			packetCount:    0,
-			setupFunc:      func(nba *NetworkBehaviorAnalyzer) {},
+			name:                "empty packets",
+			packetCount:         0,
+			setupFunc:           func(nba *NetworkBehaviorAnalyzer) {},
 			wantCharacteristics: nil, // empty slice returns nil
 		},
 		{
@@ -823,49 +823,49 @@ func TestCalculateStdDeviation(t *testing.T) {
 // TestClassifyNetworkType tests network type classification
 func TestClassifyNetworkType(t *testing.T) {
 	tests := []struct {
-		name    string
-		avgRTT  time.Duration
-		want    string
+		name   string
+		avgRTT time.Duration
+		want   string
 	}{
 		{
-			name:    "local_lan",
-			avgRTT:  5 * time.Millisecond,
-			want:    "local_lan",
+			name:   "local_lan",
+			avgRTT: 5 * time.Millisecond,
+			want:   "local_lan",
 		},
 		{
-			name:    "local_lan boundary",
-			avgRTT:  9 * time.Millisecond,
-			want:    "local_lan",
+			name:   "local_lan boundary",
+			avgRTT: 9 * time.Millisecond,
+			want:   "local_lan",
 		},
 		{
-			name:    "domestic",
-			avgRTT:  10 * time.Millisecond,
-			want:    "domestic",
+			name:   "domestic",
+			avgRTT: 10 * time.Millisecond,
+			want:   "domestic",
 		},
 		{
-			name:    "domestic boundary",
-			avgRTT:  49 * time.Millisecond,
-			want:    "domestic",
+			name:   "domestic boundary",
+			avgRTT: 49 * time.Millisecond,
+			want:   "domestic",
 		},
 		{
-			name:    "regional",
-			avgRTT:  50 * time.Millisecond,
-			want:    "regional",
+			name:   "regional",
+			avgRTT: 50 * time.Millisecond,
+			want:   "regional",
 		},
 		{
-			name:    "regional boundary",
-			avgRTT:  149 * time.Millisecond,
-			want:    "regional",
+			name:   "regional boundary",
+			avgRTT: 149 * time.Millisecond,
+			want:   "regional",
 		},
 		{
-			name:    "international",
-			avgRTT:  150 * time.Millisecond,
-			want:    "international",
+			name:   "international",
+			avgRTT: 150 * time.Millisecond,
+			want:   "international",
 		},
 		{
-			name:    "international high latency",
-			avgRTT:  500 * time.Millisecond,
-			want:    "international",
+			name:   "international high latency",
+			avgRTT: 500 * time.Millisecond,
+			want:   "international",
 		},
 	}
 
@@ -883,34 +883,34 @@ func TestClassifyNetworkType(t *testing.T) {
 // TestHasHighVariance tests high variance detection
 func TestHasHighVariance(t *testing.T) {
 	tests := []struct {
-		name string
+		name  string
 		diffs []int64
-		want bool
+		want  bool
 	}{
 		{
-			name: "insufficient data",
+			name:  "insufficient data",
 			diffs: []int64{100},
-			want: false,
+			want:  false,
 		},
 		{
-			name: "low variance",
+			name:  "low variance",
 			diffs: []int64{1, 2, 3, 4, 5},
-			want: false,
+			want:  false,
 		},
 		{
-			name: "high variance exceeding threshold",
+			name:  "high variance exceeding threshold",
 			diffs: []int64{1000, 2000, 3000},
-			want: true,
+			want:  true,
 		},
 		{
-			name: "negative value high variance",
+			name:  "negative value high variance",
 			diffs: []int64{-1000, -2000, -3000},
-			want: true,
+			want:  true,
 		},
 		{
-			name: "mixed signs",
+			name:  "mixed signs",
 			diffs: []int64{-1000, 1000, -2000},
-			want: true,
+			want:  true,
 		},
 	}
 
@@ -928,29 +928,29 @@ func TestHasHighVariance(t *testing.T) {
 // TestIsTimeRelated tests time-related detection
 func TestIsTimeRelated(t *testing.T) {
 	tests := []struct {
-		name string
+		name  string
 		diffs []int64
-		want bool
+		want  bool
 	}{
 		{
-			name: "insufficient data",
+			name:  "insufficient data",
 			diffs: []int64{100},
-			want: false,
+			want:  false,
 		},
 		{
-			name: "time-related pattern",
+			name:  "time-related pattern",
 			diffs: []int64{1000, 2000, 3000, 4000},
-			want: true,
+			want:  true,
 		},
 		{
-			name: "not time-related",
+			name:  "not time-related",
 			diffs: []int64{100000, -1000, 50000, -50000},
-			want: false,
+			want:  false,
 		},
 		{
-			name: "partial increment",
+			name:  "partial increment",
 			diffs: []int64{1000, 2000, -5000, 3000},
-			want: true, // 3/4 = 75% > 70%, meets time-related condition
+			want:  true, // 3/4 = 75% > 70%, meets time-related condition
 		},
 	}
 
@@ -968,29 +968,29 @@ func TestIsTimeRelated(t *testing.T) {
 // TestIsLinear tests linearity detection
 func TestIsLinear(t *testing.T) {
 	tests := []struct {
-		name string
+		name  string
 		diffs []int64
-		want bool
+		want  bool
 	}{
 		{
-			name: "insufficient data",
+			name:  "insufficient data",
 			diffs: []int64{100},
-			want: false,
+			want:  false,
 		},
 		{
-			name: "fully linear",
+			name:  "fully linear",
 			diffs: []int64{100, 100, 100, 100},
-			want: true,
+			want:  true,
 		},
 		{
-			name: "non-linear",
+			name:  "non-linear",
 			diffs: []int64{100, 200, 100, 200},
-			want: false,
+			want:  false,
 		},
 		{
-			name: "single difference",
+			name:  "single difference",
 			diffs: []int64{100, 100},
-			want: true,
+			want:  true,
 		},
 	}
 
@@ -1008,34 +1008,34 @@ func TestIsLinear(t *testing.T) {
 // TestIsLinearIPID tests linear IP ID detection
 func TestIsLinearIPID(t *testing.T) {
 	tests := []struct {
-		name string
+		name  string
 		diffs []int
-		want bool
+		want  bool
 	}{
 		{
-			name: "insufficient data",
+			name:  "insufficient data",
 			diffs: []int{1},
-			want: false,
+			want:  false,
 		},
 		{
-			name: "linear counter - increment 1",
+			name:  "linear counter - increment 1",
 			diffs: []int{1, 1, 1, 1},
-			want: true,
+			want:  true,
 		},
 		{
-			name: "linear counter - increment 0",
+			name:  "linear counter - increment 0",
 			diffs: []int{0, 0, 0, 0},
-			want: true,
+			want:  true,
 		},
 		{
-			name: "mixed 0 and 1",
+			name:  "mixed 0 and 1",
 			diffs: []int{0, 1, 0, 1},
-			want: true,
+			want:  true,
 		},
 		{
-			name: "non-linear",
+			name:  "non-linear",
 			diffs: []int{1, 2, 3, 4},
-			want: false,
+			want:  false,
 		},
 	}
 
@@ -1151,7 +1151,7 @@ func TestNetworkBehaviorResult_String(t *testing.T) {
 					AverageRTT: 50 * time.Millisecond,
 				},
 				SequenceNumberPattern:   "sequential",
-				TimingPattern:          "periodic",
+				TimingPattern:           "periodic",
 				BehaviorCharacteristics: []string{"interactive"},
 			},
 			want: "NetworkBehavior[packets=10, avgRTT=50ms, seqPattern=sequential, timing=periodic, characteristics=[interactive]]",
@@ -1165,7 +1165,7 @@ func TestNetworkBehaviorResult_String(t *testing.T) {
 					AverageRTT: 0,
 				},
 				SequenceNumberPattern:   "insufficient_data",
-				TimingPattern:          "insufficient_data",
+				TimingPattern:           "insufficient_data",
 				BehaviorCharacteristics: []string{},
 			},
 			want: "NetworkBehavior[packets=0, avgRTT=0s, seqPattern=insufficient_data, timing=insufficient_data, characteristics=[]]",
@@ -1179,7 +1179,7 @@ func TestNetworkBehaviorResult_String(t *testing.T) {
 					AverageRTT: 100 * time.Millisecond,
 				},
 				SequenceNumberPattern:   "random",
-				TimingPattern:          "bursty",
+				TimingPattern:           "bursty",
 				BehaviorCharacteristics: []string{"automated", "bulk_transfer"},
 			},
 			want: "NetworkBehavior[packets=150, avgRTT=100ms, seqPattern=random, timing=bursty, characteristics=[automated bulk_transfer]]",

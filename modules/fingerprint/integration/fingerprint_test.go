@@ -4,12 +4,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/vistone/fingerprint/modules/core/types"
+	"github.com/vistone/fingerprint/modules/defense/legacy/defense"
+	"github.com/vistone/fingerprint/modules/errors"
 	"github.com/vistone/fingerprint/modules/generator/noise"
 	"github.com/vistone/fingerprint/modules/generator/random"
-	"github.com/vistone/fingerprint/modules/errors"
 	"github.com/vistone/fingerprint/modules/profiles/legacy"
-	"github.com/vistone/fingerprint/modules/defense/legacy/defense"
-	"github.com/vistone/fingerprint/modules/core/types"
 )
 
 // TestDefaultProfile 测试默认指纹
@@ -372,7 +372,7 @@ func TestPassiveRecognizer(t *testing.T) {
 
 	// 使用真实指纹的 Headers 进行识别
 	headers := result.Headers.ToMap()
-	
+
 	recognitionResult := recognizer.RecognizeFromHeaders(headers)
 	if recognitionResult.Browser != types.BrowserChrome {
 		t.Errorf("应识别为 Chrome，实际为 %s", recognitionResult.Browser)

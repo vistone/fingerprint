@@ -46,14 +46,14 @@ func (s SensitivityLevel) String() string {
 func NewDataClassifier() *DataClassifier {
 	return &DataClassifier{
 		patterns: map[string]*regexp.Regexp{
-			"email":     regexp.MustCompile(`[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}`),
-			"ipv4":      regexp.MustCompile(`\b(?:\d{1,3}\.){3}\d{1,3}\b`),
-			"ipv6":      regexp.MustCompile(`\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b`),
-			"phone":     regexp.MustCompile(`\b\d{3}[-.]?\d{3}[-.]?\d{4}\b`),
+			"email":       regexp.MustCompile(`[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}`),
+			"ipv4":        regexp.MustCompile(`\b(?:\d{1,3}\.){3}\d{1,3}\b`),
+			"ipv6":        regexp.MustCompile(`\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b`),
+			"phone":       regexp.MustCompile(`\b\d{3}[-.]?\d{3}[-.]?\d{4}\b`),
 			"credit_card": regexp.MustCompile(`\b(?:\d{4}[-\s]?){3}\d{4}\b`),
-			"ssn":       regexp.MustCompile(`\b\d{3}-\d{2}-\d{4}\b`),
-			"api_key":   regexp.MustCompile(`(?i)(api[_-]?key|apikey)[\s]*[=:][\s]*[a-zA-Z0-9]{16,}`),
-			"token":     regexp.MustCompile(`(?i)(token|bearer)[\s]+[a-zA-Z0-9_\-\.]+`),
+			"ssn":         regexp.MustCompile(`\b\d{3}-\d{2}-\d{4}\b`),
+			"api_key":     regexp.MustCompile(`(?i)(api[_-]?key|apikey)[\s]*[=:][\s]*[a-zA-Z0-9]{16,}`),
+			"token":       regexp.MustCompile(`(?i)(token|bearer)[\s]+[a-zA-Z0-9_\-\.]+`),
 		},
 	}
 }
@@ -161,12 +161,12 @@ type Redactor struct {
 func NewRedactor() *Redactor {
 	return &Redactor{
 		patterns: map[string]*regexp.Regexp{
-			"password":  regexp.MustCompile(`(?i)(password|passwd|pwd)[\s]*[=:][\s]*[^\s]+`),
-			"secret":    regexp.MustCompile(`(?i)(secret|private_key)[\s]*[=:][\s]*[^\s]+`),
-			"token":     regexp.MustCompile(`(?i)(token|access_token)[\s]*[=:][\s]*[^\s]+`),
-			"api_key":   regexp.MustCompile(`(?i)(api_key|apikey)[\s]*[=:][\s]*[^\s]+`),
-			"auth":      regexp.MustCompile(`(?i)(authorization|auth)[\s]*[=:][\s]*[^\s]+`),
-			"cookie":    regexp.MustCompile(`(?i)(cookie|session)[\s]*[=:][\s]*[^\s]+`),
+			"password": regexp.MustCompile(`(?i)(password|passwd|pwd)[\s]*[=:][\s]*[^\s]+`),
+			"secret":   regexp.MustCompile(`(?i)(secret|private_key)[\s]*[=:][\s]*[^\s]+`),
+			"token":    regexp.MustCompile(`(?i)(token|access_token)[\s]*[=:][\s]*[^\s]+`),
+			"api_key":  regexp.MustCompile(`(?i)(api_key|apikey)[\s]*[=:][\s]*[^\s]+`),
+			"auth":     regexp.MustCompile(`(?i)(authorization|auth)[\s]*[=:][\s]*[^\s]+`),
+			"cookie":   regexp.MustCompile(`(?i)(cookie|session)[\s]*[=:][\s]*[^\s]+`),
 		},
 	}
 }
@@ -279,7 +279,7 @@ func (h *SensitiveDataHandler) isSensitiveField(field string, sensitiveFields []
 func (h *SensitiveDataHandler) SanitizeForLogging(data string) string {
 	// First redact known sensitive patterns
 	data = h.redactor.Redact(data)
-	
+
 	// Then classify and mask any remaining sensitive data
 	level := h.classifier.Classify(data)
 	if level >= Confidential {

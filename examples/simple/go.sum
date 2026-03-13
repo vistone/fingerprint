@@ -1,2 +1,6 @@
-github.com/vistone/fingerprint/modules/core v1.0.8 h1:fsG9KTNTznrp1PG808rtvZMWYm3dmOge5+PktjVka+I=
-github.com/vistone/fingerprint/modules/core v1.0.8/go.mod h1:D+4NVD5zDGHPwds3fhhB+YSfnxFPl11QF9EjwLjmBtE=
+github.com/vistone/fingerprint/modules/core v1.0.19 h1:PkPu6NLGb1W4XfAVaAdVBZEa3DtLbYbh/Vx88tELy64=
+github.com/vistone/fingerprint/modules/core v1.0.19/go.mod h1:aA/kkmCvayoi/dRFSC3+kykDTWZROndST8pU5ujLFvI=
+github.com/vistone/fingerprint/modules/errors v1.0.19 h1:zd09u4x5UIVNZl4+QvQTxP08URYa3Le1jyxeF6S79sE=
+github.com/vistone/fingerprint/modules/errors v1.0.19/go.mod h1:dRwXR4+yrNnXjKF1CFCvBVrvUqNpRe2XuYiZFqSN6dQ=
+github.com/vistone/fingerprint/modules/profiles v1.0.19 h1:a8u8WNn3tIH6140blg0wsTFHc/7iAVM7ER/anZIjC1k=
+github.com/vistone/fingerprint/modules/profiles v1.0.19/go.mod h1:CJLHRtDfECpBaXENV6Vefs2cNlx2BoTYz1u1qkECxQQ=

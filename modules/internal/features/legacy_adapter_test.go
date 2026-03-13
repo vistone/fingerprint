@@ -268,44 +268,44 @@ func TestDetectHeadlessBrowser(t *testing.T) {
 	adapter := NewLegacyFeatureAdapter(nil)
 
 	tests := []struct {
-		name       string
-		userAgent  string
-		expected   bool
+		name      string
+		userAgent string
+		expected  bool
 	}{
 		{
-			name:       "检测headlesschrome无头浏览器",
-			userAgent:  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/90.0.4430.93 Safari/537.36",
-			expected:   true,
+			name:      "检测headlesschrome无头浏览器",
+			userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/90.0.4430.93 Safari/537.36",
+			expected:  true,
 		},
 		{
-			name:       "检测phantomjs无头浏览器",
-			userAgent:  "Mozilla/5.0 (Unknown; Linux x86_64) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1",
-			expected:   true,
+			name:      "检测phantomjs无头浏览器",
+			userAgent: "Mozilla/5.0 (Unknown; Linux x86_64) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1",
+			expected:  true,
 		},
 		{
-			name:       "检测selenium无头浏览器",
-			userAgent:  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Selenium/3.141.59",
-			expected:   true,
+			name:      "检测selenium无头浏览器",
+			userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Selenium/3.141.59",
+			expected:  true,
 		},
 		{
-			name:       "检测playwright无头浏览器",
-			userAgent:  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Playwright/1.12.0",
-			expected:   true,
+			name:      "检测playwright无头浏览器",
+			userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Playwright/1.12.0",
+			expected:  true,
 		},
 		{
-			name:       "正常Chrome浏览器返回false",
-			userAgent:  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
-			expected:   false,
+			name:      "正常Chrome浏览器返回false",
+			userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
+			expected:  false,
 		},
 		{
-			name:       "正常Firefox浏览器返回false",
-			userAgent:  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0",
-			expected:   false,
+			name:      "正常Firefox浏览器返回false",
+			userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0",
+			expected:  false,
 		},
 		{
-			name:       "空User-Agent返回false",
-			userAgent:  "",
-			expected:   false,
+			name:      "空User-Agent返回false",
+			userAgent: "",
+			expected:  false,
 		},
 	}
 
@@ -680,70 +680,70 @@ func TestRecognizeFromHeaders(t *testing.T) {
 // TestDetectBrowserFromUALegacy 测试浏览器检测
 func TestDetectBrowserFromUALegacy(t *testing.T) {
 	tests := []struct {
-		name            string
-		ua              string
-		wantBrowser     string
-		wantVersion     string
+		name        string
+		ua          string
+		wantBrowser string
+		wantVersion string
 	}{
 		{
-			name:            "检测Chrome",
-			ua:              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
-			wantBrowser:     "Chrome",
-			wantVersion:     "90",
+			name:        "检测Chrome",
+			ua:          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
+			wantBrowser: "Chrome",
+			wantVersion: "90",
 		},
 		{
-			name:            "检测Firefox",
-			ua:              "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0",
-			wantBrowser:     "Firefox",
-			wantVersion:     "88",
+			name:        "检测Firefox",
+			ua:          "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0",
+			wantBrowser: "Firefox",
+			wantVersion: "88",
 		},
 		{
-			name:            "检测Safari",
-			ua:              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1 Safari/605.1.15",
-			wantBrowser:     "Safari",
-			wantVersion:     "14",
+			name:        "检测Safari",
+			ua:          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1 Safari/605.1.15",
+			wantBrowser: "Safari",
+			wantVersion: "14",
 		},
 		{
-			name:            "检测Edge（Edg格式）",
-			ua:              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.49",
-			wantBrowser:     "Edge",
-			wantVersion:     "90",
+			name:        "检测Edge（Edg格式）",
+			ua:          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.49",
+			wantBrowser: "Edge",
+			wantVersion: "90",
 		},
 		{
-			name:            "检测Opera",
-			ua:              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 OPR/76.0.4017.123",
-			wantBrowser:     "Opera",
-			wantVersion:     "76",
+			name:        "检测Opera",
+			ua:          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 OPR/76.0.4017.123",
+			wantBrowser: "Opera",
+			wantVersion: "76",
 		},
 		{
-			name:            "Edge在Chrome之前检测",
-			ua:              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.49",
-			wantBrowser:     "Edge",
-			wantVersion:     "90",
+			name:        "Edge在Chrome之前检测",
+			ua:          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.49",
+			wantBrowser: "Edge",
+			wantVersion: "90",
 		},
 		{
-			name:            "Opera在Chrome之前检测",
-			ua:              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 OPR/76.0.4017.123",
-			wantBrowser:     "Opera",
-			wantVersion:     "76",
+			name:        "Opera在Chrome之前检测",
+			ua:          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 OPR/76.0.4017.123",
+			wantBrowser: "Opera",
+			wantVersion: "76",
 		},
 		{
-			name:            "Chromium包含Chrome字符串",
-			ua:              "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chromium/90.0.4430.93 Chrome/90.0.4430.93 Safari/537.36",
-			wantBrowser:     "Safari", // 包含chromium会跳过Chrome检测，Safari检测到包含Safari/
-			wantVersion:     "",
+			name:        "Chromium包含Chrome字符串",
+			ua:          "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chromium/90.0.4430.93 Chrome/90.0.4430.93 Safari/537.36",
+			wantBrowser: "Safari", // 包含chromium会跳过Chrome检测，Safari检测到包含Safari/
+			wantVersion: "",
 		},
 		{
-			name:            "默认返回Chrome",
-			ua:              "Unknown browser agent",
-			wantBrowser:     "Chrome",
-			wantVersion:     "",
+			name:        "默认返回Chrome",
+			ua:          "Unknown browser agent",
+			wantBrowser: "Chrome",
+			wantVersion: "",
 		},
 		{
-			name:            "空User-Agent默认Chrome",
-			ua:              "",
-			wantBrowser:     "Chrome",
-			wantVersion:     "",
+			name:        "空User-Agent默认Chrome",
+			ua:          "",
+			wantBrowser: "Chrome",
+			wantVersion: "",
 		},
 	}
 
@@ -763,70 +763,70 @@ func TestDetectBrowserFromUALegacy(t *testing.T) {
 // TestExtractVersionFromUALegacy 测试版本提取
 func TestExtractVersionFromUALegacy(t *testing.T) {
 	tests := []struct {
-		name    string
-		ua      string
-		prefix  string
-		want    string
+		name   string
+		ua     string
+		prefix string
+		want   string
 	}{
 		{
-			name:    "提取Chrome版本",
-			ua:      "Mozilla/5.0 Chrome/90.0.4430.93 Safari/537.36",
-			prefix:  "Chrome/",
-			want:    "90",
+			name:   "提取Chrome版本",
+			ua:     "Mozilla/5.0 Chrome/90.0.4430.93 Safari/537.36",
+			prefix: "Chrome/",
+			want:   "90",
 		},
 		{
-			name:    "提取Firefox版本",
-			ua:      "Mozilla/5.0 Firefox/88.0",
-			prefix:  "Firefox/",
-			want:    "88",
+			name:   "提取Firefox版本",
+			ua:     "Mozilla/5.0 Firefox/88.0",
+			prefix: "Firefox/",
+			want:   "88",
 		},
 		{
-			name:    "提取Safari版本",
-			ua:      "Mozilla/5.0 Version/14.1 Safari/605.1.15",
-			prefix:  "Version/",
-			want:    "14",
+			name:   "提取Safari版本",
+			ua:     "Mozilla/5.0 Version/14.1 Safari/605.1.15",
+			prefix: "Version/",
+			want:   "14",
 		},
 		{
-			name:    "提取Edge版本",
-			ua:      "Mozilla/5.0 Edg/90.0.818.49",
-			prefix:  "Edg/",
-			want:    "90",
+			name:   "提取Edge版本",
+			ua:     "Mozilla/5.0 Edg/90.0.818.49",
+			prefix: "Edg/",
+			want:   "90",
 		},
 		{
-			name:    "提取Opera版本",
-			ua:      "Mozilla/5.0 OPR/76.0.4017.123",
-			prefix:  "OPR/",
-			want:    "76",
+			name:   "提取Opera版本",
+			ua:     "Mozilla/5.0 OPR/76.0.4017.123",
+			prefix: "OPR/",
+			want:   "76",
 		},
 		{
-			name:    "前缀不存在",
-			ua:      "Mozilla/5.0 Chrome/90.0.4430.93",
-			prefix:  "Firefox/",
-			want:    "",
+			name:   "前缀不存在",
+			ua:     "Mozilla/5.0 Chrome/90.0.4430.93",
+			prefix: "Firefox/",
+			want:   "",
 		},
 		{
-			name:    "空User-Agent",
-			ua:      "",
-			prefix:  "Chrome/",
-			want:    "",
+			name:   "空User-Agent",
+			ua:     "",
+			prefix: "Chrome/",
+			want:   "",
 		},
 		{
-			name:    "版本号在末尾",
-			ua:      "Mozilla/5.0 Chrome/90",
-			prefix:  "Chrome/",
-			want:    "90",
+			name:   "版本号在末尾",
+			ua:     "Mozilla/5.0 Chrome/90",
+			prefix: "Chrome/",
+			want:   "90",
 		},
 		{
-			name:    "版本号后跟空格",
-			ua:      "Mozilla/5.0 Chrome/90 Safari/537.36",
-			prefix:  "Chrome/",
-			want:    "90",
+			name:   "版本号后跟空格",
+			ua:     "Mozilla/5.0 Chrome/90 Safari/537.36",
+			prefix: "Chrome/",
+			want:   "90",
 		},
 		{
-			name:    "版本号后跟分号",
-			ua:      "Mozilla/5.0 Chrome/90; Safari/537.36",
-			prefix:  "Chrome/",
-			want:    "90",
+			name:   "版本号后跟分号",
+			ua:     "Mozilla/5.0 Chrome/90; Safari/537.36",
+			prefix: "Chrome/",
+			want:   "90",
 		},
 	}
 
@@ -843,49 +843,49 @@ func TestExtractVersionFromUALegacy(t *testing.T) {
 // TestDetectOSFromUALegacy 测试操作系统检测
 func TestDetectOSFromUALegacy(t *testing.T) {
 	tests := []struct {
-		name    string
-		ua      string
-		want    string
+		name string
+		ua   string
+		want string
 	}{
 		{
-			name:    "检测Windows 10",
-			ua:      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/90.0.4430.93",
-			want:    "Windows 10",
+			name: "检测Windows 10",
+			ua:   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/90.0.4430.93",
+			want: "Windows 10",
 		},
 		{
-			name:    "检测MacOS 15",
-			ua:      "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0) AppleWebKit/537.36",
-			want:    "MacOS 15",
+			name: "检测MacOS 15",
+			ua:   "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0) AppleWebKit/537.36",
+			want: "MacOS 15",
 		},
 		{
-			name:    "检测MacOS 14",
-			ua:      "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/537.36",
-			want:    "MacOS 14",
+			name: "检测MacOS 14",
+			ua:   "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/537.36",
+			want: "MacOS 14",
 		},
 		{
-			name:    "检测MacOS 13",
-			ua:      "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_0) AppleWebKit/537.36",
-			want:    "MacOS 13",
+			name: "检测MacOS 13",
+			ua:   "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_0) AppleWebKit/537.36",
+			want: "MacOS 13",
 		},
 		{
-			name:    "检测Linux",
-			ua:      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36",
-			want:    "Linux",
+			name: "检测Linux",
+			ua:   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36",
+			want: "Linux",
 		},
 		{
-			name:    "默认返回Windows 10",
-			ua:      "Unknown OS",
-			want:    "Windows 10",
+			name: "默认返回Windows 10",
+			ua:   "Unknown OS",
+			want: "Windows 10",
 		},
 		{
-			name:    "空User-Agent默认Windows 10",
-			ua:      "",
-			want:    "Windows 10",
+			name: "空User-Agent默认Windows 10",
+			ua:   "",
+			want: "Windows 10",
 		},
 		{
-			name:    "检测MacOS 15（完整格式）",
-			ua:      "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0_0) AppleWebKit/537.36",
-			want:    "MacOS 15",
+			name: "检测MacOS 15（完整格式）",
+			ua:   "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0_0) AppleWebKit/537.36",
+			want: "MacOS 15",
 		},
 	}
 

@@ -58,12 +58,12 @@ func NewJA4SAnalyzer() *JA4SAnalyzer {
 
 // ServerHelloData exported ServerHello structure for computing JA4S from structured data
 type ServerHelloData struct {
-	TLSVersion     uint16   // TLS version (e.g. 0x0303=TLS1.2, 0x0304=TLS1.3)
-	CipherSuite    uint16   // Selected cipher suite
-	Extensions     []uint16 // Extension list
-	Compression    uint8    // Compression method
-	ServerName     string   // Server name
-	SelectedALPN   string   // Selected ALPN protocol
+	TLSVersion   uint16   // TLS version (e.g. 0x0303=TLS1.2, 0x0304=TLS1.3)
+	CipherSuite  uint16   // Selected cipher suite
+	Extensions   []uint16 // Extension list
+	Compression  uint8    // Compression method
+	ServerName   string   // Server name
+	SelectedALPN string   // Selected ALPN protocol
 }
 
 // AnalyzeServerHello analyzes fingerprint from structured ServerHello data

@@ -10,30 +10,30 @@ import (
 // PoolStats memory pool statistics info
 type PoolStats struct {
 	Name          string  `json:"name"`
-	HitRate       float64 `json:"hit_rate"`        // cache hit rate
-	ObjectsInUse  int64   `json:"objects_in_use"`  // number of objects in use
-	TotalGets     int64   `json:"total_gets"`      // total get count
-	TotalPuts     int64   `json:"total_puts"`      // total put count
-	CacheHits     int64   `json:"cache_hits"`      // cache hit count
-	CacheMisses   int64   `json:"cache_misses"`    // cache miss count
-	ActiveObjects int64   `json:"active_objects"`  // current active object count (estimated)
+	HitRate       float64 `json:"hit_rate"`       // cache hit rate
+	ObjectsInUse  int64   `json:"objects_in_use"` // number of objects in use
+	TotalGets     int64   `json:"total_gets"`     // total get count
+	TotalPuts     int64   `json:"total_puts"`     // total put count
+	CacheHits     int64   `json:"cache_hits"`     // cache hit count
+	CacheMisses   int64   `json:"cache_misses"`   // cache miss count
+	ActiveObjects int64   `json:"active_objects"` // current active object count (estimated)
 }
 
 // GlobalPoolMetrics global pool metrics (atomic operations)
 var GlobalPoolMetrics = struct {
 	// individual pool statistics
-	FeatureVectorGets     int64
-	FeatureVectorPuts     int64
-	FeatureVectorHits     int64
-	HTTPHeadersGets       int64
-	HTTPHeadersPuts       int64
-	HTTPHeadersHits       int64
-	StringBuilderGets     int64
-	StringBuilderPuts     int64
-	MapPoolGets           int64
-	MapPoolPuts           int64
-	SlicePoolGets         int64
-	SlicePoolPuts         int64
+	FeatureVectorGets int64
+	FeatureVectorPuts int64
+	FeatureVectorHits int64
+	HTTPHeadersGets   int64
+	HTTPHeadersPuts   int64
+	HTTPHeadersHits   int64
+	StringBuilderGets int64
+	StringBuilderPuts int64
+	MapPoolGets       int64
+	MapPoolPuts       int64
+	SlicePoolGets     int64
+	SlicePoolPuts     int64
 
 	// summaries
 	TotalAllocations int64
@@ -42,17 +42,17 @@ var GlobalPoolMetrics = struct {
 
 // poolMetrics internal metrics structure
 type poolMetrics struct {
-	name        string
-	gets        int64
-	puts        int64
-	hits        int64
-	misses      int64
-	inUse       int64
-	mu          sync.RWMutex
-	onGet       func()
-	onPut       func()
-	onHit       func()
-	onMiss      func()
+	name   string
+	gets   int64
+	puts   int64
+	hits   int64
+	misses int64
+	inUse  int64
+	mu     sync.RWMutex
+	onGet  func()
+	onPut  func()
+	onHit  func()
+	onMiss func()
 }
 
 // newPoolMetrics creates pool metrics
@@ -185,14 +185,14 @@ func (pm *PoolMonitor) Summary() PoolSummary {
 	}
 
 	return PoolSummary{
-		PoolCount:     len(allStats),
-		TotalGets:     totalGets,
-		TotalPuts:     totalPuts,
-		TotalHits:     totalHits,
-		TotalMisses:   totalMisses,
-		TotalInUse:    totalInUse,
+		PoolCount:      len(allStats),
+		TotalGets:      totalGets,
+		TotalPuts:      totalPuts,
+		TotalHits:      totalHits,
+		TotalMisses:    totalMisses,
+		TotalInUse:     totalInUse,
 		OverallHitRate: totalRate,
-		Pools:         allStats,
+		Pools:          allStats,
 	}
 }
 
@@ -208,13 +208,13 @@ func (pm *PoolMonitor) ResetAll() {
 
 // PoolSummary pool summary statistics
 type PoolSummary struct {
-	PoolCount      int                 `json:"pool_count"`
-	TotalGets      int64               `json:"total_gets"`
-	TotalPuts      int64               `json:"total_puts"`
-	TotalHits      int64               `json:"total_hits"`
-	TotalMisses    int64               `json:"total_misses"`
-	TotalInUse     int64               `json:"total_in_use"`
-	OverallHitRate float64             `json:"overall_hit_rate"`
+	PoolCount      int                  `json:"pool_count"`
+	TotalGets      int64                `json:"total_gets"`
+	TotalPuts      int64                `json:"total_puts"`
+	TotalHits      int64                `json:"total_hits"`
+	TotalMisses    int64                `json:"total_misses"`
+	TotalInUse     int64                `json:"total_in_use"`
+	OverallHitRate float64              `json:"overall_hit_rate"`
 	Pools          map[string]PoolStats `json:"pools"`
 }
 

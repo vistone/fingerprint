@@ -189,9 +189,9 @@ type ClassificationCacheEntry struct {
 
 // ClassificationCache is a specialized cache for classification results
 type ClassificationCache struct {
-	cache           *LRUCache
-	stopCleanup     chan struct{}
-	cleanupRunning  bool
+	cache          *LRUCache
+	stopCleanup    chan struct{}
+	cleanupRunning bool
 }
 
 // NewClassificationCache creates a new classification cache

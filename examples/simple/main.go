@@ -17,7 +17,7 @@ func main() {
 	fmt.Printf("Profile: %s\n", profile.Name)
 	fmt.Printf("Browser: %s %s\n", profile.BrowserType, profile.BrowserVersion)
 	fmt.Printf("OS: %s %s\n", profile.OS, profile.OSVersion)
-	
+
 	// Get headers
 	if profile.Headers != nil {
 		fmt.Printf("\nAccept: %s\n", profile.Headers.Accept)

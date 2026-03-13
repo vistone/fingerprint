@@ -265,7 +265,7 @@ func TestDefaultValidator_ValidateConfig(t *testing.T) {
 			config: func() map[string]interface{} {
 				config := make(map[string]interface{})
 				for i := 0; i < 1000; i++ {
-					config[string(rune('a'+i%26)) + string(rune(i))] = i
+					config[string(rune('a'+i%26))+string(rune(i))] = i
 				}
 				return config
 			}(),

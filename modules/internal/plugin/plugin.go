@@ -73,17 +73,17 @@ type ValidatorPlugin interface {
 
 // ValidationResult contains validation results
 type ValidationResult struct {
-	Valid   bool
-	Errors  []string
+	Valid    bool
+	Errors   []string
 	Warnings []string
 }
 
 // Registry manages plugins
 type Registry struct {
-	mu       sync.RWMutex
-	plugins  map[string]Plugin
-	enabled  map[string]bool
-	order    []string // Execution order
+	mu      sync.RWMutex
+	plugins map[string]Plugin
+	enabled map[string]bool
+	order   []string // Execution order
 }
 
 // NewRegistry creates a new plugin registry
@@ -288,7 +288,7 @@ func (m *Manager) ExecuteTransformers(ctx context.Context, data interface{}) (in
 // ExecuteValidators runs all enabled validator plugins
 func (m *Manager) ExecuteValidators(ctx context.Context, data interface{}) (*ValidationResult, error) {
 	plugins := m.registry.ListByType(TypeValidator)
-	
+
 	allErrors := make([]string, 0)
 	allWarnings := make([]string, 0)
 	valid := true
@@ -338,8 +338,8 @@ func (m *Manager) ExecuteExporters(ctx context.Context, data interface{}) error 
 
 // BasePlugin provides a base implementation of the Plugin interface
 type BasePlugin struct {
-	name    string
-	version string
+	name       string
+	version    string
 	pluginType PluginType
 }
 

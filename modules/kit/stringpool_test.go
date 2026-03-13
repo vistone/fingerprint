@@ -15,7 +15,7 @@ func TestStringPool_ToLower(t *testing.T) {
 	}{
 		{"HELLO", "hello"},
 		{"Hello", "hello"},
-		{"hello", "hello"},  // Already lowercase
+		{"hello", "hello"}, // Already lowercase
 		{"Test123", "test123"},
 		{"UPPER_CASE", "upper_case"},
 	}

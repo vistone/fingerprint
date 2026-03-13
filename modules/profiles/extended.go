@@ -34,9 +34,9 @@ var (
 			InitialWindowSize: 6291456, MaxFrameSize: 16384, MaxHeaderListSize: 262144,
 		},
 		PseudoHeaderOrder: []string{":method", ":authority", ":scheme", ":path"},
-		ConnectionFlow: 15663105,
+		ConnectionFlow:    15663105,
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 			SecFetchSite: "none", SecFetchMode: "navigate", SecFetchDest: "document",
 			SecCHUA: `"Google Chrome";v="120"`, SecCHUAMobile: "?0", SecCHUAPlatform: `"Windows"`,
@@ -48,7 +48,7 @@ var (
 		ID: "chrome_124", Name: "Chrome 124",
 		BrowserType: core.BrowserChrome, BrowserVersion: "124.0.6367.60",
 		OS: core.OSWindows11, OSVersion: "10.0.22631",
-		TLSVersion: 0x0303,
+		TLSVersion:   0x0303,
 		CipherSuites: []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8},
 		Extensions: []core.TLSExtension{
 			{Type: 0x0000}, {Type: 0x0017}, {Type: 0xff01}, {Type: 0x000a},
@@ -61,9 +61,9 @@ var (
 			InitialWindowSize: 6291456, MaxFrameSize: 16384,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
-			SecCHUA: `"Chromium";v="124", "Google Chrome";v="124"`,
+			SecCHUA:       `"Chromium";v="124", "Google Chrome";v="124"`,
 			SecCHUAMobile: "?0", SecCHUAPlatform: `"Windows"`,
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -73,7 +73,7 @@ var (
 		ID: "chrome_130", Name: "Chrome 130",
 		BrowserType: core.BrowserChrome, BrowserVersion: "130.0.6723.58",
 		OS: core.OSMacOS14, OSVersion: "14.0",
-		TLSVersion: 0x0303,
+		TLSVersion:   0x0303,
 		CipherSuites: []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9},
 		Extensions: []core.TLSExtension{
 			{Type: 0x0000}, {Type: 0x0017}, {Type: 0xff01}, {Type: 0x000a},
@@ -81,7 +81,7 @@ var (
 		},
 		SupportedCurves: []core.CurveID{core.CurveX25519, core.CurveP256, core.CurveP384},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 			SecCHUA: `"Chromium";v="130", "Google Chrome";v="130"`,
 		},
@@ -92,10 +92,10 @@ var (
 		ID: "chrome_132", Name: "Chrome 132",
 		BrowserType: core.BrowserChrome, BrowserVersion: "132.0.6834.83",
 		OS: core.OSLinux, OSVersion: "6.5",
-		TLSVersion: 0x0303,
+		TLSVersion:   0x0303,
 		CipherSuites: []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -127,7 +127,7 @@ var (
 		},
 		PseudoHeaderOrder: []string{":method", ":path", ":authority", ":scheme"},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 			UpgradeInsecureRequests: "1",
 		},
@@ -143,7 +143,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -155,7 +155,7 @@ var (
 		OS: core.OSLinuxUbuntu, OSVersion: "22.04",
 		TLSVersion: 0x0303,
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -167,7 +167,7 @@ var (
 		OS: core.OSWindows11, OSVersion: "10.0.22631",
 		TLSVersion: 0x0303,
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.5", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -181,7 +181,7 @@ var (
 		ID: "safari_15_0", Name: "Safari 15.0",
 		BrowserType: core.BrowserSafari, BrowserVersion: "15.0",
 		OS: core.OSMacOS13, OSVersion: "13.0",
-		TLSVersion: 0x0303,
+		TLSVersion:   0x0303,
 		CipherSuites: []uint16{0x1301, 0x1302, 0x1303, 0xc02c, 0xc02b, 0xc030, 0xc02f, 0xcca9},
 		Extensions: []core.TLSExtension{
 			{Type: 0x0000}, {Type: 0x0017}, {Type: 0xff01},
@@ -195,7 +195,7 @@ var (
 		},
 		PseudoHeaderOrder: []string{":method", ":scheme", ":path", ":authority"},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -207,7 +207,7 @@ var (
 		OS: core.OSMacOS14, OSVersion: "14.0",
 		TLSVersion: 0x0303,
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -219,7 +219,7 @@ var (
 		OS: core.OSMacOS15, OSVersion: "15.0",
 		TLSVersion: 0x0303,
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -231,7 +231,7 @@ var (
 		OS: core.OSMacOS15, OSVersion: "15.1",
 		TLSVersion: 0x0303,
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9",
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -247,7 +247,7 @@ var (
 		OS: core.OSMacOS14, OSVersion: "14.0",
 		TLSVersion: 0x0303,
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:  "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			SecCHUA: `"Opera";v="105", "Chromium";v="119"`,
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -264,10 +264,10 @@ var (
 		OS: "iPhone; CPU iPhone OS 17_0 like Mac OS X", OSVersion: "17.0",
 		TLSVersion: 0x0303,
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-			AcceptLanguage: "en-US,en;q=0.9",
-			SecCHUA: "",
-			SecCHUAMobile: "?1",
+			Accept:          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			AcceptLanguage:  "en-US,en;q=0.9",
+			SecCHUA:         "",
+			SecCHUAMobile:   "?1",
 			SecCHUAPlatform: `"iPhone"`,
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -279,7 +279,7 @@ var (
 		OS: "iPhone; CPU iPhone OS 18_1 like Mac OS X", OSVersion: "18.1",
 		TLSVersion: 0x0303,
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:        "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			SecCHUAMobile: "?1", SecCHUAPlatform: `"iPhone"`,
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -292,10 +292,10 @@ var (
 		OS: "Linux; Android 14; SM-S918B", OSVersion: "14",
 		TLSVersion: 0x0303,
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9",
-			SecCHUA: `"Android";v="14", "Chrome";v="120"`,
-			SecCHUAMobile: "?1", SecCHUAPlatform: `"Android"`,
+			SecCHUA:        `"Android";v="14", "Chrome";v="120"`,
+			SecCHUAMobile:  "?1", SecCHUAPlatform: `"Android"`,
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
 	}
@@ -306,8 +306,8 @@ var (
 		OS: "Linux; Android 14; Pixel 8", OSVersion: "14",
 		TLSVersion: 0x0303,
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-			SecCHUA: `"Android";v="14", "Chrome";v="130"`,
+			Accept:        "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			SecCHUA:       `"Android";v="14", "Chrome";v="130"`,
 			SecCHUAMobile: "?1", SecCHUAPlatform: `"Android"`,
 		},
 		TCPIP: CreateTCPIP(core.OSWindows10),
@@ -316,28 +316,28 @@ var (
 
 func init() {
 	// registers all extended fingerprints
-	
+
 	// Chrome
 	Register(Chrome120)
 	Register(Chrome124)
 	Register(Chrome130)
 	Register(Chrome132)
-	
+
 	// Firefox
 	Register(Firefox120)
 	Register(Firefox125)
 	Register(Firefox130)
 	Register(Firefox132)
-	
+
 	// Safari
 	Register(Safari150)
 	Register(Safari160)
 	Register(Safari170)
 	Register(Safari181)
-	
+
 	// Opera
 	Register(Opera105)
-	
+
 	// Mobile
 	Register(SafariiOS170)
 	Register(SafariiOS181)

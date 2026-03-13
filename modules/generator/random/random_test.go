@@ -5,8 +5,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/vistone/fingerprint/modules/profiles/legacy"
 	"github.com/vistone/fingerprint/modules/core/types"
+	"github.com/vistone/fingerprint/modules/profiles/legacy"
 )
 
 // TestGetRandomFingerprint 测试随机指纹获取
@@ -107,52 +107,52 @@ func TestGetRandomFingerprintWithOS(t *testing.T) {
 // TestGetRandomFingerprintByBrowser 测试按浏览器类型获取随机指纹
 func TestGetRandomFingerprintByBrowser(t *testing.T) {
 	tests := []struct {
-		name         string
-		browserType  string
-		wantErr      bool
-		wantBrowser  string
+		name        string
+		browserType string
+		wantErr     bool
+		wantBrowser string
 	}{
 		{
-			name:         "chrome",
-			browserType:  "chrome",
-			wantErr:      false,
-			wantBrowser:  "chrome",
+			name:        "chrome",
+			browserType: "chrome",
+			wantErr:     false,
+			wantBrowser: "chrome",
 		},
 		{
-			name:         "firefox",
-			browserType:  "firefox",
-			wantErr:      false,
-			wantBrowser:  "firefox",
+			name:        "firefox",
+			browserType: "firefox",
+			wantErr:     false,
+			wantBrowser: "firefox",
 		},
 		{
-			name:         "safari",
-			browserType:  "safari",
-			wantErr:      false,
-			wantBrowser:  "safari",
+			name:        "safari",
+			browserType: "safari",
+			wantErr:     false,
+			wantBrowser: "safari",
 		},
 		{
-			name:         "edge",
-			browserType:  "edge",
-			wantErr:      false,
-			wantBrowser:  "edge",
+			name:        "edge",
+			browserType: "edge",
+			wantErr:     false,
+			wantBrowser: "edge",
 		},
 		{
-			name:         "opera",
-			browserType:  "opera",
-			wantErr:      false,
-			wantBrowser:  "opera",
+			name:        "opera",
+			browserType: "opera",
+			wantErr:     false,
+			wantBrowser: "opera",
 		},
 		{
-			name:         "empty browser type",
-			browserType:  "",
-			wantErr:      true,
-			wantBrowser:  "",
+			name:        "empty browser type",
+			browserType: "",
+			wantErr:     true,
+			wantBrowser: "",
 		},
 		{
-			name:         "unknown browser",
-			browserType:  "unknown_browser",
-			wantErr:      true,
-			wantBrowser:  "",
+			name:        "unknown browser",
+			browserType: "unknown_browser",
+			wantErr:     true,
+			wantBrowser: "",
 		},
 	}
 
@@ -304,9 +304,9 @@ func TestIsMobileProfile(t *testing.T) {
 // TestInferBrowserFromProfileName 测试从 profile 名称推断浏览器类型
 func TestInferBrowserFromProfileName(t *testing.T) {
 	tests := []struct {
-		profileName   string
-		wantBrowser   string
-		wantVersion   string
+		profileName string
+		wantBrowser string
+		wantVersion string
 	}{
 		{
 			profileName: "chrome_133",
@@ -379,7 +379,7 @@ func TestGetRandomFingerprint_AllProfiles(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			// 使用 GetRandomFingerprintByBrowser 测试每个浏览器类型
 			browser, _ := inferBrowserFromProfileName(name)
-			
+
 			result, err := GetRandomFingerprintByBrowser(browser)
 			if err != nil {
 				t.Fatalf("GetRandomFingerprintByBrowser(%s) error = %v", browser, err)
@@ -448,7 +448,7 @@ func TestGetRandomFingerprint_Concurrency(t *testing.T) {
 
 // 自定义错误类型用于并发测试
 var (
-	ErrNilResult   = &testError{msg: "nil result"}
+	ErrNilResult    = &testError{msg: "nil result"}
 	ErrEmptyProfile = &testError{msg: "empty profile"}
 )
 

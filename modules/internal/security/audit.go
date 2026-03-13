@@ -45,27 +45,27 @@ func (l AuditLevel) String() string {
 
 // AuditEvent represents a security audit event
 type AuditEvent struct {
-	Timestamp   time.Time              `json:"timestamp"`
-	Level       string                 `json:"level"`
-	Category    string                 `json:"category"`
-	Action      string                 `json:"action"`
-	UserID      string                 `json:"user_id,omitempty"`
-	ClientIP    string                 `json:"client_ip,omitempty"`
-	Resource    string                 `json:"resource"`
-	Result      string                 `json:"result"`
-	Details     map[string]interface{} `json:"details,omitempty"`
-	RequestID   string                 `json:"request_id,omitempty"`
-	SessionID   string                 `json:"session_id,omitempty"`
+	Timestamp time.Time              `json:"timestamp"`
+	Level     string                 `json:"level"`
+	Category  string                 `json:"category"`
+	Action    string                 `json:"action"`
+	UserID    string                 `json:"user_id,omitempty"`
+	ClientIP  string                 `json:"client_ip,omitempty"`
+	Resource  string                 `json:"resource"`
+	Result    string                 `json:"result"`
+	Details   map[string]interface{} `json:"details,omitempty"`
+	RequestID string                 `json:"request_id,omitempty"`
+	SessionID string                 `json:"session_id,omitempty"`
 }
 
 // AuditLogger handles security audit logging
 type AuditLogger struct {
-	mu         sync.RWMutex
-	writer     AuditWriter
-	minLevel   AuditLevel
-	enabled    bool
-	sanitizer  *Sanitizer
-	handler    *SensitiveDataHandler
+	mu        sync.RWMutex
+	writer    AuditWriter
+	minLevel  AuditLevel
+	enabled   bool
+	sanitizer *Sanitizer
+	handler   *SensitiveDataHandler
 }
 
 // AuditWriter defines the interface for audit log writers
@@ -76,8 +76,8 @@ type AuditWriter interface {
 
 // FileAuditWriter writes audit logs to a file
 type FileAuditWriter struct {
-	file   *os.File
-	mu     sync.Mutex
+	file    *os.File
+	mu      sync.Mutex
 	encoder *json.Encoder
 }
 

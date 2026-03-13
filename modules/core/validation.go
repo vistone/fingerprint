@@ -185,12 +185,12 @@ func SanitizeString(s string, maxLen int) string {
 		}
 		return r
 	}, s)
-	
+
 	// truncate overly long strings
 	if len(s) > maxLen {
 		s = s[:maxLen]
 	}
-	
+
 	return strings.TrimSpace(s)
 }
 

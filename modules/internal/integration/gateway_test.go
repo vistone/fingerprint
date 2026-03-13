@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/vistone/fingerprint/modules/core"
-	"github.com/vistone/fingerprint/modules/ml"
 	"github.com/vistone/fingerprint/modules/internal/testhelpers"
+	"github.com/vistone/fingerprint/modules/ml"
 )
 
 // Mock implementations for testing
@@ -86,9 +86,9 @@ func TestGatewayConnector_ProcessRequest(t *testing.T) {
 
 	t.Run("process valid request", func(t *testing.T) {
 		spec := core.ClientHelloSpec{
-			TLSVersion:     0x0303,
-			CipherSuites:   []uint16{0x1301, 0x1302, 0x1303},
-			Extensions:     []core.TLSExtension{{Type: 0, Data: []byte{}}},
+			TLSVersion:      0x0303,
+			CipherSuites:    []uint16{0x1301, 0x1302, 0x1303},
+			Extensions:      []core.TLSExtension{{Type: 0, Data: []byte{}}},
 			SupportedCurves: []core.CurveID{23, 24},
 			SupportedPoints: []uint8{0},
 		}

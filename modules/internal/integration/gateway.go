@@ -20,14 +20,14 @@ type GatewayConnector struct {
 	// Core components
 	classifier     *ml.HierarchicalClassifier
 	noiseGenerator defense.NoiseGenerator
-	
+
 	// Performance components
-	pool           ConnectionPool
-	cache          TieredCache
-	breaker        CircuitBreaker
-	
+	pool    ConnectionPool
+	cache   TieredCache
+	breaker CircuitBreaker
+
 	// Metrics
-	metrics        MetricsCollector
+	metrics MetricsCollector
 }
 
 // ConnectionPool interface for connection pooling
@@ -57,23 +57,23 @@ type MetricsCollector interface {
 // GatewayConnectorConfig configuration for the gateway connector
 type GatewayConnectorConfig struct {
 	// Pool configuration
-	PoolMaxSize         int
-	PoolMaxIdleTime     time.Duration
-	PoolHealthInterval  time.Duration
-	
+	PoolMaxSize        int
+	PoolMaxIdleTime    time.Duration
+	PoolHealthInterval time.Duration
+
 	// Cache configuration
-	CacheL1Size         int
-	CacheL1TTL          time.Duration
-	CacheL2Enabled      bool
-	
+	CacheL1Size    int
+	CacheL1TTL     time.Duration
+	CacheL2Enabled bool
+
 	// Circuit breaker configuration
-	CBFailureThreshold  int
-	CBTimeout           time.Duration
-	CBHalfOpenMaxCalls  int
-	
+	CBFailureThreshold int
+	CBTimeout          time.Duration
+	CBHalfOpenMaxCalls int
+
 	// Metrics configuration
-	MetricsEnabled      bool
-	MetricsEndpoint     string
+	MetricsEnabled  bool
+	MetricsEndpoint string
 }
 
 // DefaultGatewayConnectorConfig returns default configuration
@@ -98,32 +98,32 @@ func NewGatewayConnector(config *GatewayConnectorConfig) (*GatewayConnector, err
 	if config == nil {
 		config = DefaultGatewayConnectorConfig()
 	}
-	
+
 	connector := &GatewayConnector{}
-	
+
 	// Initialize classifier
 	connector.classifier = ml.NewHierarchicalClassifier()
-	
+
 	// Initialize noise generator (will be set up through ActiveProtector if needed)
 	connector.noiseGenerator = nil
-	
+
 	return connector, nil
 }
 
 // ClassificationResult contains the result of classifying a fingerprint
 type ClassificationResult struct {
-	Result         *ml.ClassificationResult
-	Profile        profiles.ClientProfile
-	JA3            string
-	JA4            string
-	RiskScore      float64
-	Timestamp      time.Time
+	Result    *ml.ClassificationResult
+	Profile   profiles.ClientProfile
+	JA3       string
+	JA4       string
+	RiskScore float64
+	Timestamp time.Time
 }
 
 // ProcessRequest processes a fingerprint request through all modules
 func (gc *GatewayConnector) ProcessRequest(ctx context.Context, spec core.ClientHelloSpec) (*ClassificationResult, error) {
 	start := time.Now()
-	
+
 	// Step 1: Check cache
 	cacheKey := generateCacheKey(spec)
 	if cached, found := gc.getFromCache(cacheKey); found {
@@ -131,7 +131,7 @@ func (gc *GatewayConnector) ProcessRequest(ctx context.Context, spec core.Client
 		return cached, nil
 	}
 	gc.recordCacheMiss()
-	
+
 	// Step 2: Classify through circuit breaker
 	var result *ClassificationResult
 	err := gc.executeWithBreaker("classify", func() error {
@@ -139,15 +139,15 @@ func (gc *GatewayConnector) ProcessRequest(ctx context.Context, spec core.Client
 		result, classifyErr = gc.classify(ctx, spec)
 		return classifyErr
 	})
-	
+
 	if err != nil {
 		gc.recordOperation("classify", time.Since(start), err)
 		return nil, err
 	}
-	
+
 	// Step 3: Store in cache
 	gc.setCache(cacheKey, result, 5*time.Minute)
-	
+
 	gc.recordOperation("process", time.Since(start), nil)
 	return result, nil
 }
@@ -158,16 +158,16 @@ func (gc *GatewayConnector) classify(ctx context.Context, spec core.ClientHelloS
 	features := &core.FeatureVector{
 		Features: make(map[core.FeatureType]float64),
 	}
-	
+
 	// Extract features from spec manually
 	extractFeaturesFromSpec(&spec, features)
-	
+
 	// Perform hierarchical classification
 	classifierResult := gc.classifier.Classify(features)
 	if classifierResult == nil {
 		return nil, fmt.Errorf("classification returned nil result")
 	}
-	
+
 	// Get matching profile by browser type
 	browserProfiles := profiles.GetProfilesByBrowser(classifierResult.Family)
 	var profile profiles.ClientProfile
@@ -180,21 +180,21 @@ func (gc *GatewayConnector) classify(ctx context.Context, spec core.ClientHelloS
 			profile = allProfiles[0]
 		}
 	}
-	
+
 	// Calculate JA3 and JA4 fingerprints
 	ja3 := calculateJA3(&spec)
 	ja4 := calculateJA4(&spec)
-	
+
 	// Calculate risk score
 	riskScore := gc.calculateRiskScore(classifierResult, spec)
-	
+
 	return &ClassificationResult{
-		Result:         classifierResult,
-		Profile:        profile,
-		JA3:            ja3,
-		JA4:            ja4,
-		RiskScore:      riskScore,
-		Timestamp:      time.Now(),
+		Result:    classifierResult,
+		Profile:   profile,
+		JA3:       ja3,
+		JA4:       ja4,
+		RiskScore: riskScore,
+		Timestamp: time.Now(),
 	}, nil
 }
 
@@ -202,10 +202,10 @@ func (gc *GatewayConnector) classify(ctx context.Context, spec core.ClientHelloS
 func extractFeaturesFromSpec(spec *core.ClientHelloSpec, fv *core.FeatureVector) {
 	// TLS Version
 	fv.Features[core.FeatureTLSVersion] = float64(spec.TLSVersion)
-	
+
 	// Cipher suites count
 	fv.Features[core.FeatureCipherSuites] = float64(len(spec.CipherSuites))
-	
+
 	// Extensions count
 	fv.Features[core.FeatureExtensions] = float64(len(spec.Extensions))
 }
@@ -215,10 +215,10 @@ func calculateJA3(spec *core.ClientHelloSpec) string {
 	// Simplified JA3 calculation
 	// Format: TLSVersion,Ciphers,Extensions,EllipticCurves,EllipticCurvePointFormats
 	h := md5.New()
-	
+
 	// TLS Version
 	fmt.Fprintf(h, "%d,", spec.TLSVersion)
-	
+
 	// Cipher suites
 	for i, cs := range spec.CipherSuites {
 		if i > 0 {
@@ -227,7 +227,7 @@ func calculateJA3(spec *core.ClientHelloSpec) string {
 		fmt.Fprintf(h, "%d", cs)
 	}
 	fmt.Fprint(h, ",")
-	
+
 	// Extensions
 	for i, ext := range spec.Extensions {
 		if i > 0 {
@@ -235,7 +235,7 @@ func calculateJA3(spec *core.ClientHelloSpec) string {
 		}
 		fmt.Fprintf(h, "%d", ext.Type)
 	}
-	
+
 	return hex.EncodeToString(h.Sum(nil))
 }
 
@@ -243,44 +243,44 @@ func calculateJA3(spec *core.ClientHelloSpec) string {
 func calculateJA4(spec *core.ClientHelloSpec) string {
 	// Simplified JA4 calculation
 	h := md5.New()
-	
+
 	// Protocol indicator
 	fmt.Fprint(h, "t13")
-	
+
 	// Cipher suites count
 	fmt.Fprintf(h, "%02d", len(spec.CipherSuites))
-	
+
 	// Extensions count
 	fmt.Fprintf(h, "%02d", len(spec.Extensions))
-	
+
 	// ALPN (simplified)
 	fmt.Fprint(h, "d")
-	
+
 	return hex.EncodeToString(h.Sum(nil))
 }
 
 // calculateRiskScore calculates the risk score
 func (gc *GatewayConnector) calculateRiskScore(result *ml.ClassificationResult, spec core.ClientHelloSpec) float64 {
 	baseScore := 0.0
-	
+
 	// Get confidence from the best layer
 	confidence := result.Confidence
-	
+
 	// Low confidence increases risk
 	if confidence < 0.5 {
 		baseScore += 0.3
 	}
-	
+
 	// Very low confidence is suspicious
 	if confidence < 0.3 {
 		baseScore += 0.3
 	}
-	
+
 	// Check for anomalous TLS configurations
 	if len(spec.CipherSuites) < 5 {
 		baseScore += 0.1
 	}
-	
+
 	return minFloat64(baseScore, 1.0)
 }
 
@@ -344,20 +344,20 @@ func minFloat64(a, b float64) float64 {
 // HTTPHandler creates an HTTP handler for the gateway
 func (gc *GatewayConnector) HTTPHandler() http.Handler {
 	mux := http.NewServeMux()
-	
+
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"status":"healthy"}`))
 	})
-	
+
 	mux.HandleFunc("/ready", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		// Check all components are ready
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"status":"ready"}`))
 	})
-	
+
 	return mux
 }
 

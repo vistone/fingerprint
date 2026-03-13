@@ -4,7 +4,7 @@ package profiles
 
 import (
 	"strings"
-	
+
 	"github.com/vistone/fingerprint/modules/core"
 )
 
@@ -50,7 +50,7 @@ var (
 			InitialWindowSize: 2097152, MaxFrameSize: 16384,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: safariTCPIP(),
@@ -65,7 +65,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: safariTCPIP(),
@@ -80,7 +80,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: safariTCPIP(),
@@ -95,7 +95,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: safariTCPIP(),
@@ -110,7 +110,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: safariTCPIP(),
@@ -125,7 +125,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: safariTCPIP(),
@@ -140,7 +140,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: safariTCPIP(),
@@ -156,7 +156,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: safariTCPIP(),
@@ -171,7 +171,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: safariTCPIP(),
@@ -186,7 +186,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: safariTCPIP(),
@@ -201,7 +201,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: safariTCPIP(),
@@ -216,7 +216,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: safariTCPIP(),
@@ -231,7 +231,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: safariTCPIP(),
@@ -246,7 +246,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: safariTCPIP(),
@@ -262,7 +262,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: safariTCPIP(),
@@ -277,7 +277,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: safariTCPIP(),
@@ -292,7 +292,7 @@ var (
 			0x1301, 0x1302, 0x1303, 0xc02c, 0xc030, 0xcca9, 0xcca8,
 		},
 		Headers: &core.HTTPHeaders{
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 			AcceptLanguage: "en-US,en;q=0.9", AcceptEncoding: "gzip, deflate, br",
 		},
 		TCPIP: safariTCPIP(),
@@ -306,11 +306,11 @@ func init() {
 		Safari17_0, Safari17_1, Safari17_2, Safari17_3, Safari17_4, Safari17_5, Safari17_6,
 		Safari18_0, Safari18_1, Safari18_2,
 	}
-	
+
 	// for each profile fills in missing HTTP/2 and HTTP/3 profile
 	for i := range profiles {
 		p := &profiles[i]
-		
+
 		// padding HTTP/2 profile (if missing)
 		if p.HTTP2Settings.HeaderTableSize == 0 && p.HTTP2Settings.InitialWindowSize == 0 {
 			p.HTTP2Settings = core.HTTP2Settings{
@@ -323,12 +323,12 @@ func init() {
 			}
 			p.PseudoHeaderOrder = []string{":method", ":scheme", ":path", ":authority"}
 		}
-		
+
 		// padding ConnectionFlow (if missing)
 		if p.ConnectionFlow == 0 {
 			p.ConnectionFlow = 15663105
 		}
-		
+
 		// padding HTTP/3 (QUIC) profile (if missing)
 		if p.HTTP3Settings == nil {
 			p.HTTP3Settings = &core.HTTP3Settings{
@@ -344,7 +344,7 @@ func init() {
 			}
 			p.QUICVersions = []uint32{core.QUICVersion1}
 		}
-		
+
 		// padding Headers (if missing)
 		if p.Headers == nil {
 			p.Headers = &core.HTTPHeaders{}
@@ -362,7 +362,7 @@ func init() {
 		if h.UserAgent == "" {
 			h.UserAgent = buildSafariUserAgent(p.BrowserVersion, p.OS)
 		}
-		
+
 		Register(*p)
 	}
 }
