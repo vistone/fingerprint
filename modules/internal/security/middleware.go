@@ -104,7 +104,7 @@ func (m *Middleware) RateLimit(next http.Handler) http.Handler {
 
 		if !m.limiter.Allow(clientID) {
 			if m.logger != nil {
-				m.logger.Warning("rate_limit", "check", "api", "blocked", map[string]interface{}{
+				m.logger.Warning(AuditLogEntry{Category: "rate_limit", Action: "check", Resource: "api", Result: "blocked"}, map[string]interface{}{
 					"client_id": clientID,
 					"path":      r.URL.Path,
 				})
@@ -130,7 +130,7 @@ func (m *Middleware) ValidateRequest(next http.Handler) http.Handler {
 		// Validate request size
 		if r.ContentLength > m.config.MaxRequestSize {
 			if m.logger != nil {
-				m.logger.Warning("request", "validate", "api", "rejected", map[string]interface{}{
+				m.logger.Warning(AuditLogEntry{Category: "request", Action: "validate", Resource: "api", Result: "rejected"}, map[string]interface{}{
 					"reason":         "content_too_large",
 					"content_length": r.ContentLength,
 					"max_size":       m.config.MaxRequestSize,
@@ -150,7 +150,7 @@ func (m *Middleware) ValidateRequest(next http.Handler) http.Handler {
 		if ua := r.UserAgent(); ua != "" {
 			if err := m.validator.ValidateUserAgent(ua); err != nil {
 				if m.logger != nil {
-					m.logger.Warning("request", "validate", "api", "rejected", map[string]interface{}{
+					m.logger.Warning(AuditLogEntry{Category: "request", Action: "validate", Resource: "api", Result: "rejected"}, map[string]interface{}{
 						"reason":     "invalid_user_agent",
 						"user_agent": ua,
 					})
@@ -190,7 +190,7 @@ func (m *Middleware) HostValidation(next http.Handler) http.Handler {
 		host := r.Host
 		if !m.config.IsHostAllowed(host) {
 			if m.logger != nil {
-				m.logger.Warning("host", "validate", "api", "rejected", map[string]interface{}{
+				m.logger.Warning(AuditLogEntry{Category: "host", Action: "validate", Resource: "api", Result: "rejected"}, map[string]interface{}{
 					"host": host,
 				})
 			}
@@ -209,7 +209,7 @@ func (m *Middleware) IPBlocklist(next http.Handler) http.Handler {
 
 		if m.config.IsIPBlocked(clientIP) {
 			if m.logger != nil {
-				m.logger.Warning("ip", "check", "api", "blocked", map[string]interface{}{
+				m.logger.Warning(AuditLogEntry{Category: "ip", Action: "check", Resource: "api", Result: "blocked"}, map[string]interface{}{
 					"client_ip": clientIP,
 				})
 			}
@@ -246,7 +246,7 @@ func (m *Middleware) AuditLogging(next http.Handler) http.Handler {
 				result = "failure"
 			}
 
-			m.logger.Log(level, "http", r.Method, r.URL.Path, result, map[string]interface{}{
+			m.logger.Log(level, AuditLogEntry{Category: "http", Action: r.Method, Resource: r.URL.Path, Result: result}, map[string]interface{}{
 				"client_ip":    m.getClientIP(r),
 				"user_agent":   r.UserAgent(),
 				"status_code":  rw.statusCode,
@@ -262,7 +262,7 @@ func (m *Middleware) RequireTLS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if m.config.RequireTLS && r.TLS == nil {
 			if m.logger != nil {
-				m.logger.Warning("tls", "require", "api", "rejected", map[string]interface{}{
+				m.logger.Warning(AuditLogEntry{Category: "tls", Action: "require", Resource: "api", Result: "rejected"}, map[string]interface{}{
 					"client_ip": m.getClientIP(r),
 				})
 			}

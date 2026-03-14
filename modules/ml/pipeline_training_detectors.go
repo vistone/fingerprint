@@ -75,7 +75,7 @@ func (t *NeuralTrainer) trainForgeryDetector(realSamples []profileSample) error 
 		}
 
 		if count > 0 {
-			t.recordMetric(epoch, 0, 0, totalLoss/float64(count), 0, 0, 0)
+			t.recordMetric(TrainingMetrics{Epoch: epoch, ForgeryLoss: totalLoss / float64(count)})
 		}
 	}
 	return nil
@@ -227,7 +227,7 @@ func (t *NeuralTrainer) trainThreatAssessor(samples []profileSample) error {
 		}
 
 		if count > 0 {
-			t.recordMetric(epoch, 0, 0, 0, totalLoss/float64(count), 0, 0)
+			t.recordMetric(TrainingMetrics{Epoch: epoch, ThreatLoss: totalLoss / float64(count)})
 		}
 	}
 	return nil
@@ -291,38 +291,30 @@ func (t *NeuralTrainer) generateSyntheticBehavior(s profileSample, forgery *Forg
 	return behavior
 }
 
-func (t *NeuralTrainer) recordMetric(epoch int, encLoss, clsLoss, forLoss, thrLoss, valAcc, forAUC float64) {
+func (t *NeuralTrainer) recordMetric(m TrainingMetrics) {
 	// If same epoch already has a record, merge
 	for i := range t.Metrics {
-		if t.Metrics[i].Epoch == epoch {
-			if encLoss > 0 {
-				t.Metrics[i].EncoderLoss = encLoss
+		if t.Metrics[i].Epoch == m.Epoch {
+			if m.EncoderLoss > 0 {
+				t.Metrics[i].EncoderLoss = m.EncoderLoss
 			}
-			if clsLoss > 0 {
-				t.Metrics[i].ClassLoss = clsLoss
+			if m.ClassLoss > 0 {
+				t.Metrics[i].ClassLoss = m.ClassLoss
 			}
-			if forLoss > 0 {
-				t.Metrics[i].ForgeryLoss = forLoss
+			if m.ForgeryLoss > 0 {
+				t.Metrics[i].ForgeryLoss = m.ForgeryLoss
 			}
-			if thrLoss > 0 {
-				t.Metrics[i].ThreatLoss = thrLoss
+			if m.ThreatLoss > 0 {
+				t.Metrics[i].ThreatLoss = m.ThreatLoss
 			}
-			if valAcc > 0 {
-				t.Metrics[i].ValAccuracy = valAcc
+			if m.ValAccuracy > 0 {
+				t.Metrics[i].ValAccuracy = m.ValAccuracy
 			}
-			if forAUC > 0 {
-				t.Metrics[i].ForgeryAUC = forAUC
+			if m.ForgeryAUC > 0 {
+				t.Metrics[i].ForgeryAUC = m.ForgeryAUC
 			}
 			return
 		}
 	}
-	t.Metrics = append(t.Metrics, TrainingMetrics{
-		Epoch:       epoch,
-		EncoderLoss: encLoss,
-		ClassLoss:   clsLoss,
-		ForgeryLoss: forLoss,
-		ThreatLoss:  thrLoss,
-		ValAccuracy: valAcc,
-		ForgeryAUC:  forAUC,
-	})
+	t.Metrics = append(t.Metrics, m)
 }

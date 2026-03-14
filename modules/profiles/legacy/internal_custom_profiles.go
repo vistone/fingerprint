@@ -127,7 +127,13 @@ func getMMSClientProfile2() ClientProfile {
 		":authority",
 	}
 
-	return NewClientProfile(clientHelloId, settings, settingsOrder, pseudoHeaderOrder, 15663105, nil, nil)
+	return NewClientProfile(ClientProfileParams{
+		ClientHelloID:     clientHelloId,
+		Settings:          settings,
+		SettingsOrder:     settingsOrder,
+		PseudoHeaderOrder: pseudoHeaderOrder,
+		ConnectionFlow:    15663105,
+	})
 }
 
 var MMSIos3 = getMMSClientProfile3()
@@ -264,5 +270,11 @@ func getMMSClientProfile3() ClientProfile {
 		":authority",
 	}
 
-	return NewClientProfile(clientHelloId, settings, settingsOrder, pseudoHeaderOrder, 15663105, nil, nil)
+	return NewClientProfile(ClientProfileParams{
+		ClientHelloID:     clientHelloId,
+		Settings:          settings,
+		SettingsOrder:     settingsOrder,
+		PseudoHeaderOrder: pseudoHeaderOrder,
+		ConnectionFlow:    15663105,
+	})
 }

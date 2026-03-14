@@ -23,38 +23,40 @@ type ExternalScriptStats struct {
 	DomainCount map[string]int `json:"domainCount"`
 }
 
+// headlessFetchOptions groups configuration for headless browser fetching.
+type headlessFetchOptions struct {
+	TargetURL    string
+	BrowserWS    string
+	MaxRedirects int
+	WaitMs       int
+	Timeout      time.Duration
+}
+
 // fetchHTMLWithHeadlessBrowser uses remote headless Chrome to execute scripts and return final DOM.
-func fetchHTMLWithHeadlessBrowser(
-	ctx context.Context,
-	targetURL string,
-	browserWS string,
-	maxRedirects int,
-	waitMs int,
-	timeout time.Duration,
-) (string, string, []string, *ExternalScriptStats, error) {
-	if strings.TrimSpace(targetURL) == "" {
+func fetchHTMLWithHeadlessBrowser(ctx context.Context, opts headlessFetchOptions) (string, string, []string, *ExternalScriptStats, error) {
+	if strings.TrimSpace(opts.TargetURL) == "" {
 		return "", "", nil, nil, fmt.Errorf("empty target url")
 	}
-	if strings.TrimSpace(browserWS) == "" {
+	if strings.TrimSpace(opts.BrowserWS) == "" {
 		return "", "", nil, nil, fmt.Errorf("empty browser websocket endpoint")
 	}
-	if waitMs <= 0 {
-		waitMs = 1200
+	if opts.WaitMs <= 0 {
+		opts.WaitMs = 1200
 	}
-	if waitMs > 8000 {
-		waitMs = 8000
+	if opts.WaitMs > 8000 {
+		opts.WaitMs = 8000
 	}
-	if timeout <= 0 {
-		timeout = 25 * time.Second
+	if opts.Timeout <= 0 {
+		opts.Timeout = 25 * time.Second
 	}
-	if maxRedirects <= 0 {
-		maxRedirects = 10
+	if opts.MaxRedirects <= 0 {
+		opts.MaxRedirects = 10
 	}
 
-	runCtx, cancel := context.WithTimeout(ctx, timeout)
+	runCtx, cancel := context.WithTimeout(ctx, opts.Timeout)
 	defer cancel()
 
-	allocCtx, cancelAlloc := chromedp.NewRemoteAllocator(runCtx, browserWS)
+	allocCtx, cancelAlloc := chromedp.NewRemoteAllocator(runCtx, opts.BrowserWS)
 	defer cancelAlloc()
 
 	browserCtx, cancelBrowser := chromedp.NewContext(allocCtx)
@@ -62,7 +64,7 @@ func fetchHTMLWithHeadlessBrowser(
 
 	var finalURL string
 	var pageHTML string
-	redirectChain := []string{targetURL}
+	redirectChain := []string{opts.TargetURL}
 
 	const maxCapturedScripts = 10
 	const maxCapturedScriptBytes = 1024 * 1024
@@ -116,8 +118,8 @@ func fetchHTMLWithHeadlessBrowser(
 
 	err := chromedp.Run(browserCtx,
 		network.Enable(),
-		chromedp.Navigate(targetURL),
-		chromedp.Sleep(time.Duration(waitMs)*time.Millisecond),
+		chromedp.Navigate(opts.TargetURL),
+		chromedp.Sleep(time.Duration(opts.WaitMs)*time.Millisecond),
 		chromedp.Location(&finalURL),
 		chromedp.OuterHTML("html", &pageHTML, chromedp.ByQuery),
 	)
@@ -126,9 +128,9 @@ func fetchHTMLWithHeadlessBrowser(
 	}
 
 	if strings.TrimSpace(finalURL) == "" {
-		finalURL = targetURL
+		finalURL = opts.TargetURL
 	}
-	if finalURL != targetURL {
+	if finalURL != opts.TargetURL {
 		redirectChain = append(redirectChain, finalURL)
 	}
 	if strings.TrimSpace(pageHTML) == "" {
@@ -216,7 +218,13 @@ func fetchExternalScriptsByDOM(ctx context.Context, baseURL, pageHTML string, ma
 			break
 		}
 
-		body, ok := fetchScriptBody(ctx, client, scriptURL, baseURL, remain, 1500*time.Millisecond)
+		body, ok := fetchScriptBody(ctx, scriptFetchParams{
+			Client:     client,
+			ScriptURL:  scriptURL,
+			PageURL:    baseURL,
+			MaxBytes:   remain,
+			ReqTimeout: 1500 * time.Millisecond,
+		})
 		if !ok {
 			continue
 		}
@@ -227,19 +235,28 @@ func fetchExternalScriptsByDOM(ctx context.Context, baseURL, pageHTML string, ma
 	return urls, scripts
 }
 
-func fetchScriptBody(ctx context.Context, client *http.Client, scriptURL, pageURL string, maxBytes int, reqTimeout time.Duration) (string, bool) {
-	if reqTimeout <= 0 {
-		reqTimeout = 1500 * time.Millisecond
+// scriptFetchParams groups parameters for fetchScriptBody.
+type scriptFetchParams struct {
+	Client     *http.Client
+	ScriptURL  string
+	PageURL    string
+	MaxBytes   int
+	ReqTimeout time.Duration
+}
+
+func fetchScriptBody(ctx context.Context, p scriptFetchParams) (string, bool) {
+	if p.ReqTimeout <= 0 {
+		p.ReqTimeout = 1500 * time.Millisecond
 	}
-	reqCtx, cancel := context.WithTimeout(ctx, reqTimeout)
+	reqCtx, cancel := context.WithTimeout(ctx, p.ReqTimeout)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(reqCtx, http.MethodGet, scriptURL, nil)
+	req, err := http.NewRequestWithContext(reqCtx, http.MethodGet, p.ScriptURL, nil)
 	if err != nil {
 		return "", false
 	}
 
-	referer := strings.TrimSpace(pageURL)
+	referer := strings.TrimSpace(p.PageURL)
 	origin := ""
 	if parsedPage, err := url.Parse(referer); err == nil && parsedPage.Scheme != "" && parsedPage.Host != "" {
 		origin = parsedPage.Scheme + "://" + parsedPage.Host
@@ -259,7 +276,7 @@ func fetchScriptBody(ctx context.Context, client *http.Client, scriptURL, pageUR
 	req.Header.Set("Sec-Fetch-Mode", "no-cors")
 	req.Header.Set("Sec-Fetch-Site", "cross-site")
 
-	resp, err := client.Do(req)
+	resp, err := p.Client.Do(req)
 	if err != nil {
 		return "", false
 	}
@@ -269,7 +286,7 @@ func fetchScriptBody(ctx context.Context, client *http.Client, scriptURL, pageUR
 		return "", false
 	}
 
-	bodyBytes, err := io.ReadAll(io.LimitReader(resp.Body, int64(maxBytes)))
+	bodyBytes, err := io.ReadAll(io.LimitReader(resp.Body, int64(p.MaxBytes)))
 	if err != nil {
 		return "", false
 	}

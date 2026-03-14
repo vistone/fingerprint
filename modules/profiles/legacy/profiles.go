@@ -141,15 +141,26 @@ type ClientProfile struct {
 	DeviceModel    string // 移动设备型号（如 "Pixel 7"）
 }
 
-func NewClientProfile(clientHelloId tls.ClientHelloID, settings map[http2.SettingID]uint32, settingsOrder []http2.SettingID, pseudoHeaderOrder []string, connectionFlow uint32, priorities []http2.Priority, headerPriority *http2.PriorityParam) ClientProfile {
+// ClientProfileParams groups parameters for NewClientProfile.
+type ClientProfileParams struct {
+	ClientHelloID     tls.ClientHelloID
+	Settings          map[http2.SettingID]uint32
+	SettingsOrder     []http2.SettingID
+	PseudoHeaderOrder []string
+	ConnectionFlow    uint32
+	Priorities        []http2.Priority
+	HeaderPriority    *http2.PriorityParam
+}
+
+func NewClientProfile(p ClientProfileParams) ClientProfile {
 	return ClientProfile{
-		clientHelloId:     clientHelloId,
-		settings:          settings,
-		settingsOrder:     settingsOrder,
-		pseudoHeaderOrder: pseudoHeaderOrder,
-		connectionFlow:    connectionFlow,
-		priorities:        priorities,
-		headerPriority:    headerPriority,
+		clientHelloId:     p.ClientHelloID,
+		settings:          p.Settings,
+		settingsOrder:     p.SettingsOrder,
+		pseudoHeaderOrder: p.PseudoHeaderOrder,
+		connectionFlow:    p.ConnectionFlow,
+		priorities:        p.Priorities,
+		headerPriority:    p.HeaderPriority,
 		// 元数据字段保持默认零值
 		BrowserType:    "",
 		BrowserVersion: "",

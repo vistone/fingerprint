@@ -22,7 +22,6 @@ import (
 func (g *Gateway) Analyze(ctx context.Context, req *AnalyzeRequest) (*AnalyzeResponse, error) {
 	start := time.Now()
 
-	// Generate fingerprint hash
 	fingerprintHash := g.generateFingerprintHash(req)
 
 	// Check cache
@@ -36,28 +35,71 @@ func (g *Gateway) Analyze(ctx context.Context, req *AnalyzeRequest) (*AnalyzeRes
 		}
 	}
 
-	// Extract features
+	// Core analysis
 	features := g.extractFeatures(req)
-
-	// ML classification
 	classification := g.classifier.Classify(features)
-
-	// Risk assessment
 	risk := g.riskEngine.Evaluate(features, classification)
-
-	// Detection
 	detector := defense.NewDetector()
 	detection := detector.Detect(features)
 
-	// Generate JA3/JA4/JA4H
+	// Fingerprints
 	ja3, ja4 := g.calculateTLSFingerprints(req)
 	ja4h := g.calculateHTTPFingerprint(req)
+	ja4tInfo, netAnalysis := g.analyzeNetworkLayer(req, features)
 
-	// Network layer: JA4T transport fingerprint + TCP/IP analysis
+	// Plugin pipeline
+	pluginFindings := g.runPluginPipeline(ctx, req, fingerprintHash, classification, risk)
+
+	riskBlocked := g.config.RiskThreshold > 0 && risk != nil && risk.Score >= g.config.RiskThreshold
+
+	response := &AnalyzeResponse{
+		FingerprintHash:  fingerprintHash,
+		Classification:   classification,
+		RiskAssessment:   risk,
+		RiskBlocked:      riskBlocked,
+		Findings:         detection.Findings,
+		JA3:              ja3,
+		JA4:              ja4,
+		JA4H:             ja4h,
+		JA4T:             ja4tInfo,
+		NetworkAnalysis:  netAnalysis,
+		PluginResults:    pluginFindings,
+		DefenseHints:     risk.Suggestions,
+		Cached:           false,
+		ProcessingTimeMs: time.Since(start).Milliseconds(),
+	}
+
+	// Post-processing enrichment
+	g.enrichWithMLValidation(response, features)
+
+	if g.agent != nil {
+		obs := &agent.Observation{
+			ID:              fingerprintHash,
+			ClientID:        req.ClientIP,
+			Timestamp:       time.Now(),
+			Features:        features,
+			Classification:  classification,
+			Detection:       detection,
+			RiskAssessment:  risk,
+			FingerprintHash: fingerprintHash,
+		}
+		response.AgentDecision = g.agent.Process(ctx, obs)
+	}
+
+	// Store in cache
+	if g.config.CacheEnabled {
+		g.cache.Set(fingerprintHash, response)
+	}
+
+	return response, nil
+}
+
+// analyzeNetworkLayer computes JA4T transport fingerprint and TCP/IP analysis.
+func (g *Gateway) analyzeNetworkLayer(req *AnalyzeRequest, features *core.FeatureVector) (*JA4TInfo, *NetworkAnalysisResult) {
 	var ja4tInfo *JA4TInfo
 	var netAnalysis *NetworkAnalysisResult
+
 	if req.TCPData != nil {
-		// Compute JA4T fingerprint from TCP SYN data
 		synData := ja4t.TCPSYNData{
 			WindowSize:  req.TCPData.WindowSize,
 			Options:     req.TCPData.Options,
@@ -74,7 +116,6 @@ func (g *Gateway) Analyze(ctx context.Context, req *AnalyzeRequest) (*AnalyzeRes
 				Anomalies: ja4tResult.AnomalyFlags,
 				GuessedOS: ja4tResult.ProbableOS,
 			}
-			// Merge TCP features into the feature vector
 			features.Set(core.FeatureType("tcp_window_size"), float64(synData.WindowSize))
 			features.Set(core.FeatureType("tcp_mss"), float64(synData.MSS))
 			features.Set(core.FeatureType("tcp_ttl"), float64(synData.TTL))
@@ -84,7 +125,6 @@ func (g *Gateway) Analyze(ctx context.Context, req *AnalyzeRequest) (*AnalyzeRes
 		}
 	}
 
-	// TCP/IP packet-level analysis (if structured packets provided)
 	if len(req.TCPPackets) > 0 {
 		analyzer := tcp.NewTCPIPAnalyzer()
 		for _, pkt := range req.TCPPackets {
@@ -114,119 +154,89 @@ func (g *Gateway) Analyze(ctx context.Context, req *AnalyzeRequest) (*AnalyzeRes
 		}
 	}
 
-	// Plugin analysis pipeline
-	var pluginFindings []PluginFinding
-	if g.pluginManager != nil {
-		pluginData := map[string]interface{}{
-			"fingerprint_hash": fingerprintHash,
-			"client_ip":        req.ClientIP,
-			"tls_version":      req.TLSVersion,
-			"cipher_suites":    req.CipherSuites,
-			"classification":   classification,
-			"risk":             risk,
-		}
-		if results, err := g.pluginManager.ExecuteAnalyzers(ctx, pluginData); err == nil {
-			for _, r := range results {
-				msg := fmt.Sprintf("score=%.2f confidence=%.2f", r.Score, r.Confidence)
-				category := ""
-				if cat, ok := r.Labels["category"]; ok {
-					category = cat
-				}
-				pluginName := ""
-				if name, ok := r.Labels["plugin"]; ok {
-					pluginName = name
-				}
-				pluginFindings = append(pluginFindings, PluginFinding{
-					PluginName: pluginName,
-					Category:   category,
-					Message:    msg,
-					RiskScore:  r.Score,
-				})
+	return ja4tInfo, netAnalysis
+}
+
+// runPluginPipeline executes plugin analyzers and validators.
+func (g *Gateway) runPluginPipeline(ctx context.Context, req *AnalyzeRequest, fingerprintHash string, classification *ml.ClassificationResult, risk *core.RiskAssessment) []PluginFinding {
+	if g.pluginManager == nil {
+		return nil
+	}
+
+	pluginData := map[string]interface{}{
+		"fingerprint_hash": fingerprintHash,
+		"client_ip":        req.ClientIP,
+		"tls_version":      req.TLSVersion,
+		"cipher_suites":    req.CipherSuites,
+		"classification":   classification,
+		"risk":             risk,
+	}
+
+	var findings []PluginFinding
+	if results, err := g.pluginManager.ExecuteAnalyzers(ctx, pluginData); err == nil {
+		for _, r := range results {
+			msg := fmt.Sprintf("score=%.2f confidence=%.2f", r.Score, r.Confidence)
+			category := ""
+			if cat, ok := r.Labels["category"]; ok {
+				category = cat
 			}
-		}
-		// Run validators
-		if vResult, err := g.pluginManager.ExecuteValidators(ctx, pluginData); err == nil && vResult != nil && !vResult.Valid {
-			for _, issue := range vResult.Errors {
-				pluginFindings = append(pluginFindings, PluginFinding{
-					PluginName: "validator",
-					Category:   "validation",
-					Message:    issue,
-				})
+			pluginName := ""
+			if name, ok := r.Labels["plugin"]; ok {
+				pluginName = name
 			}
-			for _, warn := range vResult.Warnings {
-				pluginFindings = append(pluginFindings, PluginFinding{
-					PluginName: "validator",
-					Category:   "warning",
-					Message:    warn,
-				})
-			}
+			findings = append(findings, PluginFinding{
+				PluginName: pluginName,
+				Category:   category,
+				Message:    msg,
+				RiskScore:  r.Score,
+			})
 		}
 	}
 
-	// Check risk threshold
-	riskBlocked := false
-	if g.config.RiskThreshold > 0 && risk != nil && risk.Score >= g.config.RiskThreshold {
-		riskBlocked = true
-	}
-
-	response := &AnalyzeResponse{
-		FingerprintHash:  fingerprintHash,
-		Classification:   classification,
-		RiskAssessment:   risk,
-		RiskBlocked:      riskBlocked,
-		Findings:         detection.Findings,
-		JA3:              ja3,
-		JA4:              ja4,
-		JA4H:             ja4h,
-		JA4T:             ja4tInfo,
-		NetworkAnalysis:  netAnalysis,
-		PluginResults:    pluginFindings,
-		DefenseHints:     risk.Suggestions,
-		Cached:           false,
-		ProcessingTimeMs: time.Since(start).Milliseconds(),
-	}
-
-	// ML Service validation (when enabled)
-	if g.mlService != nil && g.mlService.IsReady() {
-		result := g.mlService.InferFromFeatures(features, nil)
-		if result != nil {
-			vr := &ml.ValidationResult{
-				Valid:            !result.Forgery.IsForgery,
-				ForgeryProb:      result.Forgery.ForgeryProb,
-				ForgeryType:      result.Forgery.ForgeryType,
-				ConsistencyScore: 1.0 - result.Forgery.ForgeryProb,
-				BrowserFamily:    string(result.Browser.Family),
-				Confidence:       result.Browser.Confidence,
-			}
-			response.MLValidation = vr
-			if !vr.Valid {
-				response.DefenseHints = append(response.DefenseHints,
-					fmt.Sprintf("ML: forgery detected (type=%s, prob=%.2f)", vr.ForgeryType, vr.ForgeryProb))
-			}
+	if vResult, err := g.pluginManager.ExecuteValidators(ctx, pluginData); err == nil && vResult != nil && !vResult.Valid {
+		for _, issue := range vResult.Errors {
+			findings = append(findings, PluginFinding{
+				PluginName: "validator",
+				Category:   "validation",
+				Message:    issue,
+			})
+		}
+		for _, warn := range vResult.Warnings {
+			findings = append(findings, PluginFinding{
+				PluginName: "validator",
+				Category:   "warning",
+				Message:    warn,
+			})
 		}
 	}
 
-	// Agent processing
-	if g.agent != nil {
-		obs := &agent.Observation{
-			ID:              fingerprintHash,
-			ClientID:        req.ClientIP,
-			Timestamp:       time.Now(),
-			Features:        features,
-			Classification:  classification,
-			Detection:       detection,
-			RiskAssessment:  risk,
-			FingerprintHash: fingerprintHash,
-		}
-		response.AgentDecision = g.agent.Process(ctx, obs)
+	return findings
+}
+
+// enrichWithMLValidation adds ML service validation to the response.
+func (g *Gateway) enrichWithMLValidation(response *AnalyzeResponse, features *core.FeatureVector) {
+	if g.mlService == nil || !g.mlService.IsReady() {
+		return
 	}
 
-	// Store in cache
-	if g.config.CacheEnabled {
-		g.cache.Set(fingerprintHash, response)
+	result := g.mlService.InferFromFeatures(features, nil)
+	if result == nil {
+		return
 	}
 
-	return response, nil
+	vr := &ml.ValidationResult{
+		Valid:            !result.Forgery.IsForgery,
+		ForgeryProb:      result.Forgery.ForgeryProb,
+		ForgeryType:      result.Forgery.ForgeryType,
+		ConsistencyScore: 1.0 - result.Forgery.ForgeryProb,
+		BrowserFamily:    string(result.Browser.Family),
+		Confidence:       result.Browser.Confidence,
+	}
+	response.MLValidation = vr
+	if !vr.Valid {
+		response.DefenseHints = append(response.DefenseHints,
+			fmt.Sprintf("ML: forgery detected (type=%s, prob=%.2f)", vr.ForgeryType, vr.ForgeryProb))
+	}
 }
 
 // extractFeatures extracts features

@@ -7,7 +7,11 @@ github.com/bogdanfinn/utls v1.7.7-barnius/go.mod h1:aAK1VZQlpKZClF1WEQeq6kyclbkP
 github.com/klauspost/compress v1.18.0 h1:c/Cqfb0r+Yi+JtIEq73FWXVkRonBlf0CRNYc8Zttxdo=
 github.com/klauspost/compress v1.18.0/go.mod h1:2Pp+KzxcywXVXMr50+X0Q/Lsb43OQHYWRCY2AiWywWQ=
 github.com/vistone/fingerprint/modules/core v1.0.20 h1:LWxfWCNrIoJfYYiHIw4WkNOui4TOjNdQAQh8aloQl/M=
+github.com/vistone/fingerprint/modules/core v1.0.20/go.mod h1:SBd5zP9F73kZhHrGQDLUhdeCTHfDk38bbYT3qD/DWuw=
 github.com/vistone/fingerprint/modules/errors v1.0.20 h1:YQA2w0Ru4qTG07oQHJX5fGFcOv7hqJ4NwqZK5pvbdgw=
+github.com/vistone/fingerprint/modules/errors v1.0.20/go.mod h1:dRwXR4+yrNnXjKF1CFCvBVrvUqNpRe2XuYiZFqSN6dQ=
+github.com/vistone/fingerprint/modules/profiles v1.0.20 h1:nxZXyl9fVwLEj5UtYtlnCS6LNVS+X5T1jH7XtdzUHZg=
+github.com/vistone/fingerprint/modules/profiles v1.0.20/go.mod h1:ttqqW3pjiAfUi2HsAd5R/J5J3EMysrlSPxS9LvIPKAE=
 github.com/xyproto/randomstring v1.0.5 h1:YtlWPoRdgMu3NZtP45drfy1GKoojuR7hmRcnhZqKjWU=
 github.com/xyproto/randomstring v1.0.5/go.mod h1:rgmS5DeNXLivK7YprL0pY+lTuhNQW3iGxZ18UQApw/E=
 golang.org/x/crypto v0.46.0 h1:cKRW/pmt1pKAfetfu+RCEvjvZkA9RimPbh7bhFjGVBU=

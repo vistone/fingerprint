@@ -285,7 +285,7 @@ func (t *NeuralTrainer) trainEncoder(samples []profileSample) error {
 		}
 
 		if count > 0 {
-			t.recordMetric(epoch, totalLoss/float64(count), 0, 0, 0, 0, 0)
+			t.recordMetric(TrainingMetrics{Epoch: epoch, EncoderLoss: totalLoss / float64(count)})
 		}
 	}
 	return nil
@@ -350,7 +350,7 @@ func (t *NeuralTrainer) trainClassifier(trainSet, valSet []profileSample) error 
 		valAcc := t.evaluateClassifier(enc, cls, valSet)
 
 		if count > 0 {
-			t.recordMetric(epoch, 0, totalLoss/float64(count), 0, 0, valAcc, 0)
+			t.recordMetric(TrainingMetrics{Epoch: epoch, ClassLoss: totalLoss / float64(count), ValAccuracy: valAcc})
 		}
 	}
 	return nil

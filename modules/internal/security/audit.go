@@ -171,8 +171,16 @@ func (l *AuditLogger) IsEnabled() bool {
 	return l.enabled
 }
 
+// AuditLogEntry groups the identifying fields of an audit event.
+type AuditLogEntry struct {
+	Category string
+	Action   string
+	Resource string
+	Result   string
+}
+
 // Log logs an audit event
-func (l *AuditLogger) Log(level AuditLevel, category, action, resource, result string, details map[string]interface{}) {
+func (l *AuditLogger) Log(level AuditLevel, entry AuditLogEntry, details map[string]interface{}) {
 	l.mu.RLock()
 	if !l.enabled || level < l.minLevel {
 		l.mu.RUnlock()
@@ -193,10 +201,10 @@ func (l *AuditLogger) Log(level AuditLevel, category, action, resource, result s
 	event := &AuditEvent{
 		Timestamp: time.Now().UTC(),
 		Level:     level.String(),
-		Category:  category,
-		Action:    action,
-		Resource:  resource,
-		Result:    result,
+		Category:  entry.Category,
+		Action:    entry.Action,
+		Resource:  entry.Resource,
+		Result:    entry.Result,
 		Details:   sanitizedDetails,
 	}
 
@@ -209,7 +217,7 @@ func (l *AuditLogger) Log(level AuditLevel, category, action, resource, result s
 }
 
 // LogWithContext logs an audit event with context
-func (l *AuditLogger) LogWithContext(ctx context.Context, level AuditLevel, category, action, resource, result string, details map[string]interface{}) {
+func (l *AuditLogger) LogWithContext(ctx context.Context, level AuditLevel, entry AuditLogEntry, details map[string]interface{}) {
 	// Extract context values if available
 	if details == nil {
 		details = make(map[string]interface{})
@@ -227,34 +235,34 @@ func (l *AuditLogger) LogWithContext(ctx context.Context, level AuditLevel, cate
 		details["request_id"] = requestID
 	}
 
-	l.Log(level, category, action, resource, result, details)
+	l.Log(level, entry, details)
 }
 
 // Convenience methods for different levels
 
 // Debug logs a debug event
-func (l *AuditLogger) Debug(category, action, resource, result string, details map[string]interface{}) {
-	l.Log(Debug, category, action, resource, result, details)
+func (l *AuditLogger) Debug(entry AuditLogEntry, details map[string]interface{}) {
+	l.Log(Debug, entry, details)
 }
 
 // Info logs an info event
-func (l *AuditLogger) Info(category, action, resource, result string, details map[string]interface{}) {
-	l.Log(Info, category, action, resource, result, details)
+func (l *AuditLogger) Info(entry AuditLogEntry, details map[string]interface{}) {
+	l.Log(Info, entry, details)
 }
 
 // Warning logs a warning event
-func (l *AuditLogger) Warning(category, action, resource, result string, details map[string]interface{}) {
-	l.Log(Warning, category, action, resource, result, details)
+func (l *AuditLogger) Warning(entry AuditLogEntry, details map[string]interface{}) {
+	l.Log(Warning, entry, details)
 }
 
 // Error logs an error event
-func (l *AuditLogger) Error(category, action, resource, result string, details map[string]interface{}) {
-	l.Log(Error, category, action, resource, result, details)
+func (l *AuditLogger) Error(entry AuditLogEntry, details map[string]interface{}) {
+	l.Log(Error, entry, details)
 }
 
 // Critical logs a critical event
-func (l *AuditLogger) Critical(category, action, resource, result string, details map[string]interface{}) {
-	l.Log(Critical, category, action, resource, result, details)
+func (l *AuditLogger) Critical(entry AuditLogEntry, details map[string]interface{}) {
+	l.Log(Critical, entry, details)
 }
 
 // LogAuthentication logs authentication events
@@ -271,7 +279,7 @@ func (l *AuditLogger) LogAuthentication(userID, clientIP, method, result string,
 		level = Warning
 	}
 
-	l.Log(level, "authentication", "login", "auth_system", result, details)
+	l.Log(level, AuditLogEntry{Category: "authentication", Action: "login", Resource: "auth_system", Result: result}, details)
 }
 
 // LogAuthorization logs authorization events
@@ -286,7 +294,7 @@ func (l *AuditLogger) LogAuthorization(userID, resource, action, result string, 
 		level = Warning
 	}
 
-	l.Log(level, "authorization", action, resource, result, details)
+	l.Log(level, AuditLogEntry{Category: "authorization", Action: action, Resource: resource, Result: result}, details)
 }
 
 // LogDataAccess logs data access events
@@ -302,7 +310,7 @@ func (l *AuditLogger) LogDataAccess(userID, resource, action string, sensitive b
 		level = Warning
 	}
 
-	l.Log(level, "data_access", action, resource, "completed", details)
+	l.Log(level, AuditLogEntry{Category: "data_access", Action: action, Resource: resource, Result: "completed"}, details)
 }
 
 // LogSecurityEvent logs general security events
@@ -313,7 +321,7 @@ func (l *AuditLogger) LogSecurityEvent(eventType, source, description string, se
 	details["source"] = source
 	details["description"] = description
 
-	l.Log(severity, "security", eventType, "security_system", "detected", details)
+	l.Log(severity, AuditLogEntry{Category: "security", Action: eventType, Resource: "security_system", Result: "detected"}, details)
 }
 
 // Close closes the audit logger

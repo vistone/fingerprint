@@ -40,6 +40,8 @@ require (
 	github.com/prometheus/procfs v0.16.1 // indirect
 	github.com/vistone/fingerprint/modules/agent v1.0.20 // indirect
 	github.com/vistone/fingerprint/modules/kit v1.0.20 // indirect
+	github.com/vistone/fingerprint/modules/network v1.0.20 // indirect
+	github.com/vistone/fingerprint/modules/plugin v1.0.20 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel v1.39.0 // indirect
 	go.opentelemetry.io/otel/metric v1.39.0 // indirect
