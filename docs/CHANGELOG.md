@@ -4,6 +4,62 @@ This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+## [v1.0.21] - 2026-03-14
+
+### Added
+
+- **Active Crawler Module** (`modules/crawler/`)
+  - New active crawler for testing anti-crawling capabilities and training detection models
+  - Profile rotation with 4 strategies: Random, Rotate, Sticky, Adaptive
+  - Smart proxy pool management with health checking
+  - Stealth mode with human behavior simulation (mouse paths, scroll patterns, typing)
+  - Auto-detection of blocking responses (403, CAPTCHA, rate limiting)
+  - Data feedback loop for ML training with batch collection
+  - Comprehensive metrics collection for performance monitoring
+  - Split into 5 focused files per 500-line policy:
+    - `crawler_config.go`: Configuration types and constants
+    - `crawler_core.go`: Core Crawler struct and lifecycle methods
+    - `crawler_profile.go`: Profile pool management and rotation
+    - `crawler_proxy.go`: Proxy pool management
+    - `crawler_worker.go`: Worker execution and request processing
+
+- **WAF Module** (`modules/waf/`)
+  - 5-layer protection architecture:
+    - L1 Network: IP reputation, geo-detection, ASN analysis
+    - L2 TLS: JA3/JA4 fingerprint blacklisting, TLS anomaly detection
+    - L3 HTTP: Header analysis, User-Agent validation, cookie anomaly detection
+    - L4 Behavior: Request rate analysis, path traversal detection, session anomaly
+    - L5 Device: Device fingerprinting, consistency checks
+  - Token bucket rate limiter with burst support
+  - Configurable IP/Path/CIDR blocklists and whitelists
+  - Middleware for HTTP handlers with risk scoring
+  - 3 operation modes: Protection, Monitoring, Learning
+  - Integration with ML module for threat classification
+  - Integration with Agent module for autonomous decisions
+
+- **Integration Examples** (`examples/`)
+  - `crawler/`: Active crawler usage examples
+  - `waf/`: WAF middleware integration examples
+  - `crawler-waf-integration/`: Complete testing loop demonstration
+
+- **Deployment Configurations**
+  - `Dockerfile.crawler`: Container image for crawler service
+  - `Dockerfile.waf`: Container image for WAF service
+  - `docker-compose.crawler-waf.yml`: Full stack with Redis, Prometheus, Grafana
+  - `deploy/kubernetes/crawler-deployment.yaml`: K8s deployment with HPA
+  - `deploy/kubernetes/waf-deployment.yaml`: K8s deployment with ConfigMap and HPA
+
+- **Documentation** (`docs/CRAWLER_INTEGRATION.md`)
+  - Architecture overview with data flow diagram
+  - Component descriptions for Crawler, WAF, Agent, and ML modules
+  - Quick start guides for different use cases
+  - Configuration reference and best practices
+
+### Changed
+
+- **Code Quality**: All crawler and WAF module comments converted to English per development guidelines
+- **Example Code**: All example files updated with English comments only
+
 ## [v1.0.20] - 2026-03-14
 
 ### Changed

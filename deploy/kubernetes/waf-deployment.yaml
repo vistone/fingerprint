@@ -1,0 +1,149 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fingerprint-waf
+  namespace: fingerprint
+  labels:
+    app: fingerprint-waf
+    component: waf
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: fingerprint-waf
+  template:
+    metadata:
+      labels:
+        app: fingerprint-waf
+        component: waf
+    spec:
+      containers:
+      - name: waf
+        image: fingerprint/waf:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 9090
+          name: metrics
+          protocol: TCP
+        env:
+        - name: WAF_MODE
+          value: "protection"
+        - name: WAF_RISK_THRESHOLD
+          value: "0.7"
+        - name: WAF_RATE_LIMIT_RPS
+          value: "100"
+        - name: WAF_AGENT_ENABLED
+          value: "true"
+        - name: WAF_ML_ENABLED
+          value: "true"
+        - name: WAF_ML_MODEL_PATH
+          value: "/models"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: waf-config
+          mountPath: /config
+          readOnly: true
+        - name: ml-models
+          mountPath: /models
+          readOnly: true
+      volumes:
+      - name: waf-config
+        configMap:
+          name: waf-config
+      - name: ml-models
+        persistentVolumeClaim:
+          claimName: ml-models-pvc
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: waf-config
+  namespace: fingerprint
+data:
+  waf.yaml: |
+    enabled: true
+    mode: protection
+    layers:
+      network: true
+      tls: true
+      http: true
+      behavior: true
+      device: true
+    thresholds:
+      risk: 0.7
+      rate_limit_rps: 100
+      block_duration: 1h
+    blacklist:
+      ja3:
+        - "769,47-53-5-10-49161-49162-49171-49172-50-56-19-4,0-10-11,23-24-25,0"
+      paths:
+        - /admin
+        - /internal
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fingerprint-waf
+  namespace: fingerprint
+  labels:
+    app: fingerprint-waf
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  - port: 9090
+    targetPort: 9090
+    protocol: TCP
+    name: metrics
+  selector:
+    app: fingerprint-waf
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: fingerprint-waf-hpa
+  namespace: fingerprint
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: fingerprint-waf
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70

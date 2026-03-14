@@ -1,0 +1,45 @@
+FROM golang:1.25.7-alpine AS builder
+
+WORKDIR /app
+
+# Install dependencies
+RUN apk add --no-cache git ca-certificates
+
+# Copy go mod files
+COPY go.work go.work.sum* ./
+COPY modules/waf/go.mod modules/waf/go.sum ./modules/waf/
+COPY modules/core/go.mod modules/core/go.sum ./modules/core/
+COPY modules/defense/go.mod modules/defense/go.sum ./modules/defense/
+COPY modules/ml/go.mod modules/ml/go.sum ./modules/ml/
+COPY modules/agent/go.mod modules/agent/go.sum ./modules/agent/
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY modules/waf/ ./modules/waf/
+COPY modules/core/ ./modules/core/
+COPY modules/defense/ ./modules/defense/
+COPY modules/ml/ ./modules/ml/
+COPY modules/agent/ ./modules/agent/
+
+# Build the WAF
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o waf ./modules/waf/
+
+# Final stage
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /root/
+
+# Copy the binary
+COPY --from=builder /app/waf .
+
+# Copy default configs
+COPY config/ /config/
+
+# Expose ports
+EXPOSE 8080 9090
+
+CMD ["./waf"]

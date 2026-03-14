@@ -1,0 +1,38 @@
+FROM golang:1.25.7-alpine AS builder
+
+WORKDIR /app
+
+# Install dependencies
+RUN apk add --no-cache git ca-certificates
+
+# Copy go mod files
+COPY go.work go.work.sum* ./
+COPY modules/crawler/go.mod modules/crawler/go.sum ./modules/crawler/
+COPY modules/core/go.mod modules/core/go.sum ./modules/core/
+COPY modules/profiles/go.mod modules/profiles/go.sum ./modules/profiles/
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY modules/crawler/ ./modules/crawler/
+COPY modules/core/ ./modules/core/
+COPY modules/profiles/ ./modules/profiles/
+
+# Build the crawler
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o crawler ./modules/crawler/
+
+# Final stage
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /root/
+
+# Copy the binary
+COPY --from=builder /app/crawler .
+
+# Expose port for metrics
+EXPOSE 9090
+
+CMD ["./crawler"]

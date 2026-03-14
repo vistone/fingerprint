@@ -4,6 +4,62 @@
 
 ## [Unreleased]
 
+## [v1.0.21] - 2026-03-14
+
+### 新增
+
+- **主动爬虫模块** (`modules/crawler/`)
+  - 新增主动爬虫模块，用于测试反爬能力和训练检测模型
+  - 支持 4 种指纹轮换策略：随机、轮换、粘性、自适应
+  - 智能代理池管理，支持健康检查
+  - 隐形模式，模拟人类行为（鼠标轨迹、滚动模式、打字节奏）
+  - 自动检测拦截响应（403、验证码、限流）
+  - 数据回流支持，用于机器学习训练
+  - 全面的性能指标收集
+  - 按 500 行规范拆分为 5 个文件：
+    - `crawler_config.go`: 配置类型和常量
+    - `crawler_core.go`: 核心 Crawler 结构体和生命周期方法
+    - `crawler_profile.go`: Profile 池管理和轮换
+    - `crawler_proxy.go`: 代理池管理
+    - `crawler_worker.go`: Worker 执行和请求处理
+
+- **WAF 模块** (`modules/waf/`)
+  - 5 层防护架构：
+    - L1 网络层：IP 信誉、地理位置检测、ASN 分析
+    - L2 TLS 层：JA3/JA4 指纹黑名单、TLS 异常检测
+    - L3 HTTP 层：请求头分析、User-Agent 验证、Cookie 异常检测
+    - L4 行为层：请求频率分析、路径遍历检测、会话异常
+    - L5 设备层：设备指纹、一致性检查
+  - 令牌桶限流器，支持突发流量
+  - 可配置的 IP/路径/CIDR 黑白名单
+  - HTTP 处理器中间件，支持风险评分
+  - 3 种运行模式：防护、监控、学习
+  - 集成 ML 模块进行威胁分类
+  - 集成 Agent 模块进行自主决策
+
+- **集成示例** (`examples/`)
+  - `crawler/`: 主动爬虫使用示例
+  - `waf/`: WAF 中间件集成示例
+  - `crawler-waf-integration/`: 完整测试闭环演示
+
+- **部署配置**
+  - `Dockerfile.crawler`: 爬虫服务容器镜像
+  - `Dockerfile.waf`: WAF 服务容器镜像
+  - `docker-compose.crawler-waf.yml`: 完整技术栈（Redis、Prometheus、Grafana）
+  - `deploy/kubernetes/crawler-deployment.yaml`: K8s 部署，支持 HPA
+  - `deploy/kubernetes/waf-deployment.yaml`: K8s 部署，支持 ConfigMap 和 HPA
+
+- **文档** (`docs/CRAWLER_INTEGRATION.md`)
+  - 架构概览和数据流图
+  - Crawler、WAF、Agent、ML 模块组件说明
+  - 不同用例的快速入门指南
+  - 配置参考和最佳实践
+
+### 变更
+
+- **代码质量**：按开发规范将所有 crawler 和 WAF 模块注释转换为英文
+- **示例代码**：所有示例文件更新为英文注释
+
 ## [v1.0.20] - 2026-03-14
 
 ### 变更

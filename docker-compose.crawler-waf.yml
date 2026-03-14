@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # WAF Service
+  waf:
+    build:
+      context: .
+      dockerfile: Dockerfile.waf
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    environment:
+      - WAF_MODE=protection
+      - WAF_RISK_THRESHOLD=0.7
+      - WAF_RATE_LIMIT_RPS=100
+      - WAF_AGENT_ENABLED=true
+      - WAF_ML_ENABLED=true
+      - WAF_ML_MODEL_PATH=/models
+    volumes:
+      - ./models:/models:ro
+      - ./config/waf.yaml:/config/waf.yaml:ro
+    networks:
+      - fingerprint-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Crawler Service
+  crawler:
+    build:
+      context: .
+      dockerfile: Dockerfile.crawler
+    environment:
+      - CRAWLER_NAME=docker-crawler
+      - CRAWLER_TARGETS=https://httpbin.org/get
+      - CRAWLER_WORKERS=3
+      - CRAWLER_RATE_LIMIT=2s
+      - CRAWLER_PROFILE_STRATEGY=rotate
+      - CRAWLER_FEEDBACK_URL=http://waf:8080/api/feedback
+      - CRAWLER_STEALTH_MODE=true
+    depends_on:
+      waf:
+        condition: service_healthy
+    networks:
+      - fingerprint-network
+    profiles:
+      - crawler
+
+  # Redis for session storage
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - fingerprint-network
+
+  # Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./docs/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - fingerprint-network
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./docs/monitoring/grafana-dashboard.json:/var/lib/grafana/dashboards/fingerprint.json:ro
+    networks:
+      - fingerprint-network
+
+volumes:
+  redis-data:
+  grafana-data:
+
+networks:
+  fingerprint-network:
+    driver: bridge

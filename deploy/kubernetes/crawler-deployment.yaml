@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fingerprint-crawler
+  namespace: fingerprint
+  labels:
+    app: fingerprint-crawler
+    component: crawler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fingerprint-crawler
+  template:
+    metadata:
+      labels:
+        app: fingerprint-crawler
+        component: crawler
+    spec:
+      containers:
+      - name: crawler
+        image: fingerprint/crawler:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: CRAWLER_NAME
+          value: "production-crawler"
+        - name: CRAWLER_TARGETS
+          value: "https://target.example.com/api"
+        - name: CRAWLER_WORKERS
+          value: "5"
+        - name: CRAWLER_RATE_LIMIT
+          value: "2s"
+        - name: CRAWLER_PROFILE_STRATEGY
+          value: "rotate"
+        - name: CRAWLER_FEEDBACK_URL
+          value: "http://fingerprint-gateway:8080/api/feedback"
+        - name: CRAWLER_STEALTH_MODE
+          value: "true"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: profiles-config
+          mountPath: /config/profiles
+          readOnly: true
+      volumes:
+      - name: profiles-config
+        configMap:
+          name: crawler-profiles
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crawler-profiles
+  namespace: fingerprint
+data:
+  config.yaml: |
+    profiles:
+      - chrome_133_windows
+      - firefox_135_macos
+      - safari_17_ios
+      - edge_120_windows
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: fingerprint-crawler-hpa
+  namespace: fingerprint
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: fingerprint-crawler
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
