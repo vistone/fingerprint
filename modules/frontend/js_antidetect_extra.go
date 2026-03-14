@@ -3,6 +3,8 @@ package frontend
 import (
 	"fmt"
 	"strings"
+
+	"github.com/vistone/fingerprint/modules/profiles"
 )
 
 func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
@@ -12,10 +14,24 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 
 	auto := g.profile.JSAntiDetection.Automation
 
-	// Build countermeasure code
+	code := g.generateWebDriverHiding(auto) +
+		g.generateBrowserHiding(auto) +
+		g.generateOverrides(auto) +
+		g.generateRuntimeHiding(auto)
+
+	return fmt.Sprintf(`
+		// Automation countermeasure - hide automation tool detection
+		(function() {
+			'use strict';
+			%s
+		})();
+		`, code)
+}
+
+// generateWebDriverHiding generates code to hide webdriver, headless, phantom and selenium markers.
+func (g *JSAntiDetectCodeGenerator) generateWebDriverHiding(auto *profiles.AutomationAntiDetect) string {
 	code := ""
 
-	// 1. Hide webdriver marker
 	if !auto.WebDriver {
 		code += `
 		// Hide webdriver marker
@@ -26,7 +42,6 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`
 	}
 
-	// 2. Hide headless feature
 	if auto.Headless {
 		code += `
 		// Hide headless browser features
@@ -37,7 +52,6 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`
 	}
 
-	// 3. Hide phantomjs
 	if auto.Phantom {
 		code += `
 		// Hide phantomjs features
@@ -48,7 +62,6 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`
 	}
 
-	// 4. Hide selenium
 	if auto.Selenium {
 		code += `
 		// Hide selenium driver features
@@ -59,7 +72,6 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`
 	}
 
-	// 5. Hide puppeteer and playwright
 	if auto.Puppeteer || auto.Playwright {
 		code += `
 		// Hide automation tool features
@@ -68,7 +80,13 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`
 	}
 
-	// 6. Override plugins
+	return code
+}
+
+// generateBrowserHiding generates code to override plugins and mimeTypes.
+func (g *JSAntiDetectCodeGenerator) generateBrowserHiding(auto *profiles.AutomationAntiDetect) string {
+	code := ""
+
 	if auto.PluginsOverride {
 		code += `
 		// Override plugins array
@@ -93,9 +111,14 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`
 	}
 
-	// 7. Override language
+	return code
+}
+
+// generateOverrides generates code to override language, product and vendor attributes.
+func (g *JSAntiDetectCodeGenerator) generateOverrides(auto *profiles.AutomationAntiDetect) string {
+	code := ""
+
 	if auto.LanguageOverride && g.profile.Headers != nil {
-		// Infer language from UA or Accept-Language
 		lang := "en-US"
 		if g.profile.Headers.AcceptLanguage != "" {
 			parts := strings.Split(g.profile.Headers.AcceptLanguage, ",")
@@ -116,7 +139,6 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`, lang, lang)
 	}
 
-	// 8. Override product
 	if auto.ProductOverride {
 		code += `
 		// Override product attribute
@@ -127,7 +149,6 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`
 	}
 
-	// 9. Override vendor
 	if auto.VendorOverride {
 		code += `
 		// Override vendor attribute
@@ -138,9 +159,16 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`
 	}
 
-	// 10. Hide runtime detection features
-	if auto.RuntimeOverride {
-		code += `
+	return code
+}
+
+// generateRuntimeHiding generates code to hide runtime detection features.
+func (g *JSAntiDetectCodeGenerator) generateRuntimeHiding(auto *profiles.AutomationAntiDetect) string {
+	if !auto.RuntimeOverride {
+		return ""
+	}
+
+	return `
 		// Hide runtime detection features
 		const OriginalFunction = Function;
 		const OriginalGeneratorFunction = (function*(){}).constructor;
@@ -155,15 +183,6 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 			});
 		} catch (e) {}
 		`
-	}
-
-	return fmt.Sprintf(`
-		// Automation countermeasure - hide automation tool detection
-		(function() {
-			'use strict';
-			%s
-		})();
-		`, code)
 }
 
 // GenerateCrossLayerConsistencyCode generates cross-layer consistency validation code

@@ -3,7 +3,7 @@
 package gateway
 
 import (
-	"fmt"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -137,87 +137,103 @@ func NewGateway(config *GatewayConfig) *Gateway {
 	}
 
 	g.classifier.Initialize()
+	g.initProfileAndInjector(config)
+	g.initAgent(config)
+	g.initMLService(config)
+	g.initPlugins(config)
+	g.initClosedLoop(config)
 
-	// Initialize Profile manager
+	return g
+}
+
+// initProfileAndInjector initializes the profile manager and HTML injector.
+func (g *Gateway) initProfileAndInjector(config *GatewayConfig) {
 	g.profileManager = NewProfileManager(&ProfileManagerConfig{
 		ConfigDir:  config.AntiDetectConfigDir,
 		DefaultID:  config.AntiDetectProfileID,
 		AutoReload: false,
 	})
 
-	// Load Profile configuration
 	if err := g.profileManager.LoadAllProfiles(); err != nil {
-		fmt.Printf("Warning: failed to load profiles: %v, using defaults\n", err)
+		slog.Warn("failed to load profiles, using defaults", "error", err)
 	}
 
-	// Initialize HTML injector
-	if config.AntiDetectEnabled {
-		profile, err := g.profileManager.GetDefaultProfile()
-		if err != nil {
-			fmt.Printf("Warning: failed to get default profile: %v\n", err)
-			profile = nil
-		}
-
-		injectorConfig := &InjectorConfig{
-			Enabled:            true,
-			TargetURL:          config.AntiDetectProxyTarget,
-			Profile:            profile,
-			InjectConsistency:  config.AntiDetectInjectConsist,
-			RequireHeadTag:     true,
-			AddInjectionMarker: false,
-		}
-
-		g.injector, err = NewHTMLInjector(injectorConfig)
-		if err != nil {
-			fmt.Printf("Warning: failed to create HTML injector: %v\n", err)
-			g.injector = nil
-		}
+	if !config.AntiDetectEnabled {
+		return
 	}
 
-	// Initialize autonomous security agent
-	if config.AgentEnabled {
-		g.agent = agent.NewAgent(config.AgentConfig)
-		g.agent.Start()
+	profile, err := g.profileManager.GetDefaultProfile()
+	if err != nil {
+		slog.Warn("failed to get default profile", "error", err)
+		profile = nil
 	}
 
-	// Initialize central ML service
-	if config.MLServiceEnabled {
-		scfg := config.MLServiceConfig
-		if scfg == nil {
-			scfg = ml.DefaultServiceConfig
-		}
-		// Wire MLClassifierPath into model store if provided
-		if config.MLClassifierPath != "" {
-			scfg.ModelStorePath = config.MLClassifierPath
-		}
-		svc, err := ml.NewMLService(scfg)
-		if err != nil {
-			fmt.Printf("Warning: failed to initialize ML service: %v\n", err)
-		} else {
-			g.mlService = svc
-		}
+	g.injector, err = NewHTMLInjector(&InjectorConfig{
+		Enabled:            true,
+		TargetURL:          config.AntiDetectProxyTarget,
+		Profile:            profile,
+		InjectConsistency:  config.AntiDetectInjectConsist,
+		RequireHeadTag:     true,
+		AddInjectionMarker: false,
+	})
+	if err != nil {
+		slog.Warn("failed to create HTML injector", "error", err)
+		g.injector = nil
 	}
+}
 
-	// Initialize plugin manager
+// initAgent initializes the autonomous security agent.
+func (g *Gateway) initAgent(config *GatewayConfig) {
+	if !config.AgentEnabled {
+		return
+	}
+	g.agent = agent.NewAgent(config.AgentConfig)
+	g.agent.Start()
+}
+
+// initMLService initializes the central ML service.
+func (g *Gateway) initMLService(config *GatewayConfig) {
+	if !config.MLServiceEnabled {
+		return
+	}
+	scfg := config.MLServiceConfig
+	if scfg == nil {
+		scfg = ml.DefaultServiceConfig
+	}
+	if config.MLClassifierPath != "" {
+		scfg.ModelStorePath = config.MLClassifierPath
+	}
+	svc, err := ml.NewMLService(scfg)
+	if err != nil {
+		slog.Warn("failed to initialize ML service", "error", err)
+		return
+	}
+	g.mlService = svc
+}
+
+// initPlugins initializes the plugin manager.
+func (g *Gateway) initPlugins(config *GatewayConfig) {
 	g.pluginManager = plugin.NewManager()
-	if config.PluginConfigPath != "" {
-		if err := plugin.LoadPlugins(config.PluginConfigPath); err != nil {
-			fmt.Printf("Warning: failed to load plugins from %s: %v\n", config.PluginConfigPath, err)
-		}
+	if config.PluginConfigPath == "" {
+		return
 	}
-
-	// Initialize closed-loop controller
-	if config.ClosedLoopEnabled && g.mlService != nil {
-		clCfg := config.ClosedLoopConfig
-		if clCfg == nil {
-			clCfg = DefaultClosedLoopConfig
-		}
-		clCfg.Enabled = true
-		g.closedLoop = NewClosedLoopController(clCfg, g.mlService)
-		g.closedLoop.Start()
+	if err := plugin.LoadPlugins(config.PluginConfigPath); err != nil {
+		slog.Warn("failed to load plugins", "path", config.PluginConfigPath, "error", err)
 	}
+}
 
-	return g
+// initClosedLoop initializes the adversarial closed-loop controller.
+func (g *Gateway) initClosedLoop(config *GatewayConfig) {
+	if !config.ClosedLoopEnabled || g.mlService == nil {
+		return
+	}
+	clCfg := config.ClosedLoopConfig
+	if clCfg == nil {
+		clCfg = DefaultClosedLoopConfig
+	}
+	clCfg.Enabled = true
+	g.closedLoop = NewClosedLoopController(clCfg, g.mlService)
+	g.closedLoop.Start()
 }
 
 // SetCrawler injects a crawler instance into the gateway's closed-loop

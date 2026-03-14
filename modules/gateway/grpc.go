@@ -5,6 +5,7 @@ package gateway
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net"
 	"strings"
 
@@ -71,7 +72,7 @@ func (s *GRPCServer) Start(port int) error {
 		return fmt.Errorf("failed to listen: %w", err)
 	}
 
-	fmt.Printf("gRPC server starting on port %d\n", port)
+	slog.Info("gRPC server starting", "port", port)
 	return s.server.Serve(listener)
 }
 
@@ -233,7 +234,7 @@ func (s *HybridServer) Start() error {
 	grpcServer := NewGRPCServer(s.gateway)
 	go func() {
 		if err := grpcServer.Start(s.grpcPort); err != nil {
-			fmt.Printf("gRPC server error: %v\n", err)
+			slog.Error("gRPC server error", "error", err)
 		}
 	}()
 

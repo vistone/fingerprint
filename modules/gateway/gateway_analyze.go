@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 	"strings"
@@ -430,7 +431,7 @@ func (g *Gateway) Start() error {
 	})
 
 	addr := fmt.Sprintf(":%d", g.config.Port)
-	fmt.Printf("Fingerprint Gateway starting on %s\n", addr)
+	slog.Info("Fingerprint Gateway starting", "addr", addr)
 	return http.ListenAndServe(addr, mux)
 }
 
