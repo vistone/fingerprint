@@ -4,6 +4,29 @@
 
 ## [Unreleased]
 
+## [v1.0.20] - 2026-03-14
+
+### 变更
+
+- **代码结构重构**：将 34 个超长源文件（>500 行）拆分为更小的、职责单一的文件，涉及 15 个模块
+  - profiles/legacy: 7 个文件 → 17 个文件
+  - profiles: 3 个文件 → 6 个文件
+  - ml: 4 个文件 → 11 个文件
+  - gateway: 4 个文件 → 15 个文件
+  - agent: 2 个文件 → 4 个文件
+  - core、client、generator、frontend、network/tcp：各拆分为 2 个文件
+  - internal/extension、internal/tcpip、internal/features：拆分为更小文件
+  - http/legacy/ja4h、tls/legacy/ja4s、http/legacy/websocket：各拆分为 2 个文件
+  - 所有文件现在符合 500 行上限规则
+  - 零 API 变更，所有测试和竞态检测均通过
+
+### 新增
+
+- **文件长度 CI 检查**：CI 工作流新增 `file-length-check` 任务（`.github/workflows/lint.yml`）
+- **Copilot 指令**：`.github/copilot-instructions.md` 添加文件长度编码规则
+- **Linter 配置**：`.golangci.yml` 添加 funlen 函数长度检查配置
+- **贡献文档**：更新 `CONTRIBUTING.md` 和 `CONTRIBUTING_zh-cn.md`，添加文件长度规范
+
 ## [v1.0.19] - 2026-03-13
 
 ### 新增

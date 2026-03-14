@@ -4,6 +4,29 @@ This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+## [v1.0.20] - 2026-03-14
+
+### Changed
+
+- **Code Structure Refactor**: Split 34 oversized source files (>500 lines) across 15 modules into smaller, focused files
+  - profiles/legacy: 7 files → 17 files
+  - profiles: 3 files → 6 files
+  - ml: 4 files → 11 files
+  - gateway: 4 files → 15 files
+  - agent: 2 files → 4 files
+  - core, client, generator, frontend, network/tcp: each split into 2 files
+  - internal/extension, internal/tcpip, internal/features: split into smaller files
+  - http/legacy/ja4h, tls/legacy/ja4s, http/legacy/websocket: each split into 2 files
+  - All files now comply with 500-line maximum policy
+  - Zero API changes, all tests and race detection pass
+
+### Added
+
+- **File Length CI Check**: New `file-length-check` job in CI workflow (`.github/workflows/lint.yml`)
+- **Copilot Instructions**: `.github/copilot-instructions.md` with file length coding rules
+- **Linter Config**: `.golangci.yml` funlen configuration for function length enforcement
+- **Contributing Docs**: Updated `CONTRIBUTING.md` and `CONTRIBUTING_zh-cn.md` with file length policy
+
 ## [v1.0.19] - 2026-03-13
 
 ### Added
