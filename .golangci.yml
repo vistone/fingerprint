@@ -11,6 +11,11 @@ linters:
       disable:
         - composites  # 禁用对无键字段的检查，因为来自 utls 库
       enable-all: true
+    funlen:
+      lines: 80        # 单函数最大行数
+      statements: 60   # 单函数最大语句数
+    lll:
+      line-length: 150  # 单行最大字符数
   exclusions:
     generated: lax
     presets:

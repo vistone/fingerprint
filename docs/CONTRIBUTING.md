@@ -54,6 +54,28 @@ See [Developer Guide - Version Control Rules](./DEVELOPER_GUIDE.md#version-contr
 
 ## Code Standards
 
+### File Length Control
+
+**Strictly enforced!** Code files must be short and single-responsibility.
+
+| Metric | Limit | Note |
+|--------|-------|------|
+| Lines per file | ≤ 500 | Must split if exceeded |
+| Lines per function | ≤ 80 | Must refactor if exceeded |
+| Function parameters | ≤ 5 | Use a struct instead |
+
+**Splitting guidelines:**
+
+- Split by responsibility: each file should cover one logical domain
+- Clear naming: split file names should reflect content (e.g., `handler_analysis.go`, `handler_defense.go`)
+- Keep package consistency: split files stay in the same package, sharing package-level vars and types
+- Split proactively: if new code pushes a file over 500 lines, split in the same PR
+
+```bash
+# Check for oversized files
+find . -name "*.go" -not -path "*/vendor/*" | xargs awk 'END{if(NR>500) print FILENAME": "NR" lines"}' | sort -t: -k2 -rn
+```
+
 ### Error Handling
 
 ```go
@@ -154,6 +176,8 @@ Before submitting:
 - [ ] `go test ./modules/... -race` ✓
 - [ ] `go fmt ./...` ✓
 - [ ] `golangci-lint run` ✓
+- [ ] All .go files ≤ 500 lines ✓
+- [ ] All functions ≤ 80 lines ✓
 - [ ] CHANGELOG.md updated
 - [ ] Version number updated (sed)
 - [ ] Version commit created

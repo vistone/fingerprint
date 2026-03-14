@@ -49,6 +49,23 @@ jobs:
       - name: Run go vet
         run: go vet ./...
 
+  file-length-check:
+    name: file-length-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check file length (max 500 lines)
+        run: |
+          oversized=$(find . -name "*.go" -not -path "*/vendor/*" -exec awk 'END{if(NR>500) printf "%s: %d lines\n", FILENAME, NR}' {} \;)
+          if [ -n "$oversized" ]; then
+            echo "::error::The following Go files exceed the 500-line limit:"
+            echo "$oversized"
+            exit 1
+          fi
+          echo "All Go files are within the 500-line limit."
+
   gofmt:
     name: gofmt
     runs-on: ubuntu-latest
