@@ -4,6 +4,62 @@ This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+## [v1.0.23] - 2026-03-14
+
+### Added
+
+- **Closed-loop learning architecture**: Gateway integrates Crawler and WAF into an adversarial training loop
+  - `modules/ml/feedback_types.go`: Shared `CrawlerFeedback` and `WAFDetectionFeedback` types for cross-module ML communication
+  - `modules/crawler/crawler_ml.go`: `CrawlerMLAdapter` — bridges crawler to ML service with UCB1-based adaptive profile selection and online learning feedback
+  - `modules/waf/waf_learning.go`: `LearningPipeline` — bridges WAF detection results to ML for continuous model improvement
+  - `modules/gateway/gateway_closedloop.go`: `ClosedLoopController` — orchestrates Crawler → ML ← WAF adversarial training cycles
+
+- **Crawler ML integration**
+  - Adaptive profile selection using UCB1 (Upper Confidence Bound) exploration/exploitation balance
+  - Crawl results automatically fed back to ML `OnlineLearner` for drift detection and model evolution
+  - `SetMLService()` on `Crawler` to inject ML service from gateway
+
+- **WAF ML inference and learning**
+  - Filled ML inference placeholder in `waf_analyze.go` — WAF now runs ML forgery detection during request analysis
+  - WAF detection results (risk scores, detection layers, block decisions) fed to ML for online learning
+  - Learning pipeline statistics tracking
+
+- **Gateway orchestration**
+  - `ClosedLoopConfig` and `ClosedLoopController` for adversarial training cycle management
+  - `SetCrawler()` / `SetWAF()` on `Gateway` to inject subsystems into the closed loop
+  - Periodic adversarial training: generate fingerprints → validate against detection → feed back to ML → model evolution
+
+### Fixed
+
+- **modules/waf**: Fix `Block()` call signature — was passing `time.Duration` where `string` reason was expected
+- **modules/crawler**: Fix `initProfilePool()` to use `profiles.GetAll()` correctly (value vs pointer types)
+- **modules/crawler**: Fix `BrowserType` field reference (was `Browser`)
+
+## [v1.0.22] - 2026-03-14
+
+### Fixed
+
+- **modules/client**: Add missing `go.mod` file, fixing full workspace build failure
+- **go.work**: Add `modules/client` to workspace
+
+### Refactored
+
+- **File splits (over 500 lines)**
+  - `scripts/verify_fingerprint_packet.go` (558→330 lines) → extracted `verify_fingerprint_report.go` (248 lines)
+  - `modules/gateway/gateway_scanner.go` (505→327 lines) → extracted `gateway_fetch.go` (197 lines)
+
+- **Function splits (over 80 lines)**
+  - `modules/frontend/sdk.go` `GenerateJSCore()` (360 lines) → extracted into `sdk_js_core.go` with 8 sub-functions
+  - `modules/gateway/gateway_analyze.go` `Analyze()` (209→75 lines) → extracted `analyzeNetworkLayer`, `runPluginPipeline`, `enrichWithMLValidation`
+  - `modules/client/client_proxy.go` `ExecuteProxyRequest()` (209→66 lines) → extracted into `client_proxy_helpers.go` with `normalizeProxyInput`, `newProxyResult`, `buildHTTPRequest`, `retryTransientErrors`, `buildProxyResponse`
+
+- **Parameter optimization (over 5 parameters)**
+  - `modules/ml/pipeline_training_detectors.go` `recordMetric()` 7→1 param, reusing `TrainingMetrics` struct
+  - `modules/internal/security/audit.go` `Log()` 6→3 params, `LogWithContext()` 7→4 params, introduced `AuditLogEntry` struct
+  - `modules/profiles/legacy/profiles.go` `NewClientProfile()` 7→1 param, introduced `ClientProfileParams` struct
+  - `modules/gateway/headless_fetcher.go` `fetchHTMLWithHeadlessBrowser()` 6→2 params, introduced `headlessFetchOptions` struct
+  - `modules/gateway/headless_fetcher.go` `fetchScriptBody()` 6→2 params, introduced `scriptFetchParams` struct
+
 ## [v1.0.21] - 2026-03-14
 
 ### Added

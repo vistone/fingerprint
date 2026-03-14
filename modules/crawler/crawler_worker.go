@@ -73,6 +73,11 @@ func (c *Crawler) processTask(task *crawlTask, logger *slog.Logger) {
 		c.feedback.Collect(result)
 	}
 
+	// ML online learning feedback
+	if c.mlAdapter != nil {
+		c.mlAdapter.RecordResult(result)
+	}
+
 	// Deep crawling
 	if !result.Blocked && task.Depth < c.config.MaxDepth {
 		c.discoverLinks(result, task.Depth+1)

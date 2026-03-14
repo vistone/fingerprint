@@ -9,6 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/vistone/fingerprint/modules/ml"
 	"github.com/vistone/fingerprint/modules/profiles"
 )
 
@@ -56,6 +57,9 @@ type Crawler struct {
 
 	// Data feedback
 	feedback *FeedbackCollector
+
+	// ML integration
+	mlAdapter *CrawlerMLAdapter
 
 	logger *slog.Logger
 }
@@ -109,6 +113,18 @@ func NewCrawler(config *CrawlerConfig) *Crawler {
 	}
 
 	return c
+}
+
+// SetMLService injects the ML service into the crawler for adaptive
+// profile selection and online learning from crawl results.
+func (c *Crawler) SetMLService(svc *ml.MLService) {
+	c.mlAdapter = NewCrawlerMLAdapter(svc)
+	c.logger.Info("ml service attached to crawler")
+}
+
+// MLAdapter returns the crawler's ML adapter (nil if not configured).
+func (c *Crawler) MLAdapter() *CrawlerMLAdapter {
+	return c.mlAdapter
 }
 
 // Start - Start crawler

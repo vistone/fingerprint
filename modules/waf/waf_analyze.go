@@ -10,6 +10,7 @@ import (
 
 	"github.com/vistone/fingerprint/modules/agent"
 	"github.com/vistone/fingerprint/modules/core"
+	"github.com/vistone/fingerprint/modules/ml"
 )
 
 // Analyze analyzes the request
@@ -108,8 +109,14 @@ func (w *WAF) Analyze(ctx context.Context, req *http.Request) *WAFResult {
 	riskLevel := core.RiskLevelFromScore(totalRisk)
 
 	// 7. ML verification
-	if w.mlService != nil && w.mlService.IsReady() {
-		// TODO: Extract feature vectors and run ML inference
+	if w.mlService != nil && w.mlService.IsReady() && w.learningPipeline != nil {
+		// Build a lightweight profile from request fingerprint info for ML inference.
+		fpInfo := w.extractFingerprintInfo(req)
+		if fpInfo != nil && fpInfo.JA3 != "" {
+			riskAdjustment := w.learningPipeline.RunInference(nil, riskFactors)
+			totalRisk += riskAdjustment
+			riskLevel = core.RiskLevelFromScore(totalRisk)
+		}
 	}
 
 	// 8. Autonomous agent decision
@@ -154,7 +161,7 @@ func (w *WAF) Analyze(ctx context.Context, req *http.Request) *WAFResult {
 		if totalRisk >= w.config.RiskThreshold*0.5 {
 			result.Action = ActionBlock
 			result.Reason = "aggressive_mode"
-			w.blockList.Block(clientIP, w.config.BlockDuration)
+			w.blockList.Block(clientIP, "aggressive_mode")
 			w.stats.BlockedRequests++
 		}
 
@@ -167,7 +174,7 @@ func (w *WAF) Analyze(ctx context.Context, req *http.Request) *WAFResult {
 			if totalRisk >= 0.9 {
 				result.Action = ActionBlock
 				result.Reason = fmt.Sprintf("high_risk: %v", detectionLayers)
-				w.blockList.Block(clientIP, w.config.BlockDuration)
+				w.blockList.Block(clientIP, fmt.Sprintf("high_risk: %v", detectionLayers))
 				w.stats.BlockedRequests++
 			} else if totalRisk >= 0.8 {
 				result.Action = ActionChallenge
@@ -188,6 +195,18 @@ func (w *WAF) Analyze(ctx context.Context, req *http.Request) *WAFResult {
 	w.stats.TotalRequests++
 	if result.Action == ActionAllow {
 		w.stats.AllowedRequests++
+	}
+
+	// Feed detection result to ML learning pipeline
+	if w.learningPipeline != nil && totalRisk > 0 {
+		w.learningPipeline.FeedDetection(&ml.WAFDetectionFeedback{
+			ClientIP:        clientIP,
+			RiskScore:       totalRisk,
+			DetectionLayers: detectionLayers,
+			Blocked:         result.Action == ActionBlock,
+			FingerprintID:   result.FingerprintInfo.JA3,
+			Timestamp:       time.Now(),
+		})
 	}
 
 	return result

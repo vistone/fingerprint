@@ -9,28 +9,25 @@ import (
 
 // initProfilePool - Initialize profile pool
 func (c *Crawler) initProfilePool() {
-	var profileIDs []string
-
 	if len(c.config.ProfilePool) > 0 {
-		profileIDs = c.config.ProfilePool
+		for _, id := range c.config.ProfilePool {
+			if p, ok := profiles.Get(id); ok {
+				cp := p
+				c.profileManager.profiles = append(c.profileManager.profiles, &cp)
+			}
+		}
 	} else {
 		// Use all available profiles from built-in configuration
-		allIDs := profiles.GetAllIDs()
-		profileIDs = allIDs
-	}
-
-	for _, id := range profileIDs {
-		if p, ok := profiles.Get(id); ok {
-			c.profileManager.profiles = append(c.profileManager.profiles, &p)
+		all := profiles.GetAll()
+		for i := range all {
+			c.profileManager.profiles = append(c.profileManager.profiles, &all[i])
 		}
 	}
 
 	if len(c.profileManager.profiles) == 0 {
 		// Use default profile
 		p := profiles.GetRandom()
-		if p != nil {
-			c.profileManager.profiles = append(c.profileManager.profiles, p)
-		}
+		c.profileManager.profiles = append(c.profileManager.profiles, &p)
 	}
 
 	c.logger.Info("profile pool initialized",
@@ -74,11 +71,13 @@ func (c *Crawler) getProfileForTask(task *crawlTask) *profiles.ClientProfile {
 	}
 }
 
-// selectAdaptiveProfile - Select profile adaptively
+// selectAdaptiveProfile - Select profile adaptively using ML-powered UCB1
 func (c *Crawler) selectAdaptiveProfile() *profiles.ClientProfile {
-	// TODO: Implement adaptive selection based on historical success rate
-	// For now return random
 	pm := c.profileManager
+	if c.mlAdapter != nil {
+		return c.mlAdapter.SelectBestProfile(pm.profiles)
+	}
+	// Fallback to random when ML is not available
 	return pm.profiles[rand.Intn(len(pm.profiles))]
 }
 
@@ -112,5 +111,5 @@ func (c *Crawler) rotateProfile() {
 
 	c.logger.Debug("profile rotated",
 		"current", c.currentProfile.ID,
-		"browser", c.currentProfile.Browser)
+		"browser", c.currentProfile.BrowserType)
 }

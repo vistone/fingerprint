@@ -9,11 +9,13 @@ import (
 
 	"github.com/vistone/fingerprint/modules/agent"
 	"github.com/vistone/fingerprint/modules/core"
+	"github.com/vistone/fingerprint/modules/crawler"
 	"github.com/vistone/fingerprint/modules/defense"
 	"github.com/vistone/fingerprint/modules/frontend"
 	"github.com/vistone/fingerprint/modules/ml"
 	"github.com/vistone/fingerprint/modules/network/tcp"
 	"github.com/vistone/fingerprint/modules/plugin"
+	"github.com/vistone/fingerprint/modules/waf"
 )
 
 const (
@@ -30,11 +32,12 @@ type Gateway struct {
 	cache          *FingerprintCache
 	limiter        *RateLimiter
 	sdk            *frontend.SDK
-	profileManager *ProfileManager // Profile configuration manager
-	injector       *HTMLInjector   // HTML response injector
-	agent          *agent.Agent    // Autonomous security agent
-	mlService      *ml.MLService   // Central ML service (optional)
-	pluginManager  *plugin.Manager // Plugin subsystem manager
+	profileManager *ProfileManager       // Profile configuration manager
+	injector       *HTMLInjector         // HTML response injector
+	agent          *agent.Agent          // Autonomous security agent
+	mlService      *ml.MLService         // Central ML service (optional)
+	pluginManager  *plugin.Manager       // Plugin subsystem manager
+	closedLoop     *ClosedLoopController // Adversarial closed-loop controller
 	mu             sync.RWMutex
 }
 
@@ -87,6 +90,10 @@ type GatewayConfig struct {
 
 	// Plugin configuration
 	PluginConfigPath string // Plugin configuration path; empty disables plugin loading
+
+	// Closed-loop configuration
+	ClosedLoopEnabled bool              // Whether to enable adversarial closed-loop training
+	ClosedLoopConfig  *ClosedLoopConfig // Closed-loop configuration (nil uses defaults)
 }
 
 // DefaultGatewayConfig is the default gateway configuration
@@ -199,7 +206,46 @@ func NewGateway(config *GatewayConfig) *Gateway {
 		}
 	}
 
+	// Initialize closed-loop controller
+	if config.ClosedLoopEnabled && g.mlService != nil {
+		clCfg := config.ClosedLoopConfig
+		if clCfg == nil {
+			clCfg = DefaultClosedLoopConfig
+		}
+		clCfg.Enabled = true
+		g.closedLoop = NewClosedLoopController(clCfg, g.mlService)
+		g.closedLoop.Start()
+	}
+
 	return g
+}
+
+// SetCrawler injects a crawler instance into the gateway's closed-loop
+// controller, enabling the crawler → ML feedback pipeline.
+func (g *Gateway) SetCrawler(cr *crawler.Crawler) {
+	if g.closedLoop != nil {
+		g.closedLoop.SetCrawler(cr)
+	}
+	// Wire gateway's ML service into the crawler for adaptive profiles
+	if g.mlService != nil && cr != nil {
+		cr.SetMLService(g.mlService)
+	}
+}
+
+// SetWAF injects a WAF instance into the gateway's closed-loop controller,
+// enabling the WAF → ML feedback pipeline.
+func (g *Gateway) SetWAF(w *waf.WAF) {
+	if g.closedLoop != nil {
+		g.closedLoop.SetWAF(w)
+	}
+}
+
+// ClosedLoopStats returns adversarial closed-loop statistics (nil if disabled).
+func (g *Gateway) ClosedLoopStats() *ClosedLoopStats {
+	if g.closedLoop == nil {
+		return nil
+	}
+	return g.closedLoop.Stats()
 }
 
 // AnalyzeRequest is the analysis request

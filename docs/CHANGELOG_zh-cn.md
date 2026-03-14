@@ -4,6 +4,62 @@
 
 ## [Unreleased]
 
+## [v1.0.23] - 2026-03-14
+
+### 新增
+
+- **闭环学习架构**：Gateway 集成 Crawler 和 WAF 构建对抗训练闭环
+  - `modules/ml/feedback_types.go`：共享 `CrawlerFeedback` 和 `WAFDetectionFeedback` 类型，用于跨模块 ML 通信
+  - `modules/crawler/crawler_ml.go`：`CrawlerMLAdapter` — 爬虫与 ML 服务的桥梁，基于 UCB1 的自适应 Profile 选择和在线学习反馈
+  - `modules/waf/waf_learning.go`：`LearningPipeline` — WAF 检测结果到 ML 的学习管道，实现持续模型改进
+  - `modules/gateway/gateway_closedloop.go`：`ClosedLoopController` — 编排 Crawler → ML ← WAF 对抗训练循环
+
+- **爬虫 ML 集成**
+  - 基于 UCB1（上置信界）的自适应 Profile 选择，平衡探索与利用
+  - 爬取结果自动反馈至 ML `OnlineLearner`，用于漂移检测和模型演化
+  - `Crawler` 新增 `SetMLService()` 方法，由 Gateway 注入 ML 服务
+
+- **WAF ML 推理与学习**
+  - 填充 `waf_analyze.go` 中的 ML 推理占位符 — WAF 现在在请求分析时执行 ML 伪造检测
+  - WAF 检测结果（风险分数、检测层、阻断决策）反馈至 ML 进行在线学习
+  - 学习管道统计跟踪
+
+- **Gateway 编排**
+  - 新增 `ClosedLoopConfig` 和 `ClosedLoopController`，管理对抗训练周期
+  - `Gateway` 新增 `SetCrawler()` / `SetWAF()` 方法，将子系统注入闭环
+  - 周期性对抗训练：生成指纹 → 验证检测 → 反馈 ML → 模型演化
+
+### 修复
+
+- **modules/waf**：修复 `Block()` 调用签名 — 原先传入 `time.Duration` 而非字符串原因
+- **modules/crawler**：修复 `initProfilePool()` 正确使用 `profiles.GetAll()`（值类型 vs 指针类型）
+- **modules/crawler**：修复 `BrowserType` 字段引用（原为 `Browser`）
+
+## [v1.0.22] - 2026-03-14
+
+### 修复
+
+- **modules/client**: 补充缺失的 `go.mod` 文件，修复整体构建失败问题
+- **go.work**: 将 `modules/client` 加入工作区
+
+### 重构
+
+- **文件拆分（超 500 行）**
+  - `scripts/verify_fingerprint_packet.go`（558→330 行）→ 拆出 `verify_fingerprint_report.go`（248 行）
+  - `modules/gateway/gateway_scanner.go`（505→327 行）→ 拆出 `gateway_fetch.go`（197 行）
+
+- **函数拆分（超 80 行）**
+  - `modules/frontend/sdk.go` `GenerateJSCore()`（360 行）→ 拆出 `sdk_js_core.go`，拆为 8 个子函数
+  - `modules/gateway/gateway_analyze.go` `Analyze()`（209→75 行）→ 提取 `analyzeNetworkLayer`、`runPluginPipeline`、`enrichWithMLValidation`
+  - `modules/client/client_proxy.go` `ExecuteProxyRequest()`（209→66 行）→ 拆出 `client_proxy_helpers.go`，提取 `normalizeProxyInput`、`newProxyResult`、`buildHTTPRequest`、`retryTransientErrors`、`buildProxyResponse`
+
+- **参数优化（超 5 个参数）**
+  - `modules/ml/pipeline_training_detectors.go` `recordMetric()` 7→1 参数，复用 `TrainingMetrics` 结构体
+  - `modules/internal/security/audit.go` `Log()` 6→3 参数、`LogWithContext()` 7→4 参数，引入 `AuditLogEntry` 结构体
+  - `modules/profiles/legacy/profiles.go` `NewClientProfile()` 7→1 参数，引入 `ClientProfileParams` 结构体
+  - `modules/gateway/headless_fetcher.go` `fetchHTMLWithHeadlessBrowser()` 6→2 参数，引入 `headlessFetchOptions` 结构体
+  - `modules/gateway/headless_fetcher.go` `fetchScriptBody()` 6→2 参数，引入 `scriptFetchParams` 结构体
+
 ## [v1.0.21] - 2026-03-14
 
 ### 新增

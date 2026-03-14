@@ -27,6 +27,9 @@ type WAF struct {
 	agent      *agent.Agent
 	riskEngine *defense.RiskEngine
 
+	// Learning pipeline
+	learningPipeline *LearningPipeline
+
 	// Block management
 	blockList   *BlockList
 	rateLimiter *RateLimiter
@@ -84,6 +87,11 @@ func NewWAF(config *WAFConfig) *WAF {
 		waf.mlService = svc
 	}
 
+	// Initialize learning pipeline
+	if waf.mlService != nil {
+		waf.learningPipeline = NewLearningPipeline(waf.mlService)
+	}
+
 	// Initialize autonomous agent
 	if config.AgentEnabled {
 		waf.agent = agent.NewAgent(&agent.AgentConfig{
@@ -104,6 +112,19 @@ func NewWAF(config *WAFConfig) *WAF {
 // Stats retrieves statistics
 func (w *WAF) Stats() WAFStats {
 	return *w.stats
+}
+
+// MLService returns the WAF's ML service instance (nil if not configured).
+func (w *WAF) MLService() *ml.MLService {
+	return w.mlService
+}
+
+// LearningPipelineStats returns learning pipeline statistics.
+func (w *WAF) LearningPipelineStats() *LearningStats {
+	if w.learningPipeline == nil {
+		return nil
+	}
+	return w.learningPipeline.LearningStats()
 }
 
 // Stop stops the WAF
