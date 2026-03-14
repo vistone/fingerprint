@@ -107,10 +107,10 @@ var DefaultGatewayConfig = &GatewayConfig{
 	AntiDetectProxyTarget:   "",
 	AntiDetectDirectProxy:   false,
 	AntiDetectInjectConsist: true,
-	ScannerUseBrowser:     false,
-	ScannerBrowserWS:      "",
-	ScannerBrowserTimeout: 25 * time.Second,
-	AgentEnabled:          true,
+	ScannerUseBrowser:       false,
+	ScannerBrowserWS:        "",
+	ScannerBrowserTimeout:   25 * time.Second,
+	AgentEnabled:            true,
 }
 
 // NewGateway creates a new gateway
