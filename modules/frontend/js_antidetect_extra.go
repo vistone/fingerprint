@@ -28,7 +28,9 @@ func (g *JSAntiDetectCodeGenerator) GenerateAutomationCode() string {
 		`, code)
 }
 
-// generateWebDriverHiding generates code to hide webdriver, headless, phantom and selenium markers.
+// generateWebDriverHiding generates code to hide automation tool markers.
+// It handles: webdriver property, headless indicators, PhantomJS globals,
+// Selenium driver attributes, and Puppeteer/Playwright specific properties.
 func (g *JSAntiDetectCodeGenerator) generateWebDriverHiding(auto *profiles.AutomationAntiDetect) string {
 	code := ""
 
@@ -83,7 +85,8 @@ func (g *JSAntiDetectCodeGenerator) generateWebDriverHiding(auto *profiles.Autom
 	return code
 }
 
-// generateBrowserHiding generates code to override plugins and mimeTypes.
+// generateBrowserHiding overrides navigator.plugins and navigator.mimeTypes
+// to mimic a real browser environment and prevent automation detection.
 func (g *JSAntiDetectCodeGenerator) generateBrowserHiding(auto *profiles.AutomationAntiDetect) string {
 	code := ""
 
@@ -114,7 +117,8 @@ func (g *JSAntiDetectCodeGenerator) generateBrowserHiding(auto *profiles.Automat
 	return code
 }
 
-// generateOverrides generates code to override language, product and vendor attributes.
+// generateOverrides overrides browser properties (language, product, vendor)
+// to match the target profile and avoid fingerprint inconsistencies.
 func (g *JSAntiDetectCodeGenerator) generateOverrides(auto *profiles.AutomationAntiDetect) string {
 	code := ""
 

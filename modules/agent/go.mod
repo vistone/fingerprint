@@ -8,4 +8,7 @@ require (
 	github.com/vistone/fingerprint/modules/ml v1.0.20
 )
 
-require github.com/vistone/fingerprint/modules/profiles v1.0.20 // indirect
+require (
+	github.com/vistone/fingerprint/modules/errors v1.0.20 // indirect
+	github.com/vistone/fingerprint/modules/profiles v1.0.20 // indirect
+)

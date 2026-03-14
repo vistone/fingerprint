@@ -7,6 +7,15 @@ require (
 	github.com/vistone/fingerprint/modules/waf v0.0.0
 )
 
+require (
+	github.com/vistone/fingerprint/modules/agent v1.0.21 // indirect
+	github.com/vistone/fingerprint/modules/core v1.0.21 // indirect
+	github.com/vistone/fingerprint/modules/defense v1.0.21 // indirect
+	github.com/vistone/fingerprint/modules/errors v1.0.20 // indirect
+	github.com/vistone/fingerprint/modules/ml v1.0.21 // indirect
+	github.com/vistone/fingerprint/modules/profiles v1.0.21 // indirect
+)
+
 replace github.com/vistone/fingerprint/modules/crawler => ../../modules/crawler
 
 replace github.com/vistone/fingerprint/modules/waf => ../../modules/waf
