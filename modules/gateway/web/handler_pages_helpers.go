@@ -184,21 +184,21 @@ func (h *Handler) applyConfigUpdate(newConfig map[string]interface{}) {
 				cfg.CacheTTL = time.Duration(v) * time.Minute
 			}
 		}
-		if p3, ok := newConfig["p3"].(map[string]interface{}); ok {
-			if v, ok := p3["enabled"].(bool); ok {
-				cfg.P3Enabled = v
+		if antiDetect, ok := newConfig["antiDetect"].(map[string]interface{}); ok {
+			if v, ok := antiDetect["enabled"].(bool); ok {
+				cfg.AntiDetectEnabled = v
 			}
-			if v, ok := p3["profileId"].(string); ok {
-				cfg.P3ProfileID = v
+			if v, ok := antiDetect["profileId"].(string); ok {
+				cfg.AntiDetectProfileID = v
 			}
-			if v, ok := p3["proxyTarget"].(string); ok {
-				cfg.P3ProxyTarget = v
+			if v, ok := antiDetect["proxyTarget"].(string); ok {
+				cfg.AntiDetectProxyTarget = v
 			}
-			if v, ok := p3["directProxy"].(bool); ok {
-				cfg.P3DirectProxy = v
+			if v, ok := antiDetect["directProxy"].(bool); ok {
+				cfg.AntiDetectDirectProxy = v
 			}
-			if v, ok := p3["injectConsist"].(bool); ok {
-				cfg.P3InjectConsist = v
+			if v, ok := antiDetect["injectConsist"].(bool); ok {
+				cfg.AntiDetectInjectConsist = v
 			}
 		}
 		if scanner, ok := newConfig["scanner"].(map[string]interface{}); ok {

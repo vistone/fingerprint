@@ -145,7 +145,7 @@ func (pm *ProfileManager) LoadDefaultProfiles() error {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
 
-	// Create Chrome 134 default configuration (with full P3 anti-detection)
+	// Create Chrome 134 default configuration (with full anti-detection)
 	chrome134 := &profiles.ClientProfile{
 		ID:             "chrome_134_default",
 		BrowserType:    core.BrowserChrome,
@@ -153,7 +153,7 @@ func (pm *ProfileManager) LoadDefaultProfiles() error {
 		OS:             core.OSWindows10,
 		OSVersion:      "10.0.19045",
 
-		// P3 anti-detection configuration
+		// Anti-detection configuration
 		JSAntiDetection: &profiles.JSAntiDetection{
 			// WebGPU anti-detection point
 			WebGPU: &profiles.WebGPUAntiDetect{

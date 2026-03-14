@@ -1,6 +1,6 @@
 //go:build ignore
 
-// Package main - P3 现代 JS 高熵对抗点集成测试
+// Package main - 现代 JS 高熵对抗点集成测试
 //
 // 测试场景：
 // 1. WebGPU 对抗点生成和注入
@@ -21,7 +21,7 @@ import (
 
 func main() {
 	fmt.Println("================================================================================")
-	fmt.Println("P3: 现代 JS 高熵对抗点集成测试")
+	fmt.Println("现代 JS 高熵对抗点集成测试")
 	fmt.Println("================================================================================\n")
 
 	// 创建示例配置文件
@@ -223,7 +223,7 @@ func main() {
 	fmt.Println("================================================================================")
 	fmt.Println("总结")
 	fmt.Println("================================================================================")
-	fmt.Println("✅ 所有 P3 现代 JS 高熵对抗点已成功实现:")
+	fmt.Println("✅ 所有 现代 JS 高熵对抗点已成功实现:")
 	fmt.Println("  1. WebGPU 对抗编码 ✓")
 	fmt.Println("  2. MediaDevices 对抗编码 ✓")
 	fmt.Println("  3. Permissions 对抗编码 ✓")
@@ -239,8 +239,8 @@ func main() {
 // createSampleProfile 创建示例指纹配置
 func createSampleProfile() profiles.ClientProfile {
 	return profiles.ClientProfile{
-		ID:          "chrome_134_p3_test",
-		Name:        "Chrome 134 - P3 测试",
+		ID:          "chrome_134_antidetect_test",
+		Name:        "Chrome 134 - 反检测测试",
 		Description: "包含现代 JS 高熵对抗点的 Chrome 134 配置",
 
 		// 浏览器和操作系统信息
@@ -261,7 +261,7 @@ func createSampleProfile() profiles.ClientProfile {
 		// TCP/IP 指纹
 		TCPIP: profiles.CreateTCPIP(core.OSWindows10),
 
-		// 【P3 新增】JavaScript 反检测对抗点
+		// 【新增】JavaScript 反检测对抗点
 		JSAntiDetection: &profiles.JSAntiDetection{
 			// WebGPU 对抗点
 			WebGPU: &profiles.WebGPUAntiDetect{
@@ -376,7 +376,7 @@ func createSampleProfile() profiles.ClientProfile {
 		},
 
 		Metadata: map[string]interface{}{
-			"p3_enabled":             true,
+			"antidetect_enabled":             true,
 			"anti_detection_version": "1.0",
 		},
 	}

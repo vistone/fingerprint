@@ -208,7 +208,7 @@ type ClientProfile struct {
 	// TCP/IP fingerprint profile (new)
 	TCPIP *TCPIPFingerprint
 
-	// JavaScript anti-detection countermeasures (P3 high entropy)
+	// JavaScript anti-detection countermeasures (high entropy)
 	JSAntiDetection *JSAntiDetection
 
 	// metadata

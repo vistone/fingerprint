@@ -26,12 +26,12 @@ func (h *Handler) handleAntiDetectStatus(w http.ResponseWriter, r *http.Request)
 	pm := h.gateway.GetProfileManager()
 
 	status := map[string]interface{}{
-		"enabled":       cfg.P3Enabled,
-		"profileId":     cfg.P3ProfileID,
-		"configDir":     cfg.P3ConfigDir,
-		"proxyTarget":   cfg.P3ProxyTarget,
-		"directProxy":   cfg.P3DirectProxy,
-		"injectConsist": cfg.P3InjectConsist,
+		"enabled":       cfg.AntiDetectEnabled,
+		"profileId":     cfg.AntiDetectProfileID,
+		"configDir":     cfg.AntiDetectConfigDir,
+		"proxyTarget":   cfg.AntiDetectProxyTarget,
+		"directProxy":   cfg.AntiDetectDirectProxy,
+		"injectConsist": cfg.AntiDetectInjectConsist,
 		"injectorReady": injector != nil,
 	}
 

@@ -593,11 +593,11 @@ async function loadConfig() {
         // ML
         setVal('cfg-ml-risk', cfg.ml?.riskThreshold);
         // Anti-Detection
-        setChecked('cfg-p3-enabled', cfg.p3?.enabled);
-        setVal('cfg-p3-profileId', cfg.p3?.profileId);
-        setVal('cfg-p3-proxyTarget', cfg.p3?.proxyTarget);
-        setChecked('cfg-p3-directProxy', cfg.p3?.directProxy);
-        setChecked('cfg-p3-injectConsist', cfg.p3?.injectConsist);
+        setChecked('cfg-antidetect-enabled', cfg.antiDetect?.enabled);
+        setVal('cfg-antidetect-profileId', cfg.antiDetect?.profileId);
+        setVal('cfg-antidetect-proxyTarget', cfg.antiDetect?.proxyTarget);
+        setChecked('cfg-antidetect-directProxy', cfg.antiDetect?.directProxy);
+        setChecked('cfg-antidetect-injectConsist', cfg.antiDetect?.injectConsist);
         // Scanner
         setChecked('cfg-scanner-useBrowser', cfg.scanner?.useBrowser);
         setVal('cfg-scanner-browserWS', cfg.scanner?.browserWS);
@@ -626,12 +626,12 @@ async function saveConfig() {
         ml: {
             riskThreshold: getNumVal('cfg-ml-risk'),
         },
-        p3: {
-            enabled: getChecked('cfg-p3-enabled'),
-            profileId: getVal('cfg-p3-profileId'),
-            proxyTarget: getVal('cfg-p3-proxyTarget'),
-            directProxy: getChecked('cfg-p3-directProxy'),
-            injectConsist: getChecked('cfg-p3-injectConsist'),
+        antiDetect: {
+            enabled: getChecked('cfg-antidetect-enabled'),
+            profileId: getVal('cfg-antidetect-profileId'),
+            proxyTarget: getVal('cfg-antidetect-proxyTarget'),
+            directProxy: getChecked('cfg-antidetect-directProxy'),
+            injectConsist: getChecked('cfg-antidetect-injectConsist'),
         },
         scanner: {
             useBrowser: getChecked('cfg-scanner-useBrowser'),

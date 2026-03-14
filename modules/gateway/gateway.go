@@ -61,13 +61,13 @@ type GatewayConfig struct {
 	Endpoint string
 	Port     int
 
-	// P3 anti-detection configuration
-	P3Enabled       bool   // Whether to enable P3 anti-detection injection
-	P3ProfileID     string // Default Profile ID to use
-	P3ConfigDir     string // Profile configuration file directory
-	P3ProxyTarget   string // Proxy target URL (optional)
-	P3DirectProxy   bool   // Whether to use root path as transparent proxy entry
-	P3InjectConsist bool   // Whether to inject consistency validation code
+	// Anti-detection configuration
+	AntiDetectEnabled       bool   // Whether to enable anti-detection injection
+	AntiDetectProfileID     string // Default Profile ID to use
+	AntiDetectConfigDir     string // Profile configuration file directory
+	AntiDetectProxyTarget   string // Proxy target URL (optional)
+	AntiDetectDirectProxy   bool   // Whether to use root path as transparent proxy entry
+	AntiDetectInjectConsist bool   // Whether to inject consistency validation code
 
 	// Scanner browser execution configuration
 	ScannerUseBrowser     bool          // Whether to prefer browser-based fetching
@@ -100,13 +100,13 @@ var DefaultGatewayConfig = &GatewayConfig{
 	RiskThreshold:     core.RiskThresholdHigh,
 	Endpoint:          "/api/v1",
 	Port:              8080,
-	// P3 default configuration
-	P3Enabled:             true,
-	P3ProfileID:           "chrome_134_default",
-	P3ConfigDir:           "./profiles",
-	P3ProxyTarget:         "",
-	P3DirectProxy:         false,
-	P3InjectConsist:       true,
+	// Anti-detection default configuration
+	AntiDetectEnabled:       true,
+	AntiDetectProfileID:     "chrome_134_default",
+	AntiDetectConfigDir:     "./profiles",
+	AntiDetectProxyTarget:   "",
+	AntiDetectDirectProxy:   false,
+	AntiDetectInjectConsist: true,
 	ScannerUseBrowser:     false,
 	ScannerBrowserWS:      "",
 	ScannerBrowserTimeout: 25 * time.Second,
@@ -133,8 +133,8 @@ func NewGateway(config *GatewayConfig) *Gateway {
 
 	// Initialize Profile manager
 	g.profileManager = NewProfileManager(&ProfileManagerConfig{
-		ConfigDir:  config.P3ConfigDir,
-		DefaultID:  config.P3ProfileID,
+		ConfigDir:  config.AntiDetectConfigDir,
+		DefaultID:  config.AntiDetectProfileID,
 		AutoReload: false,
 	})
 
@@ -144,7 +144,7 @@ func NewGateway(config *GatewayConfig) *Gateway {
 	}
 
 	// Initialize HTML injector
-	if config.P3Enabled {
+	if config.AntiDetectEnabled {
 		profile, err := g.profileManager.GetDefaultProfile()
 		if err != nil {
 			fmt.Printf("Warning: failed to get default profile: %v\n", err)
@@ -153,9 +153,9 @@ func NewGateway(config *GatewayConfig) *Gateway {
 
 		injectorConfig := &InjectorConfig{
 			Enabled:            true,
-			TargetURL:          config.P3ProxyTarget,
+			TargetURL:          config.AntiDetectProxyTarget,
 			Profile:            profile,
-			InjectConsistency:  config.P3InjectConsist,
+			InjectConsistency:  config.AntiDetectInjectConsist,
 			RequireHeadTag:     true,
 			AddInjectionMarker: false,
 		}

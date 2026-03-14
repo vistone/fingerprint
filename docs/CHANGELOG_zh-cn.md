@@ -577,10 +577,10 @@
   - `README.md` 指纹数量从 "187+" 修正为 "150+"
   - Generator/Network 模块标注为预留接口尚未实现
 
-- **P3: ListProfiles 排序稳定** (2026-03-09)
+- **ListProfiles 排序稳定** (2026-03-09)
   - `ProfileManager.ListProfiles()` 返回结果使用 `sort.Strings` 排序，保证顺序稳定
 
-- **P3: CloneProfile ID 冲突检查** (2026-03-09)
+- **CloneProfile ID 冲突检查** (2026-03-09)
   - `ProfileManager.CloneProfile()` 新增 newID 已存在检查，避免静默覆盖
 
 - **代码清理与重构** (2026-03-09)

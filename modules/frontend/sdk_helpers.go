@@ -135,7 +135,7 @@ func (sdk *SDK) Combine(server *ml.ServerFingerprintData, frontend *ml.FrontendF
 	}
 }
 
-// GenerateAntiDetectionCode generates complete JavaScript anti-detection code (P3 high entropy)
+// GenerateAntiDetectionCode generates complete JavaScript anti-detection code (high entropy)
 // Including WebGPU, MediaDevices, Permissions, Automation countermeasures
 func (sdk *SDK) GenerateAntiDetectionCode(profile *profiles.ClientProfile) string {
 	generator := NewJSAntiDetectCodeGenerator(profile)

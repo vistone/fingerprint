@@ -16,15 +16,15 @@ services:
       - FP_LOG_LEVEL=info
       - FP_RATE_LIMIT=1000
       - FP_CACHE_SIZE=10000
-      # P3 Anti-Detection Configuration
-      - FP_P3_ENABLED=true
-      - FP_P3_PROFILE=chrome_134_default
-      - FP_P3_CONFIG_DIR=/data/profiles
-      - FP_P3_INJECT_CONSISTENCY=true
+      # Anti-Detection Configuration
+      - FP_ANTIDETECT_ENABLED=true
+      - FP_ANTIDETECT_PROFILE=chrome_134_default
+      - FP_ANTIDETECT_CONFIG_DIR=/data/profiles
+      - FP_ANTIDETECT_INJECT_CONSISTENCY=true
       # 设置后可启用代理注入目标，例如: http://nginx:80
-      - FP_P3_PROXY_TARGET=
+      - FP_ANTIDETECT_PROXY_TARGET=
       # 客户端访问网关根路径时，直接透明代理并注入
-      - FP_P3_DIRECT_PROXY=false
+      - FP_ANTIDETECT_DIRECT_PROXY=false
       # 扫描器浏览器执行配置（用于 JS 跳转与动态页面）
       - FP_SCANNER_USE_BROWSER=true
       - FP_SCANNER_BROWSER_WS=ws://browserless:3000

@@ -357,7 +357,7 @@ func (h *Handler) handleStats(w http.ResponseWriter, r *http.Request) {
 		"mlClassifier":      true,
 		"cache":             cfg.CacheEnabled,
 		"agent":             cfg.AgentEnabled,
-		"antiDetectEnabled": cfg.P3Enabled,
+		"antiDetectEnabled": cfg.AntiDetectEnabled,
 		"scanner":           cfg.ScannerUseBrowser,
 		"mlServiceEnabled":  cfg.MLServiceEnabled,
 		"mlServiceReady":    mlServiceReady,

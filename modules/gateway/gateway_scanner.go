@@ -15,10 +15,10 @@ import (
 )
 
 // =====================================================================
-// P3 Anti-Detection - HTML Injection Handler
+// Anti-Detection - HTML Injection Handler
 // =====================================================================
 
-// AntiDetectCodeHandler returns P3 anti-detection JavaScript code (standalone endpoint)
+// AntiDetectCodeHandler returns anti-detection JavaScript code (standalone endpoint)
 func (g *Gateway) AntiDetectCodeHandler(w http.ResponseWriter, r *http.Request) {
 	// Rate limit check
 	clientIP := g.getClientIP(r)
@@ -29,7 +29,7 @@ func (g *Gateway) AntiDetectCodeHandler(w http.ResponseWriter, r *http.Request) 
 
 	// Check if enabled
 	if g.injector == nil {
-		http.Error(w, `{"error": "P3 anti-detection not enabled"}`, http.StatusServiceUnavailable)
+		http.Error(w, `{"error": "anti-detection not enabled"}`, http.StatusServiceUnavailable)
 		return
 	}
 
@@ -485,7 +485,7 @@ func resolveRedirectURL(baseURL, target string) (string, error) {
 
 // InjectProxyHandler provides HTML proxy and auto-injection (for proxy mode)
 func (g *Gateway) InjectProxyHandler() http.Handler {
-	if g.injector == nil || g.config.P3ProxyTarget == "" {
+	if g.injector == nil || g.config.AntiDetectProxyTarget == "" {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "proxy mode not configured", http.StatusServiceUnavailable)
 		})

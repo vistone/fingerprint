@@ -1,7 +1,7 @@
 //go:build ignore
 
-// Gateway P3 集成测试 - HTML 注入功能验证
-// 测试网关的 P3 反检测代码自动注入功能
+// Gateway 反检测集成测试 - HTML 注入功能验证
+// 测试网关的 反检测代码自动注入功能
 package main
 
 import (
@@ -17,14 +17,14 @@ import (
 
 func main() {
 	fmt.Println(strings.Repeat("=", 70))
-	fmt.Println("Gateway P3 集成测试 - HTML 注入功能")
+	fmt.Println("Gateway 反检测集成测试 - HTML 注入功能")
 	fmt.Println(strings.Repeat("=", 70))
 	fmt.Println()
 
-	// 第一部分：测试 P3 API 端点
-	fmt.Println("【第一部分】测试 P3 API 端点")
+	// 第一部分：测试反检测 API 端点
+	fmt.Println("【第一部分】测试反检测 API 端点")
 	fmt.Println(strings.Repeat("-", 70))
-	testP3APIs()
+	testAntiDetectAPIs()
 	fmt.Println()
 
 	// 第二部分：测试 HTML 注入中间件
@@ -44,22 +44,22 @@ func main() {
 	fmt.Println(strings.Repeat("=", 70))
 }
 
-// testP3APIs 测试 P3 相关的 API 端点
-func testP3APIs() {
+// testAntiDetectAPIs 测试 反检测相关的 API 端点
+func testAntiDetectAPIs() {
 	// 创建网关配置
 	config := *gateway.DefaultGatewayConfig
 	config.Port = 8081
-	config.P3Enabled = true
-	config.P3ProfileID = "chrome_134_default"
-	config.P3ConfigDir = "./profiles"
-	config.P3InjectConsist = true
+	config.AntiDetectEnabled = true
+	config.AntiDetectProfileID = "chrome_134_default"
+	config.AntiDetectConfigDir = "./profiles"
+	config.AntiDetectInjectConsist = true
 
 	// 创建网关
 	gw := gateway.NewGateway(&config)
 
 	// 测试 1: 获取 Profile 列表
 	fmt.Println("1️⃣ 测试 Profile 列表 API")
-	req := httptest.NewRequest("GET", "/api/v1/p3/profiles", nil)
+	req := httptest.NewRequest("GET", "/api/v1/antidetect/profiles", nil)
 	w := httptest.NewRecorder()
 	gw.ProfileListHandler(w, req)
 
@@ -76,7 +76,7 @@ func testP3APIs() {
 
 	// 测试 2: 获取 Profile 详情
 	fmt.Println("2️⃣ 测试 Profile 详情 API")
-	req = httptest.NewRequest("GET", "/api/v1/p3/profile?id=chrome_134_default", nil)
+	req = httptest.NewRequest("GET", "/api/v1/antidetect/profile?id=chrome_134_default", nil)
 	w = httptest.NewRecorder()
 	gw.ProfileDetailHandler(w, req)
 
@@ -98,7 +98,7 @@ func testP3APIs() {
 
 	// 测试 3: 获取反检测代码
 	fmt.Println("3️⃣ 测试反检测代码生成 API")
-	req = httptest.NewRequest("GET", "/api/v1/p3/antidetect.js", nil)
+	req = httptest.NewRequest("GET", "/api/v1/antidetect/antidetect.js", nil)
 	w = httptest.NewRecorder()
 	gw.AntiDetectCodeHandler(w, req)
 
@@ -143,7 +143,7 @@ func testP3APIs() {
 
 	// 测试 4: 使用不同 Profile
 	fmt.Println("4️⃣ 测试切换 Profile")
-	req = httptest.NewRequest("GET", "/api/v1/p3/antidetect.js?profile=firefox_132_default", nil)
+	req = httptest.NewRequest("GET", "/api/v1/antidetect/antidetect.js?profile=firefox_132_default", nil)
 	w = httptest.NewRecorder()
 	gw.AntiDetectCodeHandler(w, req)
 
@@ -161,7 +161,7 @@ func testP3APIs() {
 func testHTMLInjection() {
 	// 创建网关配置
 	config := *gateway.DefaultGatewayConfig
-	config.P3Enabled = true
+	config.AntiDetectEnabled = true
 	gw := gateway.NewGateway(&config)
 
 	// 创建一个简单的 HTML handler
@@ -196,10 +196,10 @@ func testHTMLInjection() {
 	fmt.Printf("   注入后 HTML 长度: %d 字节\n", len(html))
 
 	// 验证注入
-	if strings.Contains(html, "P3 Anti-Detection") {
-		fmt.Println("   ✓ P3 代码已成功注入")
+	if strings.Contains(html, "Anti-Detection") {
+		fmt.Println("   ✓ 反检测代码已成功注入")
 	} else {
-		fmt.Println("   ✗ P3 代码未注入")
+		fmt.Println("   ✗ 反检测代码未注入")
 	}
 
 	if strings.Contains(html, "<head>") {
@@ -251,16 +251,16 @@ func testEndToEnd() {
 	// 创建网关配置
 	config := *gateway.DefaultGatewayConfig
 	config.Port = 0 // 使用随机端口
-	config.P3Enabled = true
+	config.AntiDetectEnabled = true
 	gw := gateway.NewGateway(&config)
 
 	// 创建测试服务器
 	mux := http.NewServeMux()
 
 	// 注册路由
-	mux.HandleFunc("/api/v1/p3/antidetect.js", gw.AntiDetectCodeHandler)
-	mux.HandleFunc("/api/v1/p3/profiles", gw.ProfileListHandler)
-	mux.HandleFunc("/api/v1/p3/profile", gw.ProfileDetailHandler)
+	mux.HandleFunc("/api/v1/antidetect/antidetect.js", gw.AntiDetectCodeHandler)
+	mux.HandleFunc("/api/v1/antidetect/profiles", gw.ProfileListHandler)
+	mux.HandleFunc("/api/v1/antidetect/profile", gw.ProfileDetailHandler)
 
 	// 创建一个 HTML 测试页面
 	injectorMiddleware := gw.GetInjectorMiddleware()
@@ -269,11 +269,11 @@ func testEndToEnd() {
 		w.Write([]byte(`<!DOCTYPE html>
 <html>
 <head>
-    <title>P3 Integration Test</title>
+    <title>Anti-Detection Integration Test</title>
 </head>
 <body>
-    <h1>P3 Anti-Detection Test Page</h1>
-    <p>This page should have P3 anti-detection code injected.</p>
+    <h1>Anti-Detection Test Page</h1>
+    <p>This page should have anti-detection code injected.</p>
 </body>
 </html>`))
 	}))
@@ -289,7 +289,7 @@ func testEndToEnd() {
 	// 测试 API 端点
 	fmt.Println("2️⃣ 测试 API 端点")
 
-	resp, err := http.Get(ts.URL + "/api/v1/p3/profiles")
+	resp, err := http.Get(ts.URL + "/api/v1/antidetect/profiles")
 	if err != nil {
 		fmt.Printf("   ✗ 请求失败: %v\n", err)
 	} else {
@@ -297,7 +297,7 @@ func testEndToEnd() {
 		resp.Body.Close()
 	}
 
-	resp, err = http.Get(ts.URL + "/api/v1/p3/antidetect.js")
+	resp, err = http.Get(ts.URL + "/api/v1/antidetect/antidetect.js")
 	if err != nil {
 		fmt.Printf("   ✗ 请求失败: %v\n", err)
 	} else {
@@ -323,7 +323,7 @@ func testEndToEnd() {
 		// 验证注入
 		checks := []string{
 			"<script>",
-			"P3 Anti-Detection",
+			"Anti-Detection",
 			"WebGPU",
 			"navigator.mediaDevices",
 			"navigator.permissions",

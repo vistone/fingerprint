@@ -267,13 +267,13 @@ func (h *Handler) handleConfig(w http.ResponseWriter, r *http.Request) {
 				"riskThreshold": cfg.RiskThreshold,
 			},
 			"mlService": h.getMLServiceConfig(cfg),
-			"p3": map[string]interface{}{
-				"enabled":       cfg.P3Enabled,
-				"profileId":     cfg.P3ProfileID,
-				"configDir":     cfg.P3ConfigDir,
-				"proxyTarget":   cfg.P3ProxyTarget,
-				"directProxy":   cfg.P3DirectProxy,
-				"injectConsist": cfg.P3InjectConsist,
+			"antiDetect": map[string]interface{}{
+				"enabled":       cfg.AntiDetectEnabled,
+				"profileId":     cfg.AntiDetectProfileID,
+				"configDir":     cfg.AntiDetectConfigDir,
+				"proxyTarget":   cfg.AntiDetectProxyTarget,
+				"directProxy":   cfg.AntiDetectDirectProxy,
+				"injectConsist": cfg.AntiDetectInjectConsist,
 			},
 			"scanner": map[string]interface{}{
 				"useBrowser":     cfg.ScannerUseBrowser,

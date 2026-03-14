@@ -115,28 +115,28 @@ func main() {
 	// Create gateway with custom config
 	config := *gateway.DefaultGatewayConfig
 	config.Port = *httpPort
-	if v := strings.TrimSpace(os.Getenv("FP_P3_ENABLED")); v != "" {
+	if v := strings.TrimSpace(os.Getenv("FP_ANTIDETECT_ENABLED")); v != "" {
 		if parsed, err := strconv.ParseBool(v); err == nil {
-			config.P3Enabled = parsed
+			config.AntiDetectEnabled = parsed
 		}
 	}
-	if v := strings.TrimSpace(os.Getenv("FP_P3_PROFILE")); v != "" {
-		config.P3ProfileID = v
+	if v := strings.TrimSpace(os.Getenv("FP_ANTIDETECT_PROFILE")); v != "" {
+		config.AntiDetectProfileID = v
 	}
-	if v := strings.TrimSpace(os.Getenv("FP_P3_CONFIG_DIR")); v != "" {
-		config.P3ConfigDir = v
+	if v := strings.TrimSpace(os.Getenv("FP_ANTIDETECT_CONFIG_DIR")); v != "" {
+		config.AntiDetectConfigDir = v
 	}
-	if v := strings.TrimSpace(os.Getenv("FP_P3_PROXY_TARGET")); v != "" {
-		config.P3ProxyTarget = v
+	if v := strings.TrimSpace(os.Getenv("FP_ANTIDETECT_PROXY_TARGET")); v != "" {
+		config.AntiDetectProxyTarget = v
 	}
-	if v := strings.TrimSpace(os.Getenv("FP_P3_INJECT_CONSISTENCY")); v != "" {
+	if v := strings.TrimSpace(os.Getenv("FP_ANTIDETECT_INJECT_CONSISTENCY")); v != "" {
 		if parsed, err := strconv.ParseBool(v); err == nil {
-			config.P3InjectConsist = parsed
+			config.AntiDetectInjectConsist = parsed
 		}
 	}
-	if v := strings.TrimSpace(os.Getenv("FP_P3_DIRECT_PROXY")); v != "" {
+	if v := strings.TrimSpace(os.Getenv("FP_ANTIDETECT_DIRECT_PROXY")); v != "" {
 		if parsed, err := strconv.ParseBool(v); err == nil {
-			config.P3DirectProxy = parsed
+			config.AntiDetectDirectProxy = parsed
 		}
 	}
 	if v := strings.TrimSpace(os.Getenv("FP_SCANNER_USE_BROWSER")); v != "" {
@@ -183,8 +183,8 @@ func main() {
 	web.WriteLog("INFO", "gateway", "Fingerprint Gateway %s starting", *version)
 	web.WriteLog("INFO", "gateway", "HTTP server will listen on port %d", *httpPort)
 	web.WriteLog("INFO", "gateway", "gRPC server will listen on port %d", *grpcPort)
-	if config.P3Enabled {
-		web.WriteLog("INFO", "p3", "P3 anti-detection enabled, profile: %s", config.P3ProfileID)
+	if config.AntiDetectEnabled {
+		web.WriteLog("INFO", "antidetect", "Anti-detection enabled, profile: %s", config.AntiDetectProfileID)
 	}
 	if config.AgentEnabled {
 		web.WriteLog("INFO", "agent", "Autonomous Security Agent enabled")
@@ -211,23 +211,23 @@ func main() {
 	mux.HandleFunc("/api/v1/sdk.js", gw.SDKHandler)
 	mux.HandleFunc("/api/v1/collect", gw.CollectHandler)
 
-	// P3 Anti-Detection API endpoints
-	mux.HandleFunc("/api/v1/p3/antidetect.js", gw.AntiDetectCodeHandler)
-	mux.HandleFunc("/api/v1/p3/profiles", gw.ProfileListHandler)
-	mux.HandleFunc("/api/v1/p3/profile", gw.ProfileDetailHandler)
+	// Anti-Detection API endpoints
+	mux.HandleFunc("/api/v1/antidetect/antidetect.js", gw.AntiDetectCodeHandler)
+	mux.HandleFunc("/api/v1/antidetect/profiles", gw.ProfileListHandler)
+	mux.HandleFunc("/api/v1/antidetect/profile", gw.ProfileDetailHandler)
 
 	// JavaScript Fingerprint Detection Scanner
 	mux.HandleFunc("/api/v1/scan", gw.V8ScannerHandler)
-	// P3 Proxy mode (if proxy target configured)
-	// access /proxy/* will proxy to target service and automatically inject P3 code
+	// Proxy mode (if proxy target configured)
+	// access /proxy/* will proxy to target service and automatically inject anti-detection code
 	mux.Handle("/proxy/", http.StripPrefix("/proxy", gw.InjectProxyHandler()))
 
-	// P3 Direct Proxy mode
+	// Direct Proxy mode
 	// after enable, client can directly access gateway root path and be transparently proxied and automatically injected.
 	// API routes have higher priority than "/", therefore /api/* are not affected.
-	if config.P3DirectProxy && config.P3ProxyTarget != "" {
+	if config.AntiDetectDirectProxy && config.AntiDetectProxyTarget != "" {
 		mux.Handle("/", gw.InjectProxyHandler())
-		log.Printf("P3 direct proxy mode enabled, target: %s", config.P3ProxyTarget)
+		log.Printf("Direct proxy mode enabled, target: %s", config.AntiDetectProxyTarget)
 	}
 
 	// Health check
