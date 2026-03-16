@@ -45,10 +45,9 @@ go tool cover -html=coverage.out -o coverage.html
 ```bash
 make help          # Show all available commands
 make test          # Run all tests
-make test-race     # Run tests with race detector
 make coverage      # Generate coverage report
 make lint          # Run linter
-make fmt           # Format code
+make format        # Format code
 make clean         # Clean build artifacts
 ```
 

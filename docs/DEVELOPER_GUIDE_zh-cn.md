@@ -45,10 +45,9 @@ go tool cover -html=coverage.out -o coverage.html
 ```bash
 make help          # 显示所有可用命令
 make test          # 运行所有测试
-make test-race     # 运行带 race detector 的测试
 make coverage      # 生成覆盖率报告
 make lint          # 运行 linter
-make fmt           # 格式化代码
+make format        # 格式化代码
 make clean         # 清理构建产物
 ```
 
