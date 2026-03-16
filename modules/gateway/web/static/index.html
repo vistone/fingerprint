@@ -686,6 +686,20 @@
                                 </label>
                                 <small style="color: #888; display: block; margin-top: 4px;" data-i18n="ct.scanDesc">Analyze the website to detect if it contains fingerprinting detection code (WebGPU, MediaDevices, Permissions, Automation, etc.)</small>
                             </div>
+                            <div class="trace-block" style="margin-bottom: 14px;">
+                                <h5>Gateway Runtime (Crawler/WAF)</h5>
+                                <div id="clientRuntimeStatus" style="color: var(--gray-600); font-size: 13px;">
+                                    Loading runtime status...
+                                </div>
+                                <div id="wafDecisionSummary" style="margin-top: 8px; color: var(--gray-700); font-size: 12px;">
+                                </div>
+                                <div style="margin-top: 10px;">
+                                    <button class="btn btn-secondary" onclick="refreshClientRuntimeStatus()">🔄 Refresh Runtime</button>
+                                    <button class="btn" onclick="startCrawlerFromClientTest()">▶ Start Crawler</button>
+                                    <button class="btn btn-primary" onclick="crawlCurrentURLFromClientTest()">🕷 Crawl URL</button>
+                                </div>
+                                <div id="crawlerProbeResult" style="margin-top: 8px; color: var(--gray-600); font-size: 12px;"></div>
+                            </div>
                             <div class="form-actions">
                                 <button class="btn btn-primary" onclick="runClientTest()" data-i18n="ct.send">🚀 Send Request</button>
                                 <button class="btn btn-secondary" onclick="clearTestResult()" data-i18n="ct.clear">Clear</button>

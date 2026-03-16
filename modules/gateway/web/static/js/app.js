@@ -1411,6 +1411,144 @@ function loadClientTestProfiles() {
     select.innerHTML = state.profiles.map(p =>
         `<option value="${p.id}">${p.name} (${p.browserType})</option>`
     ).join('');
+
+    refreshClientRuntimeStatus();
+}
+
+async function refreshClientRuntimeStatus() {
+    const statusEl = document.getElementById('clientRuntimeStatus');
+    const summaryEl = document.getElementById('wafDecisionSummary');
+    if (!statusEl) return;
+
+    try {
+        const [crawler, waf] = await Promise.all([
+            API.getCrawlerStatus(),
+            API.getWAFStatus(),
+        ]);
+
+        const crawlerText = !crawler.enabled
+            ? 'Crawler: disabled'
+            : `Crawler: ${crawler.running ? 'running' : 'integrated'} | targets=${crawler.targetCount || 0}, workers=${crawler.workerCount || 0}, blockRate=${(((crawler.stats || {}).blockRate || 0) * 100).toFixed(1)}%`;
+        const wafText = !waf.enabled
+            ? 'WAF: disabled'
+            : `WAF: ${String(waf.mode || 'unknown').toUpperCase()} | blocked=${(waf.stats || {}).blockedRequests || 0}, total=${(waf.stats || {}).totalRequests || 0}`;
+        const recentDecisions = Array.isArray(waf.recentDecisions) ? waf.recentDecisions : [];
+        const recentHtml = recentDecisions.length === 0
+            ? '<div style="margin-top: 6px; color: var(--gray-500);">WAF recent decisions: none</div>'
+            : `<div style="margin-top: 8px;">
+                <div style="font-weight: 600; margin-bottom: 4px;">WAF recent decisions</div>
+                ${recentDecisions.slice(0, 3).map(d =>
+                    `<div style="font-size:12px; color: var(--gray-600); margin-top: 2px;">
+                        [${String(d.action || '').toUpperCase()}] ${d.reason || '-'} | risk=${Number(d.riskScore || 0).toFixed(2)} | ${d.method || ''} ${d.path || ''} | ${d.clientIp || '-'}
+                    </div>`
+                ).join('')}
+            </div>`;
+
+        statusEl.innerHTML = `
+            <div>${crawlerText}</div>
+            <div style="margin-top: 4px;">${wafText}</div>
+            ${recentHtml}
+        `;
+
+        if (summaryEl) {
+            renderWAFDecisionSummary(summaryEl, recentDecisions);
+        }
+    } catch (error) {
+        statusEl.textContent = `Runtime status error: ${error.message || 'unknown error'}`;
+        if (summaryEl) {
+            summaryEl.textContent = '';
+        }
+    }
+}
+
+function renderWAFDecisionSummary(container, decisions) {
+    if (!container) return;
+    if (!Array.isArray(decisions) || decisions.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+
+    const actionCount = {};
+    const layerCount = {};
+    let riskSum = 0;
+
+    decisions.forEach(d => {
+        const action = String(d.action || 'unknown').toUpperCase();
+        actionCount[action] = (actionCount[action] || 0) + 1;
+        riskSum += Number(d.riskScore || 0);
+
+        const layers = Array.isArray(d.detectionLayers) ? d.detectionLayers : [];
+        layers.forEach(layer => {
+            const key = String(layer || 'unknown');
+            layerCount[key] = (layerCount[key] || 0) + 1;
+        });
+    });
+
+    const avgRisk = decisions.length > 0 ? (riskSum / decisions.length) : 0;
+    const actionText = Object.entries(actionCount)
+        .sort((a, b) => b[1] - a[1])
+        .map(([k, v]) => `${k}:${v}`)
+        .join(' | ');
+    const layerText = Object.entries(layerCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([k, v]) => `${k}:${v}`)
+        .join(' | ');
+
+    container.innerHTML = `
+        <div style="padding: 8px; border: 1px solid var(--gray-200); border-radius: 8px; background: var(--gray-50);">
+            <div style="font-weight: 600;">WAF Decision Summary (last ${decisions.length})</div>
+            <div style="margin-top: 3px;">Avg Risk: ${avgRisk.toFixed(2)}</div>
+            <div style="margin-top: 3px;">Actions: ${actionText || '-'}</div>
+            <div style="margin-top: 3px;">Top Layers: ${layerText || '-'}</div>
+        </div>
+    `;
+}
+
+async function startCrawlerFromClientTest() {
+    try {
+        const result = await API.startCrawler();
+        if (result.started) {
+            showNotification('Crawler started', 'success');
+        } else {
+            showNotification(`Crawler start failed: ${result.error || 'unknown error'}`, 'error');
+        }
+    } catch (error) {
+        showNotification(`Crawler start failed: ${error.message || 'unknown error'}`, 'error');
+    }
+    await refreshClientRuntimeStatus();
+}
+
+async function crawlCurrentURLFromClientTest() {
+    const urlInput = document.getElementById('testUrl');
+    const output = document.getElementById('crawlerProbeResult');
+    if (!urlInput || !output) return;
+
+    const targetURL = (urlInput.value || '').trim();
+    if (!targetURL) {
+        showNotification('Please enter target URL first', 'error');
+        return;
+    }
+
+    output.textContent = 'Crawler is running...';
+
+    try {
+        const data = await API.crawlWithCrawler(targetURL);
+        if (!data.ok) {
+            output.textContent = `Crawl failed: ${data.error || 'unknown error'}`;
+            showNotification(output.textContent, 'error');
+            return;
+        }
+
+        const r = data.result || {};
+        output.textContent = `Crawled ${r.url || targetURL} | status=${r.statusCode || 0} | blocked=${!!r.blocked} | reason=${r.blockReason || '-'} | duration=${r.durationMs || 0}ms | size=${r.contentSize || 0}`;
+        showNotification('Crawler request finished', 'success');
+    } catch (error) {
+        output.textContent = `Crawl failed: ${error.message || 'unknown error'}`;
+        showNotification(output.textContent, 'error');
+    } finally {
+        await refreshClientRuntimeStatus();
+    }
 }
 
 // 运行客户端测试
@@ -1441,6 +1579,8 @@ async function runClientTest() {
     document.getElementById('responseTraceSection').style.display = 'none';
 
     try {
+        await refreshClientRuntimeStatus();
+
         const response = await fetch('/api/admin/client/test', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1481,6 +1621,7 @@ async function runClientTest() {
             }
             // 显示响应信息
             displayResponseTrace(data.responseTrace, data.scanResults);
+            await refreshClientRuntimeStatus();
         } else {
             // 显示错误
             document.getElementById('responseTraceSection').style.display = 'block';
@@ -1504,6 +1645,8 @@ async function runClientTest() {
                 bodyPre.textContent = error.message || 'Unknown error';
             }
         }
+    } finally {
+        await refreshClientRuntimeStatus();
     }
 }
 

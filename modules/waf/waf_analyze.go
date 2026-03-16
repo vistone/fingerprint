@@ -18,41 +18,58 @@ func (w *WAF) Analyze(ctx context.Context, req *http.Request) *WAFResult {
 	w.mu.RLock()
 	defer w.mu.RUnlock()
 
+	clientIP := w.getClientIP(req)
+	recordAndReturn := func(result *WAFResult) *WAFResult {
+		if result == nil {
+			return nil
+		}
+		w.recordDecision(WAFDecision{
+			Timestamp:       time.Now(),
+			Action:          result.Action,
+			Reason:          result.Reason,
+			RiskScore:       result.RiskScore,
+			ClientIP:        clientIP,
+			Method:          req.Method,
+			Path:            req.URL.Path,
+			DetectionLayers: result.DetectionLayers,
+		})
+		return result
+	}
+
 	if !w.config.Enabled {
-		return &WAFResult{Action: ActionAllow, Reason: "waf_disabled"}
+		return recordAndReturn(&WAFResult{Action: ActionAllow, Reason: "waf_disabled"})
 	}
 
 	// 1. Whitelist check
 	if w.isWhitelisted(req) {
-		return &WAFResult{Action: ActionAllow, Reason: "whitelisted"}
+		return recordAndReturn(&WAFResult{Action: ActionAllow, Reason: "whitelisted"})
 	}
 
 	// 2. Blacklist check
 	if action, reason := w.isBlacklisted(req); action != ActionAllow {
-		return &WAFResult{
+		return recordAndReturn(&WAFResult{
 			Action:        action,
 			Reason:        reason,
 			BlockDuration: w.config.BlockDuration,
-		}
+		})
 	}
 
 	// 3. Block list check
-	clientIP := w.getClientIP(req)
 	if w.blockList.IsBlocked(clientIP) {
-		return &WAFResult{
+		return recordAndReturn(&WAFResult{
 			Action:        ActionBlock,
 			Reason:        "in_blocklist",
 			BlockDuration: w.blockList.RemainingTime(clientIP),
-		}
+		})
 	}
 
 	// 4. Rate limit check
 	if !w.rateLimiter.Allow(clientIP) {
 		w.stats.ThrottledRequests++
-		return &WAFResult{
+		return recordAndReturn(&WAFResult{
 			Action: ActionThrottle,
 			Reason: "rate_limit_exceeded",
-		}
+		})
 	}
 
 	// 5. Multi-layer detection
@@ -209,7 +226,7 @@ func (w *WAF) Analyze(ctx context.Context, req *http.Request) *WAFResult {
 		})
 	}
 
-	return result
+	return recordAndReturn(result)
 }
 
 // Helper methods

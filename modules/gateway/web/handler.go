@@ -220,6 +220,8 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/admin/agent/knowledge", h.handleAgentKnowledge)
 	mux.HandleFunc("/api/admin/agent/strategies", h.handleAgentStrategies)
 	mux.HandleFunc("/api/admin/crawler/status", h.handleCrawlerStatus)
+	mux.HandleFunc("/api/admin/crawler/start", h.handleCrawlerStart)
+	mux.HandleFunc("/api/admin/crawler/crawl", h.handleCrawlerCrawl)
 	mux.HandleFunc("/api/admin/waf/status", h.handleWAFStatus)
 
 	// Analysis engine endpoints

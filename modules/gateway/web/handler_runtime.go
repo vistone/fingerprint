@@ -3,6 +3,7 @@ package web
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
 func (h *Handler) handleCrawlerStatus(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +23,9 @@ func (h *Handler) handleCrawlerStatus(w http.ResponseWriter, r *http.Request) {
 	writeRuntimeJSON(w, map[string]interface{}{
 		"enabled":         true,
 		"running":         cr.Running(),
+		"name":            cfg.Name,
 		"targets":         cfg.TargetURLs,
+		"targetCount":     len(cfg.TargetURLs),
 		"workerCount":     cfg.Workers,
 		"profileStrategy": cfg.ProfileStrategy,
 		"stealthMode":     cfg.StealthMode,
@@ -33,6 +36,97 @@ func (h *Handler) handleCrawlerStatus(w http.ResponseWriter, r *http.Request) {
 			"blockedRequests": stats.BlockedRequests.Load(),
 			"successRate":     stats.SuccessRate(),
 			"blockRate":       stats.BlockRate(),
+		},
+	})
+}
+
+func (h *Handler) handleCrawlerStart(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	cr := h.gateway.GetCrawler()
+	if cr == nil {
+		writeRuntimeJSON(w, map[string]interface{}{
+			"started": false,
+			"error":   "crawler is not integrated",
+		})
+		return
+	}
+
+	if cr.Running() {
+		writeRuntimeJSON(w, map[string]interface{}{
+			"started": true,
+			"running": true,
+			"note":    "crawler already running",
+		})
+		return
+	}
+
+	if err := cr.Start(); err != nil {
+		writeRuntimeJSON(w, map[string]interface{}{
+			"started": false,
+			"running": false,
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	writeRuntimeJSON(w, map[string]interface{}{
+		"started": true,
+		"running": true,
+	})
+}
+
+func (h *Handler) handleCrawlerCrawl(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	cr := h.gateway.GetCrawler()
+	if cr == nil {
+		writeRuntimeJSON(w, map[string]interface{}{
+			"ok":    false,
+			"error": "crawler is not integrated",
+		})
+		return
+	}
+
+	var req struct {
+		URL string `json:"url"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+	req.URL = strings.TrimSpace(req.URL)
+	if req.URL == "" {
+		http.Error(w, "url is required", http.StatusBadRequest)
+		return
+	}
+
+	result, err := cr.CrawlOnce(req.URL)
+	if err != nil {
+		writeRuntimeJSON(w, map[string]interface{}{
+			"ok":    false,
+			"error": err.Error(),
+		})
+		return
+	}
+
+	writeRuntimeJSON(w, map[string]interface{}{
+		"ok": true,
+		"result": map[string]interface{}{
+			"url":         result.URL,
+			"statusCode":  result.StatusCode,
+			"blocked":     result.Blocked,
+			"blockReason": result.BlockReason,
+			"durationMs":  result.Duration.Milliseconds(),
+			"contentType": result.ContentType,
+			"contentSize": result.ContentLength,
+			"detected":    result.DetectionInfo,
 		},
 	})
 }
@@ -72,6 +166,7 @@ func (h *Handler) handleWAFStatus(w http.ResponseWriter, r *http.Request) {
 			"lastFeedbackTime": learning.LastFeedbackTime,
 		}
 	}
+	result["recentDecisions"] = wafInst.RecentDecisions(8)
 	writeRuntimeJSON(w, result)
 }
 

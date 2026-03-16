@@ -38,6 +38,9 @@ type WAF struct {
 	mu      sync.RWMutex
 	running bool
 	stats   *WAFStats
+
+	decisionMu      sync.RWMutex
+	recentDecisions []WAFDecision
 }
 
 // NewWAF creates a new WAF instance
@@ -47,8 +50,9 @@ func NewWAF(config *WAFConfig) *WAF {
 	}
 
 	waf := &WAF{
-		config: config,
-		stats:  &WAFStats{},
+		config:          config,
+		stats:           &WAFStats{},
+		recentDecisions: make([]WAFDecision, 0, 64),
 	}
 
 	// Initialize classifier

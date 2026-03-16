@@ -112,6 +112,18 @@ type WAFStats struct {
 	MonitoredRequests  int64
 }
 
+// WAFDecision is a compact runtime record of one WAF decision.
+type WAFDecision struct {
+	Timestamp       time.Time `json:"timestamp"`
+	Action          WAFAction `json:"action"`
+	Reason          string    `json:"reason"`
+	RiskScore       float64   `json:"riskScore"`
+	ClientIP        string    `json:"clientIp"`
+	Method          string    `json:"method"`
+	Path            string    `json:"path"`
+	DetectionLayers []string  `json:"detectionLayers,omitempty"`
+}
+
 // WAFResult detection result
 type WAFResult struct {
 	Action          WAFAction

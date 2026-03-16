@@ -87,6 +87,28 @@ const API = {
         return this.request('/api/admin/agent/knowledge');
     },
 
+    async getCrawlerStatus() {
+        return this.request('/api/admin/crawler/status');
+    },
+
+    async startCrawler() {
+        return this.request('/api/admin/crawler/start', {
+            method: 'POST',
+            body: JSON.stringify({}),
+        });
+    },
+
+    async crawlWithCrawler(url) {
+        return this.request('/api/admin/crawler/crawl', {
+            method: 'POST',
+            body: JSON.stringify({ url }),
+        });
+    },
+
+    async getWAFStatus() {
+        return this.request('/api/admin/waf/status');
+    },
+
     // SSE Log Stream
     subscribeToLogStream(callback) {
         const es = new EventSource('/api/admin/logs/stream');
