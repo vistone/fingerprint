@@ -1,5 +1,5 @@
 // internal/pipeline/pipeline.go
-// 链式责任模式的流水线框架
+// Chain-of-responsibility style pipeline framework
 
 package pipeline
 
@@ -11,101 +11,101 @@ import (
 )
 
 // ========================================================================
-// 核心接口定义
+// Core interface definitions
 // ========================================================================
 
-// Tracer 追踪接口（简化版，避免依赖OpenTelemetry）
+// Tracer defines a lightweight tracing interface (without OpenTelemetry dependency)
 type Tracer interface {
 	Start(ctx context.Context, name string) (context.Context, Span)
 }
 
-// Span 追踪Span接口
+// Span defines the tracing span interface
 type Span interface {
 	End()
 	SetAttributes(attrs ...Attribute)
 	RecordError(err error)
 }
 
-// Attribute 追踪属性
+// Attribute defines a tracing attribute
 type Attribute struct {
 	Key   string
 	Value interface{}
 }
 
-// NoOpTracer 空追踪器实现
+// NoOpTracer is a no-op tracer implementation
 type NoOpTracer struct{}
 
 func (t NoOpTracer) Start(ctx context.Context, name string) (context.Context, Span) {
 	return ctx, NoOpSpan{}
 }
 
-// NoOpSpan 空Span实现
+// NoOpSpan is a no-op span implementation
 type NoOpSpan struct{}
 
 func (s NoOpSpan) End()                             {}
 func (s NoOpSpan) SetAttributes(attrs ...Attribute) {}
 func (s NoOpSpan) RecordError(err error)            {}
 
-// DefaultTracer 返回默认的空追踪器
+// DefaultTracer returns the default no-op tracer
 func DefaultTracer() Tracer {
 	return NoOpTracer{}
 }
 
 // ========================================================================
-// 核心接口定义
+// Core interface definitions
 // ========================================================================
 
-// Stage 流水线的单个阶段
+// Stage represents one pipeline stage
 type Stage interface {
-	// GetName 返回阶段名称（唯一标识符）
+	// GetName returns the unique stage name
 	GetName() string
 
-	// GetDependencies 返回此阶段依赖的前置阶段名称
+	// GetDependencies returns prerequisite stage names
 	GetDependencies() []string
 
-	// Execute 执行阶段的核心逻辑
+	// Execute runs the stage core logic
 	Execute(ctx context.Context, data *StageData) error
 }
 
-// Middleware 中间件接口（装饰器模式）
-// 用于在 Stage 执行前后进行日志、指标、追踪等操作
+// Middleware defines a decorator-style stage wrapper
+// It hooks logic such as logging, metrics, and tracing around stage execution
 type Middleware interface {
 	Process(ctx context.Context, stageName string, data *StageData, next ExecutionFunc) error
 }
 
-// ExecutionFunc 阶段执行函数
+// ExecutionFunc is the stage execution function signature
 type ExecutionFunc func(ctx context.Context, data *StageData) error
 
-// StageData 流动在管道中的数据结构
+// StageData is the data carried through the pipeline
 type StageData struct {
-	// 原始输入数据
+	// Original input data
 	Input interface{}
 
-	// 当前阶段的输出（下一阶段的输入）
+	// Current stage output (input for the next stage)
 	Output interface{}
 
-	// 上下文数据（各阶段可读写）
+	// Shared context data (read/write across stages)
 	Context map[string]interface{}
 
-	// 追踪元数据
+	// Tracing metadata
 	ExecutedAt time.Time
 	Duration   time.Duration
 	Error      error
 }
 
 // ========================================================================
-// Pipeline 流水线
+// Pipeline
 // ========================================================================
 
 type Pipeline struct {
 	stages      []Stage
 	middlewares []Middleware
-	stageIndex  map[string]int // 阶段名 -> 索引，用于快速查找依赖
+	stageIndex  map[string]int // Stage name -> index for fast dependency lookup
 
 	tracer Tracer
 }
 
-// NewPipeline 创建新流水线
+// NewPipeline creates a new pipeline
 func NewPipeline(tracer Tracer) *Pipeline {
 	if tracer == nil {
 		tracer = DefaultTracer()
@@ -118,29 +118,29 @@ func NewPipeline(tracer Tracer) *Pipeline {
 	}
 }
 
-// AddStage 添加阶段
-// 注意：阶段顺序即为执行顺序，但会根据依赖关系验证
+// AddStage appends a stage
+// Stage order is execution order, validated against dependencies
 func (p *Pipeline) AddStage(stage Stage) *Pipeline {
 	p.stages = append(p.stages, stage)
 	p.stageIndex[stage.GetName()] = len(p.stages) - 1
 	return p
 }
 
-// AddMiddleware 添加中间件（会按添加顺序链式执行）
+// AddMiddleware appends middleware in chaining order
 func (p *Pipeline) AddMiddleware(mw Middleware) *Pipeline {
 	p.middlewares = append(p.middlewares, mw)
 	return p
 }
 
-// Validate 验证整个流水线的有效性
-// 检查：
-// 1. 所有依赖的前置阶段是否存在
-// 2. 是否存在循环依赖
+// Validate checks full pipeline consistency
+// Checks:
+// 1. All declared dependencies exist
+// 2. No circular dependency is present
 func (p *Pipeline) Validate() error {
 	for i, stage := range p.stages {
 		stageName := stage.GetName()
 
-		// 检查依赖
+		// Check dependencies
 		for _, dep := range stage.GetDependencies() {
 			depIdx, exists := p.stageIndex[dep]
 			if !exists {
@@ -148,7 +148,7 @@ func (p *Pipeline) Validate() error {
 					stageName, dep, dep)
 			}
 
-			// 依赖必须在前面执行（索引小于当前阶段）
+			// Dependencies must execute earlier (smaller index)
 			if depIdx >= i {
 				return fmt.Errorf("circular dependency detected: %s (index %d) depends on %s (index %d)",
 					stageName, i, dep, depIdx)
@@ -159,33 +159,33 @@ func (p *Pipeline) Validate() error {
 	return nil
 }
 
-// Execute 执行整个流水线
+// Execute runs the full pipeline
 func (p *Pipeline) Execute(ctx context.Context, input interface{}) (*StageData, error) {
-	// 验证流水线
+	// Validate pipeline
 	if err := p.Validate(); err != nil {
 		return nil, fmt.Errorf("pipeline validation failed: %w", err)
 	}
 
-	// 初始化数据
+	// Initialize stage data
 	data := &StageData{
 		Input:   input,
-		Output:  input, // 初始状态下，输出就是输入
+		Output:  input, // Initial output equals input
 		Context: make(map[string]interface{}),
 	}
 
-	// 执行各阶段
+	// Execute each stage
 	_, pipelineSpan := p.tracer.Start(ctx, "Pipeline.Execute")
 	defer pipelineSpan.End()
 
 	for i, stage := range p.stages {
 		stageName := stage.GetName()
 
-		// 创建此阶段的 span
+		// Create span for this stage
 		stageCtx, stageSpan := p.tracer.Start(ctx, "stage."+stageName)
 
 		startTime := time.Now()
 
-		// 用中间件包装执行
+		// Wrap execution with middleware
 		if err := p.executeStageWithMiddleware(stageCtx, stage, data); err != nil {
 			duration := time.Since(startTime)
 			data.Duration = duration
@@ -224,14 +224,14 @@ func (p *Pipeline) Execute(ctx context.Context, input interface{}) (*StageData, 
 	return data, nil
 }
 
-// executeStageWithMiddleware 用中间件链包装执行单个阶段
+// executeStageWithMiddleware wraps one stage with middleware chain
 func (p *Pipeline) executeStageWithMiddleware(ctx context.Context, stage Stage, data *StageData) error {
-	// 构建最内层的执行函数
+	// Build the innermost execution handler
 	var handler ExecutionFunc = func(ctx context.Context, d *StageData) error {
 		return stage.Execute(ctx, d)
 	}
 
-	// 反向遍历中间件，构建链（最后添加的中间件最先执行）
+	// Build the chain in reverse (last added middleware runs first)
 	for i := len(p.middlewares) - 1; i >= 0; i-- {
 		mw := p.middlewares[i]
 		nextHandler := handler
@@ -240,20 +240,20 @@ func (p *Pipeline) executeStageWithMiddleware(ctx context.Context, stage Stage, 
 		}
 	}
 
-	// 执行中间件链
+	// Execute middleware chain
 	return handler(ctx, data)
 }
 
 // ========================================================================
-// 内置中间件
+// Built-in middleware
 // ========================================================================
 
-// LoggingMiddleware 日志中间件
+// LoggingMiddleware logs stage lifecycle events
 type LoggingMiddleware struct {
 	logger Logger
 }
 
-// Logger 日志接口（别名，避免循环导入）
+// Logger is a local logging interface alias to avoid import cycles
 type Logger interface {
 	Info(msg string, keysAndValues ...interface{})
 	Error(msg string, keysAndValues ...interface{})
@@ -285,12 +285,12 @@ func (lm *LoggingMiddleware) Process(ctx context.Context, stageName string, data
 	return nil
 }
 
-// MetricsRecorder 指标记录器接口
+// MetricsRecorder defines the metrics sink interface
 type MetricsRecorder interface {
 	Record(stage string, duration time.Duration, success bool)
 }
 
-// MetricsMiddleware 指标中间件
+// MetricsMiddleware records stage latency and status
 type MetricsMiddleware struct {
 	metrics MetricsRecorder
 }
@@ -313,7 +313,7 @@ func (mm *MetricsMiddleware) Process(ctx context.Context, stageName string, data
 	return nil
 }
 
-// RecoveryMiddleware 恢复中间件（捕获 panic）
+// RecoveryMiddleware catches panics
 type RecoveryMiddleware struct {
 	handler func(stageName string, recovered interface{})
 }
@@ -333,7 +333,7 @@ func (rm *RecoveryMiddleware) Process(ctx context.Context, stageName string, dat
 	return next(ctx, data)
 }
 
-// TimeoutMiddleware 超时中间件
+// TimeoutMiddleware enforces stage timeout
 type TimeoutMiddleware struct {
 	timeout time.Duration
 }
@@ -343,11 +343,11 @@ func NewTimeoutMiddleware(timeout time.Duration) *TimeoutMiddleware {
 }
 
 func (tm *TimeoutMiddleware) Process(ctx context.Context, stageName string, data *StageData, next ExecutionFunc) error {
-	// 创建带超时的上下文
+	// Create timeout-bound context
 	timeoutCtx, cancel := context.WithTimeout(ctx, tm.timeout)
 	defer cancel()
 
-	// 使用带超时的上下文执行
+	// Execute with timeout-bound context
 	done := make(chan error, 1)
 	go func() {
 		done <- next(timeoutCtx, data)
@@ -364,7 +364,7 @@ func (tm *TimeoutMiddleware) Process(ctx context.Context, stageName string, data
 	}
 }
 
-// CachingMiddleware 缓存中间件
+// CachingMiddleware caches stage output
 type CachingMiddleware struct {
 	cache map[string]interface{}
 	mu    sync.RWMutex
@@ -377,7 +377,7 @@ func NewCachingMiddleware() *CachingMiddleware {
 }
 
 func (cm *CachingMiddleware) Process(ctx context.Context, stageName string, data *StageData, next ExecutionFunc) error {
-	// 生成缓存键（使用哈希避免大对象问题）
+	// Generate cache key (hashing avoids large-object keys)
 	cacheKey := cm.generateCacheKey(stageName, data.Input)
 
 	cm.mu.RLock()
@@ -388,14 +388,14 @@ func (cm *CachingMiddleware) Process(ctx context.Context, stageName string, data
 	}
 	cm.mu.RUnlock()
 
-	// 执行阶段
+	// Execute stage
 	if err := next(ctx, data); err != nil {
 		return fmt.Errorf("stage %s: %w", stageName, err)
 	}
 
-	// 缓存结果（限制缓存大小）
+	// Store cache entry (bounded cache size)
 	cm.mu.Lock()
-	// 简单的缓存淘汰策略：当缓存过大时清空
+	// Simple eviction strategy: clear cache when capacity is exceeded
 	if len(cm.cache) >= 10000 {
 		cm.cache = make(map[string]interface{})
 	}
@@ -405,19 +405,19 @@ func (cm *CachingMiddleware) Process(ctx context.Context, stageName string, data
 	return nil
 }
 
-// generateCacheKey 生成缓存键（使用哈希避免大对象问题）
+// generateCacheKey builds a cache key (hash for large inputs)
 func (cm *CachingMiddleware) generateCacheKey(stageName string, input interface{}) string {
-	// 使用指针地址作为键的基础（对对象有效）
-	// 对于字符串或基本类型，直接使用值
+	// Use pointer address as key basis for object-like inputs
+	// For strings and primitive values, use direct value-based keys
 	switch v := input.(type) {
 	case string:
-		// 对长字符串使用哈希
+		// Hash long strings
 		if len(v) > 128 {
 			return fmt.Sprintf("%s:%x", stageName, hashString(v))
 		}
 		return fmt.Sprintf("%s:%s", stageName, v)
 	case []byte:
-		// 对字节切片使用哈希
+		// Hash byte slices
 		if len(v) > 128 {
 			return fmt.Sprintf("%s:%x", stageName, hashBytes(v))
 		}
@@ -427,14 +427,14 @@ func (cm *CachingMiddleware) generateCacheKey(stageName string, input interface{
 		float32, float64, bool:
 		return fmt.Sprintf("%s:%v", stageName, v)
 	default:
-		// 对其他类型使用指针地址
+		// Use pointer address for other types
 		return fmt.Sprintf("%s:%p", stageName, input)
 	}
 }
 
-// hashString 计算字符串的简化哈希
+// hashString computes a simplified string hash
 func hashString(s string) uint64 {
-	// 使用 FNV-1a 哈希算法
+	// Use FNV-1a hash algorithm
 	const (
 		offset64 = 14695981039346656037
 		prime64  = 1099511628211
@@ -447,7 +447,7 @@ func hashString(s string) uint64 {
 	return hash
 }
 
-// hashBytes 计算字节切片的简化哈希
+// hashBytes computes a simplified byte-slice hash
 func hashBytes(b []byte) uint64 {
 	const (
 		offset64 = 14695981039346656037
@@ -456,7 +456,7 @@ func hashBytes(b []byte) uint64 {
 	hash := uint64(offset64)
 	limit := len(b)
 	if limit > 1024 {
-		limit = 1024 // 限制哈希计算的数据量
+		limit = 1024 // Cap bytes used for hashing
 	}
 	for i := 0; i < limit; i++ {
 		hash ^= uint64(b[i])
@@ -466,10 +466,10 @@ func hashBytes(b []byte) uint64 {
 }
 
 // ========================================================================
-// 单元测试辅助函数
+// Unit-test helper types
 // ========================================================================
 
-// MockStage 用于测试的模拟阶段
+// MockStage is a mock stage used in tests
 type MockStage struct {
 	name         string
 	dependencies []string
@@ -488,7 +488,7 @@ func (ms *MockStage) Execute(ctx context.Context, data *StageData) error {
 	return ms.fn(ctx, data)
 }
 
-// NewMockStage 创建模拟阶段
+// NewMockStage creates a mock stage
 func NewMockStage(name string, deps []string, fn func(ctx context.Context, data *StageData) error) *MockStage {
 	return &MockStage{
 		name:         name,

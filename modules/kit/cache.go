@@ -132,7 +132,7 @@ func (c *LRUCache) Set(key string, value interface{}, ttl time.Duration) {
 
 	expiration := time.Now().Add(ttl).UnixNano()
 
-	// 如果已存在，更新值并移动到头部
+	// If the key exists, update value and move item to the front.
 	if item, exists := c.items[key]; exists {
 		item.value = value
 		item.expiration = expiration
@@ -140,7 +140,7 @@ func (c *LRUCache) Set(key string, value interface{}, ttl time.Duration) {
 		return
 	}
 
-	// 创建新项
+	// Create a new cache item.
 	newItem := &lruItem{
 		key:        key,
 		value:      value,
@@ -149,7 +149,7 @@ func (c *LRUCache) Set(key string, value interface{}, ttl time.Duration) {
 	c.items[key] = newItem
 	c.addToHead(newItem)
 
-	// 如果超过最大大小，移除尾部
+	// Evict least recently used item when capacity is exceeded.
 	if len(c.items) > c.maxSize {
 		c.removeTail()
 	}
@@ -171,7 +171,7 @@ func (c *LRUCache) Get(key string) (interface{}, bool) {
 		return nil, false
 	}
 
-	// 移动到头部（最近使用）
+	// Move item to front (most recently used).
 	c.moveToHead(item)
 	return item.value, true
 }

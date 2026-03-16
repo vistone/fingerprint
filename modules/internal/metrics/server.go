@@ -9,14 +9,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-// Server 指标 HTTP 服务器
+// Server hosts the metrics HTTP endpoint
 type Server struct {
 	server *http.Server
 	addr   string
 }
 
-// NewServer 创建指标服务器
-// addr: 监听地址，如 ":8080" 或 "0.0.0.0:9090"
+// NewServer creates a metrics server
+// addr: listen address, e.g. ":8080" or "0.0.0.0:9090"
 func NewServer(addr string) *Server {
 	if addr == "" {
 		addr = ":8080"
@@ -38,7 +38,7 @@ func NewServer(addr string) *Server {
 	}
 }
 
-// Start 启动指标服务器（非阻塞）
+// Start runs the metrics server (non-blocking)
 func (s *Server) Start() error {
 	go func() {
 		if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -48,24 +48,24 @@ func (s *Server) Start() error {
 	return nil
 }
 
-// Stop 优雅关闭服务器
+// Stop gracefully shuts down the server
 func (s *Server) Stop(ctx context.Context) error {
 	return s.server.Shutdown(ctx)
 }
 
-// Addr 返回服务器地址
+// Addr returns server address
 func (s *Server) Addr() string {
 	return s.addr
 }
 
-// healthHandler 健康检查端点
+// healthHandler serves health check endpoint
 func healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"status":"ok"}`))
 }
 
-// indexHandler 根路径重定向到 /metrics
+// indexHandler redirects root path to /metrics
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/" {
 		http.Redirect(w, r, "/metrics", http.StatusMovedPermanently)
@@ -74,16 +74,16 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
 }
 
-// DefaultServer 默认指标服务器实例
+// DefaultServer is the default metrics server instance
 var DefaultServer *Server
 
-// InitDefaultServer 初始化默认指标服务器
+// InitDefaultServer initializes default metrics server
 func InitDefaultServer(addr string) {
 	DefaultServer = NewServer(addr)
 	DefaultServer.Start()
 }
 
-// StopDefaultServer 关闭默认指标服务器
+// StopDefaultServer stops default metrics server
 func StopDefaultServer() error {
 	if DefaultServer == nil {
 		return nil

@@ -8,24 +8,24 @@ import (
 )
 
 // ============================================================================
-// Profiles 子包错误定义
+// Profiles subpackage error definitions
 // ============================================================================
 
 var (
-	// ErrProfileNotFound 表示指纹配置不存在
+	// ErrProfileNotFound indicates missing fingerprint profile
 	ErrProfileNotFound = fmt.Errorf("%w: profiles", errs.ErrProfileNotFound)
 
-	// ErrInvalidProfile 表示指纹配置无效
+	// ErrInvalidProfile indicates invalid fingerprint profile
 	ErrInvalidProfile = fmt.Errorf("%w: profiles configuration", errs.ErrInvalidFingerprint)
 
-	// ErrProfileInitializationFailed 表示指纹初始化失败
+	// ErrProfileInitializationFailed indicates profile initialization failure
 	ErrProfileInitializationFailed = fmt.Errorf("%w: profile initialization failed", errs.ErrInvalidFingerprint)
 
-	// ErrClientHelloIDNotSupported 表示 ClientHello ID 不支持
+	// ErrClientHelloIDNotSupported indicates unsupported ClientHello ID
 	ErrClientHelloIDNotSupported = fmt.Errorf("%w: profiles client hello id", errs.ErrClientHelloSpecNotImplemented)
 )
 
-// IsProfileNotFound 检查错误是否为指纹不存在
+// IsProfileNotFound checks whether error is profile-not-found
 func IsProfileNotFound(err error) bool {
 	if err == nil {
 		return false
@@ -33,7 +33,7 @@ func IsProfileNotFound(err error) bool {
 	return errors.Is(err, ErrProfileNotFound)
 }
 
-// IsInvalidProfile 检查错误是否为无效指纹
+// IsInvalidProfile checks whether error is invalid profile
 func IsInvalidProfile(err error) bool {
 	if err == nil {
 		return false
@@ -41,7 +41,7 @@ func IsInvalidProfile(err error) bool {
 	return errors.Is(err, ErrInvalidProfile)
 }
 
-// IsProfileInitializationFailed 检查错误是否为初始化失败
+// IsProfileInitializationFailed checks whether error is initialization failure
 func IsProfileInitializationFailed(err error) bool {
 	if err == nil {
 		return false
@@ -49,7 +49,7 @@ func IsProfileInitializationFailed(err error) bool {
 	return errors.Is(err, ErrProfileInitializationFailed)
 }
 
-// IsClientHelloIDNotSupported 检查错误是否为 ClientHello ID 不支持
+// IsClientHelloIDNotSupported checks whether error is unsupported ClientHello ID
 func IsClientHelloIDNotSupported(err error) bool {
 	if err == nil {
 		return false

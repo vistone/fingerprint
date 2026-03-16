@@ -2,7 +2,7 @@
 // +build instrumentation
 
 // internal/observability/observability.go
-// 完整的可观测性整合（现在就能用）
+// Complete observability integration (ready to use)
 
 package observability
 
@@ -18,25 +18,25 @@ import (
 )
 
 // ========================================================================
-// 1. Prometheus 指标注册
+// 1. Prometheus metrics registration
 // ========================================================================
 
-// FingerprintMetrics 指纹生成相关指标
+// FingerprintMetrics defines metrics for fingerprint generation
 type FingerprintMetrics struct {
-	// JA3/JA4/JA4S 生成耗时
+	// JA3/JA4/JA4S generation latency
 	GenerationDuration prometheus.HistogramVec
 
-	// 缓存命中率
+	// Cache hit rate
 	CacheHitRate prometheus.GaugeVec
 
-	// 错误计数
+	// Error count
 	ErrorCount prometheus.CounterVec
 
-	// 生成速率（每秒）
+	// Generation rate (per second)
 	GenerationRate prometheus.GaugeVec
 }
 
-// NewFingerprintMetrics 创建指纹相关指标
+// NewFingerprintMetrics creates fingerprint-related metrics
 func NewFingerprintMetrics() *FingerprintMetrics {
 	return &FingerprintMetrics{
 		GenerationDuration: *promauto.NewHistogramVec(
@@ -71,22 +71,22 @@ func NewFingerprintMetrics() *FingerprintMetrics {
 	}
 }
 
-// BehaviorAnalysisMetrics 行为分析相关指标
+// BehaviorAnalysisMetrics defines behavior-analysis metrics
 type BehaviorAnalysisMetrics struct {
-	// 异常检测延迟
+	// Anomaly detection latency
 	AnalysisDuration prometheus.HistogramVec
 
-	// 检测到的异常数
+	// Number of detected anomalies
 	AnomalyCount prometheus.CounterVec
 
-	// 风险评分分布
+	// Risk score distribution
 	RiskScoreHistogram prometheus.HistogramVec
 
-	// 高风险客户端数
+	// Number of high-risk clients
 	HighRiskClientCount prometheus.GaugeVec
 }
 
-// NewBehaviorAnalysisMetrics 创建行为分析指标
+// NewBehaviorAnalysisMetrics creates behavior-analysis metrics
 func NewBehaviorAnalysisMetrics() *BehaviorAnalysisMetrics {
 	return &BehaviorAnalysisMetrics{
 		AnalysisDuration: *promauto.NewHistogramVec(
@@ -122,19 +122,19 @@ func NewBehaviorAnalysisMetrics() *BehaviorAnalysisMetrics {
 	}
 }
 
-// PipelineMetrics 管道执行相关指标
+// PipelineMetrics defines pipeline execution metrics
 type PipelineMetrics struct {
-	// 各阶段耗时
+	// Per-stage latency
 	StageDuration prometheus.HistogramVec
 
-	// 阶段失败计数
+	// Stage failure count
 	StageErrorCount prometheus.CounterVec
 
-	// 总管道耗时
+	// Total pipeline duration
 	TotalDuration prometheus.HistogramVec
 }
 
-// NewPipelineMetrics 创建管道指标
+// NewPipelineMetrics creates pipeline metrics
 func NewPipelineMetrics() *PipelineMetrics {
 	return &PipelineMetrics{
 		StageDuration: *promauto.NewHistogramVec(
@@ -164,62 +164,62 @@ func NewPipelineMetrics() *PipelineMetrics {
 }
 
 // ========================================================================
-// 2. OpenTelemetry 追踪集成
+// 2. OpenTelemetry tracing integration
 // ========================================================================
 
-// TracingContext 追踪上下文
+// TracingContext stores tracing context
 type TracingContext struct {
 	Tracer   trace.Tracer
 	Logger   *zap.SugaredLogger
-	Metadata map[string]string // request_id, user_id 等
+	Metadata map[string]string // request_id, user_id, etc.
 }
 
-// StartSpan 开启追踪 span
+// StartSpan starts a tracing span
 func (tc *TracingContext) StartSpan(ctx context.Context, spanName string, attrs ...attribute.KeyValue) (context.Context, trace.Span) {
 	ctx, span := tc.Tracer.Start(ctx, spanName)
 
-	// 添加元数据作为 span 属性
+	// Attach metadata as span attributes
 	for k, v := range tc.Metadata {
 		span.SetAttributes(attribute.String(k, v))
 	}
 
-	// 添加自定义属性
+	// Attach custom attributes
 	span.SetAttributes(attrs...)
 
 	return ctx, span
 }
 
-// RecordEvent 在 span 中记录事件
+// RecordEvent logs an event on span
 func (tc *TracingContext) RecordEvent(span trace.Span, eventName string, attrs ...attribute.KeyValue) {
 	span.AddEvent(eventName, trace.WithAttributes(attrs...))
 }
 
-// RecordError 记录错误
+// RecordError records an error
 func (tc *TracingContext) RecordError(span trace.Span, err error) {
 	span.RecordError(err)
 }
 
 // ========================================================================
-// 3. 结构化日志集成
+// 3. Structured logging integration
 // ========================================================================
 
-// Logger 结构化日志包装
+// Logger wraps structured logging
 type Logger struct {
 	inner *zap.SugaredLogger
 }
 
-// NewLogger 创建日志器
+// NewLogger creates a logger
 func NewLogger() *Logger {
 	cfg := zap.NewProductionConfig()
 	l, _ := cfg.Build()
 	return &Logger{inner: l.Sugar()}
 }
 
-// WithContext 创建带上下文的日志器
+// WithContext creates a context-aware logger
 func (l *Logger) WithContext(ctx context.Context) *Logger {
 	fields := make([]interface{}, 0)
 
-	// 从上下文提取标准字段
+	// Extract standard fields from context
 	if requestID := ctx.Value("request_id"); requestID != nil {
 		fields = append(fields, "request_id", requestID)
 	}
@@ -230,7 +230,7 @@ func (l *Logger) WithContext(ctx context.Context) *Logger {
 	return &Logger{inner: l.inner.With(fields...)}
 }
 
-// WithFields 添加字段
+// WithFields appends fields
 func (l *Logger) WithFields(fields ...interface{}) *Logger {
 	return &Logger{inner: l.inner.With(fields...)}
 }
@@ -252,17 +252,17 @@ func (l *Logger) Error(msg string, fields ...interface{}) {
 }
 
 // ========================================================================
-// 4. 可观测性中间件
+// 4. Observability middleware
 // ========================================================================
 
-// ObservabilityMiddleware 为业务逻辑自动添加指标和追踪
+// ObservabilityMiddleware automatically adds metrics and tracing around business logic
 type ObservabilityMiddleware struct {
 	tracer  trace.Tracer
 	logger  *Logger
 	metrics *PipelineMetrics
 }
 
-// NewObservabilityMiddleware 创建中间件
+// NewObservabilityMiddleware creates middleware
 func NewObservabilityMiddleware(tracer trace.Tracer, logger *Logger, metrics *PipelineMetrics) *ObservabilityMiddleware {
 	return &ObservabilityMiddleware{
 		tracer:  tracer,
@@ -271,11 +271,11 @@ func NewObservabilityMiddleware(tracer trace.Tracer, logger *Logger, metrics *Pi
 	}
 }
 
-// WrapFunctionWithMetrics 为函数添加自动指标收集
-// 示例：
+// WrapFunctionWithMetrics adds automatic metrics collection around a function
+// Example:
 //
 //	WrapFunctionWithMetrics("ja3.parse", func() {
-//	    // ya3 解析逻辑
+//	    // JA3 parsing logic
 //	})
 func (om *ObservabilityMiddleware) WrapFunctionWithMetrics(
 	ctx context.Context,
@@ -290,7 +290,7 @@ func (om *ObservabilityMiddleware) WrapFunctionWithMetrics(
 
 	log.Info("function started", "function", functionName)
 
-	// 执行函数
+	// Execute function
 	err := fn(ctx)
 
 	duration := time.Since(startTime)

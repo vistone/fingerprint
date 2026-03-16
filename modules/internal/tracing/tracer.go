@@ -7,10 +7,10 @@ import (
 	"time"
 )
 
-// TraceID 追踪 ID
+// TraceID identifies a trace
 type TraceID string
 
-// Span 追踪 Span
+// Span represents a trace span
 type Span struct {
 	TraceID   TraceID
 	Name      string
@@ -20,7 +20,7 @@ type Span struct {
 	mu        sync.RWMutex
 }
 
-// NewSpan 创建新 Span
+// NewSpan creates a new span
 func NewSpan(traceID TraceID, name string) *Span {
 	return &Span{
 		TraceID:   traceID,
@@ -30,34 +30,34 @@ func NewSpan(traceID TraceID, name string) *Span {
 	}
 }
 
-// AddTag 添加标签
+// AddTag adds a tag
 func (s *Span) AddTag(key string, value interface{}) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.Tags[key] = value
 }
 
-// End 结束 Span
+// End closes the span
 func (s *Span) End() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.Duration = time.Since(s.StartTime)
 }
 
-// Tracer 追踪器
+// Tracer stores spans by trace ID
 type Tracer struct {
 	spans map[TraceID][]*Span
 	mu    sync.RWMutex
 }
 
-// NewTracer 创建追踪器
+// NewTracer creates a tracer
 func NewTracer() *Tracer {
 	return &Tracer{
 		spans: make(map[TraceID][]*Span),
 	}
 }
 
-// StartSpan 开始 Span
+// StartSpan starts and stores a span
 func (t *Tracer) StartSpan(traceID TraceID, name string) *Span {
 	span := NewSpan(traceID, name)
 	t.mu.Lock()
@@ -69,7 +69,7 @@ func (t *Tracer) StartSpan(traceID TraceID, name string) *Span {
 	return span
 }
 
-// GetTrace 获取追踪
+// GetTrace returns spans of a trace
 func (t *Tracer) GetTrace(traceID TraceID) []*Span {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
@@ -82,8 +82,8 @@ func (t *Tracer) GetTrace(traceID TraceID) []*Span {
 	return result
 }
 
-// GenerateTraceID 生成追踪 ID
+// GenerateTraceID creates a trace ID
 func GenerateTraceID() TraceID {
-	// 生成16位十六进制字符串
+	// Generate a 16-digit hexadecimal string
 	return TraceID(fmt.Sprintf("%016x", rand.Int63()))
 }

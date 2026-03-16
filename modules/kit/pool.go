@@ -7,14 +7,14 @@ import (
 	"github.com/vistone/fingerprint/modules/core/types"
 )
 
-// StringBuilderPool 字符串构建器池
+// StringBuilderPool reuses string builders.
 var StringBuilderPool = sync.Pool{
 	New: func() interface{} {
 		return &strings.Builder{}
 	},
 }
 
-// HTTPHeadersPool HTTPHeaders 对象池
+// HTTPHeadersPool reuses HTTPHeaders objects.
 var HTTPHeadersPool = sync.Pool{
 	New: func() interface{} {
 		return &types.HTTPHeaders{
@@ -23,14 +23,14 @@ var HTTPHeadersPool = sync.Pool{
 	},
 }
 
-// MapStringStringPool map[string]string 对象池
+// MapStringStringPool reuses map[string]string objects.
 var MapStringStringPool = sync.Pool{
 	New: func() interface{} {
 		return make(map[string]string, 16)
 	},
 }
 
-// ByteSlicePool 字节切片池 (4KB)
+// ByteSlicePool reuses byte slices with 4KB capacity.
 var ByteSlicePool = sync.Pool{
 	New: func() interface{} {
 		buf := make([]byte, 0, 4096)
@@ -38,7 +38,7 @@ var ByteSlicePool = sync.Pool{
 	},
 }
 
-// SmallByteSlicePool 小字节切片池 (1KB)
+// SmallByteSlicePool reuses byte slices with 1KB capacity.
 var SmallByteSlicePool = sync.Pool{
 	New: func() interface{} {
 		buf := make([]byte, 0, 1024)
@@ -46,21 +46,21 @@ var SmallByteSlicePool = sync.Pool{
 	},
 }
 
-// GetStringBuilder 获取字符串构建器
+// GetStringBuilder retrieves a string builder from the pool.
 func GetStringBuilder() *strings.Builder {
 	return StringBuilderPool.Get().(*strings.Builder)
 }
 
-// PutStringBuilder 归还字符串构建器
+// PutStringBuilder resets and returns a string builder to the pool.
 func PutStringBuilder(sb *strings.Builder) {
 	sb.Reset()
 	StringBuilderPool.Put(sb)
 }
 
-// GetHTTPHeaders 获取 HTTPHeaders
+// GetHTTPHeaders retrieves an HTTPHeaders object from the pool.
 func GetHTTPHeaders() *types.HTTPHeaders {
 	h := HTTPHeadersPool.Get().(*types.HTTPHeaders)
-	// 重置状态
+	// Reset scalar fields.
 	h.Accept = ""
 	h.AcceptLanguage = ""
 	h.AcceptEncoding = ""
@@ -73,19 +73,19 @@ func GetHTTPHeaders() *types.HTTPHeaders {
 	h.SecCHUAMobile = ""
 	h.SecCHUAPlatform = ""
 	h.UpgradeInsecureRequests = ""
-	// 清空 Custom map
+	// Clear custom headers.
 	for k := range h.Custom {
 		delete(h.Custom, k)
 	}
 	return h
 }
 
-// PutHTTPHeaders 归还 HTTPHeaders
+// PutHTTPHeaders resets and returns an HTTPHeaders object to the pool.
 func PutHTTPHeaders(h *types.HTTPHeaders) {
 	if h == nil {
 		return
 	}
-	// 重置所有字段
+	// Reset scalar fields.
 	h.Accept = ""
 	h.AcceptLanguage = ""
 	h.AcceptEncoding = ""
@@ -98,56 +98,56 @@ func PutHTTPHeaders(h *types.HTTPHeaders) {
 	h.SecCHUAMobile = ""
 	h.SecCHUAPlatform = ""
 	h.UpgradeInsecureRequests = ""
-	// 清空 Custom map 但保留容量
+	// Clear custom headers while keeping map capacity.
 	for k := range h.Custom {
 		delete(h.Custom, k)
 	}
 	HTTPHeadersPool.Put(h)
 }
 
-// GetMapStringString 获取 map[string]string
+// GetMapStringString retrieves a map from the pool.
 func GetMapStringString() map[string]string {
 	m := MapStringStringPool.Get().(map[string]string)
-	// 清空 map
+	// Clear map entries before reuse.
 	for k := range m {
 		delete(m, k)
 	}
 	return m
 }
 
-// PutMapStringString 归还 map[string]string
+// PutMapStringString clears and returns a map to the pool.
 func PutMapStringString(m map[string]string) {
 	if m == nil {
 		return
 	}
-	// 清空 map 但保留容量
+	// Clear map entries while keeping map capacity.
 	for k := range m {
 		delete(m, k)
 	}
 	MapStringStringPool.Put(m)
 }
 
-// GetByteSlice 获取字节切片 (4KB)
+// GetByteSlice retrieves a byte slice from the 4KB pool.
 func GetByteSlice() []byte {
 	buf := *(ByteSlicePool.Get().(*[]byte))
 	return buf[:0]
 }
 
-// PutByteSlice 归还字节切片
+// PutByteSlice returns a byte slice to the 4KB pool.
 func PutByteSlice(buf []byte) {
 	if cap(buf) < 4096 {
-		return // 不归还小缓冲区
+		return // Do not return smaller buffers.
 	}
 	ByteSlicePool.Put(&buf)
 }
 
-// GetSmallByteSlice 获取小字节切片 (1KB)
+// GetSmallByteSlice retrieves a byte slice from the 1KB pool.
 func GetSmallByteSlice() []byte {
 	buf := *(SmallByteSlicePool.Get().(*[]byte))
 	return buf[:0]
 }
 
-// PutSmallByteSlice 归还小字节切片
+// PutSmallByteSlice returns a byte slice to the 1KB pool.
 func PutSmallByteSlice(buf []byte) {
 	if cap(buf) < 1024 {
 		return

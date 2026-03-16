@@ -1,27 +1,27 @@
 package noise
 
-// Phase 3: 本模块已完成基础迁移，待深度优化（详见 docs/5-process/modularization/PHASE_3_PLAN.md）
+// Phase 3: basic migration completed; deep optimization remains.
 import (
 	"github.com/vistone/fingerprint/modules/kit"
 )
 
-// NoiseConfig 噪声注入配置
+// NoiseConfig configures fingerprint noise injection.
 type NoiseConfig struct {
-	// 强度（0.0 - 1.0）
+	// Intensity range: 0.0 - 1.0.
 	Intensity float64
-	// 是否启用 Canvas 噪声
+	// Enables Canvas noise.
 	EnableCanvas bool
-	// 是否启用 Audio 噪声
+	// Enables Audio noise.
 	EnableAudio bool
-	// 是否启用 WebGL 噪声
+	// Enables WebGL noise.
 	EnableWebGL bool
-	// 是否启用 Font 噪声
+	// Enables Font noise.
 	EnableFont bool
-	// 是否启用 Screen 噪声
+	// Enables Screen noise.
 	EnableScreen bool
 }
 
-// DefaultNoiseConfig 默认噪声配置
+// DefaultNoiseConfig is the default noise profile.
 var DefaultNoiseConfig = NoiseConfig{
 	Intensity:    0.3,
 	EnableCanvas: true,
@@ -31,15 +31,14 @@ var DefaultNoiseConfig = NoiseConfig{
 	EnableScreen: false,
 }
 
-// NoiseInjector 噪声注入器，用于主动保护指纹
-// 通过添加随机噪声来防止精确的指纹追踪
+// NoiseInjector applies random noise for active fingerprint protection.
 type NoiseInjector struct {
 	config NoiseConfig
 }
 
-// NewNoiseInjector 创建新的噪声注入器
+// NewNoiseInjector creates a new noise injector.
 func NewNoiseInjector(config NoiseConfig) *NoiseInjector {
-	// 确保强度在有效范围内
+	// Clamp intensity to valid range.
 	if config.Intensity < 0.0 {
 		config.Intensity = 0.0
 	}
@@ -49,18 +48,18 @@ func NewNoiseInjector(config NoiseConfig) *NoiseInjector {
 	return &NoiseInjector{config: config}
 }
 
-// CanvasNoise Canvas 指纹噪声参数
+// CanvasNoise defines Canvas fingerprint perturbations.
 type CanvasNoise struct {
-	// 像素偏移量（R/G/B 各通道的随机偏移）
+	// Pixel offsets for R/G/B channels.
 	PixelOffsetR int
 	PixelOffsetG int
 	PixelOffsetB int
-	// 文字渲染偏移（亚像素级别）
+	// Subpixel text rendering offset.
 	TextOffsetX float64
 	TextOffsetY float64
 }
 
-// GenerateCanvasNoise 生成 Canvas 指纹噪声参数
+// GenerateCanvasNoise generates Canvas noise settings.
 func (n *NoiseInjector) GenerateCanvasNoise() *CanvasNoise {
 	if !n.config.EnableCanvas {
 		return &CanvasNoise{}
@@ -78,44 +77,44 @@ func (n *NoiseInjector) GenerateCanvasNoise() *CanvasNoise {
 	}
 }
 
-// AudioNoise Audio 指纹噪声参数
+// AudioNoise defines Audio fingerprint perturbations.
 type AudioNoise struct {
-	// 音频样本偏移（噪声级别）
+	// Audio sample noise level.
 	NoiseLevel float64
-	// 频率偏移
+	// Frequency offset.
 	FrequencyOffset float64
 }
 
-// GenerateAudioNoise 生成 Audio 指纹噪声参数
+// GenerateAudioNoise generates Audio noise settings.
 func (n *NoiseInjector) GenerateAudioNoise() *AudioNoise {
 	if !n.config.EnableAudio {
 		return &AudioNoise{}
 	}
 	return &AudioNoise{
-		NoiseLevel:      n.config.Intensity * 0.01, // 最大 1% 噪声
+		NoiseLevel:      n.config.Intensity * 0.01, // Up to 1% noise.
 		FrequencyOffset: randFloatRange(-n.config.Intensity*5.0, n.config.Intensity*5.0),
 	}
 }
 
-// WebGLNoise WebGL 指纹噪声参数
+// WebGLNoise defines WebGL fingerprint perturbations.
 type WebGLNoise struct {
-	// 最大纹理尺寸偏移
+	// Max texture size offset.
 	MaxTextureSizeOffset int
-	// 最大顶点 Uniform 偏移
+	// Max vertex uniform offset.
 	MaxVertexUniformsOffset int
-	// 渲染器字符串混淆
+	// Renderer string suffix.
 	RendererSuffix string
-	// 厂商字符串混淆
+	// Vendor string suffix.
 	VendorSuffix string
 }
 
-// webGLRendererSuffixes 可用的渲染器后缀
+// webGLRendererSuffixes stores candidate renderer suffixes.
 var webGLRendererSuffixes = []string{
-	"", "", "", // 更高概率的空后缀
+	"", "", "", // Empty suffix has higher probability.
 	" (ANGLE)", " (Direct3D11 vs_5_0 ps_5_0)", " (OpenGL)",
 }
 
-// GenerateWebGLNoise 生成 WebGL 指纹噪声参数
+// GenerateWebGLNoise generates WebGL noise settings.
 func (n *NoiseInjector) GenerateWebGLNoise() *WebGLNoise {
 	if !n.config.EnableWebGL {
 		return &WebGLNoise{}
@@ -129,37 +128,37 @@ func (n *NoiseInjector) GenerateWebGLNoise() *WebGLNoise {
 	}
 }
 
-// FontNoise Font 指纹噪声参数
+// FontNoise defines Font fingerprint perturbations.
 type FontNoise struct {
-	// 字体宽度偏移（百分比）
+	// Width offset in percentage.
 	WidthOffsetPercent float64
-	// 字体高度偏移（百分比）
+	// Height offset in percentage.
 	HeightOffsetPercent float64
 }
 
-// GenerateFontNoise 生成 Font 指纹噪声参数
+// GenerateFontNoise generates Font noise settings.
 func (n *NoiseInjector) GenerateFontNoise() *FontNoise {
 	if !n.config.EnableFont {
 		return &FontNoise{}
 	}
-	maxOffset := n.config.Intensity * 0.01 // 最大 1%
+	maxOffset := n.config.Intensity * 0.01 // Up to 1%.
 	return &FontNoise{
 		WidthOffsetPercent:  randFloatRange(-maxOffset, maxOffset),
 		HeightOffsetPercent: randFloatRange(-maxOffset, maxOffset),
 	}
 }
 
-// ScreenNoise Screen 指纹噪声参数
+// ScreenNoise defines Screen fingerprint perturbations.
 type ScreenNoise struct {
-	// 屏幕宽度偏移
+	// Screen width offset.
 	WidthOffset int
-	// 屏幕高度偏移
+	// Screen height offset.
 	HeightOffset int
-	// 色深偏移
+	// Color depth offset.
 	ColorDepthOffset int
 }
 
-// GenerateScreenNoise 生成 Screen 指纹噪声参数
+// GenerateScreenNoise generates Screen noise settings.
 func (n *NoiseInjector) GenerateScreenNoise() *ScreenNoise {
 	if !n.config.EnableScreen {
 		return &ScreenNoise{}
@@ -168,11 +167,11 @@ func (n *NoiseInjector) GenerateScreenNoise() *ScreenNoise {
 	return &ScreenNoise{
 		WidthOffset:      randIntRange(-maxPixelOffset, maxPixelOffset),
 		HeightOffset:     randIntRange(-maxPixelOffset, maxPixelOffset),
-		ColorDepthOffset: 0, // 色深不建议修改
+		ColorDepthOffset: 0, // Color depth is intentionally stable.
 	}
 }
 
-// BrowserNoiseProfile 完整的浏览器噪声配置
+// BrowserNoiseProfile is the full browser noise configuration.
 type BrowserNoiseProfile struct {
 	Canvas *CanvasNoise
 	Audio  *AudioNoise
@@ -181,7 +180,7 @@ type BrowserNoiseProfile struct {
 	Screen *ScreenNoise
 }
 
-// GenerateFullProfile 生成完整的浏览器噪声配置
+// GenerateFullProfile generates a full browser noise profile.
 func (n *NoiseInjector) GenerateFullProfile() *BrowserNoiseProfile {
 	return &BrowserNoiseProfile{
 		Canvas: n.GenerateCanvasNoise(),
@@ -192,13 +191,13 @@ func (n *NoiseInjector) GenerateFullProfile() *BrowserNoiseProfile {
 	}
 }
 
-// GenerateBrowserNoiseProfile 使用默认配置生成完整的浏览器噪声配置
+// GenerateBrowserNoiseProfile generates a full profile with defaults.
 func GenerateBrowserNoiseProfile() *BrowserNoiseProfile {
 	injector := NewNoiseInjector(DefaultNoiseConfig)
 	return injector.GenerateFullProfile()
 }
 
-// randIntRange 生成 [min, max] 范围内的随机整数
+// randIntRange returns a random integer in [min, max].
 func randIntRange(min, max int) int {
 	if min >= max {
 		return min
@@ -207,12 +206,12 @@ func randIntRange(min, max int) int {
 	return min + n
 }
 
-// randFloatRange 生成 [min, max] 范围内的随机浮点数
+// randFloatRange returns a random float in [min, max].
 func randFloatRange(min, max float64) float64 {
 	if min >= max {
 		return min
 	}
-	// 使用整数随机数映射到浮点数范围
+	// Map an integer random value into the float range.
 	const precision = 10000
 	n := utils.GetGlobalRandGenerator().Intn(precision + 1)
 	return min + float64(n)/float64(precision)*(max-min)

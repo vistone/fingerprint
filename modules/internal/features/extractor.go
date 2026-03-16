@@ -6,53 +6,53 @@ import (
 	"strings"
 )
 
-// FeatureType 特征类别枚举
+// FeatureType enumerates feature categories
 type FeatureType string
 
 const (
-	// 熵特征
+	// Entropy feature
 	FeatureEntropy FeatureType = "entropy"
-	// 工具特征
+	// Tool marker feature
 	FeatureToolMarker FeatureType = "tool_marker"
-	// 操作系统平台矛盾
+	// OS/platform contradiction feature
 	FeatureOSPlatformContradiction FeatureType = "os_platform_contradiction"
-	// User-Agent 和操作系统矛盾
+	// User-Agent/OS contradiction feature
 	FeatureUAOSContradiction FeatureType = "ua_os_contradiction"
-	// 移动设备屏幕分辨率矛盾
+	// Mobile device/screen resolution contradiction feature
 	FeatureMobileScreenContradiction FeatureType = "mobile_screen_contradiction"
-	// User-Agent 特性矛盾
+	// User-Agent/feature contradiction feature
 	FeatureUAFeatureContradiction FeatureType = "ua_feature_contradiction"
-	// 无头浏览器特征
+	// Headless browser feature
 	FeatureHeadlessBrowser FeatureType = "headless_browser"
 )
 
-// FeatureExtractor 统一特征提取器接口
+// FeatureExtractor defines the unified feature extraction interface
 type FeatureExtractor interface {
-	// ExtractFeature 从数据中提取指定类型的特征
-	// 返回特征值（0.0-1.0）和是否检测到异常
+	// ExtractFeature extracts a feature of the given type from input data
+	// Returns the feature score (0.0-1.0) and whether an anomaly is detected
 	ExtractFeature(featureType FeatureType, data interface{}, config *FeatureConfig) (float64, bool)
 
-	// GetFeatureName 获取特征的人类可读名称
+	// GetFeatureName returns a human-readable feature name
 	GetFeatureName(featureType FeatureType) string
 }
 
-// FeatureConfig 特征提取配置
+// FeatureConfig holds feature extraction settings
 type FeatureConfig struct {
-	// 高熵阈值（bits）
+	// High entropy threshold (bits)
 	EntropyHighThreshold float64 `json:"entropy_high_threshold"`
-	// 低熵阈值（unique bytes 数量）
+	// Low entropy threshold (unique byte count)
 	EntropyLowThreshold int `json:"entropy_low_threshold"`
-	// 工具特征匹配列表
+	// Tool marker pattern list
 	ToolMarkers []string `json:"tool_markers"`
-	// 无头浏览器特征列表
+	// Headless browser marker list
 	HeadlessMarkers []string `json:"headless_markers"`
-	// 移动设备屏幕分辨率上限（超过该值可疑）
+	// Max mobile screen width (larger values are suspicious)
 	MobileScreenWidthMax int `json:"mobile_screen_width_max"`
-	// 桌面设备屏幕分辨率下限（低于该值可疑）
+	// Min desktop screen width (smaller values are suspicious)
 	DesktopScreenWidthMin int `json:"desktop_screen_width_min"`
 }
 
-// DefaultFeatureConfig 默认特征配置
+// DefaultFeatureConfig returns default feature settings
 func DefaultFeatureConfig() *FeatureConfig {
 	return &FeatureConfig{
 		EntropyHighThreshold:  7.5,
@@ -64,12 +64,12 @@ func DefaultFeatureConfig() *FeatureConfig {
 	}
 }
 
-// BaseFeatureExtractor 基础特征提取器实现
+// BaseFeatureExtractor implements core feature extraction
 type BaseFeatureExtractor struct {
 	config *FeatureConfig
 }
 
-// NewBaseFeatureExtractor 创建新的基础特征提取器
+// NewBaseFeatureExtractor creates a new base extractor
 func NewBaseFeatureExtractor(config *FeatureConfig) *BaseFeatureExtractor {
 	if config == nil {
 		config = DefaultFeatureConfig()
@@ -77,10 +77,10 @@ func NewBaseFeatureExtractor(config *FeatureConfig) *BaseFeatureExtractor {
 	return &BaseFeatureExtractor{config: config}
 }
 
-// ExtractFeature 实现统一的特征提取接口
-// 注意：此方法并发安全，但 config 参数仅在本次调用中生效，不会修改提取器的默认配置
+// ExtractFeature implements the unified extraction interface
+// Note: this method is concurrency-safe, and config only applies to this call without mutating default extractor state
 func (b *BaseFeatureExtractor) ExtractFeature(featureType FeatureType, data interface{}, config *FeatureConfig) (float64, bool) {
-	// 使用传入的 config 或默认 config，不修改提取器的状态
+	// Use the provided config or fallback to the default without mutating extractor state
 	cfg := b.config
 	if config != nil {
 		cfg = config
@@ -106,7 +106,7 @@ func (b *BaseFeatureExtractor) ExtractFeature(featureType FeatureType, data inte
 	}
 }
 
-// GetFeatureName 获取特征的人类可读名称
+// GetFeatureName returns a human-readable feature name
 func (b *BaseFeatureExtractor) GetFeatureName(featureType FeatureType) string {
 	switch featureType {
 	case FeatureEntropy:
@@ -128,11 +128,11 @@ func (b *BaseFeatureExtractor) GetFeatureName(featureType FeatureType) string {
 	}
 }
 
-// extractEntropyFeature 从字节数据提取熵特征
+// extractEntropyFeature extracts entropy-based features from byte data
 func (b *BaseFeatureExtractor) extractEntropyFeature(data interface{}, cfg *FeatureConfig) (float64, bool) {
 	var bytes []byte
 
-	// 类型转换
+	// Type conversion
 	switch v := data.(type) {
 	case []byte:
 		bytes = v
@@ -146,7 +146,7 @@ func (b *BaseFeatureExtractor) extractEntropyFeature(data interface{}, cfg *Feat
 		return 0.0, false
 	}
 
-	// 计算低熵（重复字节）
+	// Calculate low entropy (repeated-byte pattern)
 	var byteCounts [256]int
 	for _, b := range bytes {
 		byteCounts[b]++
@@ -158,12 +158,12 @@ func (b *BaseFeatureExtractor) extractEntropyFeature(data interface{}, cfg *Feat
 		}
 	}
 
-	// 低熵异常
+	// Low-entropy anomaly
 	if uniqueBytes < cfg.EntropyLowThreshold {
 		return 0.95, true
 	}
 
-	// 计算高熵（Shannon 熵）
+	// Calculate high entropy (Shannon entropy)
 	if len(bytes) >= 20 {
 		n := float64(len(bytes))
 		entropy := 0.0
@@ -174,7 +174,7 @@ func (b *BaseFeatureExtractor) extractEntropyFeature(data interface{}, cfg *Feat
 			}
 		}
 
-		// 高熵异常
+		// High-entropy anomaly
 		if entropy > cfg.EntropyHighThreshold {
 			return 0.85, true
 		}
@@ -183,19 +183,19 @@ func (b *BaseFeatureExtractor) extractEntropyFeature(data interface{}, cfg *Feat
 	return 0.0, false
 }
 
-// extractToolMarkerFeature 检测工具特征
-// 优化：对大文本使用 strings.Contains 进行高效匹配
+// extractToolMarkerFeature detects automation tool markers
+// Optimization: use strings.Contains for efficient matching on large text
 func (b *BaseFeatureExtractor) extractToolMarkerFeature(data interface{}, cfg *FeatureConfig) (float64, bool) {
 	var text string
 
 	switch v := data.(type) {
 	case []byte:
-		// 如果数据量很大，先尝试转为字符串进行高效匹配
+		// For large payloads, convert to string first for efficient matching
 		if len(v) > 1024 {
-			// 对大文本使用更高效的 Boyer-Moore 类算法（strings.Contains 内部实现）
+			// For large text, rely on optimized string search used by strings.Contains
 			text = string(v)
 		} else {
-			// 小数据量使用逐字节匹配
+			// For small payloads, use byte-level matching
 			return b.extractToolMarkerFromBytes(v, cfg.ToolMarkers)
 		}
 	case string:
@@ -204,7 +204,7 @@ func (b *BaseFeatureExtractor) extractToolMarkerFeature(data interface{}, cfg *F
 		return 0.0, false
 	}
 
-	// 使用 strings.Contains 进行高效匹配（内部使用优化的字符串搜索算法）
+	// Use strings.Contains for efficient matching
 	textLower := strings.ToLower(text)
 	for _, pattern := range cfg.ToolMarkers {
 		if strings.Contains(textLower, strings.ToLower(pattern)) {
@@ -215,7 +215,7 @@ func (b *BaseFeatureExtractor) extractToolMarkerFeature(data interface{}, cfg *F
 	return 0.0, false
 }
 
-// extractToolMarkerFromBytes 对小字节切片进行工具特征检测
+// extractToolMarkerFromBytes detects tool markers on small byte slices
 func (b *BaseFeatureExtractor) extractToolMarkerFromBytes(data []byte, patterns []string) (float64, bool) {
 	dataLower := bytes.ToLower(data)
 	for _, pattern := range patterns {
@@ -226,7 +226,7 @@ func (b *BaseFeatureExtractor) extractToolMarkerFromBytes(data []byte, patterns 
 	return 0.0, false
 }
 
-// extractOSPlatformContradictionFeature 操作系统和平台矛盾
+// extractOSPlatformContradictionFeature checks OS/platform contradictions
 func (b *BaseFeatureExtractor) extractOSPlatformContradictionFeature(data interface{}) (float64, bool) {
 	attrs := toStringMap(data)
 	if attrs == nil {
@@ -240,15 +240,15 @@ func (b *BaseFeatureExtractor) extractOSPlatformContradictionFeature(data interf
 		return 0.0, false
 	}
 
-	// Windows OS 不应搭配非 Win platform
+	// Windows OS should pair with a Win platform
 	if strings.Contains(os, "Windows") && !strings.Contains(platform, "Win") {
 		return 0.8, true
 	}
-	// Mac OS 不应搭配非 Mac platform
+	// Mac OS should pair with a Mac platform
 	if strings.Contains(os, "Mac") && !strings.Contains(platform, "Mac") {
 		return 0.8, true
 	}
-	// Linux 不应搭配非 X11/Linux platform
+	// Linux OS should pair with X11/Linux platform
 	if strings.Contains(os, "Linux") && !strings.Contains(platform, "Linux") && !strings.Contains(platform, "X11") {
 		return 0.8, true
 	}
@@ -256,7 +256,7 @@ func (b *BaseFeatureExtractor) extractOSPlatformContradictionFeature(data interf
 	return 0.0, false
 }
 
-// extractUAOSContradictionFeature User-Agent 和操作系统矛盾
+// extractUAOSContradictionFeature checks User-Agent/OS contradictions
 func (b *BaseFeatureExtractor) extractUAOSContradictionFeature(data interface{}) (float64, bool) {
 	attrs := toStringMap(data)
 	if attrs == nil {
@@ -273,15 +273,15 @@ func (b *BaseFeatureExtractor) extractUAOSContradictionFeature(data interface{})
 	uaLower := strings.ToLower(ua)
 	osLower := strings.ToLower(os)
 
-	// Windows UA 声称 Mac OS
+	// Windows UA claims a Mac OS
 	if strings.Contains(uaLower, "windows") && strings.Contains(osLower, "mac") {
 		return 0.9, true
 	}
-	// Mac UA 声称 Windows OS
+	// Mac UA claims a Windows OS
 	if strings.Contains(uaLower, "macintosh") && strings.Contains(osLower, "windows") {
 		return 0.9, true
 	}
-	// Linux UA 声称 Windows OS
+	// Linux UA claims a Windows OS
 	if strings.Contains(uaLower, "x11; linux") && strings.Contains(osLower, "windows") {
 		return 0.9, true
 	}
@@ -289,4 +289,4 @@ func (b *BaseFeatureExtractor) extractUAOSContradictionFeature(data interface{})
 	return 0.0, false
 }
 
-// extractMobileScreenContradictionFeature 移动设备屏幕分辨率矛盾
+// extractMobileScreenContradictionFeature checks mobile/screen contradictions

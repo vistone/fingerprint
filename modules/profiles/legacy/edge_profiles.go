@@ -6,8 +6,8 @@ import (
 	tls "github.com/bogdanfinn/utls"
 )
 
-// Edge 浏览器基于 Chromium 内核，TLS 指纹与 Chrome 高度相似
-// 但 HTTP/2 设置和 User-Agent 不同
+// Edge is Chromium-based and its TLS fingerprint is highly similar to Chrome
+// but HTTP/2 settings and User-Agent differ
 
 var Edge_99 = ClientProfile{
 	clientHelloId: tls.ClientHelloID{

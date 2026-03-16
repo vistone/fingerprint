@@ -8,20 +8,20 @@ import (
 	"path/filepath"
 )
 
-// GoldenFile 用于管理测试中的 golden file 记录和回放
-// Golden file 是指记录真实外部依赖（如网络响应）的文件，
-// 用于在单元测试中重放，避免每次测试都依赖真实网络
+// GoldenFile manages golden-file recording and replay in tests
+// A golden file records external dependency outputs (for example, network responses)
+// It is replayed in unit tests to avoid dependency on live network calls
 type GoldenFile struct {
-	dir      string // golden file 存储目录
-	filename string // golden file 文件名（不含目录）
-	path     string // 完整路径
-	update   bool   // 是否更新 golden file
+	dir      string // golden file storage directory
+	filename string // golden file name (without directory)
+	path     string // full path
+	update   bool   // whether to update the golden file
 }
 
-// NewGoldenFile 创建一个新的 GoldenFile 管理器
-// dir: golden file 存储目录
-// filename: golden file 文件名（例如 "http_responses.json"）
-// updateMode: 如果为 true，会写入新的响应；如果为 false，会读取并验证
+// NewGoldenFile creates a GoldenFile manager
+// dir: golden file storage directory
+// filename: golden file name (for example, "http_responses.json")
+// updateMode: true writes new responses; false reads and verifies
 func NewGoldenFile(dir, filename string, updateMode bool) *GoldenFile {
 	return &GoldenFile{
 		dir:      dir,
@@ -31,11 +31,11 @@ func NewGoldenFile(dir, filename string, updateMode bool) *GoldenFile {
 	}
 }
 
-// Load 从 golden file 中加载记录的数据
-// 如果文件不存在且不在更新模式下，返回错误
+// Load reads recorded data from golden file
+// Returns an error when file is missing and update mode is disabled
 func (gf *GoldenFile) Load(v interface{}) error {
 	if gf.update {
-		// 更新模式下，不加载已有数据
+		// Skip loading existing data in update mode
 		return nil
 	}
 
@@ -54,15 +54,15 @@ func (gf *GoldenFile) Load(v interface{}) error {
 	return nil
 }
 
-// Save 将数据保存到 golden file
-// 通常在更新模式下使用
+// Save persists data to golden file
+// Typically used in update mode
 func (gf *GoldenFile) Save(v interface{}) error {
 	if !gf.update {
-		// 非更新模式下，不修改 golden file
+		// Do not modify golden file outside update mode
 		return nil
 	}
 
-	// 确保目录存在
+	// Ensure target directory exists
 	if err := os.MkdirAll(gf.dir, 0755); err != nil {
 		return fmt.Errorf("failed to create golden file directory: %w", err)
 	}
@@ -79,8 +79,8 @@ func (gf *GoldenFile) Save(v interface{}) error {
 	return nil
 }
 
-// LoadFromReader 从读取器中加载 golden file 中的数据
-// 用于处理流式数据或特殊格式
+// LoadFromReader loads golden data from reader
+// Useful for streaming data or special formats
 func (gf *GoldenFile) LoadFromReader(reader io.Reader) ([]byte, error) {
 	if gf.update {
 		return nil, nil
@@ -89,8 +89,8 @@ func (gf *GoldenFile) LoadFromReader(reader io.Reader) ([]byte, error) {
 	return io.ReadAll(reader)
 }
 
-// SaveToWriter 将数据写入到 golden file
-// 用于处理流式数据或特殊格式
+// SaveToWriter writes data into golden file
+// Useful for streaming data or special formats
 func (gf *GoldenFile) SaveToWriter(data []byte) error {
 	if !gf.update {
 		return nil
@@ -103,23 +103,23 @@ func (gf *GoldenFile) SaveToWriter(data []byte) error {
 	return os.WriteFile(gf.path, data, 0644)
 }
 
-// Exists 检查 golden file 是否存在
+// Exists reports whether the golden file exists
 func (gf *GoldenFile) Exists() bool {
 	_, err := os.Stat(gf.path)
 	return err == nil
 }
 
-// Path 返回 golden file 的完整路径
+// Path returns the full golden file path
 func (gf *GoldenFile) Path() string {
 	return gf.path
 }
 
-// Remove 删除 golden file（用于脑洁或重置）
+// Remove deletes the golden file (for cleanup or reset)
 func (gf *GoldenFile) Remove() error {
 	return os.Remove(gf.path)
 }
 
-// Size 返回 golden file 的大小（字节）
+// Size returns the golden file size in bytes
 func (gf *GoldenFile) Size() (int64, error) {
 	info, err := os.Stat(gf.path)
 	if err != nil {

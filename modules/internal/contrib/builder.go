@@ -1,4 +1,4 @@
-// Package contrib 实现指纹构建器
+// Package contrib implements a fingerprint builder
 package contrib
 
 import (
@@ -11,12 +11,12 @@ import (
 	"github.com/vistone/fingerprint/modules/internal/plugins"
 )
 
-// Builder 指纹构建器
+// Builder builds fingerprint plugin data
 type Builder struct {
 	data *plugins.FingerprintData
 }
 
-// NewBuilder 创建构建器
+// NewBuilder creates a builder
 func NewBuilder(name string) *Builder {
 	return &Builder{
 		data: &plugins.FingerprintData{
@@ -28,19 +28,19 @@ func NewBuilder(name string) *Builder {
 	}
 }
 
-// WithDisplayName 设置显示名称
+// WithDisplayName sets display name
 func (b *Builder) WithDisplayName(name string) *Builder {
 	b.data.Metadata.DisplayName = name
 	return b
 }
 
-// WithCategory 设置分类
+// WithCategory sets category
 func (b *Builder) WithCategory(cat plugins.FingerprintCategory) *Builder {
 	b.data.Metadata.Category = cat
 	return b
 }
 
-// WithBrowser 设置浏览器信息
+// WithBrowser sets browser metadata
 func (b *Builder) WithBrowser(name, version, os string) *Builder {
 	b.data.Metadata.Browser = name
 	b.data.Metadata.BrowserVersion = version
@@ -48,19 +48,19 @@ func (b *Builder) WithBrowser(name, version, os string) *Builder {
 	return b
 }
 
-// WithVersion 设置版本
+// WithVersion sets profile version
 func (b *Builder) WithVersion(version string) *Builder {
 	b.data.Metadata.Version = version
 	return b
 }
 
-// WithUserAgent 设置 User-Agent
+// WithUserAgent sets User-Agent
 func (b *Builder) WithUserAgent(ua string) *Builder {
 	b.data.UserAgent = ua
 	return b
 }
 
-// WithTLSVersion 设置 TLS 版本
+// WithTLSVersion sets TLS version
 func (b *Builder) WithTLSVersion(version uint16) *Builder {
 	if b.data.ClientHello == nil {
 		b.data.ClientHello = &plugins.ClientHelloSpec{}
@@ -69,7 +69,7 @@ func (b *Builder) WithTLSVersion(version uint16) *Builder {
 	return b
 }
 
-// WithCipherSuites 设置密码套件
+// WithCipherSuites sets cipher suites
 func (b *Builder) WithCipherSuites(suites []uint16) *Builder {
 	if b.data.ClientHello == nil {
 		b.data.ClientHello = &plugins.ClientHelloSpec{}
@@ -78,7 +78,7 @@ func (b *Builder) WithCipherSuites(suites []uint16) *Builder {
 	return b
 }
 
-// WithExtensions 设置扩展
+// WithExtensions sets extensions
 func (b *Builder) WithExtensions(exts []uint16) *Builder {
 	if b.data.ClientHello == nil {
 		b.data.ClientHello = &plugins.ClientHelloSpec{}
@@ -87,7 +87,7 @@ func (b *Builder) WithExtensions(exts []uint16) *Builder {
 	return b
 }
 
-// WithEllipticCurves 设置椭圆曲线
+// WithEllipticCurves sets elliptic curves
 func (b *Builder) WithEllipticCurves(curves []uint16) *Builder {
 	if b.data.ClientHello == nil {
 		b.data.ClientHello = &plugins.ClientHelloSpec{}
@@ -96,31 +96,31 @@ func (b *Builder) WithEllipticCurves(curves []uint16) *Builder {
 	return b
 }
 
-// WithAuthor 设置作者
+// WithAuthor sets author
 func (b *Builder) WithAuthor(name string) *Builder {
 	b.data.Metadata.Author = name
 	return b
 }
 
-// WithLicense 设置许可证
+// WithLicense sets license
 func (b *Builder) WithLicense(license string) *Builder {
 	b.data.Metadata.License = license
 	return b
 }
 
-// WithTags 设置标签
+// WithTags sets tags
 func (b *Builder) WithTags(tags []string) *Builder {
 	b.data.Metadata.Tags = tags
 	return b
 }
 
-// WithMobile 标记移动设备
+// WithMobile marks mobile device
 func (b *Builder) WithMobile(isMobile bool) *Builder {
 	b.data.Metadata.IsMobile = isMobile
 	return b
 }
 
-// Build 构建插件
+// Build builds plugin instance
 func (b *Builder) Build() (plugins.Plugin, error) {
 	plugin := plugins.NewBasicPlugin(b.data)
 	if err := plugin.Validate(); err != nil {
@@ -129,14 +129,14 @@ func (b *Builder) Build() (plugins.Plugin, error) {
 	return plugin, nil
 }
 
-// SaveToFile 保存到文件
+// SaveToFile saves data to file
 func (b *Builder) SaveToFile(filePath string) error {
 	jsonData, err := json.MarshalIndent(b.data, "", "  ")
 	if err != nil {
 		return fmt.Errorf("marshal failed: %w", err)
 	}
 
-	// 确保目录存在
+	// Ensure target directory exists
 	dir := filepath.Dir(filePath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
@@ -145,7 +145,7 @@ func (b *Builder) SaveToFile(filePath string) error {
 	return ioutil.WriteFile(filePath, jsonData, 0644)
 }
 
-// SaveAndRegister 保存并注册
+// SaveAndRegister saves and registers plugin
 func (b *Builder) SaveAndRegister(filePath string) (plugins.Plugin, error) {
 	if err := b.SaveToFile(filePath); err != nil {
 		return nil, err
@@ -163,7 +163,7 @@ func (b *Builder) SaveAndRegister(filePath string) (plugins.Plugin, error) {
 	return plugin, nil
 }
 
-// ExampleChrome133 Chrome 133 示例
+// ExampleChrome133 returns a Chrome 133 example
 func ExampleChrome133() *Builder {
 	return NewBuilder("chrome_133_example").
 		WithDisplayName("Chrome 133").
@@ -180,7 +180,7 @@ func ExampleChrome133() *Builder {
 		WithTags([]string{"browser", "chrome", "tls"})
 }
 
-// ExampleMobile 移动设备示例
+// ExampleMobile returns a mobile example
 func ExampleMobile() *Builder {
 	return NewBuilder("mobile_example").
 		WithDisplayName("Custom Mobile").
