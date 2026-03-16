@@ -45,6 +45,9 @@ import (
 	"github.com/vistone/fingerprint/modules/tls"
 )
 
+// Version is the current version of the fingerprint library.
+const Version = "2.1.0"
+
 // ==================== Type aliases ====================
 
 // BrowserType represents the browser type
@@ -473,7 +476,7 @@ func HTTPHandler() http.Handler {
 	mux.HandleFunc("/api/v1/collect", gw.CollectHandler)
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"status":"ok","version":"2.1.0"}`))
+		w.Write([]byte(`{"status":"ok","version":"` + Version + `"}`))
 	})
 
 	return mux

@@ -3,7 +3,7 @@
 package gateway
 
 import (
-	"fmt"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -139,17 +139,17 @@ func NewGateway(config *GatewayConfig) *Gateway {
 	}
 
 	g.classifier.Initialize()
-	g.initProfileManager()
-	g.initInjector()
-	g.initAgent()
-	g.initMLService()
-	g.initPluginManager()
-	g.initClosedLoopController()
+	g.initProfileAndInjector(config)
+	g.initAgent(config)
+	g.initMLService(config)
+	g.initPlugins(config)
+	g.initClosedLoop(config)
 
 	return g
 }
 
-func (g *Gateway) initProfileManager() {
+// initProfileAndInjector initializes the profile manager and HTML injector.
+func (g *Gateway) initProfileAndInjector(config *GatewayConfig) {
 	g.profileManager = NewProfileManager(&ProfileManagerConfig{
 		ConfigDir:  g.config.AntiDetectConfigDir,
 		DefaultID:  g.config.AntiDetectProfileID,
@@ -157,78 +157,78 @@ func (g *Gateway) initProfileManager() {
 	})
 
 	if err := g.profileManager.LoadAllProfiles(); err != nil {
-		fmt.Printf("Warning: failed to load profiles: %v, using defaults\n", err)
+		slog.Warn("failed to load profiles, using defaults", "error", err)
 	}
-}
-
-func (g *Gateway) initInjector() {
-	if !g.config.AntiDetectEnabled {
+	if !config.AntiDetectEnabled {
 		return
 	}
+
 	profile, err := g.profileManager.GetDefaultProfile()
 	if err != nil {
-		fmt.Printf("Warning: failed to get default profile: %v\n", err)
+		slog.Warn("failed to get default profile", "error", err)
 		profile = nil
 	}
 
-	injectorConfig := &InjectorConfig{
+	g.injector, err = NewHTMLInjector(&InjectorConfig{
 		Enabled:            true,
-		TargetURL:          g.config.AntiDetectProxyTarget,
+		TargetURL:          config.AntiDetectProxyTarget,
 		Profile:            profile,
-		InjectConsistency:  g.config.AntiDetectInjectConsist,
+		InjectConsistency:  config.AntiDetectInjectConsist,
 		RequireHeadTag:     true,
 		AddInjectionMarker: false,
-	}
-
-	g.injector, err = NewHTMLInjector(injectorConfig)
+	})
 	if err != nil {
-		fmt.Printf("Warning: failed to create HTML injector: %v\n", err)
+		slog.Warn("failed to create HTML injector", "error", err)
 		g.injector = nil
 	}
 }
 
-func (g *Gateway) initAgent() {
-	if !g.config.AgentEnabled {
+// initAgent initializes the autonomous security agent.
+func (g *Gateway) initAgent(config *GatewayConfig) {
+	if !config.AgentEnabled {
 		return
 	}
-	g.agent = agent.NewAgent(g.config.AgentConfig)
+	g.agent = agent.NewAgent(config.AgentConfig)
 	g.agent.Start()
 }
 
-func (g *Gateway) initMLService() {
-	if !g.config.MLServiceEnabled {
+// initMLService initializes the central ML service.
+func (g *Gateway) initMLService(config *GatewayConfig) {
+	if !config.MLServiceEnabled {
 		return
 	}
-	scfg := g.config.MLServiceConfig
+	scfg := config.MLServiceConfig
 	if scfg == nil {
 		scfg = ml.DefaultServiceConfig
 	}
-	if g.config.MLClassifierPath != "" {
-		scfg.ModelStorePath = g.config.MLClassifierPath
+	if config.MLClassifierPath != "" {
+		scfg.ModelStorePath = config.MLClassifierPath
 	}
 	svc, err := ml.NewMLService(scfg)
 	if err != nil {
-		fmt.Printf("Warning: failed to initialize ML service: %v\n", err)
+		slog.Warn("failed to initialize ML service", "error", err)
 		return
 	}
 	g.mlService = svc
 }
 
-func (g *Gateway) initPluginManager() {
+// initPlugins initializes the plugin manager.
+func (g *Gateway) initPlugins(config *GatewayConfig) {
 	g.pluginManager = plugin.NewManager()
-	if g.config.PluginConfigPath == "" {
+	if config.PluginConfigPath == "" {
 		return
 	}
-	if err := plugin.LoadPlugins(g.config.PluginConfigPath); err != nil {
-		fmt.Printf("Warning: failed to load plugins from %s: %v\n", g.config.PluginConfigPath, err)
+	if err := plugin.LoadPlugins(config.PluginConfigPath); err != nil {
+		slog.Warn("failed to load plugins", "path", config.PluginConfigPath, "error", err)
 	}
 }
 
-func (g *Gateway) initClosedLoopController() {
-	if !g.config.ClosedLoopEnabled || g.mlService == nil {
+// initClosedLoop initializes the adversarial closed-loop controller.
+func (g *Gateway) initClosedLoop(config *GatewayConfig) {
+	if !config.ClosedLoopEnabled || g.mlService == nil {
 		return
 	}
-	clCfg := g.config.ClosedLoopConfig
+	clCfg := config.ClosedLoopConfig
 	if clCfg == nil {
 		clCfg = DefaultClosedLoopConfig
 	}
