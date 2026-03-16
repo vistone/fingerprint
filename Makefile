@@ -1,6 +1,6 @@
 .PHONY: help test benchmark lint format clean install-tools build sync-version tag-version release
 
-GO ?= go
+GO ?= env -u GOROOT go
 
 # 默认目标
 help:
@@ -61,10 +61,14 @@ lint-fmt:
 lint-golangci:
 	@echo "Running golangci-lint..."
 	@if command -v golangci-lint > /dev/null; then \
-		GOTOOLCHAIN=go1.25.4 golangci-lint run ./... --timeout=5m; \
-		echo "✓ golangci-lint passed"; \
+		if env -u GOROOT golangci-lint run ./... --timeout=5m; then \
+			echo "✓ golangci-lint passed"; \
+		else \
+			echo "❌ golangci-lint failed"; \
+			exit 1; \
+		fi; \
 	else \
-		echo "⚠ golangci-lint not installed. Install with: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest"; \
+		echo "⚠ golangci-lint not installed. Install with: go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest"; \
 	fi
 
 # 代码格式化
@@ -94,7 +98,7 @@ clean:
 install-tools:
 	@echo "Installing development tools..."
 	@echo "Installing golangci-lint..."
-	$(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	$(GO) install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 	@echo "Installing gosec..."
 	$(GO) install github.com/securego/gosec/v2/cmd/gosec@latest
 	@echo "Installing go-mod-upgrade..."
@@ -125,7 +129,7 @@ update-deps:
 security:
 	@echo "Running security checks..."
 	@if command -v gosec > /dev/null; then \
-		GOTOOLCHAIN=go1.25.4 gosec ./...; \
+		env -u GOROOT gosec ./...; \
 	else \
 		echo "⚠ gosec not installed. Install with: go install github.com/securego/gosec/v2/cmd/gosec@latest"; \
 	fi

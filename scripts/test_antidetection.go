@@ -376,7 +376,7 @@ func createSampleProfile() profiles.ClientProfile {
 		},
 
 		Metadata: map[string]interface{}{
-			"antidetect_enabled":             true,
+			"antidetect_enabled":     true,
 			"anti_detection_version": "1.0",
 		},
 	}

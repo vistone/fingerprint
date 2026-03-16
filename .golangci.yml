@@ -23,6 +23,35 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
+    rules:
+      - path: ^cmd/
+        linters:
+          - depguard
+      - path: ^cmd/(collector|export_features|profilegen|train|validate|verify_weights)/
+        linters:
+          - exhaustruct
+          - forbidigo
+          - funlen
+          - gocognit
+          - goconst
+          - gocritic
+          - godot
+          - govet
+          - intrange
+          - lll
+          - maintidx
+          - mnd
+          - modernize
+          - nlreturn
+          - noinlineerr
+          - prealloc
+          - revive
+          - tagliatelle
+          - unused
+          - varnamelen
+          - wrapcheck
+          - wsl
+          - wsl_v5
     paths:
       - .*_test.go$
       - vendor
