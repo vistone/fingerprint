@@ -1,0 +1,17 @@
+.git
+.github
+.idea
+.vscode
+
+build
+dist
+coverage.out
+coverage.html
+*.log
+
+data
+models
+tmp
+
+node_modules
+**/.DS_Store

@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.7
 # Fingerprint Gateway Docker Image
 # Multi-stage build: Go builder + NVIDIA CUDA Python runtime for GPU training
 # For full deployment with monitoring, see deploy/docker/
@@ -19,13 +20,17 @@ COPY modules modules/
 COPY cmd cmd/
 
 # Download dependencies
-RUN go work sync && go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go work sync && go mod download
 
 # Copy remaining source code
 COPY . .
 
 # Build the gateway binary
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -ldflags="-w -s" \
     -o fingerprint-gateway \
     ./cmd/gateway
