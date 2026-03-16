@@ -2,7 +2,30 @@
 
 此项目遵循 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 规范。
 
-## [Unreleased]
+## [v1.0.25] - 2026-03-16
+
+### 新增
+
+- **管理端客户端页面主动爬取能力**：
+  - 新增 `POST /api/admin/crawler/crawl`，支持在 Client Test 页面按需触发单次爬取
+  - 新增 `Crawler.CrawlOnce(url)`，复用现有 profile/proxy 策略执行同步单次爬取
+  - 在 Client Test 页面新增 `Crawl URL` 操作按钮与结果输出
+
+- **WAF 运行时决策可观测性增强**：
+  - 新增 WAF 最近决策记录（action/reason/risk/method/path/client IP/time）
+  - 在 Client Test 运行面板新增决策概览（平均风险、动作分布、检测层分布）
+
+### 变更
+
+- **Gateway 运行时接口增强（爬虫控制与状态）**：
+  - 新增 `POST /api/admin/crawler/start`，支持页面手动启动爬虫
+  - 扩展爬虫状态返回字段：`name`、`targetCount`
+  - 扩展 WAF 状态返回字段：`recentDecisions`
+
+- **Docker 开发构建效率优化**：
+  - 在 `Dockerfile`、`Dockerfile.crawler`、`Dockerfile.waf` 启用 BuildKit Go 缓存挂载
+  - 新增 `.dockerignore`，减少上下文噪音并提升缓存命中率
+  - 更新 `docker-compose.yml`，透传爬虫运行时环境变量（`FP_CRAWLER_TARGETS`、`FP_CRAWLER_AUTOSTART`、`FP_CRAWLER_WORKERS`）
 
 ## [v1.0.24] - 2026-03-16
 

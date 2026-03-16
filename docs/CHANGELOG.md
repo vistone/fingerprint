@@ -2,7 +2,30 @@
 
 This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) specification.
 
-## [Unreleased]
+## [v1.0.25] - 2026-03-16
+
+### Added
+
+- **Client-side active crawler trigger in admin console**:
+  - Added `POST /api/admin/crawler/crawl` to run one on-demand crawler request from Client Test
+  - Added `Crawler.CrawlOnce(url)` to execute a single crawl with existing profile/proxy strategy
+  - Added `Crawl URL` action and inline probe result output in Client Test page
+
+- **WAF runtime decision observability**:
+  - Added recent WAF decision records (action/reason/risk/method/path/client IP/time)
+  - Added decision summary rendering in Client Test runtime panel (average risk, action distribution, top detection layers)
+
+### Changed
+
+- **Gateway runtime APIs for crawler control and status richness**:
+  - Added `POST /api/admin/crawler/start` for manual crawler start from UI
+  - Extended crawler status payload with `name` and `targetCount`
+  - Extended WAF status payload with `recentDecisions`
+
+- **Docker developer workflow efficiency**:
+  - Enabled BuildKit cache mounts for Go module/build caches in `Dockerfile`, `Dockerfile.crawler`, `Dockerfile.waf`
+  - Added `.dockerignore` to reduce context churn and improve layer cache hit rate
+  - Updated `docker-compose.yml` to pass crawler runtime envs (`FP_CRAWLER_TARGETS`, `FP_CRAWLER_AUTOSTART`, `FP_CRAWLER_WORKERS`)
 
 ## [v1.0.24] - 2026-03-16
 
