@@ -128,7 +128,11 @@ func (c *ClosedLoopController) Stats() *ClosedLoopStats {
 
 // trainingLoop runs periodic adversarial training cycles.
 func (c *ClosedLoopController) trainingLoop() {
-	ticker := time.NewTicker(c.config.TrainingInterval)
+	interval := c.config.TrainingInterval
+	if interval <= 0 {
+		interval = DefaultClosedLoopConfig.TrainingInterval
+	}
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	for {

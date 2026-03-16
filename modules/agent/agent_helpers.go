@@ -31,7 +31,11 @@ func (a *Agent) ReportReward(obs *Observation, profile *BehaviorSummary, action 
 // cleanupLoop background goroutine for cleaning up expired sessions.
 func (a *Agent) cleanupLoop() {
 	defer a.wg.Done()
-	ticker := time.NewTicker(a.config.CleanupInterval)
+	interval := a.config.CleanupInterval
+	if interval <= 0 {
+		interval = DefaultAgentConfig.CleanupInterval
+	}
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	for {
@@ -47,7 +51,11 @@ func (a *Agent) cleanupLoop() {
 // strategyEvolutionLoop background goroutine for automatic strategy evolution.
 func (a *Agent) strategyEvolutionLoop() {
 	defer a.wg.Done()
-	ticker := time.NewTicker(a.config.StrategyUpdateInterval)
+	interval := a.config.StrategyUpdateInterval
+	if interval <= 0 {
+		interval = DefaultAgentConfig.StrategyUpdateInterval
+	}
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	for {
