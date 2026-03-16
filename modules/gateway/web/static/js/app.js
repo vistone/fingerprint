@@ -555,15 +555,34 @@ function updateSystemStatus(stats) {
     const ss = stats.systemStatus || {};
     const agentInfo = stats.agent || {};
     const mlSvc = stats.mlService || {};
+    const crawler = stats.crawler || {};
+    const waf = stats.waf || {};
+
+    const mlServiceOnline = mlSvc.enabled && mlSvc.ready;
+    const crawlerOnline = !!crawler.enabled;
+    const crawlerDetail = crawlerOnline
+        ? (crawler.running ? `Running (${crawler.targets || 0} targets)` : `Integrated (${crawler.targets || 0} targets)`)
+        : 'Disabled';
+    const wafOnline = !!waf.enabled;
+    const wafDetail = wafOnline
+        ? `${String(waf.mode || 'unknown').toUpperCase()} (${waf.totalRequests || 0} req)`
+        : 'Disabled';
+    const closedLoopOnline = !!(ss.crawlerIntegrated && ss.wafIntegrated && ss.mlServiceEnabled);
+    const closedLoopDetail = closedLoopOnline
+        ? (ss.crawlerRunning ? 'Active' : 'Integrated')
+        : 'Not Ready';
 
     const items = [
         { label: t('status.apiServer'), online: true, detail: t('status.running') },
         { label: t('status.mlClassifier'), online: true, detail: t('status.active') },
-        { label: '🧠 ML Service', online: mlSvc.enabled && mlSvc.ready, detail: mlSvc.enabled ? (mlSvc.ready ? 'Ready' : 'Not Trained') : 'Disabled' },
+        { label: 'ML Service', online: mlServiceOnline, detail: mlSvc.enabled ? (mlSvc.ready ? 'Ready' : 'Not Trained') : 'Disabled' },
+        { label: 'WAF Engine', online: wafOnline, detail: wafDetail },
+        { label: 'Crawler Engine', online: crawlerOnline, detail: crawlerDetail },
+        { label: 'Closed Loop', online: closedLoopOnline, detail: closedLoopDetail },
         { label: t('status.cache'), online: ss.cache !== false, detail: ss.cache !== false ? t('config.enabled') : t('config.server') },
         { label: t('status.antidetect'), online: ss.antiDetectEnabled, detail: ss.antiDetectEnabled ? t('status.active') : t('status.error') },
-        { label: '🤖 ' + t('status.agent'), online: agentInfo.enabled, detail: agentInfo.enabled ? `${t('status.active')} (${agentInfo.activeSessions || 0} sessions)` : t('status.error') },
-        { label: '🔍 ' + t('status.scanner'), online: ss.scanner, detail: ss.scanner ? t('ct.send') : 'Regex Only' },
+        { label: t('status.agent'), online: agentInfo.enabled, detail: agentInfo.enabled ? `${t('status.active')} (${agentInfo.activeSessions || 0} sessions)` : t('status.error') },
+        { label: t('status.scanner'), online: ss.scanner, detail: ss.scanner ? t('ct.send') : 'Regex Only' },
     ];
 
     list.innerHTML = items.map(i => `
