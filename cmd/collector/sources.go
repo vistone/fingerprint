@@ -32,7 +32,7 @@ func collectJA3er(ctx context.Context, client *http.Client) ([]CollectedFingerpr
 		}
 		defer resp.Body.Close()
 
-		if resp.StatusCode != 200 {
+		if resp.StatusCode != http.StatusOK {
 			fmt.Printf("  JA3er returned %d, using builtin knowledge\n", resp.StatusCode)
 			return collectJA3BuiltinKnowledge(), nil
 		}
@@ -67,7 +67,7 @@ func collectJA3er(ctx context.Context, client *http.Client) ([]CollectedFingerpr
 	return all, nil
 }
 
-// collectPeetJS fetches TLS fingerprint data from peet.ws
+// collectPeetJS fetches TLS fingerprint data from peet.ws.
 func collectPeetJS(ctx context.Context, client *http.Client) ([]CollectedFingerprint, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://tls.peet.ws/api/all", nil)
 	if err != nil {
@@ -83,7 +83,7 @@ func collectPeetJS(ctx context.Context, client *http.Client) ([]CollectedFingerp
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		fmt.Printf("  Peet.ws returned %d, using builtin knowledge\n", resp.StatusCode)
 		return collectTLSBuiltinKnowledge(), nil
 	}

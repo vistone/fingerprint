@@ -95,7 +95,7 @@ func main() {
 	timeout := flag.Int("timeout", 30, "HTTP request timeout in seconds")
 	flag.Parse()
 
-	if err := os.MkdirAll(*outputDir, 0750); err != nil {
+	if err := os.MkdirAll(*outputDir, 0o750); err != nil {
 		log.Fatalf("create output dir: %v", err)
 	}
 
@@ -155,8 +155,11 @@ func main() {
 	switch *format {
 	case "json":
 		outPath := filepath.Join(*outputDir, "fingerprints.json")
-		data, _ := json.MarshalIndent(result, "", "  ")
-		if err := os.WriteFile(outPath, data, 0600); err != nil {
+		data, err := json.MarshalIndent(result, "", "  ")
+		if err != nil {
+			log.Fatalf("marshal output: %v", err)
+		}
+		if err := os.WriteFile(outPath, data, 0o600); err != nil {
 			log.Fatalf("write output: %v", err)
 		}
 		fmt.Printf("Saved to %s (%.1f KB)\n", outPath, float64(len(data))/1024)

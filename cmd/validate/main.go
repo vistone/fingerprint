@@ -11,6 +11,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"strings"
 
 	"github.com/vistone/fingerprint/modules/core"
 	"github.com/vistone/fingerprint/modules/ml"
@@ -143,7 +144,7 @@ func main() {
 	crossFamilySim := 0.0
 	crossFamilyN := 0
 
-	step := max(1, len(embeddings)/50) // limit pairs for speed
+	step := maxInt(1, len(embeddings)/50) // limit pairs for speed
 	for i := 0; i < len(embeddings); i += step {
 		for j := i + 1; j < len(embeddings); j += step {
 			sim := cosineSim(embeddings[i].embedding, embeddings[j].embedding)
@@ -193,14 +194,10 @@ func truncate(s string, n int) string {
 }
 
 func repeat(s string, n int) string {
-	out := ""
-	for i := 0; i < n; i++ {
-		out += s
-	}
-	return out
+	return strings.Repeat(s, n)
 }
 
-func max(a, b int) int {
+func maxInt(a, b int) int {
 	if a > b {
 		return a
 	}

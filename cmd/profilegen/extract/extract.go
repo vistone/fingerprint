@@ -19,7 +19,7 @@ import (
 	"strings"
 )
 
-// ProfileData configuration data extracted from Go code
+// ProfileData holds configuration data extracted from Go code.
 type ProfileData struct {
 	Name         string
 	VarName      string
@@ -37,7 +37,7 @@ func main() {
 	flag.Parse()
 
 	// create output directory
-	if err := os.MkdirAll(*outputDir, 0755); err != nil {
+	if err := os.MkdirAll(*outputDir, 0o755); err != nil {
 		fmt.Fprintf(os.Stderr, "failed to create directory: %v\n", err)
 		os.Exit(1)
 	}
@@ -62,7 +62,7 @@ func main() {
 	}
 }
 
-// extractProfilesFromDir extract all fingerprint configurations from directory
+// extractProfilesFromDir extracts all fingerprint configurations from a directory.
 func extractProfilesFromDir(dir string) ([]ProfileData, error) {
 	var profiles []ProfileData
 
@@ -96,7 +96,7 @@ func extractProfilesFromDir(dir string) ([]ProfileData, error) {
 	return profiles, nil
 }
 
-// extractProfilesFromFile extract fingerprint configuration from single Go file
+// extractProfilesFromFile extracts fingerprint configuration from a single Go file.
 func extractProfilesFromFile(path string) ([]ProfileData, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
@@ -144,7 +144,7 @@ func extractProfilesFromFile(path string) ([]ProfileData, error) {
 	return profiles, nil
 }
 
-// isClientProfileType check if type is ClientProfile
+// isClientProfileType checks whether type is ClientProfile.
 func isClientProfileType(expr ast.Expr) bool {
 	ident, ok := expr.(*ast.Ident)
 	if !ok {
@@ -153,7 +153,7 @@ func isClientProfileType(expr ast.Expr) bool {
 	return ident.Name == "ClientProfile"
 }
 
-// extractProfileData extract configuration data from CompositeLit
+// extractProfileData extracts configuration data from CompositeLit.
 func extractProfileData(varName string, lit *ast.CompositeLit) ProfileData {
 	profile := ProfileData{
 		VarName: varName,
@@ -179,7 +179,7 @@ func extractProfileData(varName string, lit *ast.CompositeLit) ProfileData {
 	return profile
 }
 
-// extractClientHelloId extract ClientHelloID information
+// extractClientHelloId extracts ClientHelloID information.
 func extractClientHelloId(expr ast.Expr) map[string]string {
 	lit, ok := expr.(*ast.CompositeLit)
 	if !ok {
@@ -201,7 +201,7 @@ func extractClientHelloId(expr ast.Expr) map[string]string {
 	return info
 }
 
-// getIdentName get identifier name
+// getIdentName returns identifier name.
 func getIdentName(expr ast.Expr) string {
 	ident, ok := expr.(*ast.Ident)
 	if !ok {
@@ -268,7 +268,7 @@ connection_flow: 0
 		profile.Version,
 	)
 
-	return os.WriteFile(path, []byte(content), 0644)
+	return os.WriteFile(path, []byte(content), 0o600)
 }
 
 // extractWithRegex extract using regex (backup method)

@@ -14,7 +14,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// SpecTemplate YAML configurationtemplate
+// SpecTemplate is the YAML configuration template.
 type SpecTemplate struct {
 	Name                 string            `yaml:"name"`
 	VarName              string            `yaml:"var_name"`
@@ -38,7 +38,7 @@ type ExtensionDef struct {
 
 func main() {
 	specsDir := "profiles/specs"
-	if err := os.MkdirAll(specsDir, 0755); err != nil {
+	if err := os.MkdirAll(specsDir, 0o755); err != nil {
 		fmt.Fprintf(os.Stderr, "createdirectoryfailed: %v\n", err)
 		os.Exit(1)
 	}
@@ -100,7 +100,7 @@ func generateSpec(name string, profile profiles.ClientProfile, outputDir string)
 		return nil
 	}
 
-	return os.WriteFile(outputPath, []byte(content), 0644)
+	return os.WriteFile(outputPath, []byte(content), 0o600)
 }
 
 func extractVersion(name string) string {
