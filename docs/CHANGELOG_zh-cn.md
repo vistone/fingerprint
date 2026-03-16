@@ -4,6 +4,40 @@
 
 ## [Unreleased]
 
+## [v1.0.24] - 2026-03-16
+
+### 新增
+
+- **Gateway 运行时集成可见性增强**：
+  - 增加 Gateway、Crawler、WAF 运行时状态访问器（`*_runtime.go`）
+  - 在 `modules/gateway/web/handler_runtime.go` 增加运行时状态 API 接线
+  - 在 `modules/gateway/web/static/js/app.js` 扩展 Crawler/WAF/Closed-Loop 状态展示
+
+### 变更
+
+- **Gateway 启动与运行时接线重构**：
+  - 重构 `cmd/gateway/main.go`，明确初始化边界并强化优雅关闭流程
+  - 抽离 `cmd/gateway/runtime_modules.go` 统一运行时模块接入
+  - 增强健康检查请求处理和超时保护
+
+- **Lint 与工具链流程对齐**：
+  - 更新 `Makefile`，统一本地工具链调用方式并修正 `golangci-lint` v2 行为
+  - 更新 `.golangci.yml` 排除规则，避免 `cmd/*` 工具流程被非关键风格规则阻塞
+  - 对齐开发文档命令示例与实际 make 目标
+
+### 修复
+
+- **后台循环默认值安全性**：
+  - 修复 Agent 清理/策略演化循环在非法或零间隔下的默认值保护
+  - 修复 Gateway 闭环训练循环在非法训练间隔下的默认值保护
+
+- **命令工具可靠性**：
+  - 修复 collector/profilegen/export/validate 工具中的未检查序列化和状态码处理
+  - 统一生成文件权限为更安全的写入模式
+
+- **注释语言规范统一**：
+  - 将剩余非测试 Go 文件注释统一为英文，满足强制注释语言规则
+
 ## [v1.0.23] - 2026-03-14
 
 ### 新增

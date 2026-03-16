@@ -4,6 +4,40 @@ This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+## [v1.0.24] - 2026-03-16
+
+### Added
+
+- **Gateway runtime integration visibility**:
+  - Added runtime status accessors for Gateway, Crawler, and WAF (`*_runtime.go`)
+  - Added runtime status API wiring in `modules/gateway/web/handler_runtime.go`
+  - Extended dashboard status rendering in `modules/gateway/web/static/js/app.js` for Crawler/WAF/Closed-Loop
+
+### Changed
+
+- **Gateway startup and runtime wiring**:
+  - Refactored `cmd/gateway/main.go` for clearer initialization boundaries and safer shutdown handling
+  - Extracted runtime module wiring into `cmd/gateway/runtime_modules.go`
+  - Added stricter health-check HTTP handling and timeout guards
+
+- **Lint and tooling workflow alignment**:
+  - Updated `Makefile` to use a stable local toolchain invocation and correct `golangci-lint` v2 behavior
+  - Updated `.golangci.yml` exclusions to avoid blocking `cmd/*` utility workflows on non-critical style rules
+  - Aligned developer guide command examples with real make targets
+
+### Fixed
+
+- **Background loop safety defaults**:
+  - Guarded invalid or zero intervals in Agent cleanup/strategy loops
+  - Guarded invalid training interval in Gateway closed-loop training loop
+
+- **Command utility reliability**:
+  - Fixed unchecked marshaling and status checks in collector/profilegen/export/validate command utilities
+  - Standardized secure file write modes for generated artifacts
+
+- **Codebase comment standardization**:
+  - Converted remaining non-test Go comments to English to satisfy mandatory comment language rules
+
 ## [v1.0.23] - 2026-03-14
 
 ### Added
