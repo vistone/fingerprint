@@ -20,6 +20,10 @@ services:
       - FP_CACHE_SIZE=10000
       - FP_CACHE_TTL=5m
       - FP_ML_SERVICE_ENABLED=true
+      - FP_CLOSED_LOOP_ENABLED=true
+      - FP_WAF_ENABLED=true
+      - FP_CRAWLER_ENABLED=true
+      - FP_CRAWLER_AUTOSTART=false
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
     volumes:
