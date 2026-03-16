@@ -21,7 +21,7 @@ import (
 //go:embed static/img/*
 var staticFiles embed.FS
 
-// RequestRecord 存储单个请求的记录
+// RequestRecord stores a single API request record.
 type RequestRecord struct {
 	Timestamp      time.Time
 	IP             string
@@ -33,28 +33,28 @@ type RequestRecord struct {
 	Status         int
 }
 
-// MetricsStore 存储运行时指标
+// MetricsStore keeps in-memory runtime metrics.
 type MetricsStore struct {
 	sync.RWMutex
 	startTime             time.Time
 	totalRequests         int64
 	successfulRequests    int64
-	totalLatency          int64 // 毫秒
+	totalLatency          int64 // milliseconds
 	recentClassifications []map[string]interface{}
-	requestCounts         []int64 // 每秒请求数的历史
+	requestCounts         []int64 // historical requests-per-second data
 	lastRequestTimes      []time.Time
-	recentRequests        []RequestRecord // 最近请求记录
+	recentRequests        []RequestRecord // recent request records
 }
 
 var globalMetrics = &MetricsStore{
 	startTime:             time.Now(),
 	recentClassifications: make([]map[string]interface{}, 0, 10),
-	requestCounts:         make([]int64, 60), // 60秒的历史
+	requestCounts:         make([]int64, 60), // 60-second history
 	lastRequestTimes:      make([]time.Time, 0, 100),
 	recentRequests:        make([]RequestRecord, 0, 100),
 }
 
-// RecordAPIMetrics 公共函数：记录 API 请求指标
+// RecordAPIMetrics records metrics for a public API request.
 func RecordAPIMetrics(req RequestRecord, success bool, browser, ja3 string) {
 	globalMetrics.RecordRequest(req, success)
 	if browser != "" {
@@ -62,7 +62,7 @@ func RecordAPIMetrics(req RequestRecord, success bool, browser, ja3 string) {
 	}
 }
 
-// GetRecentRequests 获取最近请求记录
+// GetRecentRequests returns recent request records.
 func GetRecentRequests() []RequestRecord {
 	globalMetrics.RLock()
 	defer globalMetrics.RUnlock()
@@ -72,7 +72,7 @@ func GetRecentRequests() []RequestRecord {
 	return result
 }
 
-// RecordRequest 记录一个请求
+// RecordRequest records one request and updates aggregates.
 func (m *MetricsStore) RecordRequest(req RequestRecord, success bool) {
 	m.Lock()
 	defer m.Unlock()
@@ -83,9 +83,9 @@ func (m *MetricsStore) RecordRequest(req RequestRecord, success bool) {
 		m.successfulRequests++
 	}
 
-	// 记录请求时间用于计算 RPS
+	// Track request times for RPS calculation.
 	m.lastRequestTimes = append(m.lastRequestTimes, req.Timestamp)
-	// 只保留最近 60 秒的时间
+	// Keep only request times from the last 60 seconds.
 	cutoff := time.Now().Add(-60 * time.Second)
 	idx := 0
 	for i, t := range m.lastRequestTimes {
@@ -98,15 +98,15 @@ func (m *MetricsStore) RecordRequest(req RequestRecord, success bool) {
 		m.lastRequestTimes = m.lastRequestTimes[idx:]
 	}
 
-	// 记录请求详情
+	// Keep a reverse-chronological request list.
 	m.recentRequests = append([]RequestRecord{req}, m.recentRequests...)
-	// 只保留最近 100 条请求
+	// Keep at most 100 request records.
 	if len(m.recentRequests) > 100 {
 		m.recentRequests = m.recentRequests[:100]
 	}
 }
 
-// RecordClassification 记录一次分类
+// RecordClassification records one classification result.
 func (m *MetricsStore) RecordClassification(browser, ja3 string) {
 	m.Lock()
 	defer m.Unlock()
@@ -124,28 +124,28 @@ func (m *MetricsStore) RecordClassification(browser, ja3 string) {
 	}
 }
 
-// GetMetrics 获取当前指标
+// GetMetrics returns current aggregated metrics.
 func (m *MetricsStore) GetMetrics() (requestsPerSec int, avgLatency int, successRate float64, uptime string, recent []map[string]interface{}) {
 	m.RLock()
 	defer m.RUnlock()
 
-	// 计算 RPS (最近 60 秒内的请求数)
+	// RPS is computed from request count in the last 60 seconds.
 	requestsPerSec = len(m.lastRequestTimes)
 
-	// 计算平均延迟
+	// Compute average latency.
 	if m.totalRequests > 0 {
 		avgLatency = int(m.totalLatency / m.totalRequests)
 	}
 
-	// 计算成功率
+	// Compute success rate.
 	if m.totalRequests > 0 {
 		successRate = float64(m.successfulRequests) / float64(m.totalRequests) * 100
 	}
 
-	// 计算运行时间
+	// Compute process uptime.
 	uptime = formatDuration(time.Since(m.startTime))
 
-	// 复制最近分类记录
+	// Copy recent classifications for safe read access.
 	recent = make([]map[string]interface{}, len(m.recentClassifications))
 	copy(recent, m.recentClassifications)
 
@@ -219,17 +219,19 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/admin/agent/status", h.handleAgentStatus)
 	mux.HandleFunc("/api/admin/agent/knowledge", h.handleAgentKnowledge)
 	mux.HandleFunc("/api/admin/agent/strategies", h.handleAgentStrategies)
+	mux.HandleFunc("/api/admin/crawler/status", h.handleCrawlerStatus)
+	mux.HandleFunc("/api/admin/waf/status", h.handleWAFStatus)
 
-	// 分析引擎
+	// Analysis engine endpoints
 	mux.HandleFunc("/api/admin/analyze/profile", h.handleAnalyzeProfile)
 
-	// ML 引擎
+	// ML engine endpoints
 	mux.HandleFunc("/api/admin/ml/info", h.handleMLInfo)
 	mux.HandleFunc("/api/admin/ml/extract", h.handleMLExtract)
 	mux.HandleFunc("/api/admin/ml/classify", h.handleMLClassify)
 	mux.HandleFunc("/api/admin/ml/batch", h.handleMLBatch)
 
-	// MLService — 中央 AI 服务
+	// MLService endpoints
 	mux.HandleFunc("/api/admin/ml/service/stats", h.handleMLServiceStats)
 	mux.HandleFunc("/api/admin/ml/service/health", h.handleMLServiceHealth)
 	mux.HandleFunc("/api/admin/ml/service/infer", h.handleMLServiceInfer)
@@ -240,20 +242,20 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/admin/ml/service/training-status", h.handleMLServiceTrainingStatus)
 	mux.HandleFunc("/api/admin/ml/service/feedback", h.handleMLServiceFeedback)
 
-	// 防御系统
+	// Defense endpoints
 	mux.HandleFunc("/api/admin/defense/rules", h.handleDefenseRules)
 	mux.HandleFunc("/api/admin/defense/detect", h.handleDefenseDetect)
 
-	// 反检测引擎
+	// Anti-detection endpoints
 	mux.HandleFunc("/api/admin/antidetect/status", h.handleAntiDetectStatus)
 	mux.HandleFunc("/api/admin/antidetect/preview", h.handleAntiDetectPreview)
 	mux.HandleFunc("/api/admin/antidetect/inject", h.handleAntiDetectInjectTest)
 	mux.HandleFunc("/api/admin/antidetect/sdk", h.handleAntiDetectSDKPreview)
 
-	// 插件系统
+	// Plugin endpoints
 	mux.HandleFunc("/api/admin/plugins/info", h.handlePluginsInfo)
 
-	// 指纹工具
+	// Fingerprint tool endpoints
 	mux.HandleFunc("/api/admin/tools/ja3", h.handleToolsJA3)
 	mux.HandleFunc("/api/admin/tools/validate", h.handleToolsValidate)
 	mux.HandleFunc("/api/admin/tools/compare", h.handleToolsCompare)
@@ -278,12 +280,12 @@ func (h *Handler) handleStats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 获取真实指标
+	// Read live metrics.
 	rps, latency, rate, uptime, recent := globalMetrics.GetMetrics()
 	h.mu.RLock()
 	totalProfiles := len(h.profiles)
 	h.mu.RUnlock()
-	// 如果没有真实数据，显示默认值
+	// Keep stable defaults when no live data is available.
 	if rps == 0 {
 		rps = 0
 	}
@@ -306,7 +308,7 @@ func (h *Handler) handleStats(w http.ResponseWriter, r *http.Request) {
 		"recentClassifications": recent,
 	}
 
-	// 添加 Agent 状态
+	// Attach agent status.
 	if a := h.gateway.GetAgent(); a != nil {
 		agentStats := a.Stats()
 		stats["agent"] = map[string]interface{}{
@@ -320,7 +322,7 @@ func (h *Handler) handleStats(w http.ResponseWriter, r *http.Request) {
 		stats["agent"] = map[string]interface{}{"enabled": false}
 	}
 
-	// 添加 MLService 状态
+	// Attach ML service status.
 	if svc := h.gateway.GetMLService(); svc != nil {
 		svcStats := svc.Stats()
 		mlSvc := map[string]interface{}{
@@ -346,7 +348,7 @@ func (h *Handler) handleStats(w http.ResponseWriter, r *http.Request) {
 		stats["mlService"] = map[string]interface{}{"enabled": false, "ready": false}
 	}
 
-	// 添加系统组件状态
+	// Attach runtime component status.
 	cfg := h.gateway.GetConfig()
 	mlServiceReady := false
 	if svc := h.gateway.GetMLService(); svc != nil {
@@ -362,6 +364,7 @@ func (h *Handler) handleStats(w http.ResponseWriter, r *http.Request) {
 		"mlServiceEnabled":  cfg.MLServiceEnabled,
 		"mlServiceReady":    mlServiceReady,
 	}
+	h.appendRuntimeStats(stats)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(stats)

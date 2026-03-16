@@ -10,10 +10,10 @@ import (
 )
 
 // =====================================================================
-// MLService — 中央 AI 服务 API
+// MLService API
 // =====================================================================
 
-// handleMLServiceStats 返回 MLService 统计信息
+// handleMLServiceStats returns MLService statistics.
 func (h *Handler) handleMLServiceStats(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -55,7 +55,7 @@ func (h *Handler) handleMLServiceStats(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
-// handleMLServiceHealth 返回 MLService 健康状态
+// handleMLServiceHealth returns MLService health status.
 func (h *Handler) handleMLServiceHealth(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -93,7 +93,7 @@ func (h *Handler) handleMLServiceHealth(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
-// handleMLServiceInfer 对指定 Profile 执行 MLService 推理
+// handleMLServiceInfer runs MLService inference for a selected profile.
 func (h *Handler) handleMLServiceInfer(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -139,7 +139,7 @@ func (h *Handler) handleMLServiceInfer(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleMLServiceValidate 使用 MLService 验证指纹是否真实
+// handleMLServiceValidate validates profile realism with MLService.
 func (h *Handler) handleMLServiceValidate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -182,7 +182,7 @@ func (h *Handler) handleMLServiceValidate(w http.ResponseWriter, r *http.Request
 	})
 }
 
-// handleMLServiceGenerate 使用 MLService 生成 ML 引导的指纹
+// handleMLServiceGenerate generates ML-guided fingerprints.
 func (h *Handler) handleMLServiceGenerate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -253,7 +253,7 @@ func (h *Handler) handleMLServiceGenerate(w http.ResponseWriter, r *http.Request
 	json.NewEncoder(w).Encode(resp)
 }
 
-// handleMLServiceEvolve 触发 MLService 增量进化
+// handleMLServiceEvolve triggers asynchronous incremental evolution.
 func (h *Handler) handleMLServiceEvolve(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -321,4 +321,4 @@ func (h *Handler) handleMLServiceEvolve(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
-// handleMLServiceTrain 触发 MLService 全量训练（异步，通过 Python GPU 脚本）
+// handleMLServiceTrain triggers asynchronous full training (Python GPU script).

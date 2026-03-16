@@ -9,7 +9,7 @@ import (
 )
 
 func loadProfiles() []profiles.ClientProfile {
-	// 从 profiles 模块加载所有已注册的指纹配置
+	// Load all registered profiles from the profiles module.
 	return profiles.GetAll()
 }
 
@@ -42,7 +42,7 @@ func filterProfiles(profiles []profiles.ClientProfile, query, browser, os string
 			"extensions":     len(p.Extensions),
 		}
 
-		// 添加 TCP/IP 指纹简要信息
+		// Add condensed TCP/IP fingerprint fields.
 		if p.TCPIP != nil {
 			profileData["tcpip"] = map[string]interface{}{
 				"ttl":        p.TCPIP.TTL,
@@ -85,7 +85,7 @@ func getOSDistribution(profiles []profiles.ClientProfile) map[string]int {
 
 	for _, p := range profiles {
 		osStr := string(p.OS)
-		// 简化 OS 名称
+		// Normalize OS name into broad groups.
 		var group string
 		switch {
 		case strings.Contains(osStr, "Windows"):
@@ -143,7 +143,7 @@ func getTCPIPDistribution(profiles []profiles.ClientProfile) map[string]int {
 			distribution["Unknown"]++
 			continue
 		}
-		// 根据 TTL 和 Window Size 判断 OS 类型
+		// Infer OS family from TTL and window size heuristics.
 		ttl := p.TCPIP.TTL
 		ws := p.TCPIP.WindowSize
 
@@ -225,4 +225,4 @@ func (h *Handler) applyConfigUpdate(newConfig map[string]interface{}) {
 	})
 }
 
-// handleLogStream SSE 实时日志推流
+// handleLogStream streams logs over SSE in real time.

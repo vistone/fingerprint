@@ -11,10 +11,10 @@ import (
 )
 
 // =====================================================================
-// 指纹工具 API
+// Fingerprint tools API
 // =====================================================================
 
-// handleToolsJA3 计算 JA3 指纹
+// handleToolsJA3 computes JA3 and JA4 fingerprints.
 func (h *Handler) handleToolsJA3(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -74,7 +74,7 @@ func (h *Handler) handleToolsJA3(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
-// handleToolsValidate 验证 Profile 完整性
+// handleToolsValidate validates profile completeness.
 func (h *Handler) handleToolsValidate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -98,13 +98,13 @@ func (h *Handler) handleToolsValidate(w http.ResponseWriter, r *http.Request) {
 	validator := profiles.NewProfileValidator()
 	result := validator.Validate(profile)
 
-	// TCP/IP 验证
+	// TCP/IP validation.
 	tcpipResult := ""
 	if profile.TCPIP != nil {
 		tcpipResult = profiles.ValidateTCPIP(profile.TCPIP)
 	}
 
-	// Header 验证
+	// Header validation.
 	headerResult := map[string]interface{}{}
 	if profile.Headers != nil {
 		hvr := profiles.ValidateHeaders(profile.Headers)
@@ -127,7 +127,7 @@ func (h *Handler) handleToolsValidate(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleToolsCompare 比较两个 Profile
+// handleToolsCompare compares two profiles.
 func (h *Handler) handleToolsCompare(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -150,14 +150,14 @@ func (h *Handler) handleToolsCompare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 提取特征并计算相似度
+	// Extract feature vectors and compute similarity.
 	extractor := h.gateway.GetExtractor()
 	fvA := extractor.ExtractFromProfile(&profileA)
 	fvB := extractor.ExtractFromProfile(&profileB)
 
 	similarity := calculateSimilarity(fvA, fvB)
 
-	// 详细比较
+	// Build detailed comparison payload.
 	comparison := map[string]interface{}{
 		"a": map[string]interface{}{
 			"id": profileA.ID, "name": profileA.Name,
@@ -202,7 +202,7 @@ func calculateSimilarity(a, b *core.FeatureVector) float64 {
 	if a == nil || b == nil {
 		return 0
 	}
-	// 收集所有 feature keys
+	// Collect all feature keys.
 	keys := make(map[core.FeatureType]bool)
 	for k := range a.Features {
 		keys[k] = true
@@ -221,7 +221,7 @@ func calculateSimilarity(a, b *core.FeatureVector) float64 {
 		if va == vb {
 			matches++
 		} else if va != 0 && vb != 0 {
-			// 相对误差 < 10% 算匹配
+			// Treat relative error < 10% as a match.
 			ratio := va / vb
 			if ratio < 0 {
 				ratio = -ratio
@@ -282,7 +282,7 @@ func buildProfileDiffs(a, b profiles.ClientProfile) []map[string]interface{} {
 		}
 	}
 
-	// TCP/IP 比较
+	// TCP/IP comparison.
 	if a.TCPIP != nil && b.TCPIP != nil {
 		if a.TCPIP.TTL != b.TCPIP.TTL {
 			diffs = append(diffs, map[string]interface{}{

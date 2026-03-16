@@ -11,10 +11,10 @@ import (
 )
 
 // =====================================================================
-// 反检测引擎 API
+// Anti-detection engine API
 // =====================================================================
 
-// handleAntiDetectStatus 返回反检测引擎状态
+// handleAntiDetectStatus returns anti-detection engine status.
 func (h *Handler) handleAntiDetectStatus(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -41,21 +41,21 @@ func (h *Handler) handleAntiDetectStatus(w http.ResponseWriter, r *http.Request)
 		status["profileCount"] = len(profileList)
 	}
 
-	// 列出可用的代码生成器
+	// List available code generators.
 	status["generators"] = []map[string]interface{}{
-		{"id": "webgpu", "name": "WebGPU Override", "description": "重写 navigator.gpu API 以匹配目标浏览器的 WebGPU 能力"},
-		{"id": "media_devices", "name": "MediaDevices Override", "description": "伪造 enumerateDevices() 返回一致的虚拟设备列表"},
-		{"id": "permissions", "name": "Permissions API Override", "description": "拦截 navigator.permissions.query() 返回一致的权限状态"},
-		{"id": "automation", "name": "Automation Hiding", "description": "隐藏 webdriver / __selenium / callPhantom 等自动化标记"},
-		{"id": "cross_layer", "name": "Cross-Layer Consistency", "description": "注入 JS 层一致性校验 — 确保 navigator / screen / canvas 与 TLS/HTTP 层一致"},
-		{"id": "full", "name": "Full Anti-Detection", "description": "组合以上全部生成器的完整反检测代码"},
+		{"id": "webgpu", "name": "WebGPU Override", "description": "Overrides navigator.gpu APIs to match target browser capabilities"},
+		{"id": "media_devices", "name": "MediaDevices Override", "description": "Mocks enumerateDevices() with stable virtual device lists"},
+		{"id": "permissions", "name": "Permissions API Override", "description": "Intercepts navigator.permissions.query() with consistent permission states"},
+		{"id": "automation", "name": "Automation Hiding", "description": "Hides webdriver / __selenium / callPhantom style automation markers"},
+		{"id": "cross_layer", "name": "Cross-Layer Consistency", "description": "Injects JS consistency checks across navigator / screen / canvas and TLS/HTTP layers"},
+		{"id": "full", "name": "Full Anti-Detection", "description": "Combines all generators into a full anti-detection script"},
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(status)
 }
 
-// handleAntiDetectPreview 预览反检测代码
+// handleAntiDetectPreview previews anti-detection JavaScript.
 func (h *Handler) handleAntiDetectPreview(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -71,7 +71,7 @@ func (h *Handler) handleAntiDetectPreview(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// 获取 profile
+	// Resolve profile.
 	var profile *profiles.ClientProfile
 	if req.ProfileID != "" {
 		if p, ok := h.findProfile(req.ProfileID); ok {
@@ -79,7 +79,7 @@ func (h *Handler) handleAntiDetectPreview(w http.ResponseWriter, r *http.Request
 		}
 	}
 	if profile == nil {
-		// 使用默认 profile
+		// Fall back to default profile.
 		pm := h.gateway.GetProfileManager()
 		if pm != nil {
 			var err error
@@ -134,7 +134,7 @@ func (h *Handler) handleAntiDetectPreview(w http.ResponseWriter, r *http.Request
 	})
 }
 
-// handleAntiDetectInjectTest 测试 HTML 注入
+// handleAntiDetectInjectTest tests HTML injection behavior.
 func (h *Handler) handleAntiDetectInjectTest(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -175,7 +175,7 @@ func (h *Handler) handleAntiDetectInjectTest(w http.ResponseWriter, r *http.Requ
 	})
 }
 
-// handleAntiDetectSDKPreview 预览 SDK JavaScript
+// handleAntiDetectSDKPreview previews SDK JavaScript output.
 func (h *Handler) handleAntiDetectSDKPreview(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -205,10 +205,10 @@ func (h *Handler) handleAntiDetectSDKPreview(w http.ResponseWriter, r *http.Requ
 }
 
 // =====================================================================
-// 插件系统 API
+// Plugin system API
 // =====================================================================
 
-// handlePluginsInfo 返回插件注册表信息
+// handlePluginsInfo returns plugin registry information.
 func (h *Handler) handlePluginsInfo(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -223,45 +223,45 @@ func (h *Handler) handlePluginsInfo(w http.ResponseWriter, r *http.Request) {
 			{
 				"type":        "analyzer",
 				"name":        "Analyzer",
-				"description": "分析插件 — 对指纹数据执行自定义分析逻辑",
+				"description": "Analyzer plugin: runs custom analysis logic on fingerprint data",
 				"icon":        "🔬",
 			},
 			{
 				"type":        "transformer",
 				"name":        "Transformer",
-				"description": "转换插件 — 转换、标准化或增强指纹数据格式",
+				"description": "Transformer plugin: converts, normalizes, or enriches fingerprint data",
 				"icon":        "🔄",
 			},
 			{
 				"type":        "exporter",
 				"name":        "Exporter",
-				"description": "导出插件 — 将结果导出到外部系统 (Elasticsearch, Kafka, etc.)",
+				"description": "Exporter plugin: ships results to external systems (Elasticsearch, Kafka, etc.)",
 				"icon":        "📤",
 			},
 			{
 				"type":        "validator",
 				"name":        "Validator",
-				"description": "验证插件 — 检验指纹数据完整性和有效性",
+				"description": "Validator plugin: validates fingerprint integrity and correctness",
 				"icon":        "✅",
 			},
 		},
 		"extensionArchitecture": map[string]interface{}{
 			"pipeline":    "Parser → Analyzer → Handler",
-			"description": "扩展系统采用三阶段管道: 解析原始数据 → 分析提取特征 → 处理生成结果",
+			"description": "Extension system uses a 3-stage pipeline: parse raw data -> analyze features -> handle outputs",
 			"interfaces": []map[string]interface{}{
-				{"name": "Parser", "method": "Parse(data []byte) (ExtensionData, error)", "description": "解析原始字节数据"},
-				{"name": "Analyzer", "method": "Analyze(data ExtensionData) (AnalysisResult, error)", "description": "分析结构化数据"},
-				{"name": "Handler", "method": "Handle(event ExtensionEvent) (EventResult, error)", "description": "处理事件和生成输出"},
+				{"name": "Parser", "method": "Parse(data []byte) (ExtensionData, error)", "description": "Parses raw byte data"},
+				{"name": "Analyzer", "method": "Analyze(data ExtensionData) (AnalysisResult, error)", "description": "Analyzes structured extension data"},
+				{"name": "Handler", "method": "Handle(event ExtensionEvent) (EventResult, error)", "description": "Processes events and produces outputs"},
 			},
 		},
 		"registrationAPI": []map[string]interface{}{
-			{"function": "RegisterExtension(metadata)", "description": "注册新扩展元数据"},
-			{"function": "RegisterParser(type, parser)", "description": "注册解析器到指定扩展类型"},
-			{"function": "RegisterAnalyzer(type, analyzer)", "description": "注册分析器到指定扩展类型"},
-			{"function": "RegisterHandler(type, handler)", "description": "注册处理器到指定扩展类型"},
-			{"function": "RegisterPlugin(name, plugin)", "description": "注册完整插件"},
-			{"function": "GetPlugin(name)", "description": "获取已注册插件"},
-			{"function": "LoadPlugins(configPath)", "description": "从配置文件加载插件"},
+			{"function": "RegisterExtension(metadata)", "description": "Registers extension metadata"},
+			{"function": "RegisterParser(type, parser)", "description": "Registers a parser for an extension type"},
+			{"function": "RegisterAnalyzer(type, analyzer)", "description": "Registers an analyzer for an extension type"},
+			{"function": "RegisterHandler(type, handler)", "description": "Registers a handler for an extension type"},
+			{"function": "RegisterPlugin(name, plugin)", "description": "Registers a full plugin"},
+			{"function": "GetPlugin(name)", "description": "Retrieves a registered plugin"},
+			{"function": "LoadPlugins(configPath)", "description": "Loads plugins from config file"},
 		},
 	}
 

@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// JSDetectionResult 表示JavaScript扫描的检测结果
+// JSDetectionResult is the result of JavaScript detection scanning.
 type JSDetectionResult struct {
 	Detected             []DetectedAPI `json:"detected"`
 	NotDetected          []string      `json:"notDetected"`
@@ -18,7 +18,7 @@ type JSDetectionResult struct {
 	DynamicFeaturesFound bool          `json:"dynamicFeaturesFound"`
 }
 
-// DetectedAPI 表示检测到的API调用
+// DetectedAPI describes one detected API signal.
 type DetectedAPI struct {
 	Name        string   `json:"name"`
 	Severity    string   `json:"severity"`
@@ -27,7 +27,7 @@ type DetectedAPI struct {
 	Samples     []string `json:"samples"`
 }
 
-// detectionPattern 检测模式定义
+// detectionPattern defines one detection pattern group.
 type detectionPattern struct {
 	Name        string
 	Severity    string
@@ -39,7 +39,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "WebGPU Detection",
 		Severity:    "high",
-		Description: "检测 WebGPU 支持",
+		Description: "Detects WebGPU support usage",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)navigator\.gpu\b`),
 			regexp.MustCompile(`(?i)GPUAdapter|requestAdapter|createRenderPipeline`),
@@ -49,7 +49,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "Automation Detection",
 		Severity:    "high",
-		Description: "检测自动化工具特征",
+		Description: "Detects automation tool markers",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)navigator\.webdriver`),
 			regexp.MustCompile(`(?i)__nightmare__|__phantom__|__selenium__|_selenium`),
@@ -61,7 +61,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "MediaDevices Detection",
 		Severity:    "medium",
-		Description: "检测摄像头/麦克风设备",
+		Description: "Detects camera and microphone capability checks",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)navigator\.mediaDevices`),
 			regexp.MustCompile(`(?i)enumerateDevices\s*\(`),
@@ -72,7 +72,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "Permissions Detection",
 		Severity:    "medium",
-		Description: "检测权限状态",
+		Description: "Detects permission status probing",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)navigator\.permissions`),
 			regexp.MustCompile(`(?i)\.query\s*\(\s*\{?\s*name`),
@@ -83,7 +83,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "Canvas Fingerprinting",
 		Severity:    "medium",
-		Description: "可能的 Canvas 指纹识别",
+		Description: "Potential Canvas fingerprinting",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)createElement\(['"]canvas['"]\)`),
 			regexp.MustCompile(`(?i)getContext\s*\(\s*['"]2d['"]\s*\)`),
@@ -94,7 +94,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "WebGL Fingerprinting",
 		Severity:    "medium",
-		Description: "可能的 WebGL 指纹识别",
+		Description: "Potential WebGL fingerprinting",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)getContext\s*\(\s*['"]webgl2?['"]\s*\)`),
 			regexp.MustCompile(`(?i)getParameter\s*\(`),
@@ -105,7 +105,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "Plugin Detection",
 		Severity:    "low",
-		Description: "检测浏览器插件",
+		Description: "Detects browser plugin probing",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)navigator\.plugins`),
 			regexp.MustCompile(`(?i)navigator\.mimeTypes`),
@@ -115,7 +115,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "User Agent Detection",
 		Severity:    "low",
-		Description: "检测 User-Agent 特征",
+		Description: "Detects User-Agent fingerprint signals",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)navigator\.userAgent\b`),
 			regexp.MustCompile(`(?i)userAgentData|sec-ch-ua`),
@@ -125,7 +125,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "Font Detection",
 		Severity:    "medium",
-		Description: "检测字体枚举与字体指纹",
+		Description: "Detects font enumeration and font fingerprinting",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)document\.fonts|FontFace|check\s*\(\s*['"].*?['"]\s*\)`),
 			regexp.MustCompile(`(?i)measureText\s*\(`),
@@ -135,7 +135,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "Timezone Locale Detection",
 		Severity:    "medium",
-		Description: "检测时区/语言环境指纹",
+		Description: "Detects timezone and locale fingerprinting",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)Intl\.DateTimeFormat\s*\(\s*\)\.resolvedOptions\s*\(\s*\)\.timeZone`),
 			regexp.MustCompile(`(?i)getTimezoneOffset\s*\(`),
@@ -145,7 +145,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "Hardware Detection",
 		Severity:    "medium",
-		Description: "检测硬件并发和设备内存指纹",
+		Description: "Detects hardware concurrency and device-memory fingerprinting",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)navigator\.hardwareConcurrency`),
 			regexp.MustCompile(`(?i)navigator\.deviceMemory`),
@@ -155,7 +155,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "Storage Quota Detection",
 		Severity:    "low",
-		Description: "检测存储配额指纹",
+		Description: "Detects storage quota fingerprinting",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)navigator\.storage\.estimate\s*\(`),
 			regexp.MustCompile(`(?i)localStorage|sessionStorage|indexedDB`),
@@ -164,7 +164,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "AntiBot Vendor Script",
 		Severity:    "high",
-		Description: "检测第三方反爬/指纹供应商脚本",
+		Description: "Detects third-party anti-bot and fingerprint vendor scripts",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)fingerprintjs|openfpcdn|botd`),
 			regexp.MustCompile(`(?i)perimeterx|datadome|arkoselabs|hcaptcha|recaptcha`),
@@ -175,7 +175,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "Facebook Pixel Tracking",
 		Severity:    "medium",
-		Description: "检测Facebook Pixel追踪和事件采集",
+		Description: "Detects Facebook Pixel tracking and event collection",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)fbq\s*\(|_fbq\.push|fbevents`),
 			regexp.MustCompile(`(?i)facebook\.com/tr\?|fbevents\.js`),
@@ -185,7 +185,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "Google Analytics Tracking",
 		Severity:    "medium",
-		Description: "检测Google Analytics和广告追踪",
+		Description: "Detects Google Analytics and ad tracking",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)gtag\s*\(|google-analytics|ga\s*\(`),
 			regexp.MustCompile(`(?i)dataLayer\.push|gtm\.js`),
@@ -195,7 +195,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "HubSpot Marketing Automation",
 		Severity:    "medium",
-		Description: "检测HubSpot营销自动化和行为追踪",
+		Description: "Detects HubSpot marketing automation and behavior tracking",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)_hsq\.push|hbspt\.forms|hs-script-loader`),
 			regexp.MustCompile(`(?i)hubspotutk|hs-analytics\.js|hsadspixel`),
@@ -205,7 +205,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "PostHog Analytics",
 		Severity:    "medium",
-		Description: "检测PostHog产品分析和会话回放",
+		Description: "Detects PostHog analytics and session replay",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)posthog\.capture|posthog\.identify|posthog\.setPersonProperties`),
 			regexp.MustCompile(`(?i)posthog\(|PostHog\(|array\.js`),
@@ -215,7 +215,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "LinkedIn Insight Tag",
 		Severity:    "medium",
-		Description: "检测LinkedIn Insight Tag和行为追踪",
+		Description: "Detects LinkedIn Insight Tag and behavior tracking",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)_linkedin_data_partner_id|_linkedin_partner_id`),
 			regexp.MustCompile(`(?i)linkedin\.com/li\.js|px\.ads\.linkedin`),
@@ -225,7 +225,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "Reddit Pixel Tracking",
 		Severity:    "low",
-		Description: "检测Reddit Pixel转化和再营销追踪",
+		Description: "Detects Reddit Pixel conversion and remarketing tracking",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)reddit\.com/pixels|rdt\.js`),
 			regexp.MustCompile(`(?i)reddit_pixel_id|redditPixelId`),
@@ -235,7 +235,7 @@ var detectionPatterns = []detectionPattern{
 	{
 		Name:        "Dreamdata Analytics",
 		Severity:    "low",
-		Description: "检测Dreamdata关键账户客户数据采集",
+		Description: "Detects Dreamdata account-level data collection",
 		Patterns: []*regexp.Regexp{
 			regexp.MustCompile(`(?i)dreamdata|drda\.io|dr_tracking`),
 			regexp.MustCompile(`(?i)dreamdata\.com/.*?js|dreamdata-tracker`),
@@ -244,25 +244,25 @@ var detectionPatterns = []detectionPattern{
 	},
 }
 
-// ScanJavaScriptWithV8 使用高级静态分析扫描JavaScript代码中的指纹检测
+// ScanJavaScriptWithV8 scans JavaScript for fingerprint detection signals.
 func ScanJavaScriptWithV8(ctx context.Context, htmlContent string) (*JSDetectionResult, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	// 规范化内容（移除注释、压缩等）
+	// Normalize content (strip comments and compact whitespace).
 	normalizedCode := normalizeJavaScript(htmlContent)
 
-	// 初始化结果
+	// Initialize result container.
 	result := &JSDetectionResult{
 		Detected:         []DetectedAPI{},
 		NotDetected:      []string{},
-		ExecutionDetails: "使用高级静态代码分析\n",
+		ExecutionDetails: "Using advanced static code analysis\n",
 	}
 
-	// 追踪的检测API集合
+	// Track deduplicated detections.
 	detectedSet := make(map[string]*DetectedAPI)
 
-	// 对每个检测模式进行扫描
+	// Scan each configured detection pattern.
 	for _, pattern := range detectionPatterns {
 		select {
 		case <-ctx.Done():
@@ -276,7 +276,7 @@ func ScanJavaScriptWithV8(ctx context.Context, htmlContent string) (*JSDetection
 		for _, regexPattern := range pattern.Patterns {
 			foundMatches := regexPattern.FindAllString(normalizedCode, -1)
 			if len(foundMatches) > 0 {
-				// 对匹配值去重，避免同一特征在压缩脚本中重复放大。
+				// Deduplicate matches to avoid inflated counts in minified scripts.
 				for _, match := range foundMatches {
 					uniqueMatches[match] = true
 					if len(samples) < 3 {
@@ -289,7 +289,7 @@ func ScanJavaScriptWithV8(ctx context.Context, htmlContent string) (*JSDetection
 		matches := len(uniqueMatches)
 
 		if matches > 0 {
-			// 发现了检测代码
+			// Detection code found.
 			detected := DetectedAPI{
 				Name:        pattern.Name,
 				Severity:    pattern.Severity,
@@ -298,15 +298,15 @@ func ScanJavaScriptWithV8(ctx context.Context, htmlContent string) (*JSDetection
 				Samples:     samples,
 			}
 			detectedSet[pattern.Name] = &detected
-			result.ExecutionDetails += fmt.Sprintf("✓ %s: 检测到 %d 个匹配\n", pattern.Name, matches)
+			result.ExecutionDetails += fmt.Sprintf("✓ %s: detected %d matches\n", pattern.Name, matches)
 		} else {
-			// 未检测到
+			// Not detected.
 			result.NotDetected = append(result.NotDetected, pattern.Name)
-			result.ExecutionDetails += fmt.Sprintf("✗ %s: 未检测到\n", pattern.Name)
+			result.ExecutionDetails += fmt.Sprintf("✗ %s: not detected\n", pattern.Name)
 		}
 	}
 
-	// 构建最终检测列表
+	// Build final ordered detection list.
 	for _, pattern := range detectionPatterns {
 		if detected, found := detectedSet[pattern.Name]; found {
 			result.Detected = append(result.Detected, *detected)
@@ -320,37 +320,37 @@ func ScanJavaScriptWithV8(ctx context.Context, htmlContent string) (*JSDetection
 	return result, nil
 }
 
-// normalizeJavaScript 规范化JavaScript代码
+// normalizeJavaScript normalizes JavaScript source for matching.
 func normalizeJavaScript(htmlContent string) string {
-	// 提取脚本标签内容
+	// Extract inline and external script references.
 	scripts := extractScriptTags(htmlContent)
 	scriptSrcs := extractScriptSrcs(htmlContent)
 	capturedScriptSrcs := extractCapturedScriptSrcs(htmlContent)
 	inlineCode := strings.Join(scripts, "\n")
 
-	// 仅清洗内联脚本，避免把 https:// 这类URL误识别为注释并截断。
-	// 移除单行注释（多行模式）
+	// Clean inline scripts only to avoid truncating URLs such as https://.
+	// Remove single-line comments (multiline mode).
 	re := regexp.MustCompile(`(?m)//.*$`)
 	inlineCode = re.ReplaceAllString(inlineCode, "")
 
-	// 移除多行注释
+	// Remove block comments.
 	re = regexp.MustCompile(`(?s)/\*.*?\*/`)
 	inlineCode = re.ReplaceAllString(inlineCode, "")
 
 	combinedCode := inlineCode + "\n" + strings.Join(scriptSrcs, "\n") + "\n" + strings.Join(capturedScriptSrcs, "\n")
 
-	// 规范化空格（将多个空格/换行替换为单个空格）
+	// Normalize whitespace to single spaces.
 	re = regexp.MustCompile(`\s+`)
 	combinedCode = re.ReplaceAllString(combinedCode, " ")
 
 	return combinedCode
 }
 
-// extractScriptTags 从HTML中提取脚本内容
+// extractScriptTags extracts inline script contents from HTML.
 func extractScriptTags(htmlContent string) []string {
 	var scripts []string
 
-	// 匹配 <script> 标签
+	// Match <script> tags.
 	re := regexp.MustCompile(`(?i)<script[^>]*>([\s\S]*?)</script>`)
 	matches := re.FindAllStringSubmatch(htmlContent, -1)
 
@@ -358,7 +358,7 @@ func extractScriptTags(htmlContent string) []string {
 		if len(match) > 1 {
 			scriptContent := strings.TrimSpace(match[1])
 			if scriptContent != "" {
-				// 过滤外部脚本引用
+				// Keep inline scripts only.
 				if !strings.Contains(scriptContent, "src=") {
 					scripts = append(scripts, scriptContent)
 				}
@@ -369,11 +369,11 @@ func extractScriptTags(htmlContent string) []string {
 	return scripts
 }
 
-// extractScriptSrcs 从HTML中提取外链 script src
+// extractScriptSrcs extracts external script src URLs from HTML.
 func extractScriptSrcs(htmlContent string) []string {
 	var srcs []string
 
-	// 匹配 <script ... src="..."> 标签
+	// Match <script ... src="..."> tags.
 	re := regexp.MustCompile(`(?is)<script[^>]*\bsrc\s*=\s*['"]([^'"]+)['"][^>]*>`)
 	matches := re.FindAllStringSubmatch(htmlContent, -1)
 
@@ -390,7 +390,7 @@ func extractScriptSrcs(htmlContent string) []string {
 	return srcs
 }
 
-// extractCapturedScriptSrcs 从headless注入的 data-captured-src 中提取外链URL
+// extractCapturedScriptSrcs extracts data-captured-src URLs injected by headless capture.
 func extractCapturedScriptSrcs(htmlContent string) []string {
 	var srcs []string
 

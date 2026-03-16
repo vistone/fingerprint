@@ -197,7 +197,7 @@ func (h *Handler) runGPUTraining(svc *ml.MLService) error {
 	return nil
 }
 
-// handleMLServiceTrainingStatus 查询异步训练/进化状态
+// handleMLServiceTrainingStatus returns async training/evolution status.
 func (h *Handler) handleMLServiceTrainingStatus(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -243,7 +243,7 @@ func (h *Handler) handleMLServiceTrainingStatus(w http.ResponseWriter, r *http.R
 	json.NewEncoder(w).Encode(resp)
 }
 
-// handleMLServiceFeedback 提交反馈样本给在线学习系统
+// handleMLServiceFeedback submits feedback samples to online learning.
 func (h *Handler) handleMLServiceFeedback(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

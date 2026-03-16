@@ -97,7 +97,7 @@ func (h *Handler) handleProfileDetail(w http.ResponseWriter, r *http.Request) {
 		"metadata":          found.Metadata,
 	}
 
-	// 添加 TCP/IP 指纹信息
+	// Add TCP/IP fingerprint details.
 	if found.TCPIP != nil {
 		response["tcpip"] = map[string]interface{}{
 			"ipVersion":        found.TCPIP.IPVersion,
@@ -116,7 +116,7 @@ func (h *Handler) handleProfileDetail(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 添加 HTTP/3 (QUIC) 配置
+	// Add HTTP/3 (QUIC) settings.
 	if found.HTTP3Settings != nil {
 		response["http3Settings"] = map[string]interface{}{
 			"quicVersion":            found.HTTP3Settings.QUICVersion,
@@ -171,7 +171,7 @@ func (h *Handler) handleRequests(w http.ResponseWriter, r *http.Request) {
 
 	records := GetRecentRequests()
 
-	// 转换为前端期望的格式
+	// Transform to frontend-expected shape.
 	requests := make([]map[string]interface{}, len(records))
 	for i, req := range records {
 		requests[i] = map[string]interface{}{

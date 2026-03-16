@@ -8,21 +8,21 @@ import (
 )
 
 // =====================================================================
-// 防御系统 API
+// Defense system API
 // =====================================================================
 
-// handleDefenseRules 返回所有检测规则
+// handleDefenseRules returns all configured detection rules.
 func (h *Handler) handleDefenseRules(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// 从 Detector 获取规则描述
+	// Build rule descriptions exposed to the admin API.
 	rules := []map[string]interface{}{
 		{
 			"name":        "headless_browser",
-			"description": "检测无头浏览器 (Puppeteer, Playwright, Selenium WebDriver)",
+			"description": "Detects headless browser automation (Puppeteer, Playwright, Selenium WebDriver)",
 			"feature":     "headless_browser",
 			"threshold":   0.5,
 			"riskScore":   0.7,
@@ -31,7 +31,7 @@ func (h *Handler) handleDefenseRules(w http.ResponseWriter, r *http.Request) {
 		},
 		{
 			"name":        "high_entropy",
-			"description": "检测异常高信息熵值 — 指纹随机化或伪造工具",
+			"description": "Detects abnormally high entropy values from randomization or spoofing tools",
 			"feature":     "entropy",
 			"threshold":   10.0,
 			"riskScore":   0.5,
@@ -40,7 +40,7 @@ func (h *Handler) handleDefenseRules(w http.ResponseWriter, r *http.Request) {
 		},
 		{
 			"name":        "automation_tool",
-			"description": "检测自动化工具标记 (webdriver, __selenium, callPhantom)",
+			"description": "Detects automation markers (webdriver, __selenium, callPhantom)",
 			"feature":     "tool_marker",
 			"threshold":   0.3,
 			"riskScore":   0.8,
@@ -49,7 +49,7 @@ func (h *Handler) handleDefenseRules(w http.ResponseWriter, r *http.Request) {
 		},
 		{
 			"name":        "inconsistent_behavior",
-			"description": "指纹行为模式不一致 — TLS/HTTP/JS 层信号矛盾",
+			"description": "Detects inconsistent fingerprint behavior across TLS/HTTP/JS layers",
 			"feature":     "behavior_pattern",
 			"threshold":   0.3,
 			"riskScore":   0.6,
@@ -58,7 +58,7 @@ func (h *Handler) handleDefenseRules(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	// 从 Agent 取策略补充
+	// Include active agent strategies.
 	strategies := []map[string]interface{}{}
 	if a := h.gateway.GetAgent(); a != nil {
 		for _, s := range a.GetActiveStrategies() {
@@ -87,7 +87,7 @@ func (h *Handler) handleDefenseRules(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleDefenseDetect 对 Profile 执行威胁检测
+// handleDefenseDetect executes threat detection for one profile.
 func (h *Handler) handleDefenseDetect(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -111,17 +111,17 @@ func (h *Handler) handleDefenseDetect(w http.ResponseWriter, r *http.Request) {
 	extractor := h.gateway.GetExtractor()
 	fv := extractor.ExtractFromProfile(&profile)
 
-	// 运行检测
+	// Run detector.
 	detector := defense.NewDetector()
 	detection := detector.Detect(fv)
 
-	// 运行风险评估
+	// Run risk evaluation.
 	classifier := h.gateway.GetClassifier()
 	classification := classifier.Classify(fv)
 	riskEngine := h.gateway.GetRiskEngine()
 	risk := riskEngine.Evaluate(fv, classification)
 
-	// 获取防御建议
+	// Build defense recommendations.
 	defenseSystem := defense.NewDefenseSystem()
 	advice := defenseSystem.Analyze(fv, classification)
 

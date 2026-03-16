@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// LogEntry 一条日志记录
+// LogEntry is one captured log record.
 type LogEntry struct {
 	Timestamp time.Time `json:"timestamp"`
 	Level     string    `json:"level"`
@@ -17,20 +17,20 @@ type LogEntry struct {
 	Source    string    `json:"source"`
 }
 
-// LogBuffer 环形日志缓冲区，捕获 Go log 输出并支持 SSE 推流
+// LogBuffer stores recent logs and supports SSE streaming to subscribers.
 type LogBuffer struct {
 	mu      sync.RWMutex
 	entries []LogEntry
 	maxSize int
-	// SSE 订阅者
+	// SSE subscribers.
 	subscribers map[chan LogEntry]struct{}
 	subMu       sync.RWMutex
 }
 
-// globalLogBuffer 全局日志缓冲区
+// globalLogBuffer is the process-wide log buffer.
 var globalLogBuffer = NewLogBuffer(500)
 
-// NewLogBuffer 创建日志缓冲区
+// NewLogBuffer creates a bounded in-memory log buffer.
 func NewLogBuffer(size int) *LogBuffer {
 	return &LogBuffer{
 		entries:     make([]LogEntry, 0, size),
@@ -39,7 +39,7 @@ func NewLogBuffer(size int) *LogBuffer {
 	}
 }
 
-// InitLogCapture 拦截标准 log 输出，转存到缓冲区
+// InitLogCapture redirects standard log output into the in-memory buffer.
 func InitLogCapture() {
 	pr, pw, err := os.Pipe()
 	if err != nil {
@@ -47,20 +47,20 @@ func InitLogCapture() {
 		return
 	}
 
-	// 重定向标准 log 输出
+	// Redirect standard log output.
 	log.SetOutput(pw)
-	log.SetFlags(0) // 我们自己管理时间戳
+	log.SetFlags(0) // Timestamp is attached when buffering log entries.
 
-	// 后台读取 pipe 数据
+	// Read redirected logs in background.
 	go func() {
 		buf := make([]byte, 4096)
 		for {
 			n, err := pr.Read(buf)
 			if n > 0 {
 				msg := string(buf[:n])
-				// 同时写到 stderr 保留原有行为
+				// Mirror logs to stderr to preserve default behavior.
 				os.Stderr.WriteString(msg)
-				// 解析级别
+				// Parse log level from message text.
 				level := parseLogLevel(msg)
 				globalLogBuffer.Append(LogEntry{
 					Timestamp: time.Now(),
@@ -76,7 +76,7 @@ func InitLogCapture() {
 	}()
 }
 
-// Append 添加一条日志到缓冲区
+// Append adds one entry to the log buffer.
 func (lb *LogBuffer) Append(entry LogEntry) {
 	lb.mu.Lock()
 	lb.entries = append(lb.entries, entry)
@@ -85,19 +85,19 @@ func (lb *LogBuffer) Append(entry LogEntry) {
 	}
 	lb.mu.Unlock()
 
-	// 通知所有 SSE 订阅者
+	// Broadcast to SSE subscribers.
 	lb.subMu.RLock()
 	for ch := range lb.subscribers {
 		select {
 		case ch <- entry:
 		default:
-			// 订阅者跟不上，丢弃
+			// Drop when subscriber is slow to consume.
 		}
 	}
 	lb.subMu.RUnlock()
 }
 
-// GetAll 获取缓冲区中所有日志
+// GetAll returns all buffered logs.
 func (lb *LogBuffer) GetAll() []LogEntry {
 	lb.mu.RLock()
 	defer lb.mu.RUnlock()
@@ -106,7 +106,7 @@ func (lb *LogBuffer) GetAll() []LogEntry {
 	return result
 }
 
-// GetFiltered 按级别过滤日志
+// GetFiltered returns logs filtered by level.
 func (lb *LogBuffer) GetFiltered(level string) []LogEntry {
 	if level == "" || level == "all" {
 		return lb.GetAll()
@@ -122,7 +122,7 @@ func (lb *LogBuffer) GetFiltered(level string) []LogEntry {
 	return result
 }
 
-// Subscribe 订阅实时日志流，返回 channel。调用 Unsubscribe 释放。
+// Subscribe registers a real-time log stream subscriber.
 func (lb *LogBuffer) Subscribe() chan LogEntry {
 	ch := make(chan LogEntry, 64)
 	lb.subMu.Lock()
@@ -131,7 +131,7 @@ func (lb *LogBuffer) Subscribe() chan LogEntry {
 	return ch
 }
 
-// Unsubscribe 取消订阅
+// Unsubscribe removes and closes a subscriber channel.
 func (lb *LogBuffer) Unsubscribe(ch chan LogEntry) {
 	lb.subMu.Lock()
 	delete(lb.subscribers, ch)
@@ -139,7 +139,7 @@ func (lb *LogBuffer) Unsubscribe(ch chan LogEntry) {
 	close(ch)
 }
 
-// WriteLog 对外公开的日志写入接口（其他模块可直接调用）
+// WriteLog appends a log entry and mirrors it to stderr.
 func WriteLog(level, source, format string, args ...interface{}) {
 	msg := fmt.Sprintf(format, args...)
 	globalLogBuffer.Append(LogEntry{
@@ -148,11 +148,11 @@ func WriteLog(level, source, format string, args ...interface{}) {
 		Message:   msg,
 		Source:    source,
 	})
-	// 同时输出到 stderr
+	// Mirror to stderr.
 	fmt.Fprintf(os.Stderr, "[%s] %s: %s\n", level, source, msg)
 }
 
-// parseLogLevel 从日志消息中解析级别
+// parseLogLevel extracts a coarse log level from message text.
 func parseLogLevel(msg string) string {
 	switch {
 	case len(msg) > 6 && msg[:6] == "ERROR " || len(msg) > 7 && msg[:7] == "[ERROR]":

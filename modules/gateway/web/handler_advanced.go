@@ -1,5 +1,5 @@
-// handler_advanced.go — 高级功能 API 端点
-// 分析引擎 / ML引擎 / 防御系统 / 反检测引擎 / 插件系统 / 指纹工具
+// handler_advanced.go defines advanced admin API endpoints.
+// Analysis engine / ML engine / defense / anti-detection / plugins / tools
 package web
 
 import (
@@ -13,10 +13,10 @@ import (
 )
 
 // =====================================================================
-// 分析引擎 API — 通过 Profile 运行完整分析管线
+// Analysis Engine API — runs full analysis pipeline by profile.
 // =====================================================================
 
-// handleAnalyzeProfile 基于 Profile 执行完整指纹分析
+// handleAnalyzeProfile runs full fingerprint analysis for a selected profile.
 func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -35,7 +35,7 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 查找 profile
+	// Locate profile.
 	var profile profiles.ClientProfile
 	found := false
 	h.mu.RLock()
@@ -52,7 +52,7 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 构建 AnalyzeRequest
+	// Build AnalyzeRequest.
 	analyzeReq := &gateway.AnalyzeRequest{
 		TLSVersion:      profile.TLSVersion,
 		CipherSuites:    profile.CipherSuites,
@@ -73,7 +73,7 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 构建丰富的结果
+	// Build detailed response payload.
 	result := map[string]interface{}{
 		"profile": map[string]interface{}{
 			"id":      profile.ID,
@@ -87,7 +87,7 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 		"processingTimeMs": resp.ProcessingTimeMs,
 	}
 
-	// 分类结果
+	// Classification result.
 	if resp.Classification != nil {
 		result["classification"] = map[string]interface{}{
 			"protocol":           resp.Classification.Protocol,
@@ -101,7 +101,7 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 风险评估
+	// Risk assessment.
 	if resp.RiskAssessment != nil {
 		factors := make([]map[string]interface{}, 0, len(resp.RiskAssessment.Factors))
 		for _, f := range resp.RiskAssessment.Factors {
@@ -119,7 +119,7 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// JA3/JA4/JA4H
+	// JA3/JA4/JA4H info.
 	if resp.JA3 != nil {
 		result["ja3"] = resp.JA3
 	}
@@ -130,11 +130,11 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 		result["ja4h"] = resp.JA4H
 	}
 
-	// 检测发现
+	// Detection findings.
 	result["findings"] = resp.Findings
 	result["defenseHints"] = resp.DefenseHints
 
-	// Agent 决策
+	// Agent decision.
 	if resp.AgentDecision != nil {
 		result["agentDecision"] = resp.AgentDecision
 	}
@@ -144,10 +144,10 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 // =====================================================================
-// ML 引擎 API
+// ML Engine API
 // =====================================================================
 
-// handleMLInfo 返回 ML 分类器模型信息
+// handleMLInfo returns ML classifier model metadata.
 func (h *Handler) handleMLInfo(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -162,50 +162,50 @@ func (h *Handler) handleMLInfo(w http.ResponseWriter, r *http.Request) {
 		"layers": []map[string]interface{}{
 			{
 				"name":        "Protocol Classifier",
-				"description": "协议类型分类 (TLS / HTTP / HTTP2 / QUIC / HTTP3)",
+				"description": "Protocol classification (TLS / HTTP / HTTP2 / QUIC / HTTP3)",
 				"level":       1,
 				"threshold":   p,
 				"weight":      0.3,
 			},
 			{
 				"name":        "Family Classifier",
-				"description": "浏览器家族识别 (Chrome / Firefox / Safari / Edge / Opera)",
+				"description": "Browser family recognition (Chrome / Firefox / Safari / Edge / Opera)",
 				"level":       2,
 				"threshold":   f,
 				"weight":      0.3,
 			},
 			{
 				"name":        "Version Classifier",
-				"description": "具体版本识别 (Chrome 134 / Firefox 135 / Safari 18 ...)",
+				"description": "Version recognition (Chrome 134 / Firefox 135 / Safari 18 ...)",
 				"level":       3,
 				"threshold":   v,
 				"weight":      0.4,
 			},
 		},
 		"featureTypes": []map[string]interface{}{
-			{"name": "tls_version", "category": "TLS", "description": "TLS 协议版本号"},
-			{"name": "cipher_suites", "category": "TLS", "description": "密码套件数量"},
-			{"name": "extensions", "category": "TLS", "description": "TLS 扩展数量"},
-			{"name": "http2_settings", "category": "HTTP", "description": "HTTP/2 设置帧哈希"},
-			{"name": "http_headers", "category": "HTTP", "description": "HTTP 头部特征哈希"},
-			{"name": "user_agent", "category": "HTTP", "description": "User-Agent 哈希"},
-			{"name": "canvas", "category": "Frontend", "description": "Canvas 指纹哈希"},
-			{"name": "webgl", "category": "Frontend", "description": "WebGL 渲染器指纹"},
-			{"name": "audio", "category": "Frontend", "description": "AudioContext 指纹"},
-			{"name": "fonts", "category": "Frontend", "description": "字体列表指纹"},
-			{"name": "storage", "category": "Frontend", "description": "存储 API 指纹"},
-			{"name": "webrtc", "category": "Frontend", "description": "WebRTC 配置指纹"},
-			{"name": "hardware", "category": "Frontend", "description": "硬件信息指纹"},
-			{"name": "timing", "category": "Frontend", "description": "时间精度指纹"},
-			{"name": "headless_browser", "category": "Detection", "description": "无头浏览器检测"},
-			{"name": "entropy", "category": "Detection", "description": "信息熵"},
-			{"name": "tool_marker", "category": "Detection", "description": "自动化工具标记"},
-			{"name": "behavior_pattern", "category": "Detection", "description": "行为一致性模式"},
+			{"name": "tls_version", "category": "TLS", "description": "TLS protocol version"},
+			{"name": "cipher_suites", "category": "TLS", "description": "Cipher suite count"},
+			{"name": "extensions", "category": "TLS", "description": "TLS extension count"},
+			{"name": "http2_settings", "category": "HTTP", "description": "HTTP/2 SETTINGS hash"},
+			{"name": "http_headers", "category": "HTTP", "description": "HTTP header feature hash"},
+			{"name": "user_agent", "category": "HTTP", "description": "User-Agent hash"},
+			{"name": "canvas", "category": "Frontend", "description": "Canvas fingerprint hash"},
+			{"name": "webgl", "category": "Frontend", "description": "WebGL renderer fingerprint"},
+			{"name": "audio", "category": "Frontend", "description": "AudioContext fingerprint"},
+			{"name": "fonts", "category": "Frontend", "description": "Font list fingerprint"},
+			{"name": "storage", "category": "Frontend", "description": "Storage API fingerprint"},
+			{"name": "webrtc", "category": "Frontend", "description": "WebRTC config fingerprint"},
+			{"name": "hardware", "category": "Frontend", "description": "Hardware info fingerprint"},
+			{"name": "timing", "category": "Frontend", "description": "Timing precision fingerprint"},
+			{"name": "headless_browser", "category": "Detection", "description": "Headless browser detection"},
+			{"name": "entropy", "category": "Detection", "description": "Information entropy"},
+			{"name": "tool_marker", "category": "Detection", "description": "Automation tool marker"},
+			{"name": "behavior_pattern", "category": "Detection", "description": "Behavior consistency pattern"},
 		},
 		"status": "trained",
 	}
 
-	// 添加 MLService 信息
+	// Attach MLService info.
 	if svc := h.gateway.GetMLService(); svc != nil {
 		st := svc.Stats()
 		info["mlService"] = map[string]interface{}{
@@ -235,7 +235,7 @@ func (h *Handler) handleMLInfo(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(info)
 }
 
-// handleMLExtract 从 Profile 提取特征向量
+// handleMLExtract extracts feature vectors from a selected profile.
 func (h *Handler) handleMLExtract(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -259,7 +259,7 @@ func (h *Handler) handleMLExtract(w http.ResponseWriter, r *http.Request) {
 	extractor := h.gateway.GetExtractor()
 	fv := extractor.ExtractFromProfile(&profile)
 
-	// 转换特征列表
+	// Convert feature map to list form.
 	features := make([]map[string]interface{}, 0, len(fv.Features))
 	for ft, val := range fv.Features {
 		features = append(features, map[string]interface{}{
@@ -277,7 +277,7 @@ func (h *Handler) handleMLExtract(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleMLClassify 对 Profile 执行 ML 分类
+// handleMLClassify runs ML classification for a selected profile.
 func (h *Handler) handleMLClassify(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -324,7 +324,7 @@ func (h *Handler) handleMLClassify(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleMLBatch 批量分类所有 Profile
+// handleMLBatch classifies all profiles in batch.
 func (h *Handler) handleMLBatch(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

@@ -26,7 +26,7 @@ func (h *Handler) handleLogStream(w http.ResponseWriter, r *http.Request) {
 	ch := globalLogBuffer.Subscribe()
 	defer globalLogBuffer.Unsubscribe(ch)
 
-	// 先发送一次连接确认
+	// Send an initial connection acknowledgement event.
 	fmt.Fprintf(w, "data: {\"type\":\"connected\"}\n\n")
 	flusher.Flush()
 
@@ -103,7 +103,7 @@ func (h *Handler) handleAgentKnowledge(w http.ResponseWriter, r *http.Request) {
 	kb := a.Knowledge()
 	kbStats := kb.Stats()
 
-	// 构建浏览器家族详情
+	// Build browser family details for the response.
 	families := []map[string]interface{}{}
 	browserTypes := []core.BrowserType{
 		core.BrowserChrome, core.BrowserFirefox, core.BrowserSafari,
@@ -178,14 +178,14 @@ func countLearnedStrategies(strategies []agent.StrategyInfo) int {
 	return count
 }
 
-// handleClientTest 使用指纹客户端测试访问网站
+// handleClientTest runs a request using a selected fingerprint profile.
 func (h *Handler) handleClientTest(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// 解析请求
+	// Parse request payload.
 	var req struct {
 		ProfileID string `json:"profileId"`
 		URL       string `json:"url"`
@@ -198,7 +198,7 @@ func (h *Handler) handleClientTest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 验证参数
+	// Validate required fields.
 	if req.ProfileID == "" {
 		http.Error(w, "profileId is required", http.StatusBadRequest)
 		return
@@ -208,7 +208,7 @@ func (h *Handler) handleClientTest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 查找指纹
+	// Resolve requested profile.
 	var profile profiles.ClientProfile
 	found := false
 	h.mu.RLock()
@@ -225,23 +225,23 @@ func (h *Handler) handleClientTest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 验证指纹完整性
+	// Validate profile completeness before execution.
 	validator := profiles.NewProfileValidator()
 	validationResult := validator.Validate(profile)
 
-	// 创建客户端并测试
+	// Execute request and return trace details.
 	result := testWithProfile(profile, req.URL, req.Method, req.Body, validationResult)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(result)
 }
 
-// testWithProfile 使用指定指纹测试访问 URL - 返回完整追踪信息和验证结果
+// testWithProfile executes a request with the selected profile and returns full traces.
 func testWithProfile(profile profiles.ClientProfile, url, method, body string, validationResult profiles.ProfileValidationResult) map[string]interface{} {
-	// 使用新的 ExecuteProxyRequest 获取完整追踪
+	// Use ExecuteProxyRequest to collect request/response traces.
 	result := client.ExecuteProxyRequest(profile, url, method, body, nil)
 
-	// 构建响应
+	// Build response payload.
 	response := map[string]interface{}{
 		"success":       result.Success,
 		"error":         result.Error,
@@ -253,7 +253,7 @@ func testWithProfile(profile profiles.ClientProfile, url, method, body string, v
 		"responseTrace": result.ResponseTrace,
 	}
 
-	// 添加验证结果（如果有警告或错误）
+	// Attach validation details when warnings or errors exist.
 	validation := map[string]interface{}{
 		"valid": validationResult.Valid,
 	}
@@ -275,7 +275,7 @@ func testWithProfile(profile profiles.ClientProfile, url, method, body string, v
 	return response
 }
 
-// getMLServiceConfig 构建 MLService 配置信息
+// getMLServiceConfig builds the MLService section for admin status.
 func (h *Handler) getMLServiceConfig(cfg *gateway.GatewayConfig) map[string]interface{} {
 	result := map[string]interface{}{
 		"enabled": cfg.MLServiceEnabled,
