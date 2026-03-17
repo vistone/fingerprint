@@ -2,8 +2,29 @@
 
 This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) specification.
 
-## [v1.0.26] - 2026-03-17
+## [v1.0.27] - 2026-03-17
 
+### Added
+
+- **ONNX Runtime migration and canary/shadow rollout support**:
+  - Added ONNX inference backend integration paths and runtime bridge for ML service
+  - Added canary and shadow evaluation service flows for safer model rollout and observability
+  - Added ONNX inference helper script and migration guide documentation
+
+### Changed
+
+- **Compliance gate implementation aligned with docs policy**:
+  - Added blocking/advisory compliance scripts and CI workflow split (`blocking_checks` / `advisory_checks`)
+  - Added repository compliance scanner command for English comments and size thresholds
+  - Updated contributor workflow with explicit pre-submit order and mixed-gate definitions
+
+### Fixed
+
+- **ML inference API consistency**:
+  - Replaced multi-parameter ONNX result builder call with a structured bundle to satisfy parameter-limit rule
+  - Preserved existing behavior with equivalent output construction and regression test coverage
+
+## [v1.0.26] - 2026-03-17
 ### Changed
 
 - **Codebase standards alignment and maintainability hardening**:
