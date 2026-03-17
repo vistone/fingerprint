@@ -29,8 +29,19 @@ services:
       - FP_SCANNER_USE_BROWSER=true
       - FP_SCANNER_BROWSER_WS=ws://browserless:3000
       - FP_SCANNER_BROWSER_TIMEOUT_MS=25000
+      # ML ONNX canary rollout (5%) + shadow comparison
+      - FP_ML_SERVICE_ENABLED=true
+      - FP_ML_INFERENCE_BACKEND=native
+      - FP_ML_CANARY_ENABLED=true
+      - FP_ML_CANARY_RATE=0.05
+      - FP_ML_CANARY_BACKEND=onnx
+      - FP_ML_ONNX_MODEL_DIR=/models/onnx
+      - FP_ML_SHADOW_COMPARE_ENABLED=true
+      - FP_ML_SHADOW_SAMPLE_RATE=0.1
+      - FP_ML_SHADOW_METRICS_PATH=/models/shadow_compare.jsonl
     volumes:
       - gateway-data:/data
+      - ../../models:/models
       - ./profiles:/data/profiles:ro
     networks:
       - fingerprint-network

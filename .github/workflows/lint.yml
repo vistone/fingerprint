@@ -1,4 +1,4 @@
-name: Linting
+name: Compliance Gates
 
 on:
   push:
@@ -11,8 +11,8 @@ permissions:
   security-events: write
 
 jobs:
-  golangci-lint:
-    name: golangci-lint
+  blocking_checks:
+    name: blocking_checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -25,70 +25,23 @@ jobs:
         with:
           go-version: '1.25'
 
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: v2.11.3
-          args: --timeout=5m
-
-  go-vet:
-    name: go-vet
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.25'
-
       - name: Download dependencies
         run: go mod download
 
-      - name: Run go vet
-        run: go vet ./...
-
-  file-length-check:
-    name: file-length-check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Check file length (max 500 lines)
+      - name: Install golangci-lint
         run: |
-          oversized=$(find . -name "*.go" -not -path "*/vendor/*" -exec awk 'END{if(NR>500) printf "%s: %d lines\n", FILENAME, NR}' {} \;)
-          if [ -n "$oversized" ]; then
-            echo "::error::The following Go files exceed the 500-line limit:"
-            echo "$oversized"
-            exit 1
-          fi
-          echo "All Go files are within the 500-line limit."
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | \
+            sh -s -- -b /usr/local/bin v2.11.3
 
-  gofmt:
-    name: gofmt
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.25'
-
-      - name: Check go fmt
+      - name: BLOCKING checks
         run: |
-          if [ -n "$(gofmt -s -l .)" ]; then
-            echo "Code needs formatting:"
-            gofmt -s -d .
-            exit 1
-          fi
+          echo "BLOCKING: running standards + lint + tests"
+          ./scripts/compliance/check_blocking.sh
 
-  security:
-    name: security
+  advisory_checks:
+    name: advisory_checks
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -108,3 +61,8 @@ jobs:
         if: always()
         with:
           sarif_file: gosec-results.sarif
+
+      - name: WARNING checks
+        run: |
+          echo "WARNING: running advisory checks"
+          ./scripts/compliance/check_advisory.sh

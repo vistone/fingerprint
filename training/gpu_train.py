@@ -538,6 +538,75 @@ def export_weights(encoder, classifier, detector_net, type_net, threat_net, acti
     print(f"  Weights saved: {output_path} ({size_kb:.1f} KB)")
 
 
+def export_onnx_model(model, dummy_input, output_path, input_name, output_name):
+    model.eval()
+    output_file = Path(output_path)
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+
+    torch.onnx.export(
+        model,
+        dummy_input,
+        str(output_file),
+        export_params=True,
+        opset_version=17,
+        do_constant_folding=True,
+        input_names=[input_name],
+        output_names=[output_name],
+        dynamic_axes={
+            input_name: {0: "batch_size"},
+            output_name: {0: "batch_size"},
+        },
+    )
+
+
+def export_onnx_artifacts(encoder, classifier, detector_net, type_net, threat_net, action_net, onnx_dir):
+    onnx_path = Path(onnx_dir)
+    onnx_path.mkdir(parents=True, exist_ok=True)
+
+    cpu = torch.device("cpu")
+    encoder_cpu = encoder.to(cpu)
+    classifier_cpu = classifier.to(cpu)
+    detector_cpu = detector_net.to(cpu)
+    type_cpu = type_net.to(cpu)
+    threat_cpu = threat_net.to(cpu)
+    action_cpu = action_net.to(cpu)
+
+    artifacts = [
+        ("encoder.onnx", encoder_cpu, torch.randn(1, FINGERPRINT_DIM, device=cpu), "features", "embedding"),
+        ("classifier.onnx", classifier_cpu, torch.randn(1, EMBEDDING_DIM, device=cpu), "embedding", "family_logits"),
+        ("detector.onnx", detector_cpu, torch.randn(1, FINGERPRINT_DIM + CROSS_LAYER_DIM, device=cpu), "detector_input", "forgery_prob"),
+        ("type_net.onnx", type_cpu, torch.randn(1, FINGERPRINT_DIM + CROSS_LAYER_DIM, device=cpu), "detector_input", "type_logits"),
+        ("threat_net.onnx", threat_cpu, torch.randn(1, EMBEDDING_DIM + 1 + NUM_FORGERY_TYPES + BEHAVIOR_DIM, device=cpu), "threat_input", "threat_logits"),
+        ("action_net.onnx", action_cpu, torch.randn(1, EMBEDDING_DIM + 1 + NUM_FORGERY_TYPES + BEHAVIOR_DIM, device=cpu), "threat_input", "action_logits"),
+    ]
+
+    for file_name, model, dummy, input_name, output_name in artifacts:
+        export_onnx_model(
+            model=model,
+            dummy_input=dummy,
+            output_path=onnx_path / file_name,
+            input_name=input_name,
+            output_name=output_name,
+        )
+
+    manifest = {
+        "version": "1.0.26",
+        "opset": 17,
+        "artifacts": [
+            {"name": "encoder", "file": "encoder.onnx", "input": [FINGERPRINT_DIM], "output": [EMBEDDING_DIM]},
+            {"name": "classifier", "file": "classifier.onnx", "input": [EMBEDDING_DIM], "output": [NUM_BROWSER_FAMILIES]},
+            {"name": "detector", "file": "detector.onnx", "input": [FINGERPRINT_DIM + CROSS_LAYER_DIM], "output": [1]},
+            {"name": "type_net", "file": "type_net.onnx", "input": [FINGERPRINT_DIM + CROSS_LAYER_DIM], "output": [NUM_FORGERY_TYPES]},
+            {"name": "threat_net", "file": "threat_net.onnx", "input": [EMBEDDING_DIM + 1 + NUM_FORGERY_TYPES + BEHAVIOR_DIM], "output": [NUM_THREAT_CLASSES]},
+            {"name": "action_net", "file": "action_net.onnx", "input": [EMBEDDING_DIM + 1 + NUM_FORGERY_TYPES + BEHAVIOR_DIM], "output": [NUM_ACTIONS]},
+        ],
+    }
+    with open(onnx_path / "manifest.json", "w") as f:
+        json.dump(manifest, f, indent=2)
+
+    print(f"  ONNX artifacts exported to {onnx_path}")
+
+
 # ── Training phases ──────────────────────────────────────────────────────
 
 def batch_semihard_triplet_loss(embeddings, labels, margin):
@@ -950,6 +1019,7 @@ def main():
     parser.add_argument("--epochs", type=int, default=200, help="Training epochs per phase")
     parser.add_argument("--lr", type=float, default=0.001, help="Learning rate")
     parser.add_argument("--batch-size", type=int, default=2048, help="Batch size")
+    parser.add_argument("--onnx-dir", default="", help="Optional directory to export ONNX runtime artifacts")
     args = parser.parse_args()
 
     print("=" * 60)
@@ -1053,6 +1123,9 @@ def main():
     os.makedirs(os.path.dirname(args.output) or ".", exist_ok=True)
     export_weights(encoder, classifier, detector_net, type_net, threat_net, action_net,
                    metrics, args.output)
+
+    if args.onnx_dir:
+        export_onnx_artifacts(encoder, classifier, detector_net, type_net, threat_net, action_net, args.onnx_dir)
 
     # Final progress
     progress.report("done", config["epochs"], config["epochs"], 0, {

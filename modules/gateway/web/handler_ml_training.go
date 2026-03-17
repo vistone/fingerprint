@@ -77,6 +77,7 @@ type gpuTrainingPaths struct {
 	InputPath    string
 	OutputPath   string
 	ProgressPath string
+	ONNXDir      string
 }
 
 // exportProfileFeatures encodes all profiles to a JSON file for the Python GPU trainer.
@@ -110,10 +111,10 @@ func exportProfileFeatures(allProfiles []profiles.ClientProfile, outputPath stri
 	if err != nil {
 		return 0, fmt.Errorf("marshal profile features: %w", err)
 	}
-	if err := os.MkdirAll(filepath.Dir(outputPath), 0750); err != nil {
+	if err := os.MkdirAll(filepath.Dir(outputPath), 0o750); err != nil {
 		return 0, fmt.Errorf("create dir: %w", err)
 	}
-	if err := os.WriteFile(outputPath, data, 0600); err != nil {
+	if err := os.WriteFile(outputPath, data, 0o600); err != nil {
 		return 0, fmt.Errorf("write profile features: %w", err)
 	}
 	return len(samples), nil
@@ -126,6 +127,7 @@ func (h *Handler) runGPUTraining(svc *ml.MLService) error {
 		InputPath:    "/tmp/ml_train_input.json",
 		OutputPath:   "/models/weights.json",
 		ProgressPath: "/tmp/ml_training_progress.json",
+		ONNXDir:      "/models/onnx",
 	}
 
 	h.setTrainingPhase("exporting profiles")
@@ -171,6 +173,7 @@ func runExternalGPUTraining(paths gpuTrainingPaths) (string, error) {
 		"--output", paths.OutputPath,
 		"--progress", paths.ProgressPath,
 		"--epochs", "200",
+		"--onnx-dir", paths.ONNXDir,
 	)
 	cmd.Env = append(os.Environ(), "PYTHONUNBUFFERED=1")
 
@@ -194,6 +197,9 @@ func (h *Handler) buildGPUTrainingResult(svc *ml.MLService, nProfiles int, outpu
 	if finalProgress := readGPUProgress(progressPath); finalProgress != nil {
 		result["gpuProgress"] = finalProgress
 	}
+	if onnxInfo := readONNXArtifactSummary("/models/onnx"); onnxInfo != nil {
+		result["onnxArtifacts"] = onnxInfo
+	}
 	return result
 }
 
@@ -214,6 +220,31 @@ func readGPUProgress(progressPath string) map[string]interface{} {
 		return nil
 	}
 	return finalProgress
+}
+
+func readONNXArtifactSummary(onnxDir string) map[string]interface{} {
+	entries, err := os.ReadDir(onnxDir)
+	if err != nil {
+		return nil
+	}
+
+	files := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		files = append(files, entry.Name())
+	}
+
+	if len(files) == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"dir":   onnxDir,
+		"count": len(files),
+		"files": files,
+	}
 }
 
 // handleMLServiceTrainingStatus returns async training/evolution status.

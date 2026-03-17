@@ -287,6 +287,13 @@ func (h *Handler) getMLServiceConfig(cfg *gateway.GatewayConfig) map[string]inte
 		result["feedbackCount"] = st.FeedbackCount
 		result["evolveCount"] = st.EvolveCount
 		result["modelVersions"] = st.ModelVersions
+		result["inferenceMode"] = st.InferenceMode
+		if st.Canary != nil {
+			result["canary"] = st.Canary
+		}
+		if st.Shadow != nil {
+			result["shadowCompare"] = st.Shadow
+		}
 	}
 	if cfg.MLServiceConfig != nil {
 		result["modelStorePath"] = cfg.MLServiceConfig.ModelStorePath
@@ -294,6 +301,11 @@ func (h *Handler) getMLServiceConfig(cfg *gateway.GatewayConfig) map[string]inte
 		result["driftThreshold"] = cfg.MLServiceConfig.DriftThreshold
 		result["forgeryThreshold"] = cfg.MLServiceConfig.ValidationForgeryThreshold
 		result["consistencyMin"] = cfg.MLServiceConfig.ValidationConsistencyMin
+		result["canaryEnabled"] = cfg.MLServiceConfig.CanaryEnabled
+		result["canaryRate"] = cfg.MLServiceConfig.CanaryRate
+		result["canaryBackend"] = cfg.MLServiceConfig.CanaryBackend
+		result["shadowEnabled"] = cfg.MLServiceConfig.ShadowCompareEnabled
+		result["shadowSampleRate"] = cfg.MLServiceConfig.ShadowSampleRate
 	}
 	return result
 }

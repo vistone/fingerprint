@@ -39,6 +39,7 @@ func (h *Handler) handleMLServiceStats(w http.ResponseWriter, r *http.Request) {
 		"evolveCount":   st.EvolveCount,
 		"modelReady":    st.ModelReady,
 		"modelVersions": st.ModelVersions,
+		"inferenceMode": st.InferenceMode,
 	}
 	if st.LearnerStats != nil {
 		result["learner"] = map[string]interface{}{
@@ -49,6 +50,12 @@ func (h *Handler) handleMLServiceStats(w http.ResponseWriter, r *http.Request) {
 			"driftDetected":   st.LearnerStats.DriftDetected,
 			"driftEventCount": st.LearnerStats.DriftEventCount,
 		}
+	}
+	if st.Canary != nil {
+		result["canary"] = st.Canary
+	}
+	if st.Shadow != nil {
+		result["shadowCompare"] = st.Shadow
 	}
 
 	w.Header().Set("Content-Type", "application/json")

@@ -207,6 +207,9 @@ type ServiceStats struct {
 	EvolveCount   int64
 	ModelReady    bool
 	ModelVersions int
+	InferenceMode string
+	Canary        *CanaryStats
+	Shadow        *ShadowCompareStats
 	LearnerStats  *OnlineLearnerStats
 }
 
@@ -217,9 +220,16 @@ func (s *MLService) Stats() *ServiceStats {
 		FeedbackCount: s.feedbackCount.Load(),
 		EvolveCount:   s.evolveCount.Load(),
 		ModelReady:    s.IsReady(),
+		InferenceMode: s.backend.Name(),
 	}
 	if s.store != nil {
 		st.ModelVersions = s.store.VersionCount()
+	}
+	if s.canary != nil {
+		st.Canary = s.canary.Snapshot()
+	}
+	if s.shadow != nil {
+		st.Shadow = s.shadow.Snapshot()
 	}
 	if s.learner != nil {
 		st.LearnerStats = s.learner.Stats()

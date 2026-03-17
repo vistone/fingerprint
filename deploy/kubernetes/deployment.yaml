@@ -48,6 +48,24 @@ spec:
           value: "1000"
         - name: FP_CACHE_SIZE
           value: "10000"
+        - name: FP_ML_SERVICE_ENABLED
+          value: "true"
+        - name: FP_ML_INFERENCE_BACKEND
+          value: "native"
+        - name: FP_ML_CANARY_ENABLED
+          value: "true"
+        - name: FP_ML_CANARY_RATE
+          value: "0.05"
+        - name: FP_ML_CANARY_BACKEND
+          value: "onnx"
+        - name: FP_ML_ONNX_MODEL_DIR
+          value: "/models/onnx"
+        - name: FP_ML_SHADOW_COMPARE_ENABLED
+          value: "true"
+        - name: FP_ML_SHADOW_SAMPLE_RATE
+          value: "0.1"
+        - name: FP_ML_SHADOW_METRICS_PATH
+          value: "/models/shadow_compare.jsonl"
         - name: GOMAXPROCS
           valueFrom:
             resourceFieldRef:
@@ -78,10 +96,14 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /data
+        - name: models
+          mountPath: /models
         - name: tmp
           mountPath: /tmp
       volumes:
       - name: data
+        emptyDir: {}
+      - name: models
         emptyDir: {}
       - name: tmp
         emptyDir: {}

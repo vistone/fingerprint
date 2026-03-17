@@ -20,10 +20,22 @@ git checkout -b feature/your-feature
 ### 2. Development and Testing
 
 ```bash
-go test ./modules/... -race
-go fmt ./...
+# 1) Format check only (no auto-fix)
+gofmt -s -l .
+
+# 2) Lint
 golangci-lint run
+
+# 3) Test
+go test ./... -race
 ```
+
+### 2.1 Compliance Gates (Mixed Policy)
+
+- `BLOCKING` (CI fail): `go test ./...`, `golangci-lint run`, English-only comment check, file/function/parameter threshold checks.
+- `WARNING` (CI warn): coverage trend, benchmark regression signals, architecture optimizations from analysis reports.
+- First-round enforcement scope: `modules/**/*.go` (non-test files) for threshold checks; oversized legacy test files are reported as advisory debt.
+- CI output must clearly label `BLOCKING` and `WARNING`.
 
 ### 3. Commit Message Format
 
@@ -173,9 +185,9 @@ go work sync
 
 Before submitting:
 
-- [ ] `go test ./modules/... -race` ✓
-- [ ] `go fmt ./...` ✓
+- [ ] `gofmt -s -l .` (check only, no auto-fix) ✓
 - [ ] `golangci-lint run` ✓
+- [ ] `go test ./... -race` ✓
 - [ ] All .go files ≤ 500 lines ✓
 - [ ] All functions ≤ 80 lines ✓
 - [ ] CHANGELOG.md updated

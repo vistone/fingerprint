@@ -60,6 +60,39 @@ type ServiceConfig struct {
 	// ValidationConsistencyMin: generated fingerprints below this cross-layer
 	// consistency score are rejected.
 	ValidationConsistencyMin float64
+
+	// InferenceBackend selects inference implementation: "native" or "onnx".
+	InferenceBackend string
+
+	// ONNXModelDir points to the directory containing ONNX artifacts.
+	ONNXModelDir string
+
+	// ONNXPythonBin is the Python executable used by ONNX backend.
+	ONNXPythonBin string
+
+	// ONNXPythonScript is the script path for ONNX inference.
+	ONNXPythonScript string
+
+	// ONNXTimeout bounds a single ONNX inference subprocess call.
+	ONNXTimeout time.Duration
+
+	// ShadowCompareEnabled runs secondary backend inference for sampled requests.
+	ShadowCompareEnabled bool
+
+	// ShadowSampleRate controls the percentage of inference calls sampled for comparison [0,1].
+	ShadowSampleRate float64
+
+	// ShadowMetricsPath stores JSONL parity metrics for offline analysis.
+	ShadowMetricsPath string
+
+	// CanaryEnabled enables gradual traffic switch to a canary inference backend.
+	CanaryEnabled bool
+
+	// CanaryRate controls canary routing ratio [0,1], e.g. 0.05 for 5%.
+	CanaryRate float64
+
+	// CanaryBackend sets canary backend name: "onnx" or "native".
+	CanaryBackend string
 }
 
 // DefaultServiceConfig provides sensible defaults.
@@ -72,6 +105,17 @@ var DefaultServiceConfig = &ServiceConfig{
 	DriftThreshold:             0.05,
 	ValidationForgeryThreshold: 0.3,
 	ValidationConsistencyMin:   0.7,
+	InferenceBackend:           "native",
+	ONNXModelDir:               "./models/onnx",
+	ONNXPythonBin:              "python3",
+	ONNXPythonScript:           "training/onnx_infer.py",
+	ONNXTimeout:                10 * time.Second,
+	ShadowCompareEnabled:       false,
+	ShadowSampleRate:           0.1,
+	ShadowMetricsPath:          "./models/shadow_compare.jsonl",
+	CanaryEnabled:              false,
+	CanaryRate:                 0.05,
+	CanaryBackend:              "onnx",
 }
 
 // =========================================================================
@@ -82,6 +126,9 @@ var DefaultServiceConfig = &ServiceConfig{
 type MLService struct {
 	config   *ServiceConfig
 	pipeline *ModelPipeline
+	backend  inferenceBackend
+	canary   *canaryRouter
+	shadow   *shadowComparator
 	store    *ModelStore
 	learner  *OnlineLearner
 	mu       sync.RWMutex
@@ -102,6 +149,9 @@ func NewMLService(config *ServiceConfig) (*MLService, error) {
 		config:   config,
 		pipeline: NewModelPipeline(),
 	}
+	svc.backend = newInferenceBackend(config, svc.pipeline)
+	svc.canary = newCanaryRouter(config, svc.backend, svc.pipeline)
+	svc.shadow = newShadowComparator(config, svc.pipeline)
 
 	// Initialise model store.
 	if config.ModelStorePath != "" {
@@ -158,18 +208,57 @@ func (s *MLService) IsReady() bool {
 // Infer runs the full 4-stage neural pipeline on a client profile.
 func (s *MLService) Infer(profile *profiles.ClientProfile, behavior []float64) *PipelineResult {
 	s.inferCount.Add(1)
+	primaryBackend := s.canary.pick(s.backend)
+	result, err := primaryBackend.Infer(profile, behavior)
+	if err == nil {
+		s.runShadowCompare(func(backend inferenceBackend) (*PipelineResult, error) {
+			return backend.Infer(profile, behavior)
+		}, result, primaryBackend)
+		return result
+	}
+
+	if primaryBackend != s.backend {
+		s.canary.recordFallback()
+	}
+	slog.Warn("ml infer backend fallback to native", "backend", primaryBackend.Name(), "error", err)
 	return s.pipeline.Infer(profile, behavior)
 }
 
 // InferFromFeatures runs inference from a pre-extracted feature vector.
 func (s *MLService) InferFromFeatures(fv *core.FeatureVector, behavior []float64) *PipelineResult {
 	s.inferCount.Add(1)
+	primaryBackend := s.canary.pick(s.backend)
+	result, err := primaryBackend.InferFromFeatures(fv, behavior)
+	if err == nil {
+		s.runShadowCompare(func(backend inferenceBackend) (*PipelineResult, error) {
+			return backend.InferFromFeatures(fv, behavior)
+		}, result, primaryBackend)
+		return result
+	}
+
+	if primaryBackend != s.backend {
+		s.canary.recordFallback()
+	}
+	slog.Warn("ml infer-from-features backend fallback to native", "backend", primaryBackend.Name(), "error", err)
 	return s.pipeline.InferFromFeatures(fv, behavior)
 }
 
 // InferBatch runs batch inference for multiple profiles.
 func (s *MLService) InferBatch(profs []*profiles.ClientProfile, behaviors [][]float64) []*PipelineResult {
 	s.inferCount.Add(int64(len(profs)))
+	primaryBackend := s.canary.pick(s.backend)
+	results, err := primaryBackend.InferBatch(profs, behaviors)
+	if err == nil {
+		s.runShadowCompareBatch(func(backend inferenceBackend) ([]*PipelineResult, error) {
+			return backend.InferBatch(profs, behaviors)
+		}, results, primaryBackend)
+		return results
+	}
+
+	if primaryBackend != s.backend {
+		s.canary.recordFallback()
+	}
+	slog.Warn("ml infer-batch backend fallback to native", "backend", primaryBackend.Name(), "error", err)
 	return s.pipeline.InferBatch(profs, behaviors)
 }
 

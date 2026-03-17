@@ -83,6 +83,16 @@ Options:
 - gRPC: localhost:9090
 - Metrics: http://localhost:8080/metrics
 
+### ONNX Canary Defaults
+
+The deployment manifests now include a safe default rollout profile:
+
+- `FP_ML_INFERENCE_BACKEND=native`
+- `FP_ML_CANARY_ENABLED=true`
+- `FP_ML_CANARY_RATE=0.05`
+- `FP_ML_CANARY_BACKEND=onnx`
+- `FP_ML_SHADOW_COMPARE_ENABLED=true`
+
 ### View Logs
 
 ```bash

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/vistone/fingerprint/modules/gateway"
+	"github.com/vistone/fingerprint/modules/ml"
 )
 
 func buildGatewayConfig(port int) gateway.GatewayConfig {
@@ -76,6 +77,61 @@ func applyMLEnv(config *gateway.GatewayConfig) {
 
 	if trainingDataPath, ok := readEnvString("FP_ML_TRAINING_DATA"); ok {
 		config.MLTrainingData = trainingDataPath
+	}
+
+	if backend, ok := readEnvString("FP_ML_INFERENCE_BACKEND"); ok {
+		ensureMLServiceConfig(config)
+		config.MLServiceConfig.InferenceBackend = backend
+	}
+
+	if onnxDir, ok := readEnvString("FP_ML_ONNX_MODEL_DIR"); ok {
+		ensureMLServiceConfig(config)
+		config.MLServiceConfig.ONNXModelDir = onnxDir
+	}
+
+	if pythonBin, ok := readEnvString("FP_ML_ONNX_PYTHON_BIN"); ok {
+		ensureMLServiceConfig(config)
+		config.MLServiceConfig.ONNXPythonBin = pythonBin
+	}
+
+	if scriptPath, ok := readEnvString("FP_ML_ONNX_PYTHON_SCRIPT"); ok {
+		ensureMLServiceConfig(config)
+		config.MLServiceConfig.ONNXPythonScript = scriptPath
+	}
+
+	if timeoutMilliseconds, ok := readEnvInt("FP_ML_ONNX_TIMEOUT_MS"); ok && timeoutMilliseconds > 0 {
+		ensureMLServiceConfig(config)
+		config.MLServiceConfig.ONNXTimeout = time.Duration(timeoutMilliseconds) * time.Millisecond
+	}
+
+	if parsed, ok := readEnvBool("FP_ML_SHADOW_COMPARE_ENABLED"); ok {
+		ensureMLServiceConfig(config)
+		config.MLServiceConfig.ShadowCompareEnabled = parsed
+	}
+
+	if rate, ok := readEnvFloat("FP_ML_SHADOW_SAMPLE_RATE"); ok && rate >= 0 && rate <= 1 {
+		ensureMLServiceConfig(config)
+		config.MLServiceConfig.ShadowSampleRate = rate
+	}
+
+	if metricsPath, ok := readEnvString("FP_ML_SHADOW_METRICS_PATH"); ok {
+		ensureMLServiceConfig(config)
+		config.MLServiceConfig.ShadowMetricsPath = metricsPath
+	}
+
+	if parsed, ok := readEnvBool("FP_ML_CANARY_ENABLED"); ok {
+		ensureMLServiceConfig(config)
+		config.MLServiceConfig.CanaryEnabled = parsed
+	}
+
+	if rate, ok := readEnvFloat("FP_ML_CANARY_RATE"); ok && rate >= 0 && rate <= 1 {
+		ensureMLServiceConfig(config)
+		config.MLServiceConfig.CanaryRate = rate
+	}
+
+	if backend, ok := readEnvString("FP_ML_CANARY_BACKEND"); ok {
+		ensureMLServiceConfig(config)
+		config.MLServiceConfig.CanaryBackend = backend
 	}
 }
 
@@ -187,4 +243,13 @@ func readEnvDuration(name string) (time.Duration, bool) {
 	}
 
 	return parsed, true
+}
+
+func ensureMLServiceConfig(config *gateway.GatewayConfig) {
+	if config.MLServiceConfig != nil {
+		return
+	}
+
+	defaultClone := *ml.DefaultServiceConfig
+	config.MLServiceConfig = &defaultClone
 }

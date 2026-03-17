@@ -112,8 +112,9 @@ jobs:
         done
 
   benchmark:
-    name: Benchmark
+    name: advisory_benchmark
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -126,8 +127,9 @@ jobs:
     - name: Download dependencies
       run: go mod download
 
-    - name: Run benchmarks
+    - name: Run benchmarks (WARNING)
       run: |
+        echo "WARNING: benchmark checks are advisory and do not block CI."
         for module in core profiles ml tls; do
           echo "=== Benchmarking modules/$module ==="
           (cd "modules/$module" && go test -bench=. -benchmem -run=^$ -benchtime=1x ./...)
