@@ -2,7 +2,7 @@ module github.com/vistone/fingerprint/modules/config
 
 go 1.25.7
 
-require github.com/vistone/fingerprint/modules/internal v1.0.27
+require github.com/vistone/fingerprint/modules/internal v1.0.28
 
 require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect

@@ -37,11 +37,11 @@ github.com/rogpeppe/go-internal v1.14.1 h1:UQB4HGPB6osV0SQTLymcB4TgvyWu6ZyliaW0t
 github.com/rogpeppe/go-internal v1.14.1/go.mod h1:MaRKkUm5W0goXpeCfT7UZI6fk/L7L7so1lCWt35ZSgc=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
-github.com/vistone/fingerprint/modules/core v1.0.20 h1:LWxfWCNrIoJfYYiHIw4WkNOui4TOjNdQAQh8aloQl/M=
-github.com/vistone/fingerprint/modules/errors v1.0.20 h1:YQA2w0Ru4qTG07oQHJX5fGFcOv7hqJ4NwqZK5pvbdgw=
-github.com/vistone/fingerprint/modules/internal v1.0.20 h1:mqdg68JJbFcRVS5Jz7YSHsGqAh7wobKXahxvDHfI0yU=
-github.com/vistone/fingerprint/modules/kit v1.0.20 h1:TOU+ThzJiFq4q5NghDciXMj9WDFFYVThJGztVsGC+qg=
-github.com/vistone/fingerprint/modules/profiles v1.0.20 h1:nxZXyl9fVwLEj5UtYtlnCS6LNVS+X5T1jH7XtdzUHZg=
+github.com/vistone/fingerprint/modules/core v1.0.27 h1:FyWKrkLpyWEEPS6k6LZDX9fM2RXJbB1S2Frgn38Mee4=
+github.com/vistone/fingerprint/modules/errors v1.0.27 h1:8Qy0Ib+HRzercKX+2y5ujY0io2y7cZy09DuKAegkJAs=
+github.com/vistone/fingerprint/modules/internal v1.0.27 h1:aF3o58ZjuIlXeh4cB+C/Tvl3ZeawHpK1cpCsl/W8wTM=
+github.com/vistone/fingerprint/modules/kit v1.0.27 h1:7pbGPNa+xUS/YMLcq2q/Lv68QO9uAcPjZFIBwD1H3Ls=
+github.com/vistone/fingerprint/modules/profiles v1.0.27 h1:8jzziL55QZWeaj/2JOut2LAwyuRakjAocsh5Xy5n2dU=
 github.com/xyproto/randomstring v1.0.5 h1:YtlWPoRdgMu3NZtP45drfy1GKoojuR7hmRcnhZqKjWU=
 github.com/xyproto/randomstring v1.0.5/go.mod h1:rgmS5DeNXLivK7YprL0pY+lTuhNQW3iGxZ18UQApw/E=
 go.uber.org/goleak v1.3.0 h1:2K3zAYmnTNqV73imy9J1T3WC+gmCePx2hEGkimedGto=

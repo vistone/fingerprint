@@ -2,6 +2,14 @@
 
 This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) specification.
 
+## [v1.0.28] - 2026-03-17
+
+### Changed
+
+- **Release process compliance correction**:
+  - Synchronized English and Chinese changelog entries before release tagging
+  - Consolidated version metadata updates for all modules in a single compliant release step
+
 ## [v1.0.27] - 2026-03-17
 
 ### Added
