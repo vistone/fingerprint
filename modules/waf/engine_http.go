@@ -38,10 +38,15 @@ func (e *HTTPEngine) Analyze(req *http.Request) *HTTPResult {
 		Factors: make([]core.RiskFactor, 0),
 	}
 
-	// Analyze User-Agent
 	ua := strings.ToLower(req.UserAgent())
+	e.applyUserAgentChecks(result, ua)
+	e.applySuspiciousHeaderChecks(result, req)
+	e.applyHeaderQualityChecks(result, req)
+	e.applyProtocolChecks(result, req)
+	return result
+}
 
-	// Check for known bot signatures
+func (e *HTTPEngine) applyUserAgentChecks(result *HTTPResult, ua string) {
 	for _, bot := range e.knownBots {
 		if strings.Contains(ua, bot) {
 			result.Score += 0.8
@@ -55,8 +60,6 @@ func (e *HTTPEngine) Analyze(req *http.Request) *HTTPResult {
 			break
 		}
 	}
-
-	// Check for missing User-Agent
 	if ua == "" {
 		result.Score += 0.5
 		result.Factors = append(result.Factors, core.RiskFactor{
@@ -65,15 +68,10 @@ func (e *HTTPEngine) Analyze(req *http.Request) *HTTPResult {
 			Description: "No User-Agent header",
 		})
 	}
+}
 
-	// Check for suspicious headers
-	suspiciousHeaders := []string{
-		"X-Scrapy-Project",
-		"X-Selenium",
-		"X-Puppeteer",
-		"X-PhantomJS",
-	}
-
+func (e *HTTPEngine) applySuspiciousHeaderChecks(result *HTTPResult, req *http.Request) {
+	suspiciousHeaders := []string{"X-Scrapy-Project", "X-Selenium", "X-Puppeteer", "X-PhantomJS"}
 	for _, header := range suspiciousHeaders {
 		if req.Header.Get(header) != "" {
 			result.Score += 0.6
@@ -85,8 +83,9 @@ func (e *HTTPEngine) Analyze(req *http.Request) *HTTPResult {
 			})
 		}
 	}
+}
 
-	// Check Accept headers
+func (e *HTTPEngine) applyHeaderQualityChecks(result *HTTPResult, req *http.Request) {
 	accept := req.Header.Get("Accept")
 	if accept == "" || accept == "*/*" {
 		result.Score += 0.2
@@ -96,27 +95,22 @@ func (e *HTTPEngine) Analyze(req *http.Request) *HTTPResult {
 			Description: "Generic or missing Accept header",
 		})
 	}
-
-	// Check Referer
 	referer := req.Header.Get("Referer")
 	if referer == "" && req.Method != "GET" {
-		// POST/PUT without referer might be suspicious
 		result.Factors = append(result.Factors, core.RiskFactor{
 			Name:        "missing_referer",
 			Weight:      0.1,
 			Description: "Missing Referer header on non-GET request",
 		})
 	}
+}
 
-	// Check for HTTP/2 (browsers usually use HTTP/2)
+func (e *HTTPEngine) applyProtocolChecks(result *HTTPResult, req *http.Request) {
 	if req.ProtoMajor < 2 {
-		// HTTP/1.1 might be from older tools
 		result.Factors = append(result.Factors, core.RiskFactor{
 			Name:        "http1_request",
 			Weight:      0.1,
 			Description: "Using HTTP/1.1 instead of HTTP/2",
 		})
 	}
-
-	return result
 }

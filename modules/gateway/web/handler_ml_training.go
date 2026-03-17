@@ -73,6 +73,12 @@ type profileSampleJSON struct {
 	BrowserType string    `json:"browser_type"`
 }
 
+type gpuTrainingPaths struct {
+	InputPath    string
+	OutputPath   string
+	ProgressPath string
+}
+
 // exportProfileFeatures encodes all profiles to a JSON file for the Python GPU trainer.
 func exportProfileFeatures(allProfiles []profiles.ClientProfile, outputPath string) (int, error) {
 	labelMap := map[core.BrowserType]int{
@@ -116,67 +122,66 @@ func exportProfileFeatures(allProfiles []profiles.ClientProfile, outputPath stri
 // runGPUTraining executes the Python GPU training script as a subprocess.
 func (h *Handler) runGPUTraining(svc *ml.MLService) error {
 	allProfiles := profiles.GetAll()
+	paths := gpuTrainingPaths{
+		InputPath:    "/tmp/ml_train_input.json",
+		OutputPath:   "/models/weights.json",
+		ProgressPath: "/tmp/ml_training_progress.json",
+	}
 
-	// Paths
-	inputPath := "/tmp/ml_train_input.json"
-	outputPath := "/models/weights.json"
-	progressPath := "/tmp/ml_training_progress.json"
-
-	// Phase 1: Export profile features
-	h.trainingMu.Lock()
-	h.trainingPhase = "exporting profiles"
-	h.trainingMu.Unlock()
-
-	nProfiles, err := exportProfileFeatures(allProfiles, inputPath)
+	h.setTrainingPhase("exporting profiles")
+	nProfiles, err := exportProfileFeatures(allProfiles, paths.InputPath)
 	if err != nil {
 		return fmt.Errorf("export profiles: %w", err)
 	}
 
-	// Clean up input file when done
-	defer os.Remove(inputPath)
-	defer os.Remove(progressPath)
+	defer os.Remove(paths.InputPath)
+	defer os.Remove(paths.ProgressPath)
 
-	// Phase 2: Run Python GPU training
+	h.setTrainingPhase(fmt.Sprintf("gpu-training (%d profiles)", nProfiles))
+	trainOutput, err := runExternalGPUTraining(paths)
+	if err != nil {
+		return err
+	}
+
+	h.setTrainingPhase("loading weights")
+	if err := svc.Pipeline().LoadWeights(paths.OutputPath); err != nil {
+		return fmt.Errorf("load weights: %w", err)
+	}
+
+	result := h.buildGPUTrainingResult(svc, nProfiles, trainOutput, paths.ProgressPath)
+	h.setTrainingResult(result)
+
+	return nil
+}
+
+func (h *Handler) setTrainingPhase(phase string) {
 	h.trainingMu.Lock()
-	h.trainingPhase = fmt.Sprintf("gpu-training (%d profiles)", nProfiles)
-	h.trainingMu.Unlock()
+	defer h.trainingMu.Unlock()
+	h.trainingPhase = phase
+}
 
-	// Determine training script path
+func runExternalGPUTraining(paths gpuTrainingPaths) (string, error) {
 	scriptPath := "/app/gpu_train.py"
 	if _, err := os.Stat(scriptPath); os.IsNotExist(err) {
-		// Fallback for local development
 		scriptPath = "training/gpu_train.py"
 	}
 
 	cmd := exec.Command("python3", scriptPath,
-		"--input", inputPath,
-		"--output", outputPath,
-		"--progress", progressPath,
+		"--input", paths.InputPath,
+		"--output", paths.OutputPath,
+		"--progress", paths.ProgressPath,
 		"--epochs", "200",
 	)
 	cmd.Env = append(os.Environ(), "PYTHONUNBUFFERED=1")
 
-	// Capture stdout/stderr
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("gpu training failed: %w\nOutput: %s", err, string(output))
+		return "", fmt.Errorf("gpu training failed: %w\nOutput: %s", err, string(output))
 	}
+	return string(output), nil
+}
 
-	// Phase 3: Load weights into pipeline
-	h.trainingMu.Lock()
-	h.trainingPhase = "loading weights"
-	h.trainingMu.Unlock()
-
-	if err := svc.Pipeline().LoadWeights(outputPath); err != nil {
-		return fmt.Errorf("load weights: %w", err)
-	}
-
-	// Read final progress for result
-	var finalProgress map[string]interface{}
-	if progressData, err := os.ReadFile(progressPath); err == nil {
-		json.Unmarshal(progressData, &finalProgress)
-	}
-
+func (h *Handler) buildGPUTrainingResult(svc *ml.MLService, nProfiles int, output string, progressPath string) map[string]interface{} {
 	st := svc.Stats()
 	result := map[string]interface{}{
 		"phase":         "gpu-train",
@@ -184,17 +189,31 @@ func (h *Handler) runGPUTraining(svc *ml.MLService) error {
 		"modelReady":    st.ModelReady,
 		"modelVersions": st.ModelVersions,
 		"profiles":      nProfiles,
-		"output":        string(output),
+		"output":        output,
 	}
-	if finalProgress != nil {
+	if finalProgress := readGPUProgress(progressPath); finalProgress != nil {
 		result["gpuProgress"] = finalProgress
 	}
+	return result
+}
 
+func (h *Handler) setTrainingResult(result map[string]interface{}) {
 	h.trainingMu.Lock()
+	defer h.trainingMu.Unlock()
 	h.trainingResult = result
-	h.trainingMu.Unlock()
+}
 
-	return nil
+func readGPUProgress(progressPath string) map[string]interface{} {
+	progressData, err := os.ReadFile(progressPath)
+	if err != nil {
+		return nil
+	}
+
+	var finalProgress map[string]interface{}
+	if json.Unmarshal(progressData, &finalProgress) != nil {
+		return nil
+	}
+	return finalProgress
 }
 
 // handleMLServiceTrainingStatus returns async training/evolution status.

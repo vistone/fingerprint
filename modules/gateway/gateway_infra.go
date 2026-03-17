@@ -90,6 +90,26 @@ func (rl *RateLimiter) Allow(key string) bool {
 	return true
 }
 
+// Update applies a new rate-limit configuration without replacing the limiter instance.
+func (rl *RateLimiter) Update(rate, burst int, window time.Duration) {
+	rl.mu.Lock()
+	defer rl.mu.Unlock()
+
+	if rate <= 0 {
+		rate = 1000
+	}
+	if burst <= 0 {
+		burst = rate
+	}
+	if window <= 0 {
+		window = time.Second
+	}
+
+	rl.rate = rate
+	rl.burst = burst
+	rl.window = window
+}
+
 // cleanup removes expired visitors
 func (rl *RateLimiter) cleanup() {
 	ticker := time.NewTicker(time.Minute)
@@ -139,6 +159,14 @@ func (c *FingerprintCache) Get(key string) (*AnalyzeResponse, bool) {
 // Set stores in cache
 func (c *FingerprintCache) Set(key string, response *AnalyzeResponse) {
 	c.lru.Set(key, cloneAnalyzeResponse(response), 0) // Use LRUCache's default TTL
+}
+
+// Reconfigure updates cache capacity and TTL without replacing the cache instance.
+func (c *FingerprintCache) Reconfigure(size int, ttl time.Duration) {
+	if c == nil || c.lru == nil {
+		return
+	}
+	c.lru.Reconfigure(size, ttl)
 }
 
 func cloneAnalyzeResponse(resp *AnalyzeResponse) *AnalyzeResponse {

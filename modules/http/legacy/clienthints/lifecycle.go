@@ -165,67 +165,10 @@ func (m *CHLifecycleManager) ProcessSubsequentRequest(primaryOriginURL string, r
 		return fmt.Errorf("lifecycle not found for %s", primaryOriginURL)
 	}
 
-	// Determine if cross-origin request
-	isCrossOrigin := primaryOriginURL != requestOriginURL
-	var phase CHPhase
-	if isCrossOrigin {
-		phase = PHASE_CROSS_ORIGIN_SUB_REQUESTS
-	} else {
-		phase = PHASE_SUBSEQUENT_REQUESTS
-	}
-
+	isCrossOrigin, phase := determineRequestPhase(primaryOriginURL, requestOriginURL)
 	lifecycle.CurrentPhase = phase
-
-	// Add to discovered origins list
-	found := false
-	for _, origin := range lifecycle.DiscoveredOrigins {
-		if origin == requestOriginURL {
-			found = true
-			break
-		}
-	}
-	if !found {
-		lifecycle.DiscoveredOrigins = append(lifecycle.DiscoveredOrigins, requestOriginURL)
-	}
-
-	// Check hints integrity
-	riskIndicators := []string{}
-	if isCrossOrigin {
-		// Validate cross-origin delegation
-		if lifecycle.NegotiationStrategy != nil {
-			err := m.negotiationAnalyzer.HandleCrossOriginDelegation(
-				lifecycle.NegotiationStrategy,
-				requestOriginURL,
-				includedHints,
-			)
-			if err != nil {
-				riskIndicators = append(riskIndicators, fmt.Sprintf("CROSS_ORIGIN_ERROR:%s", err.Error()))
-			}
-		}
-
-		// Check Permissions-Policy compliance
-		if lifecycle.PermissionsPolicy != nil {
-			riskIndicators = m.checkPermissionsPolicyCompliance(lifecycle.PermissionsPolicy, includedHints)
-		}
-	}
-
-	// Check if hints match negotiated ones
-	if lifecycle.NegotiationStrategy != nil {
-		for _, hint := range includedHints {
-			found := false
-			for _, negotiated := range lifecycle.NegotiationStrategy.NegotiatedHints {
-				if negotiated == hint {
-					found = true
-					break
-				}
-			}
-			if !found {
-				riskIndicators = append(riskIndicators, fmt.Sprintf("UNAUTHORIZED_HINT_SENT:%s", hint))
-			}
-		}
-	}
-
-	// Record event
+	appendOriginIfMissing(&lifecycle.DiscoveredOrigins, requestOriginURL)
+	riskIndicators := m.collectRiskIndicators(lifecycle, requestOriginURL, includedHints, isCrossOrigin)
 	lifecycle.EventLog = append(lifecycle.EventLog, CHLifecycleEvent{
 		Timestamp: time.Now(),
 		Type:      phase,
@@ -239,6 +182,71 @@ func (m *CHLifecycleManager) ProcessSubsequentRequest(primaryOriginURL string, r
 	})
 
 	return nil
+}
+
+func determineRequestPhase(primaryOriginURL string, requestOriginURL string) (bool, CHPhase) {
+	isCrossOrigin := primaryOriginURL != requestOriginURL
+	if isCrossOrigin {
+		return true, PHASE_CROSS_ORIGIN_SUB_REQUESTS
+	}
+	return false, PHASE_SUBSEQUENT_REQUESTS
+}
+
+func appendOriginIfMissing(origins *[]string, requestOriginURL string) {
+	for _, origin := range *origins {
+		if origin == requestOriginURL {
+			return
+		}
+	}
+	*origins = append(*origins, requestOriginURL)
+}
+
+func (m *CHLifecycleManager) collectRiskIndicators(lifecycle *ClientHintsLifecycle, requestOriginURL string, includedHints []string, isCrossOrigin bool) []string {
+	riskIndicators := []string{}
+	if isCrossOrigin {
+		riskIndicators = m.collectCrossOriginRiskIndicators(lifecycle, requestOriginURL, includedHints)
+	}
+	if lifecycle.NegotiationStrategy != nil {
+		riskIndicators = appendUnauthorizedHints(riskIndicators, lifecycle.NegotiationStrategy.NegotiatedHints, includedHints)
+	}
+	return riskIndicators
+}
+
+func (m *CHLifecycleManager) collectCrossOriginRiskIndicators(lifecycle *ClientHintsLifecycle, requestOriginURL string, includedHints []string) []string {
+	riskIndicators := []string{}
+	if lifecycle.NegotiationStrategy != nil {
+		err := m.negotiationAnalyzer.HandleCrossOriginDelegation(
+			lifecycle.NegotiationStrategy,
+			requestOriginURL,
+			includedHints,
+		)
+		if err != nil {
+			riskIndicators = append(riskIndicators, fmt.Sprintf("CROSS_ORIGIN_ERROR:%s", err.Error()))
+		}
+	}
+	if lifecycle.PermissionsPolicy != nil {
+		// Keep existing overwrite behavior for compatibility.
+		riskIndicators = m.checkPermissionsPolicyCompliance(lifecycle.PermissionsPolicy, includedHints)
+	}
+	return riskIndicators
+}
+
+func appendUnauthorizedHints(riskIndicators []string, negotiatedHints []string, includedHints []string) []string {
+	for _, hint := range includedHints {
+		if !containsHint(negotiatedHints, hint) {
+			riskIndicators = append(riskIndicators, fmt.Sprintf("UNAUTHORIZED_HINT_SENT:%s", hint))
+		}
+	}
+	return riskIndicators
+}
+
+func containsHint(hints []string, target string) bool {
+	for _, hint := range hints {
+		if hint == target {
+			return true
+		}
+	}
+	return false
 }
 
 // checkPermissionsPolicyCompliance checks Permissions-Policy compliance

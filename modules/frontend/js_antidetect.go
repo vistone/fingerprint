@@ -27,10 +27,14 @@ func (g *JSAntiDetectCodeGenerator) GenerateWebGPUCode() string {
 	}
 
 	gpu := g.profile.JSAntiDetection.WebGPU
-
-	// If WebGPU not supported, return hiding code
 	if !gpu.Available {
-		return `
+		return webGPUDisabledCode()
+	}
+	return g.generateWebGPUAvailableCode(gpu)
+}
+
+func webGPUDisabledCode() string {
+	return `
 		// Hide WebGPU support
 		if (typeof navigator !== 'undefined') {
 			Object.defineProperty(navigator, 'gpu', {
@@ -39,9 +43,9 @@ func (g *JSAntiDetectCodeGenerator) GenerateWebGPUCode() string {
 			});
 		}
 		`
-	}
+}
 
-	// Build WebGPU adapter and device info
+func (g *JSAntiDetectCodeGenerator) generateWebGPUAvailableCode(gpu *profiles.WebGPUAntiDetect) string {
 	featureFlags := []string{}
 	if gpu.FeatureFlags != nil {
 		featureFlags = gpu.FeatureFlags
@@ -49,7 +53,7 @@ func (g *JSAntiDetectCodeGenerator) GenerateWebGPUCode() string {
 
 	limitsJSON, _ := json.Marshal(gpu.LimitValues)
 
-	code := fmt.Sprintf(`
+	return fmt.Sprintf(`
 		// WebGPU countermeasure - GPU device spoofing
 		(function() {
 			const mockGPU = {
@@ -109,8 +113,6 @@ func (g *JSAntiDetectCodeGenerator) GenerateWebGPUCode() string {
 			}
 		})();
 		`, gpu.AdapterName, stringifyList(featureFlags), string(limitsJSON), stringifyList(featureFlags))
-
-	return code
 }
 
 // GenerateMediaDevicesCode generates MediaDevices countermeasure code
@@ -121,42 +123,9 @@ func (g *JSAntiDetectCodeGenerator) GenerateMediaDevicesCode() string {
 
 	md := g.profile.JSAntiDetection.MediaDevices
 
-	// Build device list
-	const (
-		videoInput  = "videoinput"
-		audioInput  = "audioinput"
-		audioOutput = "audiooutput"
-	)
-
-	var allDevices []map[string]string
-	for _, dev := range md.VideoInputs {
-		allDevices = append(allDevices, map[string]string{
-			"deviceId": dev.DeviceID,
-			"groupId":  dev.GroupID,
-			"kind":     videoInput,
-			"label":    dev.Label,
-		})
-	}
-	for _, dev := range md.AudioInputs {
-		allDevices = append(allDevices, map[string]string{
-			"deviceId": dev.DeviceID,
-			"groupId":  dev.GroupID,
-			"kind":     audioInput,
-			"label":    dev.Label,
-		})
-	}
-	for _, dev := range md.AudioOutputs {
-		allDevices = append(allDevices, map[string]string{
-			"deviceId": dev.DeviceID,
-			"groupId":  dev.GroupID,
-			"kind":     audioOutput,
-			"label":    dev.Label,
-		})
-	}
-
+	allDevices := buildMediaDeviceList(md)
 	devicesJSON, _ := json.Marshal(allDevices)
-
-	code := fmt.Sprintf(`
+	return fmt.Sprintf(`
 		// MediaDevices countermeasure - device list spoofing
 		(function() {
 			const mockDevices = %s;
@@ -195,8 +164,25 @@ func (g *JSAntiDetectCodeGenerator) GenerateMediaDevicesCode() string {
 			}
 		})();
 		`, string(devicesJSON))
+}
 
-	return code
+func buildMediaDeviceList(md *profiles.MediaDevicesAntiDetect) []map[string]string {
+	allDevices := make([]map[string]string, 0, len(md.VideoInputs)+len(md.AudioInputs)+len(md.AudioOutputs))
+	appendMediaDevicesByKind(&allDevices, md.VideoInputs, "videoinput")
+	appendMediaDevicesByKind(&allDevices, md.AudioInputs, "audioinput")
+	appendMediaDevicesByKind(&allDevices, md.AudioOutputs, "audiooutput")
+	return allDevices
+}
+
+func appendMediaDevicesByKind(allDevices *[]map[string]string, devices []*profiles.MediaDeviceInfo, kind string) {
+	for _, dev := range devices {
+		*allDevices = append(*allDevices, map[string]string{
+			"deviceId": dev.DeviceID,
+			"groupId":  dev.GroupID,
+			"kind":     kind,
+			"label":    dev.Label,
+		})
+	}
 }
 
 // GeneratePermissionsCode generates Permissions API countermeasure code

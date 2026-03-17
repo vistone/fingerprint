@@ -19,14 +19,14 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles/legacy"
 )
 
-// TestGetRandomFingerprintIntegration 集成测试：随机指纹完整流程
+// Translated comment
 func TestGetRandomFingerprintIntegration(t *testing.T) {
 	result, err := random.GetRandomFingerprint()
 	if err != nil {
 		t.Fatalf("get随机指纹failed: %v", err)
 	}
 
-	// verifyresult完整性
+	// Translated comment
 	if result.Profile.GetClientHelloStr() == "" {
 		t.Error("ClientHelloStr 不能为空")
 	}
@@ -40,13 +40,13 @@ func TestGetRandomFingerprintIntegration(t *testing.T) {
 		t.Error("Headers 不能为 nil")
 	}
 
-	// verify Headers 完整性
+	// Translated comment
 	headers := result.Headers.ToMap()
 	if len(headers) == 0 {
 		t.Error("Headers map 不能为空")
 	}
 
-	// verifyrequired的 header 字段
+	// Translated comment
 	if _, ok := headers["User-Agent"]; !ok {
 		t.Error("Headers must包含 User-Agent")
 	}
@@ -60,7 +60,7 @@ func TestGetRandomFingerprintIntegration(t *testing.T) {
 	t.Logf("successget随机指纹: %s", result.HelloClientID)
 }
 
-// TestGetRandomFingerprintByBrowserIntegration 集成测试：按浏览器typeget指纹
+// Translated comment
 func TestGetRandomFingerprintByBrowserIntegration(t *testing.T) {
 	browsers := []string{"chrome", "firefox", "safari", "opera"}
 
@@ -83,7 +83,7 @@ func TestGetRandomFingerprintByBrowserIntegration(t *testing.T) {
 	}
 }
 
-// TestGetRandomFingerprintWithOSIntegration 集成测试：指定操作系统get指纹
+// Translated comment
 func TestGetRandomFingerprintWithOSIntegration(t *testing.T) {
 	oses := []types.OperatingSystem{
 		types.OSWindows10,
@@ -110,21 +110,21 @@ func TestGetRandomFingerprintWithOSIntegration(t *testing.T) {
 	}
 }
 
-// TestHeadersCustomizationIntegration 集成测试：自定义 Headers
+// Translated comment
 func TestHeadersCustomizationIntegration(t *testing.T) {
 	result, err := random.GetRandomFingerprint()
 	if err != nil {
 		t.Fatalf("get随机指纹failed: %v", err)
 	}
 
-	// 测试 Set 方法
+	// Translated comment
 	result.Headers.Set("Cookie", "session_id=test123")
 	result.Headers.Set("Authorization", "Bearer token456")
 	result.Headers.Set("X-Custom-Header", "custom-value")
 
 	headers := result.Headers.ToMap()
 
-	// verify自定义 header
+	// Translated comment
 	if cookie, ok := headers["Cookie"]; !ok || cookie != "session_id=test123" {
 		t.Error("Cookie header settingfailed")
 	}
@@ -135,7 +135,7 @@ func TestHeadersCustomizationIntegration(t *testing.T) {
 		t.Error("X-Custom-Header settingfailed")
 	}
 
-	// 测试 SetHeaders 方法
+	// Translated comment
 	result.Headers.SetHeaders(map[string]string{
 		"Cookie":       "session_id=updated",
 		"X-API-Key":    "api-key-123",
@@ -151,28 +151,28 @@ func TestHeadersCustomizationIntegration(t *testing.T) {
 	}
 }
 
-// TestHeadersCloneIntegration 集成测试：Headers 克隆
+// Translated comment
 func TestHeadersCloneIntegration(t *testing.T) {
 	result, err := random.GetRandomFingerprint()
 	if err != nil {
 		t.Fatalf("get随机指纹failed: %v", err)
 	}
 
-	// setting自定义 header
+	// Translated comment
 	result.Headers.Set("Cookie", "original")
 	result.Headers.Set("X-Test", "value")
 
-	// 克隆
+	// Translated comment
 	cloned := result.Headers.Clone()
 	if cloned == nil {
 		t.Fatal("克隆failed，return nil")
 	}
 
-	// modify克隆对象
+	// Translated comment
 	cloned.Set("Cookie", "modified")
 	cloned.Set("X-New", "new-value")
 
-	// verify原对象未被modify
+	// Translated comment
 	originalHeaders := result.Headers.ToMap()
 	if cookie, ok := originalHeaders["Cookie"]; !ok || cookie != "original" {
 		t.Error("原对象的 Cookie 被意外modify")
@@ -181,7 +181,7 @@ func TestHeadersCloneIntegration(t *testing.T) {
 		t.Error("原对象不应该包含 X-New")
 	}
 
-	// verify克隆对象已被modify
+	// Translated comment
 	clonedHeaders := cloned.ToMap()
 	if cookie, ok := clonedHeaders["Cookie"]; !ok || cookie != "modified" {
 		t.Error("克隆对象的 Cookie 未正确modify")
@@ -191,7 +191,7 @@ func TestHeadersCloneIntegration(t *testing.T) {
 	}
 }
 
-// TestTLSClientHelloIntegration 集成测试：TLS Client Hello
+// Translated comment
 func TestTLSClientHelloIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skip集成测试（使用 -short 标志）")
@@ -215,7 +215,7 @@ func TestTLSClientHelloIntegration(t *testing.T) {
 				t.Fatalf("get ClientHelloSpec failed: %v", err)
 			}
 
-			// verify spec 的完整性
+			// Translated comment
 			if len(spec.CipherSuites) == 0 {
 				t.Error("CipherSuites 不能为空")
 			}
@@ -226,7 +226,7 @@ func TestTLSClientHelloIntegration(t *testing.T) {
 	}
 }
 
-// TestConcurrentAccess concurrentvisit测试
+// Translated comment
 func TestConcurrentAccess(t *testing.T) {
 	const goroutines = 100
 	const iterations = 10
@@ -239,37 +239,37 @@ func TestConcurrentAccess(t *testing.T) {
 			defer func() { done <- true }()
 
 			for j := 0; j < iterations; j++ {
-				// 测试随机指纹get
+				// Translated comment
 				result, err := random.GetRandomFingerprint()
 				if err != nil {
 					errors <- fmt.Errorf("GetRandomFingerprint failed: %v", err)
 					continue
 				}
 
-				// 测试 Headers 操作
+				// Translated comment
 				result.Headers.Set("Cookie", fmt.Sprintf("test_%d_%d", i, j))
 				_ = result.Headers.ToMap()
 
-				// 测试克隆
+				// Translated comment
 				_ = result.Headers.Clone()
 
-				// 测试随机语言
+				// Translated comment
 				_ = headers.RandomLanguage()
 
-				// 测试随机 OS
+				// Translated comment
 				_ = useragent.RandomOS()
 			}
 		}()
 	}
 
-	// wait所有 goroutine complete
+	// Translated comment
 	for i := 0; i < goroutines; i++ {
 		<-done
 	}
 
 	close(errors)
 
-	// checkwhether有error
+	// Translated comment
 	var errCount int
 	for err := range errors {
 		t.Error(err)
@@ -287,7 +287,7 @@ func TestConcurrentAccess(t *testing.T) {
 		goroutines, iterations, goroutines*iterations)
 }
 
-// TestRealTLSConnection 真实 TLS connect测试（optional，需要网络）
+// Translated comment
 func TestRealTLSConnection(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skip网络测试（使用 -short 标志）")
@@ -312,7 +312,7 @@ func TestRealTLSConnection(t *testing.T) {
 		ServerName: "www.google.com",
 	}
 
-	// 尝试建立 TLS connect（timeout 5 秒）
+	// Translated comment
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -327,13 +327,13 @@ func TestRealTLSConnection(t *testing.T) {
 	}
 	defer conn.Close()
 
-	// 使用 utls create客户端
+	// Translated comment
 	tlsConn := tls.UClient(conn, tlsConfig, result.Profile.GetClientHelloId(), false, false, false)
 	if err := tlsConn.ApplyPreset(&spec); err != nil {
 		t.Fatalf("应用 TLS preset failed: %v", err)
 	}
 
-	// execute TLS 握手
+	// Translated comment
 	if err := tlsConn.Handshake(); err != nil {
 		if strings.Contains(err.Error(), "empty psk detected") {
 			t.Skipf("skip当前随机指纹的 TLS 握手测试（uTLS PSK limit）: %v", err)
@@ -342,13 +342,13 @@ func TestRealTLSConnection(t *testing.T) {
 		t.Fatalf("TLS 握手failed: %v", err)
 	}
 
-	// send简单的 HTTP request
+	// Translated comment
 	request := fmt.Sprintf("GET / HTTP/1.1\r\nHost: www.google.com\r\nUser-Agent: %s\r\nConnection: close\r\n\r\n", result.UserAgent)
 	if _, err := tlsConn.Write([]byte(request)); err != nil {
 		t.Fatalf("sendrequestfailed: %v", err)
 	}
 
-	// 读取response
+	// Translated comment
 	response := make([]byte, 1024)
 	n, err := tlsConn.Read(response)
 	if err != nil && err != io.EOF {
@@ -363,7 +363,7 @@ func TestRealTLSConnection(t *testing.T) {
 	t.Logf("response预览: %s", string(response[:min(200, n)]))
 }
 
-// TestAllProfilesWithUserAgent 测试所有 profile 的 User-Agent generate
+// Translated comment
 func TestAllProfilesWithUserAgent(t *testing.T) {
 	failCount := 0
 	successCount := 0
@@ -402,7 +402,7 @@ func TestAllProfilesWithUserAgent(t *testing.T) {
 	}
 }
 
-// 辅助函数
+// Translated comment
 func min(a, b int) int {
 	if a < b {
 		return a

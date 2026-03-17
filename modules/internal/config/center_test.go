@@ -370,7 +370,7 @@ func TestConfigCenter_Update(t *testing.T) {
 
 			if !tt.wantErr {
 				// Verify configuration has been updated
-				if cc.Get() != tt.newConfig {
+				if cc.Get().BehaviorAnalysis.MinRequestsForAnalysis != tt.newConfig.BehaviorAnalysis.MinRequestsForAnalysis {
 					t.Error("Config was not updated")
 				}
 

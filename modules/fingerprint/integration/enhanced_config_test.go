@@ -8,17 +8,17 @@ import (
 )
 
 func TestEnhancedConfigCenterBasic(t *testing.T) {
-	// 首先initialize默认configuration
+	// Translated comment
 	if err := config.InitializeConfigCenterWithDefaults(); err != nil {
 		t.Fatalf("Failed to initialize default config: %v", err)
 	}
 
-	// get基础configuration中心并包装
+	// Translated comment
 	baseCenter := config.GetConfigCenter()
 	center := config.WrapConfigCenter(baseCenter)
 	defer center.Close()
 
-	// 测试基本功能 - getconfiguration
+	// Translated comment
 	currentConfig := center.Get()
 	if currentConfig == nil {
 		t.Fatal("Current config should not be nil")
@@ -37,14 +37,14 @@ func TestConfigHealthCheck(t *testing.T) {
 	center := config.WrapConfigCenter(baseCenter)
 	defer center.Close()
 
-	// wait健康checkcomplete
+	// Translated comment
 	time.Sleep(100 * time.Millisecond)
 
-	// get健康state
+	// Translated comment
 	health := center.GetHealthStatus()
 	t.Logf("Health status: Healthy=%v, Issues=%v", health.Healthy, health.Issues)
 
-	// 测试添加健康check函数
+	// Translated comment
 	center.AddHealthCheck(func(cfg *config.ManagedConfig) []string {
 		var issues []string
 		if cfg.Metadata == nil {
@@ -66,13 +66,13 @@ func TestConfigSubscription(t *testing.T) {
 	center := config.WrapConfigCenter(baseCenter)
 	defer center.Close()
 
-	// 订阅configuration变更
+	// Translated comment
 	eventCh, err := center.Subscribe("test-subscriber")
 	if err != nil {
 		t.Fatalf("Failed to subscribe: %v", err)
 	}
 
-	// create测试configuration
+	// Translated comment
 	currentConfig := center.Get()
 	testConfig := *currentConfig
 	if testConfig.BehaviorAnalysis == nil {
@@ -80,14 +80,14 @@ func TestConfigSubscription(t *testing.T) {
 	}
 	testConfig.BehaviorAnalysis.MinRequestsForAnalysis = 15
 
-	// 在goroutine中wait事件
+	// Translated comment
 	eventsReceived := make(chan bool, 1)
 	go func() {
 		timeout := time.After(5 * time.Second)
 		select {
 		case event := <-eventCh:
 			if event.Type == config.ConfigChangeTypeSubscribe {
-				// ignore订阅confirm事件
+				// Translated comment
 				select {
 				case updateEvent := <-eventCh:
 					if updateEvent.Type == config.ConfigChangeTypeUpdate {
@@ -107,7 +107,7 @@ func TestConfigSubscription(t *testing.T) {
 		t.Fatalf("Failed to update config: %v", err)
 	}
 
-	// wait事件receive
+	// Translated comment
 	select {
 	case received := <-eventsReceived:
 		if !received {
@@ -128,7 +128,7 @@ func TestMultipleSubscribers(t *testing.T) {
 	center := config.WrapConfigCenter(baseCenter)
 	defer center.Close()
 
-	// create多个订阅者
+	// Translated comment
 	subscriber1, err := center.Subscribe("subscriber-1")
 	if err != nil {
 		t.Fatalf("Failed to create subscriber 1: %v", err)
@@ -151,7 +151,7 @@ func TestMultipleSubscribers(t *testing.T) {
 		t.Fatalf("Failed to update config: %v", err)
 	}
 
-	// verify两个订阅者都能收到事件
+	// Translated comment
 	timeout := time.After(2 * time.Second)
 
 	received1 := false
@@ -190,23 +190,23 @@ func TestUnsubscribe(t *testing.T) {
 	center := config.WrapConfigCenter(baseCenter)
 	defer center.Close()
 
-	// 订阅
+	// Translated comment
 	_, err := center.Subscribe("test-unsubscribe")
 	if err != nil {
 		t.Fatalf("Failed to subscribe: %v", err)
 	}
 
-	// cancel订阅
+	// Translated comment
 	if err := center.Unsubscribe("test-unsubscribe"); err != nil {
 		t.Fatalf("Failed to unsubscribe: %v", err)
 	}
 
-	// 尝试再次cancel订阅应该failed
+	// Translated comment
 	if err := center.Unsubscribe("test-unsubscribe"); err == nil {
 		t.Error("Expected error when unsubscribing non-existent subscriber")
 	}
 
-	// updateconfiguration不应该导致panic
+	// Translated comment
 	currentConfig := center.Get()
 	testConfig := *currentConfig
 	if testConfig.BehaviorAnalysis == nil {

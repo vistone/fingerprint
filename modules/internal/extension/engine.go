@@ -151,91 +151,77 @@ func (e *ProcessingEngine) Process(request *ProcessingRequest) *ProcessingResult
 	}
 
 	if request == nil {
-		result.Error = "request is nil"
-		result.Success = false
-		return result
+		return e.failResult(result, "request is nil")
 	}
 
-	// Create context
 	ctx := request.Context
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	// Execute pre-interceptors
 	if err := e.executeInterceptors("pre", request, result); err != nil {
-		result.Error = fmt.Sprintf("pre-interceptor error: %v", err)
-		result.Success = false
-		return result
+		return e.failResult(result, fmt.Sprintf("pre-interceptor error: %v", err))
 	}
 
-	// Determine processing steps
 	steps := request.Steps
 	if len(steps) == 0 {
-		steps = []string{"parse", "analyze"} // default steps
+		steps = []string{"parse", "analyze"}
 	}
 
-	// Execute processing steps
 	for _, step := range steps {
-		switch step {
-		case "parse":
-			if err := e.parseExtension(ctx, request, result); err != nil {
-				result.Error = fmt.Sprintf("parse error: %v", err)
-				result.Success = false
-				return result
-			}
-
-		case "analyze":
-			if result.ParsedData == nil {
-				if err := e.parseExtension(ctx, request, result); err != nil {
-					result.Error = fmt.Sprintf("parse error: %v", err)
-					result.Success = false
-					return result
-				}
-			}
-
-			if err := e.analyzeExtension(ctx, request, result); err != nil {
-				result.Error = fmt.Sprintf("analyze error: %v", err)
-				result.Success = false
-				return result
-			}
-
-		case "handle":
-			if err := e.handleExtension(ctx, request, result); err != nil {
-				result.Error = fmt.Sprintf("handle error: %v", err)
-				result.Success = false
-				return result
-			}
-
-		case "transform":
-			if result.ParsedData == nil {
-				if err := e.parseExtension(ctx, request, result); err != nil {
-					result.Error = fmt.Sprintf("parse error: %v", err)
-					result.Success = false
-					return result
-				}
-			}
-
-			if err := e.transformExtension(ctx, request, result); err != nil {
-				result.Error = fmt.Sprintf("transform error: %v", err)
-				result.Success = false
-				return result
-			}
-
-		default:
-			result.Error = fmt.Sprintf("unknown step: %s", step)
-			result.Success = false
-			return result
+		if err := e.executeStep(ctx, request, result, step); err != nil {
+			return e.failResult(result, err.Error())
 		}
 	}
 
-	// Execute post-interceptors
 	if err := e.executeInterceptors("post", request, result); err != nil {
-		result.Error = fmt.Sprintf("post-interceptor error: %v", err)
-		result.Success = false
-		return result
+		return e.failResult(result, fmt.Sprintf("post-interceptor error: %v", err))
 	}
 
+	return result
+}
+
+func (e *ProcessingEngine) executeStep(ctx context.Context, request *ProcessingRequest, result *ProcessingResult, step string) error {
+	switch step {
+	case "parse":
+		if err := e.parseExtension(ctx, request, result); err != nil {
+			return fmt.Errorf("parse error: %v", err)
+		}
+	case "analyze":
+		if err := e.ensureParsed(ctx, request, result); err != nil {
+			return fmt.Errorf("parse error: %v", err)
+		}
+		if err := e.analyzeExtension(ctx, request, result); err != nil {
+			return fmt.Errorf("analyze error: %v", err)
+		}
+	case "handle":
+		if err := e.handleExtension(ctx, request, result); err != nil {
+			return fmt.Errorf("handle error: %v", err)
+		}
+	case "transform":
+		if err := e.ensureParsed(ctx, request, result); err != nil {
+			return fmt.Errorf("parse error: %v", err)
+		}
+		if err := e.transformExtension(ctx, request, result); err != nil {
+			return fmt.Errorf("transform error: %v", err)
+		}
+	default:
+		return fmt.Errorf("unknown step: %s", step)
+	}
+
+	return nil
+}
+
+func (e *ProcessingEngine) ensureParsed(ctx context.Context, request *ProcessingRequest, result *ProcessingResult) error {
+	if result.ParsedData != nil {
+		return nil
+	}
+	return e.parseExtension(ctx, request, result)
+}
+
+func (e *ProcessingEngine) failResult(result *ProcessingResult, message string) *ProcessingResult {
+	result.Error = message
+	result.Success = false
 	return result
 }
 

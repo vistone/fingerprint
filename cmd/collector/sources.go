@@ -10,6 +10,16 @@ import (
 	"time"
 )
 
+type tlsEntry struct {
+	Browser    string
+	Version    string
+	OS         string
+	Ciphers    []uint16
+	Extensions []uint16
+	Curves     []uint16
+	ALPN       []string
+}
+
 func collectJA3er(ctx context.Context, client *http.Client) ([]CollectedFingerprint, error) {
 	// JA3er public API: top user agents with their JA3 hashes
 	urls := []string{
@@ -235,86 +245,81 @@ func collectJA3BuiltinKnowledge() []CollectedFingerprint {
 
 // collectTLSBuiltinKnowledge returns detailed TLS fingerprints from known browsers.
 func collectTLSBuiltinKnowledge() []CollectedFingerprint {
-	type tlsEntry struct {
-		Browser    string
-		Version    string
-		OS         string
-		Ciphers    []uint16
-		Extensions []uint16
-		Curves     []uint16
-		ALPN       []string
-	}
-
-	known := []tlsEntry{
-		// Chrome 120+ (Windows/macOS/Linux)
-		{
-			Browser: "chrome", Version: "130", OS: "Windows",
-			Ciphers:    []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8, 0xc02c, 0xc030, 0xc00a, 0xc009, 0xc013, 0xc014, 0x002f, 0x0035, 0x000a},
-			Extensions: []uint16{0x0000, 0x0017, 0xff01, 0x000a, 0x000b, 0x0023, 0x0010, 0x0005, 0x000d, 0x0012, 0x002b, 0x002d, 0x001c, 0x001b, 0x0033, 0x0015},
-			Curves:     []uint16{0x001d, 0x0017, 0x0018, 0x0019},
-			ALPN:       []string{"h2", "http/1.1"},
-		},
-		// Chrome 130+ (macOS)
-		{
-			Browser: "chrome", Version: "130", OS: "macOS",
-			Ciphers:    []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8, 0xc02c, 0xc030, 0xc00a, 0xc009, 0xc013, 0xc014, 0x002f, 0x0035},
-			Extensions: []uint16{0x0000, 0x0017, 0xff01, 0x000a, 0x000b, 0x0023, 0x0010, 0x0005, 0x000d, 0x002b, 0x002d, 0x0033, 0x001b, 0x0015},
-			Curves:     []uint16{0x001d, 0x0017, 0x0018},
-			ALPN:       []string{"h2", "http/1.1"},
-		},
-		// Firefox 130+ (Windows)
-		{
-			Browser: "firefox", Version: "130", OS: "Windows",
-			Ciphers:    []uint16{0x1301, 0x1303, 0x1302, 0xc02b, 0xc02f, 0xcca9, 0xcca8, 0xc02c, 0xc030, 0xc00a, 0xc009, 0xc013, 0xc014},
-			Extensions: []uint16{0x0000, 0x0017, 0xff01, 0x000a, 0x000b, 0x0023, 0x0010, 0x0005, 0x000d, 0x002b, 0x002d, 0x0033, 0x001c},
-			Curves:     []uint16{0x001d, 0x0017, 0x0018, 0x0100},
-			ALPN:       []string{"h2", "http/1.1"},
-		},
-		// Firefox 130+ (macOS)
-		{
-			Browser: "firefox", Version: "130", OS: "macOS",
-			Ciphers:    []uint16{0x1301, 0x1303, 0x1302, 0xc02b, 0xc02f, 0xcca9, 0xcca8, 0xc02c, 0xc030},
-			Extensions: []uint16{0x0000, 0x0017, 0xff01, 0x000a, 0x000b, 0x0023, 0x0010, 0x0005, 0x000d, 0x002b, 0x002d, 0x0033},
-			Curves:     []uint16{0x001d, 0x0017, 0x0018, 0x0100},
-			ALPN:       []string{"h2", "http/1.1"},
-		},
-		// Safari 17+ (macOS)
-		{
-			Browser: "safari", Version: "17", OS: "macOS",
-			Ciphers:    []uint16{0x1301, 0x1302, 0x1303, 0xc02c, 0xc02b, 0xc030, 0xc02f, 0xcca9, 0xcca8, 0xc00a, 0xc009, 0xc014, 0xc013, 0x002f, 0x0035},
-			Extensions: []uint16{0x0000, 0x0017, 0xff01, 0x000a, 0x000b, 0x0023, 0x0010, 0x0005, 0x000d, 0x002b, 0x002d, 0x0033},
-			Curves:     []uint16{0x001d, 0x0017, 0x0018},
-			ALPN:       []string{"h2", "http/1.1"},
-		},
-		// Safari 17+ (iOS)
-		{
-			Browser: "safari", Version: "17", OS: "iOS",
-			Ciphers:    []uint16{0x1301, 0x1302, 0x1303, 0xc02c, 0xc02b, 0xc030, 0xc02f, 0xcca9, 0xcca8, 0xc00a, 0xc009, 0xc014, 0xc013},
-			Extensions: []uint16{0x0000, 0x0017, 0xff01, 0x000a, 0x000b, 0x0023, 0x0010, 0x0005, 0x000d, 0x002b, 0x002d, 0x0033},
-			Curves:     []uint16{0x001d, 0x0017, 0x0018},
-			ALPN:       []string{"h2", "http/1.1"},
-		},
-	}
-
-	fps := make([]CollectedFingerprint, 0, len(known))
-	for _, k := range known {
-		fps = append(fps, CollectedFingerprint{
-			Source:      "tls_knowledge",
-			CollectedAt: time.Now().UTC().Format(time.RFC3339),
-			BrowserName: k.Browser,
-			BrowserVer:  k.Version,
-			OSName:      k.OS,
-			TLS: &TLSFingerprint{
-				Version:         0x0303,
-				CipherSuites:    k.Ciphers,
-				Extensions:      k.Extensions,
-				SupportedGroups: k.Curves,
-				ALPNProtocols:   k.ALPN,
-				SNI:             true,
-			},
-		})
+	collectedAt := time.Now().UTC().Format(time.RFC3339)
+	fps := make([]CollectedFingerprint, 0, len(tlsBuiltinKnowledge))
+	for _, k := range tlsBuiltinKnowledge {
+		fps = append(fps, buildTLSKnowledgeFingerprint(k, collectedAt))
 	}
 	return fps
+}
+
+func buildTLSKnowledgeFingerprint(k tlsEntry, collectedAt string) CollectedFingerprint {
+	return CollectedFingerprint{
+		Source:      "tls_knowledge",
+		CollectedAt: collectedAt,
+		BrowserName: k.Browser,
+		BrowserVer:  k.Version,
+		OSName:      k.OS,
+		TLS: &TLSFingerprint{
+			Version:         0x0303,
+			CipherSuites:    k.Ciphers,
+			Extensions:      k.Extensions,
+			SupportedGroups: k.Curves,
+			ALPNProtocols:   k.ALPN,
+			SNI:             true,
+		},
+	}
+}
+
+var tlsBuiltinKnowledge = []tlsEntry{
+	// Chrome 120+ (Windows/macOS/Linux)
+	{
+		Browser: "chrome", Version: "130", OS: "Windows",
+		Ciphers:    []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8, 0xc02c, 0xc030, 0xc00a, 0xc009, 0xc013, 0xc014, 0x002f, 0x0035, 0x000a},
+		Extensions: []uint16{0x0000, 0x0017, 0xff01, 0x000a, 0x000b, 0x0023, 0x0010, 0x0005, 0x000d, 0x0012, 0x002b, 0x002d, 0x001c, 0x001b, 0x0033, 0x0015},
+		Curves:     []uint16{0x001d, 0x0017, 0x0018, 0x0019},
+		ALPN:       []string{"h2", "http/1.1"},
+	},
+	// Chrome 130+ (macOS)
+	{
+		Browser: "chrome", Version: "130", OS: "macOS",
+		Ciphers:    []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9, 0xcca8, 0xc02c, 0xc030, 0xc00a, 0xc009, 0xc013, 0xc014, 0x002f, 0x0035},
+		Extensions: []uint16{0x0000, 0x0017, 0xff01, 0x000a, 0x000b, 0x0023, 0x0010, 0x0005, 0x000d, 0x002b, 0x002d, 0x0033, 0x001b, 0x0015},
+		Curves:     []uint16{0x001d, 0x0017, 0x0018},
+		ALPN:       []string{"h2", "http/1.1"},
+	},
+	// Firefox 130+ (Windows)
+	{
+		Browser: "firefox", Version: "130", OS: "Windows",
+		Ciphers:    []uint16{0x1301, 0x1303, 0x1302, 0xc02b, 0xc02f, 0xcca9, 0xcca8, 0xc02c, 0xc030, 0xc00a, 0xc009, 0xc013, 0xc014},
+		Extensions: []uint16{0x0000, 0x0017, 0xff01, 0x000a, 0x000b, 0x0023, 0x0010, 0x0005, 0x000d, 0x002b, 0x002d, 0x0033, 0x001c},
+		Curves:     []uint16{0x001d, 0x0017, 0x0018, 0x0100},
+		ALPN:       []string{"h2", "http/1.1"},
+	},
+	// Firefox 130+ (macOS)
+	{
+		Browser: "firefox", Version: "130", OS: "macOS",
+		Ciphers:    []uint16{0x1301, 0x1303, 0x1302, 0xc02b, 0xc02f, 0xcca9, 0xcca8, 0xc02c, 0xc030},
+		Extensions: []uint16{0x0000, 0x0017, 0xff01, 0x000a, 0x000b, 0x0023, 0x0010, 0x0005, 0x000d, 0x002b, 0x002d, 0x0033},
+		Curves:     []uint16{0x001d, 0x0017, 0x0018, 0x0100},
+		ALPN:       []string{"h2", "http/1.1"},
+	},
+	// Safari 17+ (macOS)
+	{
+		Browser: "safari", Version: "17", OS: "macOS",
+		Ciphers:    []uint16{0x1301, 0x1302, 0x1303, 0xc02c, 0xc02b, 0xc030, 0xc02f, 0xcca9, 0xcca8, 0xc00a, 0xc009, 0xc014, 0xc013, 0x002f, 0x0035},
+		Extensions: []uint16{0x0000, 0x0017, 0xff01, 0x000a, 0x000b, 0x0023, 0x0010, 0x0005, 0x000d, 0x002b, 0x002d, 0x0033},
+		Curves:     []uint16{0x001d, 0x0017, 0x0018},
+		ALPN:       []string{"h2", "http/1.1"},
+	},
+	// Safari 17+ (iOS)
+	{
+		Browser: "safari", Version: "17", OS: "iOS",
+		Ciphers:    []uint16{0x1301, 0x1302, 0x1303, 0xc02c, 0xc02b, 0xc030, 0xc02f, 0xcca9, 0xcca8, 0xc00a, 0xc009, 0xc014, 0xc013},
+		Extensions: []uint16{0x0000, 0x0017, 0xff01, 0x000a, 0x000b, 0x0023, 0x0010, 0x0005, 0x000d, 0x002b, 0x002d, 0x0033},
+		Curves:     []uint16{0x001d, 0x0017, 0x0018},
+		ALPN:       []string{"h2", "http/1.1"},
+	},
 }
 
 // collectBotFingerprints returns known fingerprints of headless browsers, bots, and tools.

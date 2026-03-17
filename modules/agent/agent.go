@@ -245,94 +245,107 @@ func (a *Agent) Stop() {
 func (a *Agent) Process(ctx context.Context, obs *Observation) *Decision {
 	start := time.Now()
 
-	// O: Record observation
 	a.memory.Record(obs)
-
-	// A1: Behavioral analysis
 	profile := a.behavior.Analyze(obs.ClientID)
-
-	// A2: Knowledge-driven anomaly detection
 	matchResult := a.anomaly.Analyze(obs)
-
-	// D: Strategy decision (behavioral + knowledge dual input)
 	decision := a.strategy.Evaluate(obs, profile)
+	a.applyKnowledgeMatch(decision, matchResult)
+	a.applyPipelineInference(decision, obs, profile)
+	a.applyReinforcementOverride(decision, obs, profile)
+	a.applyBanditSelection(decision, obs, profile, matchResult)
 
-	// Merge knowledge match result into decision
+	decision.LatencyUs = time.Since(start).Microseconds()
+	_ = ctx
+	return decision
+}
+
+func (a *Agent) applyKnowledgeMatch(decision *Decision, matchResult *MatchResult) {
 	decision.KnowledgeMatch = matchResult
-	if matchResult.SuspicionScore > 0.5 {
+	if matchResult.SuspicionScore <= 0.5 {
+		return
+	}
+
+	if decision.Action == ActionAllow {
+		decision.Action = ActionMonitor
+	} else if decision.Action == ActionMonitor {
+		decision.Action = ActionChallenge
+	}
+	decision.ThreatClass = ThreatFingerprintSpoof
+	decision.Insights = append(decision.Insights,
+		fmt.Sprintf("Knowledge base detected %d cross-layer contradictions, suspicion score %.2f",
+			len(matchResult.Contradictions), matchResult.SuspicionScore))
+}
+
+func (a *Agent) applyPipelineInference(decision *Decision, obs *Observation, profile *BehaviorSummary) {
+	if a.pipeline == nil || !a.pipeline.Trained() || obs.Features == nil {
+		return
+	}
+
+	behaviorVec := a.extractBehaviorVector(profile)
+	result := a.pipeline.InferFromFeatures(obs.Features, behaviorVec)
+	a.applyForgerySignals(decision, result)
+	a.applyThreatSignals(decision, result)
+	decision.Insights = append(decision.Insights,
+		fmt.Sprintf("NN browser: %s (confidence=%.2f)",
+			result.Browser.Family, result.Browser.Confidence))
+}
+
+func (a *Agent) applyForgerySignals(decision *Decision, result *ml.PipelineResult) {
+	if result.Forgery.ForgeryProb > 0.6 && result.Forgery.ForgeryProb > result.Forgery.TypeProbs[int(ml.ForgeryReal)] {
+		decision.Insights = append(decision.Insights,
+			fmt.Sprintf("NN forgery detector: %.1f%% probability, type=%s",
+				result.Forgery.ForgeryProb*100, forgeryTypeName(result.Forgery.ForgeryType)))
 		if decision.Action == ActionAllow {
 			decision.Action = ActionMonitor
-		} else if decision.Action == ActionMonitor {
+		}
+	}
+	if result.Forgery.ForgeryProb > 0.8 {
+		if decision.Action == ActionMonitor {
 			decision.Action = ActionChallenge
 		}
 		decision.ThreatClass = ThreatFingerprintSpoof
+	}
+}
+
+func (a *Agent) applyThreatSignals(decision *Decision, result *ml.PipelineResult) {
+	modelAction := threatActionToAgentAction(result.Threat.Action)
+	if result.Threat.ActionConfidence > 0.7 && actionIndex[modelAction] > actionIndex[decision.Action] {
+		decision.Action = modelAction
 		decision.Insights = append(decision.Insights,
-			fmt.Sprintf("Knowledge base detected %d cross-layer contradictions, suspicion score %.2f",
-				len(matchResult.Contradictions), matchResult.SuspicionScore))
+			fmt.Sprintf("NN threat assessor escalated to %s (confidence=%.2f, class=%s)",
+				modelAction, result.Threat.ThreatProb, threatClassName(result.Threat.ThreatClass)))
+	}
+}
+
+func (a *Agent) applyReinforcementOverride(decision *Decision, obs *Observation, profile *BehaviorSummary) {
+	if a.rl == nil {
+		return
 	}
 
-	// Neural model pipeline: run end-to-end inference if features available and model is trained
-	if a.pipeline != nil && a.pipeline.Trained() && obs.Features != nil {
-		behaviorVec := a.extractBehaviorVector(profile)
-		result := a.pipeline.InferFromFeatures(obs.Features, behaviorVec)
-
-		// Enhance decision with model output (only escalate when model confidence is high enough)
-		if result.Forgery.ForgeryProb > 0.6 && result.Forgery.ForgeryProb > result.Forgery.TypeProbs[int(ml.ForgeryReal)] {
-			decision.Insights = append(decision.Insights,
-				fmt.Sprintf("NN forgery detector: %.1f%% probability, type=%s",
-					result.Forgery.ForgeryProb*100, forgeryTypeName(result.Forgery.ForgeryType)))
-			if decision.Action == ActionAllow {
-				decision.Action = ActionMonitor
-			}
-		}
-		if result.Forgery.ForgeryProb > 0.8 {
-			if decision.Action == ActionMonitor {
-				decision.Action = ActionChallenge
-			}
-			decision.ThreatClass = ThreatFingerprintSpoof
-		}
-
-		// Model threat assessment can escalate actions (only when confidence > 0.7)
-		modelAction := threatActionToAgentAction(result.Threat.Action)
-		if result.Threat.ActionConfidence > 0.7 && actionIndex[modelAction] > actionIndex[decision.Action] {
-			decision.Action = modelAction
-			decision.Insights = append(decision.Insights,
-				fmt.Sprintf("NN threat assessor escalated to %s (confidence=%.2f, class=%s)",
-					modelAction, result.Threat.ThreatProb, threatClassName(result.Threat.ThreatClass)))
-		}
-
+	stateVec := ExtractStateVector(obs, profile)
+	rlAction, explored := a.rl.SelectActionContinuous(stateVec)
+	if explored {
+		decision.Insights = append(decision.Insights, "DQN exploring alternative action")
+	}
+	if actionIndex[rlAction] > actionIndex[decision.Action] {
+		qvals := a.rl.QValueContinuous(stateVec)
+		decision.Action = rlAction
 		decision.Insights = append(decision.Insights,
-			fmt.Sprintf("NN browser: %s (confidence=%.2f)",
-				result.Browser.Family, result.Browser.Confidence))
+			fmt.Sprintf("DQN escalated to %s (Q=%.3f)", rlAction, qvals[actionIndex[rlAction]]))
+	}
+}
+
+func (a *Agent) applyBanditSelection(decision *Decision, obs *Observation, profile *BehaviorSummary, matchResult *MatchResult) {
+	if a.bandit == nil || len(decision.TriggeredStrategies) <= 1 {
+		return
 	}
 
-	// DQN override: if reinforcement learning is active, let the neural network refine the action
-	if a.rl != nil {
-		stateVec := ExtractStateVector(obs, profile)
-		rlAction, explored := a.rl.SelectActionContinuous(stateVec)
-		if explored {
-			decision.Insights = append(decision.Insights, "DQN exploring alternative action")
-		}
-		if actionIndex[rlAction] > actionIndex[decision.Action] {
-			qvals := a.rl.QValueContinuous(stateVec)
-			decision.Action = rlAction
-			decision.Insights = append(decision.Insights,
-				fmt.Sprintf("DQN escalated to %s (Q=%.3f)", rlAction, qvals[actionIndex[rlAction]]))
-		}
+	banditCtx := BuildContext(obs, profile, matchResult)
+	bestArm, score := a.bandit.SelectArmAmong(banditCtx, decision.TriggeredStrategies)
+	if bestArm != "" {
+		decision.Insights = append(decision.Insights,
+			fmt.Sprintf("Bandit selected strategy %s (UCB=%.3f)", bestArm, score))
 	}
-
-	// Bandit-driven strategy prioritization
-	if a.bandit != nil && len(decision.TriggeredStrategies) > 1 {
-		ctx := BuildContext(obs, profile, matchResult)
-		bestArm, score := a.bandit.SelectArmAmong(ctx, decision.TriggeredStrategies)
-		if bestArm != "" {
-			decision.Insights = append(decision.Insights,
-				fmt.Sprintf("Bandit selected strategy %s (UCB=%.3f)", bestArm, score))
-		}
-	}
-
-	decision.LatencyUs = time.Since(start).Microseconds()
-	return decision
 }
 
 // GetBehaviorProfile retrieves the behavioral profile for the specified client (for external queries).

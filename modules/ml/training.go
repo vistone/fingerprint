@@ -332,7 +332,39 @@ func (t *Trainer) ExportModel(name, version string) *PretrainedModel {
 
 // GenerateSyntheticDataset generate synthetic training data
 func GenerateSyntheticDataset(name string, sampleCount int) *Dataset {
-	dataset := &Dataset{
+	dataset := newSyntheticDataset(name, sampleCount)
+	for i := 0; i < sampleCount; i++ {
+		browser := syntheticBrowsers[i%len(syntheticBrowsers)]
+		protocol := syntheticProtocols[i%len(syntheticProtocols)]
+		dataset.Samples = append(dataset.Samples, buildSyntheticSample(i, browser, protocol))
+	}
+
+	dataset.updateStatistics()
+	return dataset
+}
+
+type syntheticBrowserConfig struct {
+	family  core.BrowserType
+	version string
+}
+
+var syntheticBrowsers = []syntheticBrowserConfig{
+	{core.BrowserChrome, "133"},
+	{core.BrowserChrome, "131"},
+	{core.BrowserFirefox, "133"},
+	{core.BrowserFirefox, "132"},
+	{core.BrowserSafari, "18.0"},
+	{core.BrowserSafari, "17.0"},
+}
+
+var syntheticProtocols = []core.ProtocolType{
+	core.ProtocolTLS,
+	core.ProtocolHTTP2,
+	core.ProtocolHTTP3,
+}
+
+func newSyntheticDataset(name string, sampleCount int) *Dataset {
+	return &Dataset{
 		Name:        name,
 		Version:     "1.0",
 		Description: "Synthetic training dataset",
@@ -343,75 +375,46 @@ func GenerateSyntheticDataset(name string, sampleCount int) *Dataset {
 			VersionCounts:  make(map[string]int),
 		},
 	}
+}
 
-	// Browser configurations
-	browsers := []struct {
-		family  core.BrowserType
-		version string
-	}{
-		{core.BrowserChrome, "133"},
-		{core.BrowserChrome, "131"},
-		{core.BrowserFirefox, "133"},
-		{core.BrowserFirefox, "132"},
-		{core.BrowserSafari, "18.0"},
-		{core.BrowserSafari, "17.0"},
+func buildSyntheticSample(i int, browser syntheticBrowserConfig, protocol core.ProtocolType) TrainingSample {
+	fv := buildSyntheticFeatureVector(i, browser.family)
+	return TrainingSample{
+		ID:       fmt.Sprintf("sample_%d", i),
+		Features: fv,
+		Label: TrainingLabel{
+			Protocol: protocol,
+			Family:   browser.family,
+			Version:  browser.version,
+		},
+		Metadata: map[string]interface{}{
+			"synthetic": true,
+			"index":     i,
+		},
 	}
+}
 
-	protocols := []core.ProtocolType{
-		core.ProtocolTLS,
-		core.ProtocolHTTP2,
-		core.ProtocolHTTP3,
+func buildSyntheticFeatureVector(i int, family core.BrowserType) *core.FeatureVector {
+	fv := core.NewFeatureVector()
+	fv.Set(core.FeatureTLSVersion, 0x0303)
+	fv.Set(core.FeatureCipherSuites, float64(8+i%5))
+	fv.Set(core.FeatureExtensions, float64(10+i%8))
+	fv.Set(core.FeatureHTTP2Settings, float64(65536+i*1000))
+	fv.Set(core.FeatureHTTPHeaders, float64(10+i%3))
+
+	switch family {
+	case core.BrowserChrome:
+		fv.Set(core.FeatureUserAgent, 100.0+float64(i%20))
+		fv.Set(core.FeatureCanvas, 50.0+float64(i%10))
+		fv.Set(core.FeatureWebGL, 80.0+float64(i%15))
+	case core.BrowserFirefox:
+		fv.Set(core.FeatureUserAgent, 200.0+float64(i%20))
+		fv.Set(core.FeatureCanvas, 60.0+float64(i%10))
+		fv.Set(core.FeatureWebGL, 70.0+float64(i%15))
+	case core.BrowserSafari:
+		fv.Set(core.FeatureUserAgent, 300.0+float64(i%20))
+		fv.Set(core.FeatureCanvas, 55.0+float64(i%10))
+		fv.Set(core.FeatureWebGL, 75.0+float64(i%15))
 	}
-
-	for i := 0; i < sampleCount; i++ {
-		browser := browsers[i%len(browsers)]
-		protocol := protocols[i%len(protocols)]
-
-		// Generate feature vector (with some random variation)
-		fv := core.NewFeatureVector()
-
-		// TLS features
-		fv.Set(core.FeatureTLSVersion, 0x0303)
-		fv.Set(core.FeatureCipherSuites, float64(8+i%5))
-		fv.Set(core.FeatureExtensions, float64(10+i%8))
-
-		// HTTP features
-		fv.Set(core.FeatureHTTP2Settings, float64(65536+i*1000))
-		fv.Set(core.FeatureHTTPHeaders, float64(10+i%3))
-
-		// Browser features
-		switch browser.family {
-		case core.BrowserChrome:
-			fv.Set(core.FeatureUserAgent, 100.0+float64(i%20))
-			fv.Set(core.FeatureCanvas, 50.0+float64(i%10))
-			fv.Set(core.FeatureWebGL, 80.0+float64(i%15))
-		case core.BrowserFirefox:
-			fv.Set(core.FeatureUserAgent, 200.0+float64(i%20))
-			fv.Set(core.FeatureCanvas, 60.0+float64(i%10))
-			fv.Set(core.FeatureWebGL, 70.0+float64(i%15))
-		case core.BrowserSafari:
-			fv.Set(core.FeatureUserAgent, 300.0+float64(i%20))
-			fv.Set(core.FeatureCanvas, 55.0+float64(i%10))
-			fv.Set(core.FeatureWebGL, 75.0+float64(i%15))
-		}
-
-		sample := TrainingSample{
-			ID:       fmt.Sprintf("sample_%d", i),
-			Features: fv,
-			Label: TrainingLabel{
-				Protocol: protocol,
-				Family:   browser.family,
-				Version:  browser.version,
-			},
-			Metadata: map[string]interface{}{
-				"synthetic": true,
-				"index":     i,
-			},
-		}
-
-		dataset.Samples = append(dataset.Samples, sample)
-	}
-
-	dataset.updateStatistics()
-	return dataset
+	return fv
 }

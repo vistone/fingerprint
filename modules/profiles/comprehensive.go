@@ -74,90 +74,92 @@ func createChromeTCPIP(osType core.OperatingSystem) *TCPIPFingerprint {
 
 // Chrome comprehensive profile (30 profiles)
 func initChromeProfiles() {
-	chromeVersions := []struct {
-		id      string
-		version string
-		os      core.OperatingSystem
-		osVer   string
-	}{
-		{"chrome_103", "103.0.5060.134", core.OSWindows10, "10.0.19044"},
-		{"chrome_104", "104.0.5112.102", core.OSWindows10, "10.0.19044"},
-		{"chrome_105", "105.0.5195.127", core.OSWindows10, "10.0.19044"},
-		{"chrome_106", "106.0.5249.119", core.OSWindows10, "10.0.19044"},
-		{"chrome_107", "107.0.5304.107", core.OSWindows11, "10.0.22000"},
-		{"chrome_108", "108.0.5359.125", core.OSWindows11, "10.0.22000"},
-		{"chrome_109", "109.0.5414.120", core.OSWindows11, "10.0.22000"},
-		{"chrome_110", "110.0.5481.178", core.OSWindows11, "10.0.22621"},
-		{"chrome_111", "111.0.5563.147", core.OSWindows11, "10.0.22621"},
-		{"chrome_112", "112.0.5615.138", core.OSWindows11, "10.0.22621"},
-		{"chrome_113", "113.0.5672.127", core.OSWindows11, "10.0.22621"},
-		{"chrome_114", "114.0.5735.199", core.OSWindows11, "10.0.22621"},
-		{"chrome_115", "115.0.5790.171", core.OSWindows11, "10.0.22621"},
-		{"chrome_116", "116.0.5845.188", core.OSWindows11, "10.0.22621"},
-		{"chrome_117", "117.0.5938.149", core.OSWindows11, "10.0.22631"},
-		{"chrome_118", "118.0.5993.117", core.OSWindows11, "10.0.22631"},
-		{"chrome_119", "119.0.6045.200", core.OSWindows11, "10.0.22631"},
-		{"chrome_121", "121.0.6167.185", core.OSMacOS14, "14.0"},
-		{"chrome_122", "122.0.6261.128", core.OSMacOS14, "14.0"},
-		{"chrome_125", "125.0.6422.142", core.OSMacOS15, "15.0"},
-		{"chrome_126", "126.0.6478.126", core.OSMacOS15, "15.0"},
-		{"chrome_127", "127.0.6533.120", core.OSLinuxUbuntu, "22.04"},
-		{"chrome_128", "128.0.6613.138", core.OSLinuxUbuntu, "22.04"},
-		{"chrome_129", "129.0.6668.101", core.OSLinuxUbuntu, "22.04"},
-		// versions already present in other files
-		// 120, 124, 130, 131, 132, 133
+	for _, v := range chromeComprehensiveVersions {
+		Register(buildComprehensiveChromeProfile(v))
 	}
+}
 
-	for _, v := range chromeVersions {
-		p := ClientProfile{
-			ID:             v.id,
-			Name:           "Chrome " + getMajorVersion(v.version),
-			BrowserType:    core.BrowserChrome,
-			BrowserVersion: v.version,
-			OS:             v.os,
-			OSVersion:      v.osVer,
-			OSArch:         "x86_64",
-			OSBitness:      "64",
-			TLSVersion:     0x0303,
-			CipherSuites:   []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9},
-			Extensions: []core.TLSExtension{
-				{Type: 0x0000}, {Type: 0x0017}, {Type: 0xff01},
-				{Type: 0x000a}, {Type: 0x000b}, {Type: 0x0023},
-				{Type: 0x0016}, {Type: 0x000d}, {Type: 0x002b},
-				{Type: 0x002d}, {Type: 0x0033},
-			},
-			SupportedCurves: []core.CurveID{core.CurveX25519, core.CurveP256},
-			HTTP2Settings: core.HTTP2Settings{
-				HeaderTableSize: 65536, EnablePush: 0,
-				MaxConcurrentStreams: 1000, InitialWindowSize: 6291456,
-			},
-			// HTTP/3 (QUIC) profile - Chrome already supported HTTP/3
-			HTTP3Settings: &core.HTTP3Settings{
-				QUICVersion:            core.QUICVersion1,
-				InitialMaxData:         16777216, // 16MB
-				InitialMaxStreamData:   6291456,  // 6MB
-				InitialMaxStreamsBidi:  100,
-				InitialMaxStreamsUni:   100,
-				MaxUDPPayloadSize:      1472,
-				AckDelayExponent:       3,
-				MaxAckDelay:            25,
-				DisableActiveMigration: false,
-			},
-			QUICVersions: []uint32{core.QUICVersion1},
-			Headers: &core.HTTPHeaders{
-				Accept:          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-				AcceptLanguage:  "en-US,en;q=0.9",
-				AcceptEncoding:  "gzip, deflate, br",
-				SecFetchSite:    "none",
-				SecFetchMode:    "navigate",
-				SecFetchDest:    "document",
-				SecCHUA:         `"Chromium";v="` + safeSliceVersion(v.version) + `", "Google Chrome";v="` + safeSliceVersion(v.version) + `"`,
-				SecCHUAMobile:   "?0",
-				SecCHUAPlatform: platformString(v.os),
-			},
-			TCPIP: createChromeTCPIP(v.os),
-		}
-		Register(p)
+type chromeComprehensiveVersion struct {
+	id      string
+	version string
+	os      core.OperatingSystem
+	osVer   string
+}
+
+var chromeComprehensiveVersions = []chromeComprehensiveVersion{
+	{"chrome_103", "103.0.5060.134", core.OSWindows10, "10.0.19044"},
+	{"chrome_104", "104.0.5112.102", core.OSWindows10, "10.0.19044"},
+	{"chrome_105", "105.0.5195.127", core.OSWindows10, "10.0.19044"},
+	{"chrome_106", "106.0.5249.119", core.OSWindows10, "10.0.19044"},
+	{"chrome_107", "107.0.5304.107", core.OSWindows11, "10.0.22000"},
+	{"chrome_108", "108.0.5359.125", core.OSWindows11, "10.0.22000"},
+	{"chrome_109", "109.0.5414.120", core.OSWindows11, "10.0.22000"},
+	{"chrome_110", "110.0.5481.178", core.OSWindows11, "10.0.22621"},
+	{"chrome_111", "111.0.5563.147", core.OSWindows11, "10.0.22621"},
+	{"chrome_112", "112.0.5615.138", core.OSWindows11, "10.0.22621"},
+	{"chrome_113", "113.0.5672.127", core.OSWindows11, "10.0.22621"},
+	{"chrome_114", "114.0.5735.199", core.OSWindows11, "10.0.22621"},
+	{"chrome_115", "115.0.5790.171", core.OSWindows11, "10.0.22621"},
+	{"chrome_116", "116.0.5845.188", core.OSWindows11, "10.0.22621"},
+	{"chrome_117", "117.0.5938.149", core.OSWindows11, "10.0.22631"},
+	{"chrome_118", "118.0.5993.117", core.OSWindows11, "10.0.22631"},
+	{"chrome_119", "119.0.6045.200", core.OSWindows11, "10.0.22631"},
+	{"chrome_121", "121.0.6167.185", core.OSMacOS14, "14.0"},
+	{"chrome_122", "122.0.6261.128", core.OSMacOS14, "14.0"},
+	{"chrome_125", "125.0.6422.142", core.OSMacOS15, "15.0"},
+	{"chrome_126", "126.0.6478.126", core.OSMacOS15, "15.0"},
+	{"chrome_127", "127.0.6533.120", core.OSLinuxUbuntu, "22.04"},
+	{"chrome_128", "128.0.6613.138", core.OSLinuxUbuntu, "22.04"},
+	{"chrome_129", "129.0.6668.101", core.OSLinuxUbuntu, "22.04"},
+}
+
+func buildComprehensiveChromeProfile(v chromeComprehensiveVersion) ClientProfile {
+	return ClientProfile{
+		ID:             v.id,
+		Name:           "Chrome " + getMajorVersion(v.version),
+		BrowserType:    core.BrowserChrome,
+		BrowserVersion: v.version,
+		OS:             v.os,
+		OSVersion:      v.osVer,
+		OSArch:         "x86_64",
+		OSBitness:      "64",
+		TLSVersion:     0x0303,
+		CipherSuites:   []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xcca9},
+		Extensions: []core.TLSExtension{
+			{Type: 0x0000}, {Type: 0x0017}, {Type: 0xff01},
+			{Type: 0x000a}, {Type: 0x000b}, {Type: 0x0023},
+			{Type: 0x0016}, {Type: 0x000d}, {Type: 0x002b},
+			{Type: 0x002d}, {Type: 0x0033},
+		},
+		SupportedCurves: []core.CurveID{core.CurveX25519, core.CurveP256},
+		HTTP2Settings: core.HTTP2Settings{
+			HeaderTableSize: 65536, EnablePush: 0,
+			MaxConcurrentStreams: 1000, InitialWindowSize: 6291456,
+		},
+		HTTP3Settings: &core.HTTP3Settings{
+			QUICVersion:            core.QUICVersion1,
+			InitialMaxData:         16777216,
+			InitialMaxStreamData:   6291456,
+			InitialMaxStreamsBidi:  100,
+			InitialMaxStreamsUni:   100,
+			MaxUDPPayloadSize:      1472,
+			AckDelayExponent:       3,
+			MaxAckDelay:            25,
+			DisableActiveMigration: false,
+		},
+		QUICVersions: []uint32{core.QUICVersion1},
+		Headers: &core.HTTPHeaders{
+			Accept:          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			AcceptLanguage:  "en-US,en;q=0.9",
+			AcceptEncoding:  "gzip, deflate, br",
+			SecFetchSite:    "none",
+			SecFetchMode:    "navigate",
+			SecFetchDest:    "document",
+			SecCHUA:         `"Chromium";v="` + safeSliceVersion(v.version) + `", "Google Chrome";v="` + safeSliceVersion(v.version) + `"`,
+			SecCHUAMobile:   "?0",
+			SecCHUAPlatform: platformString(v.os),
+		},
+		TCPIP: createChromeTCPIP(v.os),
 	}
 }
 

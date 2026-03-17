@@ -7,8 +7,16 @@ import (
 )
 
 func (kb *KnowledgeBase) loadBuiltinKnowledge() {
-	// Chrome knowledge
-	kb.browsers[core.BrowserChrome] = &BrowserKnowledge{
+	kb.browsers[core.BrowserChrome] = buildChromeKnowledge()
+	kb.browsers[core.BrowserFirefox] = buildFirefoxKnowledge()
+	kb.browsers[core.BrowserSafari] = buildSafariKnowledge()
+	kb.browsers[core.BrowserEdge] = buildEdgeKnowledge()
+	kb.browsers[core.BrowserOpera] = buildOperaKnowledge()
+	kb.browsers[core.BrowserBrave] = buildBraveKnowledge()
+}
+
+func buildChromeKnowledge() *BrowserKnowledge {
+	return &BrowserKnowledge{
 		Family:             core.BrowserChrome,
 		CommonCipherSuites: []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8},
 		CommonExtensions:   []uint16{0x0000, 0x0017, 0xff01, 0x000a, 0x000b, 0x0023, 0x0016, 0x000d, 0x002b, 0x002d, 0x0033},
@@ -41,9 +49,10 @@ func (kb *KnowledgeBase) loadBuiltinKnowledge() {
 				H2InitialWindowSize: 6291456, H2MaxConcurrentStreams: 1000, H2HeaderTableSize: 65536, ConnectionFlow: 15663105},
 		},
 	}
+}
 
-	// Firefox knowledge
-	kb.browsers[core.BrowserFirefox] = &BrowserKnowledge{
+func buildFirefoxKnowledge() *BrowserKnowledge {
+	return &BrowserKnowledge{
 		Family:             core.BrowserFirefox,
 		CommonCipherSuites: []uint16{0x1301, 0x1303, 0x1302, 0xc02b, 0xc02f, 0xcca9, 0xcca8, 0xc02c, 0xc030},
 		CommonExtensions:   []uint16{0x0000, 0x0017, 0xff01, 0x000a, 0x000b, 0x0023, 0x000d, 0x002b, 0x002d, 0x0033},
@@ -65,9 +74,10 @@ func (kb *KnowledgeBase) loadBuiltinKnowledge() {
 				H2InitialWindowSize: 131072, H2MaxConcurrentStreams: 100, H2HeaderTableSize: 65536, ConnectionFlow: 12517377},
 		},
 	}
+}
 
-	// Safari knowledge
-	kb.browsers[core.BrowserSafari] = &BrowserKnowledge{
+func buildSafariKnowledge() *BrowserKnowledge {
+	return &BrowserKnowledge{
 		Family:             core.BrowserSafari,
 		CommonCipherSuites: []uint16{0xc02c, 0xc02b, 0xc030, 0xc02f, 0xcca9, 0xcca8, 0xc00a, 0xc009, 0xc014, 0xc013},
 		CommonExtensions:   []uint16{0x0000, 0x0017, 0xff01, 0x000a, 0x000b, 0x0023, 0x000d, 0x002b, 0x002d, 0x0033},
@@ -86,9 +96,10 @@ func (kb *KnowledgeBase) loadBuiltinKnowledge() {
 				H2InitialWindowSize: 4194304, H2MaxConcurrentStreams: 100, H2HeaderTableSize: 4096, ConnectionFlow: 10485760},
 		},
 	}
+}
 
-	// Edge knowledge (Chromium kernel)
-	kb.browsers[core.BrowserEdge] = &BrowserKnowledge{
+func buildEdgeKnowledge() *BrowserKnowledge {
+	return &BrowserKnowledge{
 		Family:             core.BrowserEdge,
 		CommonCipherSuites: []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8},
 		CommonExtensions:   []uint16{0x0000, 0x0017, 0xff01, 0x000a, 0x000b, 0x0023, 0x0016, 0x000d, 0x002b, 0x002d, 0x0033},
@@ -103,9 +114,10 @@ func (kb *KnowledgeBase) loadBuiltinKnowledge() {
 				H2InitialWindowSize: 6291456, H2MaxConcurrentStreams: 1000, H2HeaderTableSize: 65536, ConnectionFlow: 15663105},
 		},
 	}
+}
 
-	// Opera knowledge (Chromium kernel)
-	kb.browsers[core.BrowserOpera] = &BrowserKnowledge{
+func buildOperaKnowledge() *BrowserKnowledge {
+	return &BrowserKnowledge{
 		Family:             core.BrowserOpera,
 		CommonCipherSuites: []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8},
 		CommonExtensions:   []uint16{0x0000, 0x0017, 0xff01, 0x000a, 0x000b, 0x0023, 0x0016, 0x000d, 0x002b, 0x002d, 0x0033},
@@ -117,9 +129,10 @@ func (kb *KnowledgeBase) loadBuiltinKnowledge() {
 				H2InitialWindowSize: 6291456, H2MaxConcurrentStreams: 1000, H2HeaderTableSize: 65536, ConnectionFlow: 15663105},
 		},
 	}
+}
 
-	// Brave knowledge (Chromium kernel, but with randomization)
-	kb.browsers[core.BrowserBrave] = &BrowserKnowledge{
+func buildBraveKnowledge() *BrowserKnowledge {
+	return &BrowserKnowledge{
 		Family:             core.BrowserBrave,
 		CommonCipherSuites: []uint16{0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0xcca9, 0xcca8},
 		CommonExtensions:   []uint16{0x0000, 0x0017, 0xff01, 0x000a, 0x000b, 0x0023, 0x0016, 0x000d, 0x002b, 0x002d, 0x0033},

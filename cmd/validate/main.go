@@ -6,6 +6,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -18,38 +19,68 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles"
 )
 
+type browserStats struct {
+	total     int
+	correct   int // browser prediction matches actual family
+	forgeries int // detected as forgery
+}
+
+type embEntry struct {
+	browser   core.BrowserType
+	embedding []float64
+}
+
+var errNoProfilesFound = errors.New("no profiles found")
+
 func main() {
 	weightsPath := flag.String("weights", "./models/weights.json", "path to weights.json")
 	flag.Parse()
 
-	// 1. Load the model pipeline
-	pipeline := ml.NewModelPipeline()
+	if err := runValidation(*weightsPath); err != nil {
+		log.Fatalf("Validation failed: %v", err)
+	}
+}
 
-	info, err := os.Stat(*weightsPath)
+func runValidation(weightsPath string) error {
+	pipeline, err := loadPipeline(weightsPath)
 	if err != nil {
-		log.Fatalf("Weights file not found: %v", err)
+		return err
 	}
-	fmt.Printf("Loading weights: %s (%.1f KB)\n", *weightsPath, float64(info.Size())/1024)
 
-	if err := pipeline.LoadWeights(*weightsPath); err != nil {
-		log.Fatalf("Failed to load weights: %v", err)
-	}
-	fmt.Printf("Weights loaded, pipeline.Trained() = %v\n\n", pipeline.Trained())
-
-	// 2. Load test profiles
 	allProfiles := profiles.GetAll()
 	if len(allProfiles) == 0 {
-		log.Fatal("No profiles found")
+		return errNoProfilesFound
 	}
 	fmt.Printf("Loaded %d browser profiles\n\n", len(allProfiles))
 
-	// 3. Run inference on all profiles and collect statistics
-	type stats struct {
-		total     int
-		correct   int // browser prediction matches actual family
-		forgeries int // detected as forgery
+	byBrowser, embeddings := runProfileInference(pipeline, allProfiles)
+	printClassificationSummary(byBrowser)
+	printEmbeddingQuality(embeddings)
+	fmt.Println("\nValidation complete.")
+
+	return nil
+}
+
+func loadPipeline(weightsPath string) (*ml.ModelPipeline, error) {
+	pipeline := ml.NewModelPipeline()
+
+	info, err := os.Stat(weightsPath)
+	if err != nil {
+		return nil, fmt.Errorf("weights file not found: %w", err)
 	}
-	byBrowser := make(map[core.BrowserType]*stats)
+	fmt.Printf("Loading weights: %s (%.1f KB)\n", weightsPath, float64(info.Size())/1024)
+
+	if err := pipeline.LoadWeights(weightsPath); err != nil {
+		return nil, fmt.Errorf("failed to load weights: %w", err)
+	}
+	fmt.Printf("Weights loaded, pipeline.Trained() = %v\n\n", pipeline.Trained())
+
+	return pipeline, nil
+}
+
+func runProfileInference(pipeline *ml.ModelPipeline, allProfiles []profiles.ClientProfile) (map[core.BrowserType]*browserStats, []embEntry) {
+	byBrowser := make(map[core.BrowserType]*browserStats)
+	embeddings := make([]embEntry, 0, len(allProfiles))
 
 	fmt.Println("=== Per-Profile Inference Results (first 20) ===")
 	fmt.Printf("%-40s %-12s %-12s %6s  %-10s %6s  %-10s\n",
@@ -65,7 +96,7 @@ func main() {
 
 		s, ok := byBrowser[actual]
 		if !ok {
-			s = &stats{}
+			s = &browserStats{}
 			byBrowser[actual] = s
 		}
 		s.total++
@@ -91,9 +122,17 @@ func main() {
 				result.Threat.ThreatClass.String(),
 			)
 		}
+
+		embeddings = append(embeddings, embEntry{
+			browser:   p.BrowserType,
+			embedding: result.Embedding,
+		})
 	}
 
-	// 4. Summary statistics
+	return byBrowser, embeddings
+}
+
+func printClassificationSummary(byBrowser map[core.BrowserType]*browserStats) {
 	fmt.Println()
 	fmt.Println("=== Browser Classification Accuracy ===")
 	fmt.Printf("%-15s %6s %6s %7s  %7s\n", "Browser", "Total", "Correct", "Acc%", "Forgery%")
@@ -121,30 +160,18 @@ func main() {
 	}
 	fmt.Println(repeat("-", 50))
 	fmt.Printf("%-15s %6d %6d %6.1f%%\n", "OVERALL", totalAll, totalCorrect, overallAcc)
+}
 
-	// 5. Embedding quality check: same-family similarity vs cross-family
+func printEmbeddingQuality(embeddings []embEntry) {
 	fmt.Println()
 	fmt.Println("=== Embedding Quality ===")
-	type embEntry struct {
-		browser   core.BrowserType
-		embedding []float64
-	}
-	embeddings := make([]embEntry, 0, len(allProfiles))
-	for _, p := range allProfiles {
-		result := pipeline.Infer(&p, nil)
-		embeddings = append(embeddings, embEntry{
-			browser:   p.BrowserType,
-			embedding: result.Embedding,
-		})
-	}
 
-	// Sample some same-family and cross-family pairs
 	sameFamilySim := 0.0
 	sameFamilyN := 0
 	crossFamilySim := 0.0
 	crossFamilyN := 0
 
-	step := maxInt(1, len(embeddings)/50) // limit pairs for speed
+	step := maxInt(1, len(embeddings)/50) // Limit pairs for speed.
 	for i := 0; i < len(embeddings); i += step {
 		for j := i + 1; j < len(embeddings); j += step {
 			sim := cosineSim(embeddings[i].embedding, embeddings[j].embedding)
@@ -168,8 +195,6 @@ func main() {
 		gap := sameFamilySim/float64(sameFamilyN) - crossFamilySim/float64(crossFamilyN)
 		fmt.Printf("Separation gap:                     %.4f\n", gap)
 	}
-
-	fmt.Println("\nValidation complete.")
 }
 
 func cosineSim(a, b []float64) float64 {

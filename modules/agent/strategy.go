@@ -70,89 +70,108 @@ func NewStrategyEngine(config *AgentConfig, memory *Memory) *StrategyEngine {
 // registerBuiltinStrategies register builtin strategies (baseline)
 func (se *StrategyEngine) registerBuiltinStrategies() {
 	cfg := se.config
-	se.strategies = append(se.strategies,
-		// S1: Fast fingerprint switching → possible fingerprint forging/rotation tool
-		&Strategy{
-			ID:          "builtin_fp_switch",
-			Name:        "Fast Fingerprint Switching Detection",
-			Description: "Client frequently switches fingerprints in short time, suspected anti-detection tool",
-			ThreatClass: ThreatFingerprintSpoof,
-			Action:      ActionChallenge,
-			Priority:    90,
-			Condition: func(obs *Observation, profile *BehaviorSummary) bool {
-				return profile.FPSwitchRate > cfg.FPSwitchRateThreshold
-			},
-			CreatedAt: time.Now(),
-			Enabled:   true,
+	se.strategies = append(se.strategies, buildBuiltinStrategies(cfg)...)
+}
+
+func buildBuiltinStrategies(cfg *AgentConfig) []*Strategy {
+	return []*Strategy{
+		newFastFingerprintSwitchStrategy(cfg),
+		newLowConsistencyStrategy(cfg),
+		newRequestBurstStrategy(cfg),
+		newRiskEscalationStrategy(),
+		newHighRiskBlockStrategy(),
+	}
+}
+
+func newFastFingerprintSwitchStrategy(cfg *AgentConfig) *Strategy {
+	return &Strategy{
+		ID:          "builtin_fp_switch",
+		Name:        "Fast Fingerprint Switching Detection",
+		Description: "Client frequently switches fingerprints in short time, suspected anti-detection tool",
+		ThreatClass: ThreatFingerprintSpoof,
+		Action:      ActionChallenge,
+		Priority:    90,
+		Condition: func(obs *Observation, profile *BehaviorSummary) bool {
+			return profile.FPSwitchRate > cfg.FPSwitchRateThreshold
 		},
-		// S2: Low consistency → behavioral anomaly
-		&Strategy{
-			ID:          "builtin_low_consistency",
-			Name:        "Low Fingerprint Consistency Detection",
-			Description: "Client fingerprint/classification result consistency extremely low, behavioral pattern anomaly",
-			ThreatClass: ThreatBehavioralAnomaly,
-			Action:      ActionMonitor,
-			Priority:    70,
-			Condition: func(obs *Observation, profile *BehaviorSummary) bool {
-				return profile.TotalObservations >= 3 &&
-					profile.ConsistencyScore < cfg.ConsistencyThreshold
-			},
-			CreatedAt: time.Now(),
-			Enabled:   true,
+		CreatedAt: time.Now(),
+		Enabled:   true,
+	}
+}
+
+func newLowConsistencyStrategy(cfg *AgentConfig) *Strategy {
+	return &Strategy{
+		ID:          "builtin_low_consistency",
+		Name:        "Low Fingerprint Consistency Detection",
+		Description: "Client fingerprint/classification result consistency extremely low, behavioral pattern anomaly",
+		ThreatClass: ThreatBehavioralAnomaly,
+		Action:      ActionMonitor,
+		Priority:    70,
+		Condition: func(obs *Observation, profile *BehaviorSummary) bool {
+			return profile.TotalObservations >= 3 &&
+				profile.ConsistencyScore < cfg.ConsistencyThreshold
 		},
-		// S3: Request burst → possible automation tool
-		&Strategy{
-			ID:          "builtin_request_burst",
-			Name:        "Request Burst Detection",
-			Description: "Request frequency abnormally high, suspected automation tool or crawler",
-			ThreatClass: ThreatBot,
-			Action:      ActionThrottle,
-			Priority:    80,
-			Condition: func(obs *Observation, profile *BehaviorSummary) bool {
-				if profile.AvgRequestInterval <= 0 || profile.TotalObservations < 5 {
-					return false
-				}
-				reqPerSec := 1.0 / profile.AvgRequestInterval
-				return reqPerSec > cfg.RequestBurstThreshold
-			},
-			CreatedAt: time.Now(),
-			Enabled:   true,
+		CreatedAt: time.Now(),
+		Enabled:   true,
+	}
+}
+
+func newRequestBurstStrategy(cfg *AgentConfig) *Strategy {
+	return &Strategy{
+		ID:          "builtin_request_burst",
+		Name:        "Request Burst Detection",
+		Description: "Request frequency abnormally high, suspected automation tool or crawler",
+		ThreatClass: ThreatBot,
+		Action:      ActionThrottle,
+		Priority:    80,
+		Condition: func(obs *Observation, profile *BehaviorSummary) bool {
+			if profile.AvgRequestInterval <= 0 || profile.TotalObservations < 5 {
+				return false
+			}
+			reqPerSec := 1.0 / profile.AvgRequestInterval
+			return reqPerSec > cfg.RequestBurstThreshold
 		},
-		// S4: Risk continuously rising → escalate response
-		&Strategy{
-			ID:          "builtin_risk_escalation",
-			Name:        "Risk Rising Trend Detection",
-			Description: "Client risk score continuously rising, need to escalate protection",
-			ThreatClass: ThreatEvasion,
-			Action:      ActionChallenge,
-			Priority:    85,
-			Condition: func(obs *Observation, profile *BehaviorSummary) bool {
-				return profile.RiskTrend > 0.5 && profile.TotalObservations >= 5
-			},
-			CreatedAt: time.Now(),
-			Enabled:   true,
+		CreatedAt: time.Now(),
+		Enabled:   true,
+	}
+}
+
+func newRiskEscalationStrategy() *Strategy {
+	return &Strategy{
+		ID:          "builtin_risk_escalation",
+		Name:        "Risk Rising Trend Detection",
+		Description: "Client risk score continuously rising, need to escalate protection",
+		ThreatClass: ThreatEvasion,
+		Action:      ActionChallenge,
+		Priority:    85,
+		Condition: func(obs *Observation, profile *BehaviorSummary) bool {
+			return profile.RiskTrend > 0.5 && profile.TotalObservations >= 5
 		},
-		// S5: High-risk rule triggered + low ML confidence → block
-		&Strategy{
-			ID:          "builtin_high_risk_block",
-			Name:        "High-Risk Comprehensive Block",
-			Description: "Multiple high-risk signals triggered simultaneously: rule hit + ML low confidence + behavioral anomaly",
-			ThreatClass: ThreatEvasion,
-			Action:      ActionBlock,
-			Priority:    95,
-			Condition: func(obs *Observation, profile *BehaviorSummary) bool {
-				if obs.RiskAssessment == nil || obs.Classification == nil {
-					return false
-				}
-				highRisk := obs.RiskAssessment.Score > 0.7
-				lowConf := obs.Classification.Confidence < 0.3
-				badBehavior := profile.ConsistencyScore < 0.3
-				return highRisk && lowConf && badBehavior
-			},
-			CreatedAt: time.Now(),
-			Enabled:   true,
+		CreatedAt: time.Now(),
+		Enabled:   true,
+	}
+}
+
+func newHighRiskBlockStrategy() *Strategy {
+	return &Strategy{
+		ID:          "builtin_high_risk_block",
+		Name:        "High-Risk Comprehensive Block",
+		Description: "Multiple high-risk signals triggered simultaneously: rule hit + ML low confidence + behavioral anomaly",
+		ThreatClass: ThreatEvasion,
+		Action:      ActionBlock,
+		Priority:    95,
+		Condition: func(obs *Observation, profile *BehaviorSummary) bool {
+			if obs.RiskAssessment == nil || obs.Classification == nil {
+				return false
+			}
+			highRisk := obs.RiskAssessment.Score > 0.7
+			lowConf := obs.Classification.Confidence < 0.3
+			badBehavior := profile.ConsistencyScore < 0.3
+			return highRisk && lowConf && badBehavior
 		},
-	)
+		CreatedAt: time.Now(),
+		Enabled:   true,
+	}
 }
 
 // Evaluate evaluate all active strategies, return final decision

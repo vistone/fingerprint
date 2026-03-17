@@ -93,10 +93,8 @@ const (
 	CategoryClientHints    = "client_hints"
 )
 
-// initStandardExtensions initializes standard extensions
-func initStandardExtensions() {
-	// ECH (Encrypted Client Hello)
-	RegisterExtension(&ExtensionMetadata{
+var standardExtensionEntries = []*ExtensionMetadata{
+	{
 		Type:                  ExtensionEncryptedClientHello,
 		Name:                  "Encrypted Client Hello",
 		Description:           "Encodes ClientHello to reduce cleartext information",
@@ -104,11 +102,9 @@ func initStandardExtensions() {
 		IANANumber:            0xfe0d,
 		Category:              CategoryEncryption,
 		IsExperimental:        false,
-		CompatibleTLSVersions: []uint16{0x0304}, // TLS 1.3
-	})
-
-	// Server Name Indication
-	RegisterExtension(&ExtensionMetadata{
+		CompatibleTLSVersions: []uint16{0x0304},
+	},
+	{
 		Type:                  ExtensionServerName,
 		Name:                  "server_name",
 		Description:           "Indicates server name in SNI",
@@ -116,11 +112,9 @@ func initStandardExtensions() {
 		IANANumber:            0x0000,
 		Category:              CategoryNegotiation,
 		IsExperimental:        false,
-		CompatibleTLSVersions: []uint16{0x0303, 0x0304}, // TLS 1.2, 1.3
-	})
-
-	// Supported Groups
-	RegisterExtension(&ExtensionMetadata{
+		CompatibleTLSVersions: []uint16{0x0303, 0x0304},
+	},
+	{
 		Type:                  ExtensionSupportedGroups,
 		Name:                  "supported_groups",
 		Description:           "Indicates supported ECDH groups/curves",
@@ -129,10 +123,8 @@ func initStandardExtensions() {
 		Category:              CategoryNegotiation,
 		IsExperimental:        false,
 		CompatibleTLSVersions: []uint16{0x0303, 0x0304},
-	})
-
-	// EC Point Formats
-	RegisterExtension(&ExtensionMetadata{
+	},
+	{
 		Type:                  ExtensionECPointFormats,
 		Name:                  "ec_point_formats",
 		Description:           "Indicates supported EC point formats",
@@ -141,10 +133,8 @@ func initStandardExtensions() {
 		Category:              CategoryNegotiation,
 		IsExperimental:        false,
 		CompatibleTLSVersions: []uint16{0x0303},
-	})
-
-	// Signature Algorithms
-	RegisterExtension(&ExtensionMetadata{
+	},
+	{
 		Type:                  ExtensionSignatureAlgorithms,
 		Name:                  "signature_algorithms",
 		Description:           "Indicates supported signature algorithms",
@@ -153,10 +143,8 @@ func initStandardExtensions() {
 		Category:              CategoryNegotiation,
 		IsExperimental:        false,
 		CompatibleTLSVersions: []uint16{0x0303, 0x0304},
-	})
-
-	// Supported Versions
-	RegisterExtension(&ExtensionMetadata{
+	},
+	{
 		Type:                  ExtensionSupportedVersions,
 		Name:                  "supported_versions",
 		Description:           "Indicates supported TLS versions",
@@ -165,10 +153,8 @@ func initStandardExtensions() {
 		Category:              CategoryNegotiation,
 		IsExperimental:        false,
 		CompatibleTLSVersions: []uint16{0x0303, 0x0304},
-	})
-
-	// Key Share
-	RegisterExtension(&ExtensionMetadata{
+	},
+	{
 		Type:                  ExtensionKeyShare,
 		Name:                  "key_share",
 		Description:           "Provides key share information",
@@ -177,10 +163,8 @@ func initStandardExtensions() {
 		Category:              CategoryNegotiation,
 		IsExperimental:        false,
 		CompatibleTLSVersions: []uint16{0x0304},
-	})
-
-	// Pre-shared Key
-	RegisterExtension(&ExtensionMetadata{
+	},
+	{
 		Type:                  ExtensionPreSharedKey,
 		Name:                  "pre_shared_key",
 		Description:           "Provides pre-shared key information",
@@ -189,10 +173,8 @@ func initStandardExtensions() {
 		Category:              CategoryNegotiation,
 		IsExperimental:        false,
 		CompatibleTLSVersions: []uint16{0x0304},
-	})
-
-	// Status Request
-	RegisterExtension(&ExtensionMetadata{
+	},
+	{
 		Type:                  ExtensionStatus,
 		Name:                  "status_request",
 		Description:           "OCSP stapling",
@@ -201,10 +183,8 @@ func initStandardExtensions() {
 		Category:              CategorySecurity,
 		IsExperimental:        false,
 		CompatibleTLSVersions: []uint16{0x0303, 0x0304},
-	})
-
-	// Application Layer Protocol Negotiation
-	RegisterExtension(&ExtensionMetadata{
+	},
+	{
 		Type:                  ExtensionApplicationLayerProtocol,
 		Name:                  "application_layer_protocol_negotiation",
 		Description:           "Indicates application layer protocols",
@@ -213,10 +193,8 @@ func initStandardExtensions() {
 		Category:              CategoryNegotiation,
 		IsExperimental:        false,
 		CompatibleTLSVersions: []uint16{0x0303, 0x0304},
-	})
-
-	// Padding
-	RegisterExtension(&ExtensionMetadata{
+	},
+	{
 		Type:                  ExtensionPadding,
 		Name:                  "padding",
 		Description:           "Adds padding to ClientHello",
@@ -225,10 +203,8 @@ func initStandardExtensions() {
 		Category:              CategoryPerformance,
 		IsExperimental:        false,
 		CompatibleTLSVersions: []uint16{0x0303, 0x0304},
-	})
-
-	// ECH Outer Extensions
-	RegisterExtension(&ExtensionMetadata{
+	},
+	{
 		Type:                  ExtensionECHOuterExtensions,
 		Name:                  "ech_outer_extensions",
 		Description:           "Lists extensions in the outer ClientHello",
@@ -237,10 +213,8 @@ func initStandardExtensions() {
 		Category:              CategoryEncryption,
 		IsExperimental:        false,
 		CompatibleTLSVersions: []uint16{0x0304},
-	})
-
-	// GREASE
-	RegisterExtension(&ExtensionMetadata{
+	},
+	{
 		Type:                  ExtensionGREASE,
 		Name:                  "GREASE",
 		Description:           "Generic unsupported extension for compatibility",
@@ -249,5 +223,16 @@ func initStandardExtensions() {
 		Category:              CategoryCompatibility,
 		IsExperimental:        true,
 		CompatibleTLSVersions: []uint16{0x0303, 0x0304},
-	})
+	},
+}
+
+// initStandardExtensions initializes standard extensions
+func initStandardExtensions() {
+	registerExtensionBatch(standardExtensionEntries)
+}
+
+func registerExtensionBatch(entries []*ExtensionMetadata) {
+	for _, entry := range entries {
+		RegisterExtension(entry)
+	}
 }

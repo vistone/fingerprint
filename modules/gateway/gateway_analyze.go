@@ -22,11 +22,12 @@ import (
 
 func (g *Gateway) Analyze(ctx context.Context, req *AnalyzeRequest) (*AnalyzeResponse, error) {
 	start := time.Now()
+	config := g.GetConfig()
 
 	fingerprintHash := g.generateFingerprintHash(req)
 
 	// Check cache
-	if g.config.CacheEnabled {
+	if config.CacheEnabled {
 		if cached, ok := g.cache.Get(fingerprintHash); ok {
 			resp := cloneAnalyzeResponse(cached)
 			resp.Cached = true
@@ -51,7 +52,7 @@ func (g *Gateway) Analyze(ctx context.Context, req *AnalyzeRequest) (*AnalyzeRes
 	// Plugin pipeline
 	pluginFindings := g.runPluginPipeline(ctx, req, fingerprintHash, classification, risk)
 
-	riskBlocked := g.config.RiskThreshold > 0 && risk != nil && risk.Score >= g.config.RiskThreshold
+	riskBlocked := config.RiskThreshold > 0 && risk != nil && risk.Score >= config.RiskThreshold
 
 	response := &AnalyzeResponse{
 		FingerprintHash:  fingerprintHash,
@@ -88,7 +89,7 @@ func (g *Gateway) Analyze(ctx context.Context, req *AnalyzeRequest) (*AnalyzeRes
 	}
 
 	// Store in cache
-	if g.config.CacheEnabled {
+	if config.CacheEnabled {
 		g.cache.Set(fingerprintHash, response)
 	}
 
@@ -192,6 +193,8 @@ func (g *Gateway) runPluginPipeline(ctx context.Context, req *AnalyzeRequest, fi
 				RiskScore:  r.Score,
 			})
 		}
+	} else if err != nil {
+		slog.Warn("plugin analyzer execution failed", "error", err)
 	}
 
 	if vResult, err := g.pluginManager.ExecuteValidators(ctx, pluginData); err == nil && vResult != nil && !vResult.Valid {
@@ -209,6 +212,8 @@ func (g *Gateway) runPluginPipeline(ctx context.Context, req *AnalyzeRequest, fi
 				Message:    warn,
 			})
 		}
+	} else if err != nil {
+		slog.Warn("plugin validator execution failed", "error", err)
 	}
 
 	return findings
@@ -373,7 +378,8 @@ func (g *Gateway) SDKHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Generate SDK code
-	js := g.sdk.GenerateJSInjector(g.config.Endpoint + "/collect")
+	config := g.GetConfig()
+	js := g.sdk.GenerateJSInjector(config.Endpoint + "/collect")
 
 	w.Header().Set("Content-Type", "application/javascript")
 	w.Write([]byte(js))
@@ -388,13 +394,14 @@ func (g *Gateway) CollectHandler(w http.ResponseWriter, r *http.Request) {
 // getClientIP gets the client IP
 // Only trust proxy headers when RemoteAddr is in the TrustedProxies list
 func (g *Gateway) getClientIP(r *http.Request) string {
+	config := g.GetConfig()
 	remoteIP := r.RemoteAddr
 	if host, _, err := net.SplitHostPort(remoteIP); err == nil && host != "" {
 		remoteIP = host
 	}
 
 	// Only read proxy headers from trusted proxy requests
-	if g.isTrustedProxy(remoteIP) {
+	if g.isTrustedProxy(remoteIP, config.TrustedProxies) {
 		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
 			if idx := strings.Index(xff, ","); idx != -1 {
 				return strings.TrimSpace(xff[:idx])
@@ -410,8 +417,8 @@ func (g *Gateway) getClientIP(r *http.Request) string {
 }
 
 // isTrustedProxy checks if IP is in the trusted proxy list
-func (g *Gateway) isTrustedProxy(ip string) bool {
-	for _, trusted := range g.config.TrustedProxies {
+func (g *Gateway) isTrustedProxy(ip string, trustedProxies []string) bool {
+	for _, trusted := range trustedProxies {
 		if trusted == ip {
 			return true
 		}
@@ -421,16 +428,17 @@ func (g *Gateway) isTrustedProxy(ip string) bool {
 
 // Start starts the gateway service
 func (g *Gateway) Start() error {
+	config := g.GetConfig()
 	mux := http.NewServeMux()
-	mux.HandleFunc(g.config.Endpoint+"/analyze", g.HTTPHandler)
-	mux.HandleFunc(g.config.Endpoint+"/sdk.js", g.SDKHandler)
-	mux.HandleFunc(g.config.Endpoint+"/collect", g.CollectHandler)
-	mux.HandleFunc(g.config.Endpoint+"/scan", g.V8ScannerHandler)
+	mux.HandleFunc(config.Endpoint+"/analyze", g.HTTPHandler)
+	mux.HandleFunc(config.Endpoint+"/sdk.js", g.SDKHandler)
+	mux.HandleFunc(config.Endpoint+"/collect", g.CollectHandler)
+	mux.HandleFunc(config.Endpoint+"/scan", g.V8ScannerHandler)
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"status": "ok"}`))
 	})
 
-	addr := fmt.Sprintf(":%d", g.config.Port)
+	addr := fmt.Sprintf(":%d", config.Port)
 	slog.Info("Fingerprint Gateway starting", "addr", addr)
 	return http.ListenAndServe(addr, mux)
 }

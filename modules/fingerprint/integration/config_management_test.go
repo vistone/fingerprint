@@ -7,7 +7,7 @@ import (
 )
 
 func TestConfigCenterBasic(t *testing.T) {
-	// 使用默认configurationinitialize
+	// Translated comment
 	if err := config.InitializeConfigCenterWithDefaults(); err != nil {
 		t.Fatalf("Failed to initialize config: %v", err)
 	}

@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package fingerprint.gateway.v1;
+
+option go_package = "github.com/vistone/fingerprint/modules/gateway/proto/fingerprint/v1;gatewayv1";
+
+service FingerprintGateway {
+  rpc Analyze(AnalyzeRequest) returns (AnalyzeResponse);
+  rpc Health(HealthRequest) returns (HealthResponse);
+}
+
+message AnalyzeRequest {
+  string client_id = 1;
+  uint32 tls_version = 2;
+  repeated uint32 cipher_suites = 3;
+  repeated uint32 extensions = 4;
+  repeated uint32 supported_curves = 5;
+  map<string, string> headers = 6;
+  string client_ip = 7;
+}
+
+message AnalyzeResponse {
+  string fingerprint_hash = 1;
+  string protocol = 2;
+  string browser_family = 3;
+  string browser_version = 4;
+  double confidence = 5;
+  string risk_level = 6;
+  double risk_score = 7;
+  string ja3_hash = 8;
+  string ja4_fingerprint = 9;
+  repeated string defense_hints = 10;
+  bool cached = 11;
+  int64 processing_time_ms = 12;
+}
+
+message HealthRequest {}
+
+message HealthResponse {
+  string status = 1;
+  string service = 2;
+}

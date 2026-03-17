@@ -33,74 +33,29 @@ func NewUserAgentGenerator() *UserAgentGenerator {
 
 // initTemplates initializes User-Agent templates
 func (g *UserAgentGenerator) initTemplates() {
-	// Chrome User-Agent templates
-	chromeTemplates := map[string]string{
-		"103": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
-		"104": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36",
-		"105": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
-		"106": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36",
-		"107": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
-		"108": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
-		"109": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
-		"110": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
-		"111": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36",
-		"112": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
-		"116": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36",
-		"117": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
-		"120": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-		"124": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-		"130": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
-		"131": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-		"133": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-	}
+	g.addDesktopBrowserTemplates("chrome_", chromeTemplates, types.BrowserChrome)
+	g.addDesktopBrowserTemplates("firefox_", firefoxTemplates, types.BrowserFirefox)
+	g.addSafariTemplates()
+	g.addDesktopBrowserTemplates("opera_", operaTemplates, types.BrowserOpera)
+	g.addDesktopBrowserTemplates("edge_", edgeTemplates, types.BrowserEdge)
+	g.addMobileAppTemplates(iosAppTemplates, types.BrowserSafari, "ios")
+	g.addMobileAppTemplates(androidAppTemplates, types.BrowserChrome, "android")
+	g.addMobileAppTemplates(okhttpTemplates, types.BrowserChrome, "okhttp4")
+	g.addCloudflareTemplate()
+}
 
-	for version, template := range chromeTemplates {
-		g.templates["chrome_"+version] = types.UserAgentTemplate{
-			Browser:    types.BrowserChrome,
+func (g *UserAgentGenerator) addDesktopBrowserTemplates(prefix string, templates map[string]string, browser types.BrowserType) {
+	for version, template := range templates {
+		g.templates[prefix+version] = types.UserAgentTemplate{
+			Browser:    browser,
 			Version:    version,
 			Template:   template,
 			OSRequired: true,
 		}
 	}
+}
 
-	// Firefox User-Agent templates
-	firefoxTemplates := map[string]string{
-		"102": "Mozilla/5.0 (%s; rv:102.0) Gecko/20100101 Firefox/102.0",
-		"104": "Mozilla/5.0 (%s; rv:104.0) Gecko/20100101 Firefox/104.0",
-		"105": "Mozilla/5.0 (%s; rv:105.0) Gecko/20100101 Firefox/105.0",
-		"106": "Mozilla/5.0 (%s; rv:106.0) Gecko/20100101 Firefox/106.0",
-		"108": "Mozilla/5.0 (%s; rv:108.0) Gecko/20100101 Firefox/108.0",
-		"110": "Mozilla/5.0 (%s; rv:110.0) Gecko/20100101 Firefox/110.0",
-		"117": "Mozilla/5.0 (%s; rv:117.0) Gecko/20100101 Firefox/117.0",
-		"120": "Mozilla/5.0 (%s; rv:120.0) Gecko/20100101 Firefox/120.0",
-		"123": "Mozilla/5.0 (%s; rv:123.0) Gecko/20100101 Firefox/123.0",
-		"132": "Mozilla/5.0 (%s; rv:132.0) Gecko/20100101 Firefox/132.0",
-		"133": "Mozilla/5.0 (%s; rv:133.0) Gecko/20100101 Firefox/133.0",
-		"135": "Mozilla/5.0 (%s; rv:135.0) Gecko/20100101 Firefox/135.0",
-	}
-
-	for version, template := range firefoxTemplates {
-		g.templates["firefox_"+version] = types.UserAgentTemplate{
-			Browser:    types.BrowserFirefox,
-			Version:    version,
-			Template:   template,
-			OSRequired: true,
-		}
-	}
-
-	// Safari User-Agent templates
-	safariTemplates := map[string]string{
-		"15_6_1":    "Mozilla/5.0 (%s) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
-		"16_0":      "Mozilla/5.0 (%s) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15",
-		"ipad_15_6": "Mozilla/5.0 (iPad; CPU OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1",
-		"ios_15_5":  "Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Mobile/15E148 Safari/604.1",
-		"ios_15_6":  "Mozilla/5.0 (iPhone; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1",
-		"ios_16_0":  "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
-		"ios_17_0":  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
-		"ios_18_0":  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
-		"ios_18_5":  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1",
-	}
-
+func (g *UserAgentGenerator) addSafariTemplates() {
 	for key, template := range safariTemplates {
 		mobile := strings.Contains(key, "ios") || strings.Contains(key, "ipad")
 		g.templates["safari_"+key] = types.UserAgentTemplate{
@@ -108,116 +63,122 @@ func (g *UserAgentGenerator) initTemplates() {
 			Version:    key,
 			Template:   template,
 			Mobile:     mobile,
-			OSRequired: !mobile, // Mobile devices don't need OS information
+			OSRequired: !mobile,
 		}
 	}
+}
 
-	// Opera User-Agent templates
-	operaTemplates := map[string]string{
-		"89": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36 OPR/89.0.0.0",
-		"90": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36 OPR/90.0.0.0",
-		"91": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36 OPR/91.0.0.0",
-	}
-
-	for version, template := range operaTemplates {
-		g.templates["opera_"+version] = types.UserAgentTemplate{
-			Browser:    types.BrowserOpera,
+func (g *UserAgentGenerator) addMobileAppTemplates(templates map[string]string, browser types.BrowserType, version string) {
+	for key, template := range templates {
+		g.templates[key] = types.UserAgentTemplate{
+			Browser:    browser,
 			Version:    version,
 			Template:   template,
-			OSRequired: true,
-		}
-	}
-
-	// Edge User-Agent templates (based on Chromium)
-	edgeTemplates := map[string]string{
-		"99":  "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36 Edg/99.0.1150.36",
-		"101": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.53",
-		"120": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
-		"131": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
-		"133": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0",
-	}
-
-	for version, template := range edgeTemplates {
-		g.templates["edge_"+version] = types.UserAgentTemplate{
-			Browser:    types.BrowserEdge,
-			Version:    version,
-			Template:   template,
-			OSRequired: true,
-		}
-	}
-
-	// Mobile and custom fingerprint User-Agent templates
-	// iOS app fingerprints - using iOS Safari User-Agent
-	iosAppTemplates := map[string]string{
-		"zalando_ios_mobile": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
-		"nike_ios_mobile":    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
-		"mms_ios":            "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
-		"mms_ios_2":          "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
-		"mms_ios_3":          "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
-		"mesh_ios":           "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
-		"mesh_ios_2":         "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
-		"confirmed_ios":      "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
-	}
-
-	for key, template := range iosAppTemplates {
-		g.templates[key] = types.UserAgentTemplate{
-			Browser:    types.BrowserSafari,
-			Version:    "ios",
-			Template:   template,
 			Mobile:     true,
-			OSRequired: false, // iOS mobile doesn't need OS placeholder
+			OSRequired: false,
 		}
 	}
+}
 
-	// Android app fingerprints - using Android Chrome User-Agent
-	androidAppTemplates := map[string]string{
-		"zalando_android_mobile": "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-		"nike_android_mobile":    "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-		"mesh_android":           "Mozilla/5.0 (Linux; Android 12; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-		"mesh_android_2":         "Mozilla/5.0 (Linux; Android 13; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-		"confirmed_android":      "Mozilla/5.0 (Linux; Android 12; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-		"confirmed_android_2":    "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-	}
-
-	for key, template := range androidAppTemplates {
-		g.templates[key] = types.UserAgentTemplate{
-			Browser:    types.BrowserChrome,
-			Version:    "android",
-			Template:   template,
-			Mobile:     true,
-			OSRequired: false, // Android mobile doesn't need OS placeholder
-		}
-	}
-
-	// OkHttp4 Android fingerprints - using Android Chrome User-Agent (different Android versions)
-	okhttpTemplates := map[string]string{
-		"okhttp4_android_7":  "Mozilla/5.0 (Linux; Android 7.0; SM-G930F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-		"okhttp4_android_8":  "Mozilla/5.0 (Linux; Android 8.0; SM-G950F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-		"okhttp4_android_9":  "Mozilla/5.0 (Linux; Android 9; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-		"okhttp4_android_10": "Mozilla/5.0 (Linux; Android 10; SM-G970F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-		"okhttp4_android_11": "Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-		"okhttp4_android_12": "Mozilla/5.0 (Linux; Android 12; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-		"okhttp4_android_13": "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-	}
-
-	for key, template := range okhttpTemplates {
-		g.templates[key] = types.UserAgentTemplate{
-			Browser:    types.BrowserChrome,
-			Version:    "okhttp4",
-			Template:   template,
-			Mobile:     true,
-			OSRequired: false, // Android mobile doesn't need OS placeholder
-		}
-	}
-
-	// Cloudflare Custom - using Chrome User-Agent (typically for cloudscraper)
+func (g *UserAgentGenerator) addCloudflareTemplate() {
 	g.templates["cloudflare_custom"] = types.UserAgentTemplate{
 		Browser:    types.BrowserChrome,
 		Version:    "custom",
 		Template:   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
 		Mobile:     false,
-		OSRequired: false, // Fixed User-Agent, no OS placeholder needed
+		OSRequired: false,
 	}
+}
+
+var chromeTemplates = map[string]string{
+	"103": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
+	"104": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36",
+	"105": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
+	"106": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36",
+	"107": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
+	"108": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+	"109": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+	"110": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+	"111": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36",
+	"112": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+	"116": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36",
+	"117": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
+	"120": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+	"124": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+	"130": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+	"131": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+	"133": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+}
+
+var firefoxTemplates = map[string]string{
+	"102": "Mozilla/5.0 (%s; rv:102.0) Gecko/20100101 Firefox/102.0",
+	"104": "Mozilla/5.0 (%s; rv:104.0) Gecko/20100101 Firefox/104.0",
+	"105": "Mozilla/5.0 (%s; rv:105.0) Gecko/20100101 Firefox/105.0",
+	"106": "Mozilla/5.0 (%s; rv:106.0) Gecko/20100101 Firefox/106.0",
+	"108": "Mozilla/5.0 (%s; rv:108.0) Gecko/20100101 Firefox/108.0",
+	"110": "Mozilla/5.0 (%s; rv:110.0) Gecko/20100101 Firefox/110.0",
+	"117": "Mozilla/5.0 (%s; rv:117.0) Gecko/20100101 Firefox/117.0",
+	"120": "Mozilla/5.0 (%s; rv:120.0) Gecko/20100101 Firefox/120.0",
+	"123": "Mozilla/5.0 (%s; rv:123.0) Gecko/20100101 Firefox/123.0",
+	"132": "Mozilla/5.0 (%s; rv:132.0) Gecko/20100101 Firefox/132.0",
+	"133": "Mozilla/5.0 (%s; rv:133.0) Gecko/20100101 Firefox/133.0",
+	"135": "Mozilla/5.0 (%s; rv:135.0) Gecko/20100101 Firefox/135.0",
+}
+
+var safariTemplates = map[string]string{
+	"15_6_1":    "Mozilla/5.0 (%s) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+	"16_0":      "Mozilla/5.0 (%s) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15",
+	"ipad_15_6": "Mozilla/5.0 (iPad; CPU OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1",
+	"ios_15_5":  "Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Mobile/15E148 Safari/604.1",
+	"ios_15_6":  "Mozilla/5.0 (iPhone; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1",
+	"ios_16_0":  "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+	"ios_17_0":  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+	"ios_18_0":  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
+	"ios_18_5":  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1",
+}
+
+var operaTemplates = map[string]string{
+	"89": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36 OPR/89.0.0.0",
+	"90": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36 OPR/90.0.0.0",
+	"91": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36 OPR/91.0.0.0",
+}
+
+var edgeTemplates = map[string]string{
+	"99":  "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36 Edg/99.0.1150.36",
+	"101": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.53",
+	"120": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+	"131": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+	"133": "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0",
+}
+
+var iosAppTemplates = map[string]string{
+	"zalando_ios_mobile": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+	"nike_ios_mobile":    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+	"mms_ios":            "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+	"mms_ios_2":          "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+	"mms_ios_3":          "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+	"mesh_ios":           "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+	"mesh_ios_2":         "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+	"confirmed_ios":      "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+}
+
+var androidAppTemplates = map[string]string{
+	"zalando_android_mobile": "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+	"nike_android_mobile":    "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+	"mesh_android":           "Mozilla/5.0 (Linux; Android 12; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+	"mesh_android_2":         "Mozilla/5.0 (Linux; Android 13; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+	"confirmed_android":      "Mozilla/5.0 (Linux; Android 12; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+	"confirmed_android_2":    "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+}
+
+var okhttpTemplates = map[string]string{
+	"okhttp4_android_7":  "Mozilla/5.0 (Linux; Android 7.0; SM-G930F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+	"okhttp4_android_8":  "Mozilla/5.0 (Linux; Android 8.0; SM-G950F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+	"okhttp4_android_9":  "Mozilla/5.0 (Linux; Android 9; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+	"okhttp4_android_10": "Mozilla/5.0 (Linux; Android 10; SM-G970F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+	"okhttp4_android_11": "Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+	"okhttp4_android_12": "Mozilla/5.0 (Linux; Android 12; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+	"okhttp4_android_13": "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
 }
 
 // GetUserAgent gets User-Agent based on fingerprint name

@@ -1,4 +1,4 @@
-// Package ml — nn.go provides neural network building blocks.
+// Package ml provides lightweight neural network primitives built on Tensor.
 //
 // Contents:
 //   - Layer interface and Dense (fully-connected) layer implementation
@@ -24,10 +24,9 @@ import (
 
 // Layer defines the interface for a single neural network layer.
 type Layer interface {
-	// Forward performs forward propagation: input[batch×in] → output[batch×out]
+	// Forward computes layer output for the input tensor.
 	Forward(input *Tensor) *Tensor
-	// Backward performs backpropagation: gradOutput[batch×out] → gradInput[batch×in],
-	// accumulating parameter gradients.
+	// Backward propagates output gradients and accumulates parameter gradients.
 	Backward(gradOutput *Tensor) *Tensor
 	// Params returns trainable parameters and their gradients (for optimizer updates).
 	Params() []*Param
@@ -45,10 +44,10 @@ type Param struct {
 // Dense fully-connected layer
 // ---------------------------------------------------------------------------
 
-// DenseLayer implements a fully-connected layer: y = x·W^T + b
-// where W[out×in], b[out], x[batch×in] → y[batch×out]
+// DenseLayer implements a fully-connected affine layer.
+// Output is y = x*W^T + b.
 type DenseLayer struct {
-	Weight   *Tensor // [outDim × inDim]
+	Weight   *Tensor // [outDim, inDim]
 	Bias     *Tensor // [outDim]
 	WeightG  *Tensor // weight gradient
 	BiasG    *Tensor // bias gradient
@@ -77,18 +76,18 @@ func NewDenseLayer(inDim, outDim int) *DenseLayer {
 
 func (l *DenseLayer) Forward(input *Tensor) *Tensor {
 	l.input = input // cache for backward pass
-	// y = x · W^T + b
-	wt := l.Weight.Transpose() // [inDim × outDim]
+	// y = x*W^T + b
+	wt := l.Weight.Transpose()
 	out := DefaultDevice.MatMulAdd(input, wt, l.Bias)
 	return out
 }
 
 func (l *DenseLayer) Backward(gradOutput *Tensor) *Tensor {
 	batch := gradOutput.Shape[0]
-	// Weight gradient: dW = gradOutput^T · input → [outDim × inDim]
-	gt := gradOutput.Transpose() // [outDim × batch]
+	// Weight gradient dW = dY^T * X.
+	gt := gradOutput.Transpose()
 	dW := DefaultDevice.MatMul(gt, l.input)
-	// Bias gradient: dB = sum(gradOutput, axis=0) → [1 × outDim]
+	// Bias gradient dB = row-wise sum(dY).
 	dB := Zeros(1, l.outDim)
 	for i := 0; i < batch; i++ {
 		for j := 0; j < l.outDim; j++ {
@@ -102,8 +101,8 @@ func (l *DenseLayer) Backward(gradOutput *Tensor) *Tensor {
 	for i := range l.BiasG.Data {
 		l.BiasG.Data[i] += dB.Data[i] / float64(batch)
 	}
-	// Input gradient: dX = gradOutput · W → [batch × inDim]
-	dX := DefaultDevice.MatMul(gradOutput, l.Weight) // [batch×out] × [out×in] → [batch×in]
+	// Input gradient dX = dY * W.
+	dX := DefaultDevice.MatMul(gradOutput, l.Weight)
 	return dX
 }
 
@@ -150,7 +149,7 @@ func (l *ReLULayer) Backward(gradOutput *Tensor) *Tensor {
 func (l *ReLULayer) Params() []*Param          { return nil }
 func (l *ReLULayer) SetTraining(training bool) {}
 
-// SigmoidLayer implements sigmoid activation: σ(x) = 1/(1+e^(-x))
+// SigmoidLayer implements element-wise sigmoid activation.
 type SigmoidLayer struct {
 	output *Tensor // cached output, used in backward pass
 }
@@ -163,7 +162,7 @@ func (l *SigmoidLayer) Forward(input *Tensor) *Tensor {
 }
 
 func (l *SigmoidLayer) Backward(gradOutput *Tensor) *Tensor {
-	// dσ/dx = σ(x) × (1 - σ(x))
+	// d/dx sigmoid(x) = sigmoid(x) * (1 - sigmoid(x))
 	ones := Ones(l.output.Shape...)
 	dsig := l.output.MulElem(ones.Sub(l.output))
 	return gradOutput.MulElem(dsig)
@@ -392,7 +391,7 @@ func (l *BatchNormLayer) Backward(gradOutput *Tensor) *Tensor {
 func (l *BatchNormLayer) Params() []*Param {
 	// Include running stats so they are serialized/deserialized along with learned params.
 	// Order: gamma, beta, running_mean, running_var
-	// Running stats have permanent zero gradients — optimizer won't modify them.
+	// Running-stat gradients are placeholders and remain zero during optimization.
 	return []*Param{
 		{Value: l.gamma, Grad: l.gammaG},
 		{Value: l.beta, Grad: l.betaG},

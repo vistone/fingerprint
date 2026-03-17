@@ -145,99 +145,23 @@ func (pm *ProfileManager) LoadDefaultProfiles() error {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
 
-	// Create Chrome 134 default configuration (with full anti-detection)
-	chrome134 := &profiles.ClientProfile{
+	pm.profiles["chrome_134_default"] = buildDefaultChromeProfile()
+	pm.profiles["firefox_132_default"] = buildDefaultFirefoxProfile()
+	pm.profiles["safari_17_default"] = buildDefaultSafariProfile()
+
+	return nil
+}
+
+func buildDefaultChromeProfile() *profiles.ClientProfile {
+	return &profiles.ClientProfile{
 		ID:             "chrome_134_default",
 		BrowserType:    core.BrowserChrome,
 		BrowserVersion: "134.0.6998.35",
 		OS:             core.OSWindows10,
 		OSVersion:      "10.0.19045",
-
-		// Anti-detection configuration
 		JSAntiDetection: &profiles.JSAntiDetection{
-			// WebGPU anti-detection point
-			WebGPU: &profiles.WebGPUAntiDetect{
-				Available:   true,
-				AdapterName: "ANGLE (Intel, Intel(R) HD Graphics 630, OpenGL 4.5.0 - Build 31.0.101.2127)",
-				DeviceType:  "integrated-gpu",
-				VendorID:    "0x8086",
-				FeatureFlags: []string{
-					"depth-clip-control",
-					"depth32float-stencil8",
-					"indirect-first-instance",
-					"shader-f16",
-					"timestamp-query",
-					"texture-compression-bc",
-					"texture-compression-etc2",
-					"texture-compression-astc",
-				},
-				LimitValues: map[string]uint64{
-					"maxTextureDimension1D":                     16384,
-					"maxTextureDimension2D":                     16384,
-					"maxTextureDimension3D":                     2048,
-					"maxTextureArrayLayers":                     2048,
-					"maxBindGroups":                             4,
-					"maxDynamicUniformBuffersPerPipelineLayout": 8,
-					"maxDynamicStorageBuffersPerPipelineLayout": 4,
-					"maxSampledTexturesPerShaderStage":          16,
-					"maxSamplersPerShaderStage":                 16,
-					"maxStorageBuffersPerShaderStage":           8,
-					"maxStorageTexturesPerShaderStage":          4,
-					"maxUniformBuffersPerShaderStage":           12,
-					"maxUniformBufferBindingSize":               65536,
-					"maxStorageBufferBindingSize":               134217728,
-					"maxVertexBuffers":                          8,
-					"maxVertexAttributes":                       16,
-					"maxVertexBufferArrayStride":                2048,
-					"maxComputeWorkgroupStorageSize":            16384,
-					"maxComputeInvocationsPerWorkgroup":         256,
-					"maxComputeWorkgroupSizeX":                  256,
-					"maxComputeWorkgroupSizeY":                  256,
-					"maxComputeWorkgroupSizeZ":                  64,
-					"maxComputeWorkgroupsPerDimension":          65535,
-				},
-				BackendType: "d3d12",
-			},
-
-			// MediaDevices anti-detection point
-			MediaDevices: &profiles.MediaDevicesAntiDetect{
-				VideoInputs: []*profiles.MediaDeviceInfo{
-					{
-						DeviceID:  "default",
-						GroupID:   "group_video_default",
-						Kind:      "videoinput",
-						Label:     "Integrated Camera (04f2:b6d9)",
-						VendorID:  "04f2",
-						ProductID: "b6d9",
-					},
-					{
-						DeviceID:  "videoinput_2",
-						GroupID:   "group_video_2",
-						Kind:      "videoinput",
-						Label:     "USB Camera (046d:0825)",
-						VendorID:  "046d",
-						ProductID: "0825",
-					},
-				},
-				AudioInputs: []*profiles.MediaDeviceInfo{
-					{
-						DeviceID: "default",
-						GroupID:  "group_audio_default",
-						Kind:     "audioinput",
-						Label:    "Microphone Array (Realtek(R) Audio)",
-					},
-				},
-				AudioOutputs: []*profiles.MediaDeviceInfo{
-					{
-						DeviceID: "default",
-						GroupID:  "group_audio_output",
-						Kind:     "audiooutput",
-						Label:    "Speakers (Realtek(R) Audio)",
-					},
-				},
-			},
-
-			// Permissions anti-detection point
+			WebGPU:       buildDefaultChromeWebGPU(),
+			MediaDevices: buildDefaultChromeMediaDevices(),
 			Permissions: &profiles.PermissionsAntiDetect{
 				PermissionState: map[string]string{
 					"camera":        "prompt",
@@ -249,8 +173,6 @@ func (pm *ProfileManager) LoadDefaultProfiles() error {
 				AccessMicrophone: true,
 				ShowNotification: true,
 			},
-
-			// Automation anti-detection point
 			Automation: &profiles.AutomationAntiDetect{
 				WebDriver:        false,
 				Headless:         false,
@@ -267,16 +189,99 @@ func (pm *ProfileManager) LoadDefaultProfiles() error {
 			},
 		},
 	}
+}
 
-	// Create Firefox default configuration (lightweight)
-	firefox := &profiles.ClientProfile{
+func buildDefaultChromeWebGPU() *profiles.WebGPUAntiDetect {
+	return &profiles.WebGPUAntiDetect{
+		Available:   true,
+		AdapterName: "ANGLE (Intel, Intel(R) HD Graphics 630, OpenGL 4.5.0 - Build 31.0.101.2127)",
+		DeviceType:  "integrated-gpu",
+		VendorID:    "0x8086",
+		FeatureFlags: []string{
+			"depth-clip-control",
+			"depth32float-stencil8",
+			"indirect-first-instance",
+			"shader-f16",
+			"timestamp-query",
+			"texture-compression-bc",
+			"texture-compression-etc2",
+			"texture-compression-astc",
+		},
+		LimitValues: map[string]uint64{
+			"maxTextureDimension1D":                     16384,
+			"maxTextureDimension2D":                     16384,
+			"maxTextureDimension3D":                     2048,
+			"maxTextureArrayLayers":                     2048,
+			"maxBindGroups":                             4,
+			"maxDynamicUniformBuffersPerPipelineLayout": 8,
+			"maxDynamicStorageBuffersPerPipelineLayout": 4,
+			"maxSampledTexturesPerShaderStage":          16,
+			"maxSamplersPerShaderStage":                 16,
+			"maxStorageBuffersPerShaderStage":           8,
+			"maxStorageTexturesPerShaderStage":          4,
+			"maxUniformBuffersPerShaderStage":           12,
+			"maxUniformBufferBindingSize":               65536,
+			"maxStorageBufferBindingSize":               134217728,
+			"maxVertexBuffers":                          8,
+			"maxVertexAttributes":                       16,
+			"maxVertexBufferArrayStride":                2048,
+			"maxComputeWorkgroupStorageSize":            16384,
+			"maxComputeInvocationsPerWorkgroup":         256,
+			"maxComputeWorkgroupSizeX":                  256,
+			"maxComputeWorkgroupSizeY":                  256,
+			"maxComputeWorkgroupSizeZ":                  64,
+			"maxComputeWorkgroupsPerDimension":          65535,
+		},
+		BackendType: "d3d12",
+	}
+}
+
+func buildDefaultChromeMediaDevices() *profiles.MediaDevicesAntiDetect {
+	return &profiles.MediaDevicesAntiDetect{
+		VideoInputs: []*profiles.MediaDeviceInfo{
+			{
+				DeviceID:  "default",
+				GroupID:   "group_video_default",
+				Kind:      "videoinput",
+				Label:     "Integrated Camera (04f2:b6d9)",
+				VendorID:  "04f2",
+				ProductID: "b6d9",
+			},
+			{
+				DeviceID:  "videoinput_2",
+				GroupID:   "group_video_2",
+				Kind:      "videoinput",
+				Label:     "USB Camera (046d:0825)",
+				VendorID:  "046d",
+				ProductID: "0825",
+			},
+		},
+		AudioInputs: []*profiles.MediaDeviceInfo{
+			{
+				DeviceID: "default",
+				GroupID:  "group_audio_default",
+				Kind:     "audioinput",
+				Label:    "Microphone Array (Realtek(R) Audio)",
+			},
+		},
+		AudioOutputs: []*profiles.MediaDeviceInfo{
+			{
+				DeviceID: "default",
+				GroupID:  "group_audio_output",
+				Kind:     "audiooutput",
+				Label:    "Speakers (Realtek(R) Audio)",
+			},
+		},
+	}
+}
+
+func buildDefaultFirefoxProfile() *profiles.ClientProfile {
+	return &profiles.ClientProfile{
 		ID:             "firefox_132_default",
 		BrowserType:    core.BrowserFirefox,
 		BrowserVersion: "132.0",
 		OS:             core.OSWindows10,
 		OSVersion:      "10.0.19045",
-
-		// Firefox only enables basic Automation anti-detection
 		JSAntiDetection: &profiles.JSAntiDetection{
 			Automation: &profiles.AutomationAntiDetect{
 				WebDriver:       false,
@@ -285,16 +290,15 @@ func (pm *ProfileManager) LoadDefaultProfiles() error {
 			},
 		},
 	}
+}
 
-	// Create Safari default configuration (macOS)
-	safari := &profiles.ClientProfile{
+func buildDefaultSafariProfile() *profiles.ClientProfile {
+	return &profiles.ClientProfile{
 		ID:             "safari_17_default",
 		BrowserType:    core.BrowserSafari,
 		BrowserVersion: "17.2",
 		OS:             core.OSMacOS14,
 		OSVersion:      "14.2",
-
-		// Safari only enables basic anti-detection
 		JSAntiDetection: &profiles.JSAntiDetection{
 			Permissions: &profiles.PermissionsAntiDetect{
 				PermissionState: map[string]string{
@@ -305,12 +309,6 @@ func (pm *ProfileManager) LoadDefaultProfiles() error {
 			},
 		},
 	}
-
-	pm.profiles["chrome_134_default"] = chrome134
-	pm.profiles["firefox_132_default"] = firefox
-	pm.profiles["safari_17_default"] = safari
-
-	return nil
 }
 
 // GetProfile returns the Profile with the specified ID (returns a copy to prevent external modification of internal state)

@@ -141,7 +141,7 @@ func NewReinforcementEngine(cfg *RLConfig) *ReinforcementEngine {
 }
 
 // ---------------------------------------------------------------------------
-// Public API — SelectAction / Update / BestAction / QValue (preserves old interface)
+// Action selection APIs
 // ---------------------------------------------------------------------------
 
 // SelectAction chooses an action using epsilon-greedy over the DQN Q-values.
@@ -160,7 +160,7 @@ func (re *ReinforcementEngine) SelectAction(state State) (ActionType, bool) {
 }
 
 // SelectActionContinuous chooses an action from a continuous state vector.
-// This is the preferred API for DQN — avoids discretization loss.
+// The boolean return value indicates whether exploration was used.
 func (re *ReinforcementEngine) SelectActionContinuous(stateVec []float64) (ActionType, bool) {
 	re.mu.RLock()
 	defer re.mu.RUnlock()
@@ -186,7 +186,7 @@ func (re *ReinforcementEngine) Update(state State, action ActionType, reward flo
 //
 // Training uses the DQN loss:
 //
-//	L = (r + γ·max_a'[Q_target(s', a')] − Q_online(s, a))²
+// L = (r + gamma*max_a' Q_target(s', a') - Q_online(s, a))^2
 //
 // The target network is synchronized every TargetUpdateFreq steps.
 func (re *ReinforcementEngine) UpdateContinuous(stateVec []float64, action ActionType, reward float64, nextStateVec []float64, done bool) {
@@ -232,7 +232,7 @@ func (re *ReinforcementEngine) trainBatch(batch []experience) {
 	batchLoss := 0.0
 
 	for _, exp := range batch {
-		// Forward pass through online network to get current Q(s, ·)
+		// Forward pass through online network to estimate Q(s, .)
 		qvals := re.online.forward(exp.state)
 
 		// Compute TD target using target network

@@ -11,7 +11,7 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles/legacy"
 )
 
-// BenchmarkGetRandomFingerprint 基准测试：随机get指纹
+// Translated comment
 func BenchmarkGetRandomFingerprint(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -22,7 +22,7 @@ func BenchmarkGetRandomFingerprint(b *testing.B) {
 	}
 }
 
-// BenchmarkGetRandomFingerprintWithOS 基准测试：随机get指纹（指定 OS）
+// Translated comment
 func BenchmarkGetRandomFingerprintWithOS(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -33,7 +33,7 @@ func BenchmarkGetRandomFingerprintWithOS(b *testing.B) {
 	}
 }
 
-// BenchmarkGetRandomFingerprintByBrowser 基准测试：按浏览器type随机get指纹
+// Translated comment
 func BenchmarkGetRandomFingerprintByBrowser(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -44,7 +44,7 @@ func BenchmarkGetRandomFingerprintByBrowser(b *testing.B) {
 	}
 }
 
-// BenchmarkGetUserAgentByProfileName 基准测试：根据 profile 名称get User-Agent
+// Translated comment
 func BenchmarkGetUserAgentByProfileName(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -55,7 +55,7 @@ func BenchmarkGetUserAgentByProfileName(b *testing.B) {
 	}
 }
 
-// BenchmarkGenerateHeaders 基准测试：generate HTTP Headers
+// Translated comment
 func BenchmarkGenerateHeaders(b *testing.B) {
 	b.ReportAllocs()
 	ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
@@ -64,7 +64,7 @@ func BenchmarkGenerateHeaders(b *testing.B) {
 	}
 }
 
-// BenchmarkHeadersToMap 基准测试：Headers convert为 Map
+// Translated comment
 func BenchmarkHeadersToMap(b *testing.B) {
 	ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
 	headers := headers.GenerateHeaders(types.BrowserChrome, ua, false)
@@ -76,7 +76,7 @@ func BenchmarkHeadersToMap(b *testing.B) {
 	}
 }
 
-// BenchmarkHeadersClone 基准测试：Headers 克隆
+// Translated comment
 func BenchmarkHeadersClone(b *testing.B) {
 	ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
 	headers := headers.GenerateHeaders(types.BrowserChrome, ua, false)
@@ -90,7 +90,7 @@ func BenchmarkHeadersClone(b *testing.B) {
 	}
 }
 
-// BenchmarkRandomLanguage 基准测试：随机选择语言
+// Translated comment
 func BenchmarkRandomLanguage(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -98,7 +98,7 @@ func BenchmarkRandomLanguage(b *testing.B) {
 	}
 }
 
-// BenchmarkRandomOS 基准测试：随机选择操作系统
+// Translated comment
 func BenchmarkRandomOS(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -106,7 +106,7 @@ func BenchmarkRandomOS(b *testing.B) {
 	}
 }
 
-// BenchmarkGetClientHelloSpec 基准测试：get Client Hello Spec
+// Translated comment
 func BenchmarkGetClientHelloSpec(b *testing.B) {
 	profile := profiles.DefaultClientProfile
 	b.ResetTimer()
@@ -119,11 +119,11 @@ func BenchmarkGetClientHelloSpec(b *testing.B) {
 	}
 }
 
-// BenchmarkFullWorkflow 基准测试：完整工作流程
+// Translated comment
 func BenchmarkFullWorkflow(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		// 1. get随机指纹
+		// Translated comment
 		result, err := random.GetRandomFingerprint()
 		if err != nil {
 			b.Fatal(err)
@@ -135,15 +135,15 @@ func BenchmarkFullWorkflow(b *testing.B) {
 			b.Fatal(err)
 		}
 
-		// 3. setting自定义 Headers
+		// Translated comment
 		result.Headers.Set("Cookie", "session_id=test")
 
-		// 4. convert为 Map
+		// Translated comment
 		_ = result.Headers.ToMap()
 	}
 }
 
-// BenchmarkParallelGetRandomFingerprint concurrent基准测试：随机get指纹
+// Translated comment
 func BenchmarkParallelGetRandomFingerprint(b *testing.B) {
 	b.ReportAllocs()
 	b.RunParallel(func(pb *testing.PB) {
@@ -156,7 +156,7 @@ func BenchmarkParallelGetRandomFingerprint(b *testing.B) {
 	})
 }
 
-// BenchmarkParallelRandomLanguage concurrent基准测试：随机选择语言
+// Translated comment
 func BenchmarkParallelRandomLanguage(b *testing.B) {
 	b.ReportAllocs()
 	b.RunParallel(func(pb *testing.PB) {
@@ -166,7 +166,7 @@ func BenchmarkParallelRandomLanguage(b *testing.B) {
 	})
 }
 
-// BenchmarkParallelRandomOS concurrent基准测试：随机选择操作系统
+// Translated comment
 func BenchmarkParallelRandomOS(b *testing.B) {
 	b.ReportAllocs()
 	b.RunParallel(func(pb *testing.PB) {

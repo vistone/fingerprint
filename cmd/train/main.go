@@ -14,6 +14,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -24,7 +25,24 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles"
 )
 
+type trainOptions struct {
+	outputDir string
+	epochs    int
+	batchSize int
+	lr        float64
+	verbose   bool
+}
+
+var errNoBrowserProfiles = errors.New("no browser profiles found - ensure profiles package is imported")
+
 func main() {
+	opts := parseFlags()
+	if err := runTraining(opts); err != nil {
+		log.Fatalf("Training failed: %v", err)
+	}
+}
+
+func parseFlags() trainOptions {
 	outputDir := flag.String("output", "./models", "model output directory")
 	epochs := flag.Int("epochs", 100, "training epochs")
 	batchSize := flag.Int("batch", 32, "batch size")
@@ -32,135 +50,152 @@ func main() {
 	verbose := flag.Bool("verbose", true, "print training progress")
 	flag.Parse()
 
-	if *verbose {
+	return trainOptions{
+		outputDir: *outputDir,
+		epochs:    *epochs,
+		batchSize: *batchSize,
+		lr:        *lr,
+		verbose:   *verbose,
+	}
+}
+
+func runTraining(opts trainOptions) error {
+	if opts.verbose {
 		fmt.Println("=== Fingerprint ML Model Training ===")
 		fmt.Println()
 	}
 
-	// 1. Load profiles from default registry
 	allProfiles := profiles.GetAll()
 	if len(allProfiles) == 0 {
-		log.Fatal("no browser profiles found — ensure profiles package is imported")
+		return errNoBrowserProfiles
 	}
+	printProfileSummary(opts.verbose, allProfiles)
 
-	// Count by family
-	familyCount := make(map[string]int)
-	for _, p := range allProfiles {
-		familyCount[string(p.BrowserType)]++
-	}
-	if *verbose {
-		fmt.Printf("Loaded %d browser profiles:\n", len(allProfiles))
-		for family, count := range familyCount {
-			fmt.Printf("  %-12s %d profiles\n", family, count)
-		}
-		fmt.Println()
-	}
-
-	// 2. Create training pipeline
 	pipeline := ml.NewModelPipeline()
-
 	config := &ml.NeuralTrainerConfig{
-		Epochs:          *epochs,
-		BatchSize:       *batchSize,
-		LearningRate:    *lr,
+		Epochs:          opts.epochs,
+		BatchSize:       opts.batchSize,
+		LearningRate:    opts.lr,
 		AugmentNoise:    0.05,
 		TripletMargin:   1.0,
 		ForgeryRatio:    1.5,
 		ValidationSplit: 0.2,
 	}
-
 	trainer := ml.NewNeuralTrainer(pipeline, config)
-
-	if *verbose {
-		fmt.Printf("Training config:\n")
-		fmt.Printf("  Epochs:       %d\n", config.Epochs)
-		fmt.Printf("  Batch size:   %d\n", config.BatchSize)
-		fmt.Printf("  Learning rate: %.4f\n", config.LearningRate)
-		fmt.Printf("  Augment noise: %.3f\n", config.AugmentNoise)
-		fmt.Printf("  Triplet margin: %.1f\n", config.TripletMargin)
-		fmt.Printf("  Forgery ratio: %.1f\n", config.ForgeryRatio)
-		fmt.Printf("  Val split:    %.1f%%\n", config.ValidationSplit*100)
-		fmt.Println()
-	}
-
-	// 3. Train
+	printTrainingConfig(opts.verbose, config)
 	startTime := time.Now()
-	if *verbose {
-		fmt.Println("Starting 4-phase training...")
-		fmt.Println("  Phase 1: Encoder pre-training (triplet loss + hard negative mining)")
-		fmt.Println("  Phase 2: Browser classifier (cross-entropy)")
-		fmt.Println("  Phase 3: Forgery detector (binary cross-entropy)")
-		fmt.Println("  Phase 4: Threat assessor (cross-entropy + synthetic behavior)")
-		fmt.Println()
-	}
+	printTrainingPhases(opts.verbose)
 
 	registry := profiles.DefaultRegistry
 	if err := trainer.TrainFromProfiles(registry); err != nil {
-		log.Fatalf("Training failed: %v", err)
+		return err
 	}
-
 	trainDuration := time.Since(startTime)
-	if *verbose {
+	if opts.verbose {
 		fmt.Printf("Training completed in %s\n\n", trainDuration.Round(time.Millisecond))
 	}
+	printTrainingMetrics(opts.verbose, trainer)
 
-	// 4. Print metrics summary
-	if *verbose && len(trainer.Metrics) > 0 {
-		fmt.Println("Training metrics (last epoch for each phase):")
-		last := trainer.Metrics[len(trainer.Metrics)-1]
-		fmt.Printf("  Encoder loss:    %.4f\n", last.EncoderLoss)
-		fmt.Printf("  Classifier loss: %.4f\n", last.ClassLoss)
-		fmt.Printf("  Forgery loss:    %.4f\n", last.ForgeryLoss)
-		fmt.Printf("  Threat loss:     %.4f\n", last.ThreatLoss)
-		fmt.Printf("  Val accuracy:    %.2f%%\n", last.ValAccuracy*100)
-		fmt.Println()
-	}
-
-	// 5. Save to model store
-	storeConfig := ml.DefaultStoreConfig(*outputDir)
+	storeConfig := ml.DefaultStoreConfig(opts.outputDir)
 	store, err := ml.NewModelStore(storeConfig)
 	if err != nil {
-		log.Fatalf("Failed to create model store: %v", err)
+		return fmt.Errorf("failed to create model store: %w", err)
 	}
-
 	var lastMetrics *ml.TrainingMetrics
 	if len(trainer.Metrics) > 0 {
 		m := trainer.Metrics[len(trainer.Metrics)-1]
 		lastMetrics = &m
 	}
-
 	if err := store.Save(pipeline, fmt.Sprintf("full training: %d profiles, %d epochs", len(allProfiles), config.Epochs), lastMetrics); err != nil {
-		log.Fatalf("Failed to save model: %v", err)
+		return fmt.Errorf("failed to save model: %w", err)
 	}
-
 	ver := store.Latest()
-	if *verbose && ver != nil {
-		fmt.Printf("Model saved to %s (version %d)\n", *outputDir, ver.Version)
+	if opts.verbose && ver != nil {
+		fmt.Printf("Model saved to %s (version %d)\n", opts.outputDir, ver.Version)
 	}
-
-	// 6. Also save weights as standalone file
-	weightsPath := *outputDir + "/weights.json"
+	weightsPath := opts.outputDir + "/weights.json"
 	if err := pipeline.SaveWeights(weightsPath); err != nil {
-		log.Fatalf("Failed to save weights: %v", err)
+		return fmt.Errorf("failed to save weights: %w", err)
 	}
-	if *verbose {
+	if opts.verbose {
 		info, _ := os.Stat(weightsPath)
 		if info != nil {
 			fmt.Printf("Weights file: %s (%.1f KB)\n", weightsPath, float64(info.Size())/1024)
 		}
 	}
-
-	// 7. Validation: test inference on a sample profile
-	if *verbose {
-		fmt.Println("\n=== Validation ===")
-		testProfile := allProfiles[0]
-		result := pipeline.Infer(&testProfile, nil)
-		fmt.Printf("Test profile: %s (%s %s)\n", testProfile.ID, testProfile.BrowserType, testProfile.BrowserVersion)
-		fmt.Printf("  Browser:    %s (confidence: %.1f%%)\n", result.Browser.Family, result.Browser.Confidence*100)
-		fmt.Printf("  Forgery:    %s (prob: %.1f%%)\n", result.Forgery.ForgeryType.String(), result.Forgery.ForgeryProb*100)
-		fmt.Printf("  Threat:     %s (prob: %.1f%%)\n", result.Threat.ThreatClass.String(), result.Threat.ThreatProb*100)
-		fmt.Printf("  Action:     %s (confidence: %.1f%%)\n", result.Threat.Action.String(), result.Threat.ActionConfidence*100)
-	}
+	printSampleValidation(opts.verbose, allProfiles, pipeline)
 
 	fmt.Println("\nDone.")
+	return nil
+}
+
+func printProfileSummary(verbose bool, allProfiles []profiles.ClientProfile) {
+	if !verbose {
+		return
+	}
+
+	familyCount := make(map[string]int)
+	for _, p := range allProfiles {
+		familyCount[string(p.BrowserType)]++
+	}
+	fmt.Printf("Loaded %d browser profiles:\n", len(allProfiles))
+	for family, count := range familyCount {
+		fmt.Printf("  %-12s %d profiles\n", family, count)
+	}
+	fmt.Println()
+}
+
+func printTrainingConfig(verbose bool, config *ml.NeuralTrainerConfig) {
+	if !verbose {
+		return
+	}
+	fmt.Printf("Training config:\n")
+	fmt.Printf("  Epochs:       %d\n", config.Epochs)
+	fmt.Printf("  Batch size:   %d\n", config.BatchSize)
+	fmt.Printf("  Learning rate: %.4f\n", config.LearningRate)
+	fmt.Printf("  Augment noise: %.3f\n", config.AugmentNoise)
+	fmt.Printf("  Triplet margin: %.1f\n", config.TripletMargin)
+	fmt.Printf("  Forgery ratio: %.1f\n", config.ForgeryRatio)
+	fmt.Printf("  Val split:    %.1f%%\n", config.ValidationSplit*100)
+	fmt.Println()
+}
+
+func printTrainingPhases(verbose bool) {
+	if !verbose {
+		return
+	}
+	fmt.Println("Starting 4-phase training...")
+	fmt.Println("  Phase 1: Encoder pre-training (triplet loss + hard negative mining)")
+	fmt.Println("  Phase 2: Browser classifier (cross-entropy)")
+	fmt.Println("  Phase 3: Forgery detector (binary cross-entropy)")
+	fmt.Println("  Phase 4: Threat assessor (cross-entropy + synthetic behavior)")
+	fmt.Println()
+}
+
+func printTrainingMetrics(verbose bool, trainer *ml.NeuralTrainer) {
+	if !verbose || len(trainer.Metrics) == 0 {
+		return
+	}
+	last := trainer.Metrics[len(trainer.Metrics)-1]
+	fmt.Println("Training metrics (last epoch for each phase):")
+	fmt.Printf("  Encoder loss:    %.4f\n", last.EncoderLoss)
+	fmt.Printf("  Classifier loss: %.4f\n", last.ClassLoss)
+	fmt.Printf("  Forgery loss:    %.4f\n", last.ForgeryLoss)
+	fmt.Printf("  Threat loss:     %.4f\n", last.ThreatLoss)
+	fmt.Printf("  Val accuracy:    %.2f%%\n", last.ValAccuracy*100)
+	fmt.Println()
+}
+
+func printSampleValidation(verbose bool, allProfiles []profiles.ClientProfile, pipeline *ml.ModelPipeline) {
+	if !verbose {
+		return
+	}
+	fmt.Println("\n=== Validation ===")
+	testProfile := allProfiles[0]
+	result := pipeline.Infer(&testProfile, nil)
+	fmt.Printf("Test profile: %s (%s %s)\n", testProfile.ID, testProfile.BrowserType, testProfile.BrowserVersion)
+	fmt.Printf("  Browser:    %s (confidence: %.1f%%)\n", result.Browser.Family, result.Browser.Confidence*100)
+	fmt.Printf("  Forgery:    %s (prob: %.1f%%)\n", result.Forgery.ForgeryType.String(), result.Forgery.ForgeryProb*100)
+	fmt.Printf("  Threat:     %s (prob: %.1f%%)\n", result.Threat.ThreatClass.String(), result.Threat.ThreatProb*100)
+	fmt.Printf("  Action:     %s (confidence: %.1f%%)\n", result.Threat.Action.String(), result.Threat.ActionConfidence*100)
 }

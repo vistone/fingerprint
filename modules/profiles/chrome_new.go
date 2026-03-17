@@ -175,7 +175,6 @@ var (
 )
 
 func init() {
-	// registers all Chrome fingerprints
 	profiles := []ClientProfile{
 		Chrome115, Chrome116, Chrome117, Chrome118, Chrome119,
 		Chrome121, Chrome122, Chrome123, Chrome125, Chrome126, Chrome127, Chrome128, Chrome129,
@@ -183,84 +182,28 @@ func init() {
 		Chrome141, Chrome142, Chrome143, Chrome144,
 	}
 
-	// for each profile fills in missing HTTP/2 and HTTP/3 profile
 	for i := range profiles {
 		p := &profiles[i]
-
-		// padding HTTP/2 profile (if missing)
-		if p.HTTP2Settings.HeaderTableSize == 0 && p.HTTP2Settings.InitialWindowSize == 0 {
-			p.HTTP2Settings = core.HTTP2Settings{
-				HeaderTableSize:      65536,
-				EnablePush:           0,
-				MaxConcurrentStreams: 1000,
-				InitialWindowSize:    6291456,
-				MaxFrameSize:         16384,
-				MaxHeaderListSize:    262144,
-			}
-			p.PseudoHeaderOrder = []string{":method", ":authority", ":scheme", ":path"}
-		}
-
-		// padding ConnectionFlow (if missing)
-		if p.ConnectionFlow == 0 {
-			p.ConnectionFlow = 15663105
-		}
-
-		// padding HTTP/3 (QUIC) profile (if missing)
-		if p.HTTP3Settings == nil {
-			p.HTTP3Settings = &core.HTTP3Settings{
-				QUICVersion:            core.QUICVersion1,
-				InitialMaxData:         16777216,
-				InitialMaxStreamData:   6291456,
-				InitialMaxStreamsBidi:  100,
-				InitialMaxStreamsUni:   100,
-				MaxUDPPayloadSize:      1472,
-				AckDelayExponent:       3,
-				MaxAckDelay:            25,
-				DisableActiveMigration: false,
-			}
-			p.QUICVersions = []uint32{core.QUICVersion1}
-		}
-
-		// padding Headers (if missing)
-		if p.Headers == nil {
-			p.Headers = &core.HTTPHeaders{}
-		}
-		h := p.Headers
-		if h.Accept == "" {
-			h.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-		}
-		if h.AcceptLanguage == "" {
-			h.AcceptLanguage = "en-US,en;q=0.9"
-		}
-		if h.AcceptEncoding == "" {
-			h.AcceptEncoding = "gzip, deflate, br"
-		}
-		if h.UserAgent == "" {
-			h.UserAgent = buildChromeUserAgent(p.BrowserVersion, p.OS)
-		}
-		if h.SecFetchSite == "" {
-			h.SecFetchSite = "none"
-		}
-		if h.SecFetchMode == "" {
-			h.SecFetchMode = "navigate"
-		}
-		if h.SecFetchDest == "" {
-			h.SecFetchDest = "document"
-		}
-		if h.SecCHUA == "" {
-			h.SecCHUA = `"Chromium";v="` + safeSliceVersion(p.BrowserVersion) + `", "Google Chrome";v="` + safeSliceVersion(p.BrowserVersion) + `"`
-		}
-		if h.SecCHUAMobile == "" {
-			h.SecCHUAMobile = "?0"
-		}
-		if h.SecCHUAPlatform == "" {
-			h.SecCHUAPlatform = platformString(p.OS)
-		}
-		if h.UpgradeInsecureRequests == "" {
-			h.UpgradeInsecureRequests = "1"
-		}
+		ensureChromiumCommonDefaults(p)
+		applyChromeHeaderDefaults(p)
 
 		Register(*p)
+	}
+}
+
+func applyChromeHeaderDefaults(p *ClientProfile) {
+	h := p.Headers
+	if h.UserAgent == "" {
+		h.UserAgent = buildChromeUserAgent(p.BrowserVersion, p.OS)
+	}
+	if h.SecCHUA == "" {
+		h.SecCHUA = `"Chromium";v="` + safeSliceVersion(p.BrowserVersion) + `", "Google Chrome";v="` + safeSliceVersion(p.BrowserVersion) + `"`
+	}
+	if h.SecCHUAMobile == "" {
+		h.SecCHUAMobile = "?0"
+	}
+	if h.SecCHUAPlatform == "" {
+		h.SecCHUAPlatform = platformString(p.OS)
 	}
 }
 

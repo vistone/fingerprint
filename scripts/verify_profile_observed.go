@@ -140,7 +140,7 @@ func verifyOne(profile profiles.ClientProfile, timeout time.Duration, strict boo
 	}
 	defer c.Close()
 
-	// 1) httpbin: 服务器看到的请求头（直接回显）
+	// Translated comment
 	httpbinBody, err := doGet(c, "https://httpbin.org/anything")
 	if err != nil {
 		result.Error = fmt.Sprintf("httpbin request failed: %v", err)
@@ -152,7 +152,7 @@ func verifyOne(profile profiles.ClientProfile, timeout time.Duration, strict boo
 		result.ObservedCHUA = asString(dig(httpbin, "headers", "Sec-Ch-Ua"))
 	}
 
-	// 2) tls.peet.ws: 服务器视角 TLS/HTTP 指纹
+	// Translated comment
 	peetBody, err := doGet(c, "https://tls.peet.ws/api/all")
 	if err == nil {
 		var peet map[string]interface{}

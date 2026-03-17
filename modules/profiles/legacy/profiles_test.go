@@ -7,7 +7,7 @@ import (
 	"github.com/vistone/fingerprint/modules/errors"
 )
 
-// TestAllProfilesValid 验证所有指纹配置有效
+// Translated comment
 func TestAllProfilesValid(t *testing.T) {
 	if len(MappedTLSClients) == 0 {
 		t.Fatal("MappedTLSClients is empty")
@@ -17,50 +17,50 @@ func TestAllProfilesValid(t *testing.T) {
 
 	for name, profile := range MappedTLSClients {
 		t.Run(name, func(t *testing.T) {
-			// 测试 GetClientHelloStr
+			// Translated comment
 			str := profile.GetClientHelloStr()
 			if str == "" {
 				t.Error("GetClientHelloStr() returned empty string")
 			}
 
-			// 测试 GetClientHelloId
+			// Translated comment
 			helloID := profile.GetClientHelloId()
 			if helloID.Client == "" {
 				t.Error("GetClientHelloId().Client is empty")
 			}
 
-			// 测试 GetSettings
+			// Translated comment
 			settings := profile.GetSettings()
 			if len(settings) == 0 {
 				t.Error("GetSettings() returned empty map")
 			}
 
-			// 测试 GetSettingsOrder
+			// Translated comment
 			settingsOrder := profile.GetSettingsOrder()
 			if len(settingsOrder) == 0 {
 				t.Error("GetSettingsOrder() returned empty slice")
 			}
 
-			// 测试 GetPseudoHeaderOrder
+			// Translated comment
 			pseudoHeaders := profile.GetPseudoHeaderOrder()
 			if len(pseudoHeaders) == 0 {
 				t.Error("GetPseudoHeaderOrder() returned empty slice")
 			}
 
-			// 测试 GetConnectionFlow
+			// Translated comment
 			flow := profile.GetConnectionFlow()
 			if flow == 0 {
 				t.Error("GetConnectionFlow() returned 0")
 			}
 
-			// 测试 GetClientHelloSpec（某些 profile 可能返回错误）
+			// Translated comment
 			spec, err := profile.GetClientHelloSpec()
 			if err != nil {
 				if !errors.IsClientHelloSpecNotImplemented(err) {
 					t.Errorf("GetClientHelloSpec() unexpected error: %v", err)
 				}
 			} else {
-				// 验证 spec 的基本有效性
+				// Translated comment
 				if len(spec.CipherSuites) == 0 {
 					t.Error("ClientHelloSpec.CipherSuites is empty")
 				}
@@ -72,14 +72,14 @@ func TestAllProfilesValid(t *testing.T) {
 	}
 }
 
-// TestDefaultClientProfile 验证默认指纹配置
+// Translated comment
 func TestDefaultClientProfile(t *testing.T) {
 	if DefaultClientProfile.GetClientHelloStr() == "" {
 		t.Error("DefaultClientProfile is invalid")
 	}
 }
 
-// TestChromeProfiles 验证 Chrome 系列指纹
+// Translated comment
 func TestChromeProfiles(t *testing.T) {
 	chromeProfiles := []string{
 		"chrome_103", "chrome_104", "chrome_105", "chrome_106", "chrome_107",
@@ -103,7 +103,7 @@ func TestChromeProfiles(t *testing.T) {
 	}
 }
 
-// TestFirefoxProfiles 验证 Firefox 系列指纹
+// Translated comment
 func TestFirefoxProfiles(t *testing.T) {
 	firefoxProfiles := []string{
 		"firefox_102", "firefox_104", "firefox_105", "firefox_106",
@@ -127,7 +127,7 @@ func TestFirefoxProfiles(t *testing.T) {
 	}
 }
 
-// TestSafariProfiles 验证 Safari 系列指纹
+// Translated comment
 func TestSafariProfiles(t *testing.T) {
 	safariProfiles := []string{
 		"safari_15_6_1", "safari_16_0",
@@ -149,7 +149,7 @@ func TestSafariProfiles(t *testing.T) {
 	}
 }
 
-// TestSafariIOSProfiles 验证 Safari iOS 系列指纹
+// Translated comment
 func TestSafariIOSProfiles(t *testing.T) {
 	safariIOSProfiles := []string{
 		"safari_ios_15_5", "safari_ios_15_6", "safari_ios_16_0",
@@ -172,7 +172,7 @@ func TestSafariIOSProfiles(t *testing.T) {
 	}
 }
 
-// TestEdgeProfiles 验证 Edge 系列指纹
+// Translated comment
 func TestEdgeProfiles(t *testing.T) {
 	edgeProfiles := []string{
 		"edge_99", "edge_101", "edge_120", "edge_131", "edge_133",
@@ -194,11 +194,11 @@ func TestEdgeProfiles(t *testing.T) {
 	}
 }
 
-// TestProfileConsistency 验证指纹配置一致性
+// Translated comment
 func TestProfileConsistency(t *testing.T) {
 	for name, profile := range MappedTLSClients {
 		t.Run(name, func(t *testing.T) {
-			// settings 和 settingsOrder 应该一致
+			// Translated comment
 			settings := profile.GetSettings()
 			settingsOrder := profile.GetSettingsOrder()
 
@@ -207,7 +207,7 @@ func TestProfileConsistency(t *testing.T) {
 					len(settings), len(settingsOrder))
 			}
 
-			// pseudoHeaderOrder 应该包含 :method, :path
+			// Translated comment
 			pseudoHeaders := profile.GetPseudoHeaderOrder()
 			hasMethod := false
 			hasPath := false
@@ -229,7 +229,7 @@ func TestProfileConsistency(t *testing.T) {
 	}
 }
 
-// BenchmarkGetClientHelloSpec 基准测试：获取 ClientHelloSpec
+// Translated comment
 func BenchmarkGetClientHelloSpec(b *testing.B) {
 	profile := DefaultClientProfile
 	b.ResetTimer()
@@ -241,7 +241,7 @@ func BenchmarkGetClientHelloSpec(b *testing.B) {
 	}
 }
 
-// BenchmarkGetSettings 基准测试：获取 Settings
+// Translated comment
 func BenchmarkGetSettings(b *testing.B) {
 	profile := DefaultClientProfile
 	b.ResetTimer()
@@ -250,7 +250,7 @@ func BenchmarkGetSettings(b *testing.B) {
 	}
 }
 
-// BenchmarkGetPseudoHeaderOrder 基准测试：获取伪头顺序
+// Translated comment
 func BenchmarkGetPseudoHeaderOrder(b *testing.B) {
 	profile := DefaultClientProfile
 	b.ResetTimer()
@@ -259,18 +259,18 @@ func BenchmarkGetPseudoHeaderOrder(b *testing.B) {
 	}
 }
 
-// TestGetClientProfile_Concurrent 测试并发访问的安全性
+// Translated comment
 func TestGetClientProfile_Concurrent(t *testing.T) {
 	var wg sync.WaitGroup
 	errors := make(chan error, 100)
 
-	// 启动 100 个 goroutine 并发访问
+	// Translated comment
 	for i := 0; i < 100; i++ {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
 
-			// 随机获取不同的 profile
+			// Translated comment
 			profileName := "chrome_133"
 			if id%2 == 0 {
 				profileName = "firefox_135"
@@ -281,7 +281,7 @@ func TestGetClientProfile_Concurrent(t *testing.T) {
 				return
 			}
 
-			// 尝试获取 spec（可能失败，但不应该 panic）
+			// Translated comment
 			_, err := profile.GetClientHelloSpec()
 			if err != nil && err.Error() != "please implement this method" {
 				errors <- err
@@ -292,7 +292,7 @@ func TestGetClientProfile_Concurrent(t *testing.T) {
 	wg.Wait()
 	close(errors)
 
-	// 检查是否有意外错误
+	// Translated comment
 	errCount := 0
 	for err := range errors {
 		if err != nil {
@@ -306,12 +306,12 @@ func TestGetClientProfile_Concurrent(t *testing.T) {
 	}
 }
 
-// TestGetAllProfiles_Concurrent 测试 GetAllProfiles 的并发安全性
+// Translated comment
 func TestGetAllProfiles_Concurrent(t *testing.T) {
 	var wg sync.WaitGroup
 	results := make(chan []string, 50)
 
-	// 启动 50 个 goroutine 并发调用
+	// Translated comment
 	for i := 0; i < 50; i++ {
 		wg.Add(1)
 		go func() {
@@ -324,7 +324,7 @@ func TestGetAllProfiles_Concurrent(t *testing.T) {
 	wg.Wait()
 	close(results)
 
-	// 验证所有结果长度一致
+	// Translated comment
 	var expectedLen int
 	first := true
 	for names := range results {
@@ -337,7 +337,7 @@ func TestGetAllProfiles_Concurrent(t *testing.T) {
 	}
 }
 
-// TestHasProfile 测试 HasProfile 函数
+// Translated comment
 func TestHasProfile(t *testing.T) {
 	tests := []struct {
 		name string
@@ -358,7 +358,7 @@ func TestHasProfile(t *testing.T) {
 	}
 }
 
-// TestGetClientProfile 测试 GetClientProfile 函数
+// Translated comment
 func TestGetClientProfile(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -378,7 +378,7 @@ func TestGetClientProfile(t *testing.T) {
 			}
 
 			if ok {
-				// 如果获取成功，尝试获取 spec
+				// Translated comment
 				_, err := profile.GetClientHelloSpec()
 				hasErr := (err != nil)
 				if hasErr != tt.wantErr {
@@ -389,7 +389,7 @@ func TestGetClientProfile(t *testing.T) {
 	}
 }
 
-// BenchmarkGetClientProfile 基准测试：获取配置性能
+// Translated comment
 func BenchmarkGetClientProfile(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -398,7 +398,7 @@ func BenchmarkGetClientProfile(b *testing.B) {
 	}
 }
 
-// BenchmarkGetClientProfile_Parallel 并发基准测试
+// Translated comment
 func BenchmarkGetClientProfile_Parallel(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {

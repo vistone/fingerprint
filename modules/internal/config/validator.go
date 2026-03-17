@@ -43,7 +43,14 @@ func NewConfigValidator() *ConfigValidator {
 
 // registerDefaultRules registers default validation rules
 func (cv *ConfigValidator) registerDefaultRules() {
-	// Behavior analysis validation
+	cv.registerBehaviorRules()
+	cv.registerRiskRules()
+	cv.registerFeatureRules()
+	cv.registerQUICRules()
+	cv.registerGlobalRules()
+}
+
+func (cv *ConfigValidator) registerBehaviorRules() {
 	cv.AddRule("behavior_analysis_min_requests", func(cfg *ManagedConfig) error {
 		if cfg.BehaviorAnalysis == nil {
 			return nil
@@ -62,7 +69,6 @@ func (cv *ConfigValidator) registerDefaultRules() {
 		if cfg.BehaviorAnalysis == nil {
 			return nil
 		}
-
 		if cfg.BehaviorAnalysis.RegularityThreshold < 0 || cfg.BehaviorAnalysis.RegularityThreshold > 1 {
 			return ValidationError{
 				Field:  "behavior_analysis.regularity_threshold",
@@ -70,7 +76,6 @@ func (cv *ConfigValidator) registerDefaultRules() {
 				Value:  cfg.BehaviorAnalysis.RegularityThreshold,
 			}
 		}
-
 		if cfg.BehaviorAnalysis.EntropyThreshold < 0 || cfg.BehaviorAnalysis.EntropyThreshold > 1 {
 			return ValidationError{
 				Field:  "behavior_analysis.entropy_threshold",
@@ -78,7 +83,6 @@ func (cv *ConfigValidator) registerDefaultRules() {
 				Value:  cfg.BehaviorAnalysis.EntropyThreshold,
 			}
 		}
-
 		if cfg.BehaviorAnalysis.AnomalousIntervalRateThreshold < 0 || cfg.BehaviorAnalysis.AnomalousIntervalRateThreshold > 1 {
 			return ValidationError{
 				Field:  "behavior_analysis.anomalous_interval_rate_threshold",
@@ -86,17 +90,15 @@ func (cv *ConfigValidator) registerDefaultRules() {
 				Value:  cfg.BehaviorAnalysis.AnomalousIntervalRateThreshold,
 			}
 		}
-
 		return nil
 	})
+}
 
-	// Risk scoring validation
+func (cv *ConfigValidator) registerRiskRules() {
 	cv.AddRule("risk_scoring_thresholds", func(cfg *ManagedConfig) error {
 		if cfg.RiskScoring == nil {
 			return nil
 		}
-
-		// Validate threshold order
 		if cfg.RiskScoring.CriticalThreshold <= cfg.RiskScoring.HighThreshold {
 			return ValidationError{
 				Field:  "risk_scoring.thresholds",
@@ -104,8 +106,6 @@ func (cv *ConfigValidator) registerDefaultRules() {
 				Value:  fmt.Sprintf("critical=%f, high=%f", cfg.RiskScoring.CriticalThreshold, cfg.RiskScoring.HighThreshold),
 			}
 		}
-
-		// Validate effective range
 		for threshold := cfg.RiskScoring.CriticalThreshold; threshold <= cfg.RiskScoring.LowThreshold; {
 			if threshold < 0 || threshold > 1 {
 				return ValidationError{
@@ -116,16 +116,15 @@ func (cv *ConfigValidator) registerDefaultRules() {
 			}
 			break
 		}
-
 		return nil
 	})
+}
 
-	// Feature extraction validation
+func (cv *ConfigValidator) registerFeatureRules() {
 	cv.AddRule("features_thresholds", func(cfg *ManagedConfig) error {
 		if cfg.Features == nil {
 			return nil
 		}
-
 		if cfg.Features.EntropyHighThreshold < 0 {
 			return ValidationError{
 				Field:  "features.entropy_high_threshold",
@@ -133,7 +132,6 @@ func (cv *ConfigValidator) registerDefaultRules() {
 				Value:  cfg.Features.EntropyHighThreshold,
 			}
 		}
-
 		if cfg.Features.EntropyLowThreshold < 0 {
 			return ValidationError{
 				Field:  "features.entropy_low_threshold",
@@ -141,7 +139,6 @@ func (cv *ConfigValidator) registerDefaultRules() {
 				Value:  cfg.Features.EntropyLowThreshold,
 			}
 		}
-
 		if cfg.Features.MobileScreenWidthMax <= 0 {
 			return ValidationError{
 				Field:  "features.mobile_screen_width_max",
@@ -149,7 +146,6 @@ func (cv *ConfigValidator) registerDefaultRules() {
 				Value:  cfg.Features.MobileScreenWidthMax,
 			}
 		}
-
 		if cfg.Features.DesktopScreenWidthMin <= 0 {
 			return ValidationError{
 				Field:  "features.desktop_screen_width_min",
@@ -157,16 +153,15 @@ func (cv *ConfigValidator) registerDefaultRules() {
 				Value:  cfg.Features.DesktopScreenWidthMin,
 			}
 		}
-
 		return nil
 	})
+}
 
-	// QUIC validation
+func (cv *ConfigValidator) registerQUICRules() {
 	cv.AddRule("quic_parameters", func(cfg *ManagedConfig) error {
 		if cfg.QUIC == nil {
 			return nil
 		}
-
 		if cfg.QUIC.MinInitialMaxData < 0 {
 			return ValidationError{
 				Field:  "quic.min_initial_max_data",
@@ -174,7 +169,6 @@ func (cv *ConfigValidator) registerDefaultRules() {
 				Value:  cfg.QUIC.MinInitialMaxData,
 			}
 		}
-
 		if cfg.QUIC.MinStreamData < 0 {
 			return ValidationError{
 				Field:  "quic.min_stream_data",
@@ -182,16 +176,15 @@ func (cv *ConfigValidator) registerDefaultRules() {
 				Value:  cfg.QUIC.MinStreamData,
 			}
 		}
-
 		return nil
 	})
+}
 
-	// Global configuration validation
+func (cv *ConfigValidator) registerGlobalRules() {
 	cv.AddRule("global_config", func(cfg *ManagedConfig) error {
 		if cfg.Global == nil {
 			return nil
 		}
-
 		if cfg.Global.MaxConcurrency <= 0 {
 			return ValidationError{
 				Field:  "global.max_concurrency",
@@ -199,7 +192,6 @@ func (cv *ConfigValidator) registerDefaultRules() {
 				Value:  cfg.Global.MaxConcurrency,
 			}
 		}
-
 		if cfg.Global.RequestTimeout < 0 {
 			return ValidationError{
 				Field:  "global.request_timeout",
@@ -207,7 +199,6 @@ func (cv *ConfigValidator) registerDefaultRules() {
 				Value:  cfg.Global.RequestTimeout,
 			}
 		}
-
 		return nil
 	})
 }

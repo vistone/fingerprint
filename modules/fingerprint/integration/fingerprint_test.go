@@ -12,20 +12,20 @@ import (
 	"github.com/vistone/fingerprint/modules/profiles/legacy"
 )
 
-// TestDefaultProfile 测试默认指纹
+// Translated comment
 func TestDefaultProfile(t *testing.T) {
 	if profiles.DefaultClientProfile.GetClientHelloStr() == "" {
 		t.Error("默认指纹的 ClientHelloStr 不能为空")
 	}
 }
 
-// TestMappedTLSClients 测试映射表完整性
+// Translated comment
 func TestMappedTLSClients(t *testing.T) {
 	if len(profiles.MappedTLSClients) == 0 {
 		t.Error("MappedTLSClients 不能为空")
 	}
 
-	// 测试几个关键指纹whether存在
+	// Translated comment
 	keyProfiles := []string{
 		"chrome_133",
 		"chrome_120",
@@ -41,17 +41,17 @@ func TestMappedTLSClients(t *testing.T) {
 	}
 }
 
-// TestProfileMethods 测试所有 Profile 方法
+// Translated comment
 func TestProfileMethods(t *testing.T) {
 	profile := profiles.DefaultClientProfile
 
-	// 测试 GetClientHelloStr
+	// Translated comment
 	str := profile.GetClientHelloStr()
 	if str == "" {
 		t.Error("GetClientHelloStr return空字符串")
 	}
 
-	// 测试 GetClientHelloSpec
+	// Translated comment
 	spec, err := profile.GetClientHelloSpec()
 	if err != nil {
 		t.Errorf("GetClientHelloSpec returnerror: %v", err)
@@ -60,65 +60,65 @@ func TestProfileMethods(t *testing.T) {
 		t.Error("CipherSuites 不能为空")
 	}
 
-	// 测试 GetSettings
+	// Translated comment
 	settings := profile.GetSettings()
 	if settings == nil {
 		t.Error("GetSettings return nil")
 	}
 
-	// 测试 GetSettingsOrder
+	// Translated comment
 	settingsOrder := profile.GetSettingsOrder()
 	if settingsOrder == nil {
 		t.Error("GetSettingsOrder return nil")
 	}
 
-	// 测试 GetPseudoHeaderOrder
+	// Translated comment
 	pseudoOrder := profile.GetPseudoHeaderOrder()
 	if pseudoOrder == nil {
 		t.Error("GetPseudoHeaderOrder return nil")
 	}
 
-	// 测试 GetConnectionFlow
+	// Translated comment
 	flow := profile.GetConnectionFlow()
 	if flow == 0 {
 		t.Error("GetConnectionFlow return 0")
 	}
 
-	// 测试 GetClientHelloId
+	// Translated comment
 	helloId := profile.GetClientHelloId()
 	if helloId.Str() == "" {
 		t.Error("GetClientHelloId return无效的 ID")
 	}
 }
 
-// TestAllProfilesValid 测试所有 profiles whether有效
-// note:某些使用预定义 tls.ClientHelloID 的 profiles 可能无法get Spec
-// 这是正常的，因为它们依赖于 utls 库的implement
+// Translated comment
+// Translated comment
+// Translated comment
 func TestAllProfilesValid(t *testing.T) {
 	workingCount := 0
 	predefinedCount := 0
 
 	for name, profile := range profiles.MappedTLSClients {
 		t.Run(name, func(t *testing.T) {
-			// 测试每个 profile 的基本方法
+			// Translated comment
 			str := profile.GetClientHelloStr()
 			if str == "" {
 				t.Errorf("Profile %s 的 ClientHelloStr 为空", name)
 			}
 
-			// checkwhether有 SpecFactory
+			// Translated comment
 			helloId := profile.GetClientHelloId()
 			hasSpecFactory := helloId.SpecFactory != nil
 
 			spec, err := profile.GetClientHelloSpec()
 			if err != nil {
-				// 预定义 ID 的正常情况：未implement ClientHelloSpec
+				// Translated comment
 				if errors.IsClientHelloSpecNotImplemented(err) {
 					predefinedCount++
 					t.Logf("Profile %s 使用预定义 ID，无法get Spec（这是正常的）", name)
 					return
 				}
-				// if使用预定义 ID 且没有 SpecFactory，这也是正常的
+				// Translated comment
 				if !hasSpecFactory {
 					predefinedCount++
 					t.Logf("Profile %s 使用预定义 ID，无法get Spec（这是正常的）", name)
@@ -146,9 +146,9 @@ func TestAllProfilesValid(t *testing.T) {
 	t.Logf("使用预定义 ID 的 profiles: %d", predefinedCount)
 }
 
-// TestProfileCount 测试指纹quantity
+// Translated comment
 func TestProfileCount(t *testing.T) {
-	expectedMinCount := 70 // 至少应该有70个指纹（含Edge系列）
+	expectedMinCount := 70 // Translated comment
 	actualCount := len(profiles.MappedTLSClients)
 	if actualCount < expectedMinCount {
 		t.Errorf("指纹quantity %d 少于预期的minimum值 %d", actualCount, expectedMinCount)
@@ -156,7 +156,7 @@ func TestProfileCount(t *testing.T) {
 	t.Logf("当前指纹quantity: %d", actualCount)
 }
 
-// TestChromeProfiles 测试 Chrome 系列指纹
+// Translated comment
 func TestChromeProfiles(t *testing.T) {
 	chromeVersions := []string{
 		"chrome_103", "chrome_104", "chrome_105", "chrome_106",
@@ -172,7 +172,7 @@ func TestChromeProfiles(t *testing.T) {
 	}
 }
 
-// TestFirefoxProfiles 测试 Firefox 系列指纹
+// Translated comment
 func TestFirefoxProfiles(t *testing.T) {
 	firefoxVersions := []string{
 		"firefox_102", "firefox_104", "firefox_105", "firefox_106",
@@ -187,7 +187,7 @@ func TestFirefoxProfiles(t *testing.T) {
 	}
 }
 
-// TestSafariProfiles 测试 Safari 系列指纹
+// Translated comment
 func TestSafariProfiles(t *testing.T) {
 	safariVersions := []string{
 		"safari_15_6_1", "safari_16_0", "safari_ipad_15_6",
@@ -202,7 +202,7 @@ func TestSafariProfiles(t *testing.T) {
 	}
 }
 
-// TestMobileProfiles 测试移动端指纹
+// Translated comment
 func TestMobileProfiles(t *testing.T) {
 	mobileProfiles := []string{
 		"zalando_android_mobile", "zalando_ios_mobile",
@@ -223,7 +223,7 @@ func TestMobileProfiles(t *testing.T) {
 	}
 }
 
-// TestAndroidProfiles 测试 Android 指纹
+// Translated comment
 func TestAndroidProfiles(t *testing.T) {
 	androidVersions := []string{
 		"okhttp4_android_7", "okhttp4_android_8", "okhttp4_android_9",
@@ -238,7 +238,7 @@ func TestAndroidProfiles(t *testing.T) {
 	}
 }
 
-// TestEdgeProfiles 测试 Edge 系列指纹
+// Translated comment
 func TestEdgeProfiles(t *testing.T) {
 	edgeVersions := []string{
 		"edge_99", "edge_101", "edge_120", "edge_131", "edge_133",
@@ -251,7 +251,7 @@ func TestEdgeProfiles(t *testing.T) {
 	}
 }
 
-// TestGetRandomFingerprintByEdge 测试按 Edge 浏览器get指纹
+// Translated comment
 func TestGetRandomFingerprintByEdge(t *testing.T) {
 	result, err := random.GetRandomFingerprintByBrowser("edge")
 	if err != nil {
@@ -266,29 +266,29 @@ func TestGetRandomFingerprintByEdge(t *testing.T) {
 	t.Logf("Edge 指纹: %s, UA: %s", result.HelloClientID, result.UserAgent)
 }
 
-// containsCI size写不敏感的字符串包含check
+// Translated comment
 func containsCI(s, substr string) bool {
 	return len(s) >= len(substr) && (s == substr ||
 		strings.Contains(strings.ToLower(s), strings.ToLower(substr)))
 }
 
-// TestAnomalyDetector 测试exception检测器（使用真实 User-Agent data）
+// Translated comment
 func TestAnomalyDetector(t *testing.T) {
 	detector := defense.NewAnomalyDetector()
 
-	// get真实 Chrome 133 指纹的 User-Agent
+	// Translated comment
 	result, err := random.GetRandomFingerprintByBrowser("chrome")
 	if err != nil {
 		t.Fatalf("get Chrome 指纹failed: %v", err)
 	}
 	normalUA := result.UserAgent
 
-	// 测试正常data（使用真实 UA）
+	// Translated comment
 	if detector.DetectHeadlessBrowser(normalUA) {
 		t.Error("真实 Chrome UA 不应被检测为无头浏览器")
 	}
 
-	// 测试无头浏览器（使用已知无头浏览器 UA）
+	// Translated comment
 	headlessUAs := []string{
 		"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 HeadlessChrome/120.0.0.0 Safari/537.36",
 		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/118.0.0.0 Safari/537.36",
@@ -299,26 +299,26 @@ func TestAnomalyDetector(t *testing.T) {
 		}
 	}
 
-	// 测试exceptiondata检测（使用高熵data）
+	// Translated comment
 	highEntropyData := make([]byte, 1000)
 	for i := range highEntropyData {
 		highEntropyData[i] = byte(i % 256)
 	}
-	// note:这里只是测试interface，不保证一定被检测为exception
+	// Translated comment
 	detector.DetectAnomalies(highEntropyData)
 }
 
-// TestContradictionDetector 测试矛盾检测器（使用真实指纹data）
+// Translated comment
 func TestContradictionDetector(t *testing.T) {
 	detector := defense.NewContradictionDetector()
 
-	// get真实 Chrome on Windows 指纹
+	// Translated comment
 	result, err := random.GetRandomFingerprintByBrowserWithOS("chrome", types.OSWindows10)
 	if err != nil {
 		t.Fatalf("get指纹failed: %v", err)
 	}
 
-	// 测试一致的data（使用真实指纹的attribute）
+	// Translated comment
 	consistentAttrs := map[string]string{
 		"os":            "Windows NT 10.0",
 		"platform":      "Win32",
@@ -331,7 +331,7 @@ func TestContradictionDetector(t *testing.T) {
 		t.Error("一致的attribute不应被检测到矛盾")
 	}
 
-	// 测试 OS/Platform 矛盾（Windows OS 配 Mac Platform）
+	// Translated comment
 	contradictAttrs := map[string]string{
 		"os":       "Windows NT 10.0",
 		"platform": "MacIntel",
@@ -340,7 +340,7 @@ func TestContradictionDetector(t *testing.T) {
 		t.Error("Windows OS 与 Mac Platform 应被检测为矛盾")
 	}
 
-	// 测试 User-Agent/OS 矛盾（Mac UA 配 Windows OS）
+	// Translated comment
 	uaOSContradict := map[string]string{
 		"user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/133.0.0.0",
 		"os":         "Windows NT 10.0",
@@ -349,10 +349,10 @@ func TestContradictionDetector(t *testing.T) {
 		t.Error("Mac UA 配 Windows OS 应被检测为矛盾")
 	}
 
-	// 测试移动设备屏幕矛盾（移动设备配超大屏幕）
+	// Translated comment
 	mobileScreenContradict := map[string]string{
 		"is_mobile":     "true",
-		"screen_width":  "3840", // 4K 屏幕不应该是移动设备
+		"screen_width":  "3840", // Translated comment
 		"screen_height": "2160",
 	}
 	if !detector.CheckContradictions(mobileScreenContradict) {
@@ -360,17 +360,17 @@ func TestContradictionDetector(t *testing.T) {
 	}
 }
 
-// TestPassiveRecognizer 测试被动识别器（使用真实指纹data）
+// Translated comment
 func TestPassiveRecognizer(t *testing.T) {
 	recognizer := defense.NewPassiveRecognizer()
 
-	// get真实 Chrome 133 指纹
+	// Translated comment
 	result, err := random.GetRandomFingerprintByBrowser("chrome")
 	if err != nil {
 		t.Fatalf("get Chrome 指纹failed: %v", err)
 	}
 
-	// 使用真实指纹的 Headers 进行识别
+	// Translated comment
 	headers := result.Headers.ToMap()
 
 	recognitionResult := recognizer.RecognizeFromHeaders(headers)
@@ -387,7 +387,7 @@ func TestPassiveRecognizer(t *testing.T) {
 		recognitionResult.Browser, recognitionResult.BrowserVersion,
 		recognitionResult.OS, recognitionResult.Confidence)
 
-	// 测试 Firefox 识别
+	// Translated comment
 	firefoxResult, err := random.GetRandomFingerprintByBrowser("firefox")
 	if err != nil {
 		t.Fatalf("get Firefox 指纹failed: %v", err)
@@ -401,7 +401,7 @@ func TestPassiveRecognizer(t *testing.T) {
 	t.Logf("Firefox 识别result: 浏览器=%s", firefoxRecognition.Browser)
 }
 
-// TestNilHTTPHeadersToMap 测试 nil HTTPHeaders 的 ToMap 安全性
+// Translated comment
 func TestNilHTTPHeadersToMap(t *testing.T) {
 	var headers *types.HTTPHeaders
 
@@ -414,7 +414,7 @@ func TestNilHTTPHeadersToMap(t *testing.T) {
 	}
 }
 
-// TestNilHTTPHeadersToMapWithCustom 测试 nil HTTPHeaders 的 ToMapWithCustom mergebehavior
+// Translated comment
 func TestNilHTTPHeadersToMapWithCustom(t *testing.T) {
 	var headers *types.HTTPHeaders
 
@@ -438,18 +438,18 @@ func TestNilHTTPHeadersToMapWithCustom(t *testing.T) {
 	}
 }
 
-// TestNoiseInjector 测试噪声注入器
+// Translated comment
 func TestNoiseInjector(t *testing.T) {
 	config := noise.DefaultNoiseConfig
 	injector := noise.NewNoiseInjector(config)
 
-	// 测试 Canvas 噪声
+	// Translated comment
 	canvasNoise := injector.GenerateCanvasNoise()
 	if canvasNoise == nil {
 		t.Fatal("Canvas 噪声不能为 nil")
 	}
 
-	// 测试 Audio 噪声
+	// Translated comment
 	audioNoise := injector.GenerateAudioNoise()
 	if audioNoise == nil {
 		t.Fatal("Audio 噪声不能为 nil")
@@ -458,13 +458,13 @@ func TestNoiseInjector(t *testing.T) {
 		t.Errorf("Audio 噪声级别超出range: %f", audioNoise.NoiseLevel)
 	}
 
-	// 测试 WebGL 噪声
+	// Translated comment
 	webglNoise := injector.GenerateWebGLNoise()
 	if webglNoise == nil {
 		t.Fatal("WebGL 噪声不能为 nil")
 	}
 
-	// 测试完整configuration
+	// Translated comment
 	profile := injector.GenerateFullProfile()
 	if profile == nil {
 		t.Fatal("完整噪声configuration不能为 nil")

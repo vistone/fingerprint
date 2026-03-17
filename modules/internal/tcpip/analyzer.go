@@ -7,6 +7,103 @@ import (
 	"strings"
 )
 
+var defaultOSDatabase = map[string]OSSignature{
+	"Windows_11": {
+		Name:       "Windows 11",
+		Family:     "Windows",
+		DefaultTTL: 64,
+		WindowBase: 65535,
+		MSS:        1460,
+		TCPOptions: "MSS,SACK,TS,NOP,WS",
+		IPDFBit:    true,
+		Quirks:     "Window scaling, Selective ACK",
+	},
+	"Windows_10": {
+		Name:       "Windows 10",
+		Family:     "Windows",
+		DefaultTTL: 64,
+		WindowBase: 65535,
+		MSS:        1460,
+		TCPOptions: "MSS,SACK,TS,NOP,WS",
+		IPDFBit:    true,
+		Quirks:     "Window scaling, Selective ACK",
+	},
+	"Windows_Server_2019": {
+		Name:       "Windows Server 2019",
+		Family:     "Windows",
+		DefaultTTL: 64,
+		WindowBase: 65535,
+		MSS:        1460,
+		TCPOptions: "MSS,SACK,TS,NOP,WS",
+		IPDFBit:    true,
+	},
+	"Linux_Kernel_5.x": {
+		Name:       "Linux Kernel 5.x",
+		Family:     "Linux",
+		DefaultTTL: 64,
+		WindowBase: 29200,
+		MSS:        1460,
+		TCPOptions: "MSS,TS,TS,SACK,WS",
+		IPDFBit:    true,
+		Quirks:     "SYN flood protection",
+	},
+	"Linux_Kernel_4.x": {
+		Name:       "Linux Kernel 4.x",
+		Family:     "Linux",
+		DefaultTTL: 64,
+		WindowBase: 29200,
+		MSS:        1460,
+		TCPOptions: "MSS,TS,SACK,WS",
+		IPDFBit:    true,
+	},
+	"Ubuntu_22.04": {
+		Name:       "Ubuntu 22.04 LTS",
+		Family:     "Linux",
+		DefaultTTL: 64,
+		WindowBase: 29200,
+		MSS:        1460,
+		TCPOptions: "MSS,TS,SACK,WS",
+		IPDFBit:    true,
+	},
+	"macOS_13": {
+		Name:       "macOS 13 (Ventura)",
+		Family:     "macOS",
+		DefaultTTL: 64,
+		WindowBase: 65535,
+		MSS:        1460,
+		TCPOptions: "MSS,NOP,WS,NOP,NOP,TS",
+		IPDFBit:    true,
+		Quirks:     "Special timestamp handling",
+	},
+	"macOS_12": {
+		Name:       "macOS 12 (Monterey)",
+		Family:     "macOS",
+		DefaultTTL: 64,
+		WindowBase: 65535,
+		MSS:        1460,
+		TCPOptions: "MSS,NOP,WS,NOP,NOP,TS",
+		IPDFBit:    true,
+	},
+	"iOS_16": {
+		Name:       "iOS 16",
+		Family:     "iOS",
+		DefaultTTL: 64,
+		WindowBase: 65535,
+		MSS:        1460,
+		TCPOptions: "MSS,NOP,WS,NOP,NOP,TS",
+		IPDFBit:    true,
+	},
+	"Android_13": {
+		Name:       "Android 13",
+		Family:     "Android",
+		DefaultTTL: 64,
+		WindowBase: 32768,
+		MSS:        1460,
+		TCPOptions: "MSS,SACK,TS,NOP,WS",
+		IPDFBit:    true,
+	},
+}
+
 // OSSignature represents an operating system signature definition
 type OSSignature struct {
 	Name          string         // OS name
@@ -22,117 +119,14 @@ type OSSignature struct {
 
 // BuildOSDatabase builds the operating system database
 func BuildOSDatabase() map[string]OSSignature {
-	db := make(map[string]OSSignature)
+	return cloneOSDatabase(defaultOSDatabase)
+}
 
-	// Windows family
-	db["Windows_11"] = OSSignature{
-		Name:       "Windows 11",
-		Family:     "Windows",
-		DefaultTTL: 64,
-		WindowBase: 65535,
-		MSS:        1460,
-		TCPOptions: "MSS,SACK,TS,NOP,WS",
-		IPDFBit:    true,
-		Quirks:     "Window scaling, Selective ACK",
+func cloneOSDatabase(src map[string]OSSignature) map[string]OSSignature {
+	db := make(map[string]OSSignature, len(src))
+	for name, signature := range src {
+		db[name] = signature
 	}
-
-	db["Windows_10"] = OSSignature{
-		Name:       "Windows 10",
-		Family:     "Windows",
-		DefaultTTL: 64,
-		WindowBase: 65535,
-		MSS:        1460,
-		TCPOptions: "MSS,SACK,TS,NOP,WS",
-		IPDFBit:    true,
-		Quirks:     "Window scaling, Selective ACK",
-	}
-
-	db["Windows_Server_2019"] = OSSignature{
-		Name:       "Windows Server 2019",
-		Family:     "Windows",
-		DefaultTTL: 64,
-		WindowBase: 65535,
-		MSS:        1460,
-		TCPOptions: "MSS,SACK,TS,NOP,WS",
-		IPDFBit:    true,
-	}
-
-	// Linux family
-	db["Linux_Kernel_5.x"] = OSSignature{
-		Name:       "Linux Kernel 5.x",
-		Family:     "Linux",
-		DefaultTTL: 64,
-		WindowBase: 29200,
-		MSS:        1460,
-		TCPOptions: "MSS,TS,TS,SACK,WS",
-		IPDFBit:    true,
-		Quirks:     "SYN flood protection",
-	}
-
-	db["Linux_Kernel_4.x"] = OSSignature{
-		Name:       "Linux Kernel 4.x",
-		Family:     "Linux",
-		DefaultTTL: 64,
-		WindowBase: 29200,
-		MSS:        1460,
-		TCPOptions: "MSS,TS,SACK,WS",
-		IPDFBit:    true,
-	}
-
-	db["Ubuntu_22.04"] = OSSignature{
-		Name:       "Ubuntu 22.04 LTS",
-		Family:     "Linux",
-		DefaultTTL: 64,
-		WindowBase: 29200,
-		MSS:        1460,
-		TCPOptions: "MSS,TS,SACK,WS",
-		IPDFBit:    true,
-	}
-
-	// macOS family
-	db["macOS_13"] = OSSignature{
-		Name:       "macOS 13 (Ventura)",
-		Family:     "macOS",
-		DefaultTTL: 64,
-		WindowBase: 65535,
-		MSS:        1460,
-		TCPOptions: "MSS,NOP,WS,NOP,NOP,TS",
-		IPDFBit:    true,
-		Quirks:     "Special timestamp handling",
-	}
-
-	db["macOS_12"] = OSSignature{
-		Name:       "macOS 12 (Monterey)",
-		Family:     "macOS",
-		DefaultTTL: 64,
-		WindowBase: 65535,
-		MSS:        1460,
-		TCPOptions: "MSS,NOP,WS,NOP,NOP,TS",
-		IPDFBit:    true,
-	}
-
-	// iOS
-	db["iOS_16"] = OSSignature{
-		Name:       "iOS 16",
-		Family:     "iOS",
-		DefaultTTL: 64,
-		WindowBase: 65535,
-		MSS:        1460,
-		TCPOptions: "MSS,NOP,WS,NOP,NOP,TS",
-		IPDFBit:    true,
-	}
-
-	// Android
-	db["Android_13"] = OSSignature{
-		Name:       "Android 13",
-		Family:     "Android",
-		DefaultTTL: 64,
-		WindowBase: 32768,
-		MSS:        1460,
-		TCPOptions: "MSS,SACK,TS,NOP,WS",
-		IPDFBit:    true,
-	}
-
 	return db
 }
 
@@ -192,93 +186,92 @@ func MatchOSSignature(db map[string]OSSignature, ttl int, mss int, options strin
 // Reference: RFC 793, RFC 1323, RFC 2018
 // TCP option format: Kind(1B) | Length(1B) | Data(variable)
 func ExtractTCPOptions(packet []byte) string {
+	optionsData, ok := extractTCPOptionsData(packet)
+	if !ok || len(optionsData) == 0 {
+		return ""
+	}
+
+	options := make([]string, 0, len(optionsData)/2)
+	parseTCPOptions(optionsData, &options)
+	if len(options) == 0 {
+		return ""
+	}
+	return strings.Join(options, ",")
+}
+
+func extractTCPOptionsData(packet []byte) ([]byte, bool) {
 	// Minimum TCP header length is 20 bytes
 	if len(packet) < 20 {
-		return ""
+		return nil, false
 	}
-
-	// Extract Data Offset from byte 12 (upper 4 bits)
-	// Data Offset represents the TCP header length in units of 32-bit words (4 bytes)
+	// Data Offset represents the TCP header length in 32-bit words.
 	dataOffset := (packet[12] >> 4) * 4
-
-	// Validate header length
 	if dataOffset < 20 || int(dataOffset) > len(packet) {
-		return ""
+		return nil, false
 	}
-
-	// Options start at byte 20 and end at Data Offset
+	// Data offset 20 means no TCP options are present.
 	if dataOffset == 20 {
-		return "" // no options
+		return nil, true
 	}
+	return packet[20:dataOffset], true
+}
 
-	optionsData := packet[20:dataOffset]
-	options := make([]string, 0, len(optionsData)/2)
-
+func parseTCPOptions(optionsData []byte, options *[]string) {
 	i := 0
 	for i < len(optionsData) {
 		kind := optionsData[i]
 
-		// Kind 0 (EOL) - End of Option List
 		if kind == 0 {
 			break
 		}
 
-		// Kind 1 (NOP) - No-Operation (single-byte option)
 		if kind == 1 {
-			options = append(options, "NOP")
+			*options = append(*options, "NOP")
 			i++
 			continue
 		}
 
-		// Other options require at least 2 bytes (Kind + Length)
 		if i+1 >= len(optionsData) {
 			break
 		}
 
 		length := int(optionsData[i+1])
-
-		// Validate length
 		if length < 2 || i+length > len(optionsData) {
 			break
 		}
 
-		// Parse specific options
-		switch kind {
-		case 2:
-			options = append(options, "MSS")
-		case 3:
-			options = append(options, "WS")
-		case 4:
-			options = append(options, "SACK_PERMITTED")
-		case 5:
-			options = append(options, "SACK")
-		case 8:
-			options = append(options, "TS")
-		case 14:
-			options = append(options, "TCP_ALTCHK")
-		case 15:
-			options = append(options, "TCP_ALTCHK_DATA")
-		case 28:
-			options = append(options, "UTO")
-		case 29:
-			options = append(options, "TCP_AO")
-		case 30:
-			options = append(options, "MP_CAPABLE")
-		case 34:
-			options = append(options, "TFO")
-		default:
-			// Unknown option, record its Kind value
-			options = append(options, fmt.Sprintf("OPT_%d", kind))
-		}
-
+		*options = append(*options, tcpOptionName(kind))
 		i += length
 	}
+}
 
-	if len(options) == 0 {
-		return ""
+func tcpOptionName(kind byte) string {
+	switch kind {
+	case 2:
+		return "MSS"
+	case 3:
+		return "WS"
+	case 4:
+		return "SACK_PERMITTED"
+	case 5:
+		return "SACK"
+	case 8:
+		return "TS"
+	case 14:
+		return "TCP_ALTCHK"
+	case 15:
+		return "TCP_ALTCHK_DATA"
+	case 28:
+		return "UTO"
+	case 29:
+		return "TCP_AO"
+	case 30:
+		return "MP_CAPABLE"
+	case 34:
+		return "TFO"
+	default:
+		return fmt.Sprintf("OPT_%d", kind)
 	}
-
-	return strings.Join(options, ",")
 }
 
 // AnalyzeTTL analyzes the TTL value to infer the initial TTL

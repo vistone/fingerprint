@@ -28,35 +28,50 @@ func (e *ProcessingEngine) ProcessWithPipeline(request *ProcessingRequest) *Proc
 	}
 
 	if request == nil {
-		result.Error = "request is nil"
-		result.Success = false
-		return result
+		return e.failResult(result, "request is nil")
 	}
 
-	// Create context
 	ctx := request.Context
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	// Execute pre-interceptors
 	if err := e.executeInterceptors("pre", request, result); err != nil {
-		result.Error = fmt.Sprintf("pre-interceptor error: %v", err)
-		result.Success = false
-		return result
+		return e.failResult(result, fmt.Sprintf("pre-interceptor error: %v", err))
 	}
 
-	// Create pipeline
-	tracer := otel.Tracer("processing-engine")
-	pipeline := proc_pipeline.NewPipeline(tracer)
-
-	// Determine processing steps
 	steps := request.Steps
 	if len(steps) == 0 {
-		steps = []string{"parse", "analyze"} // default steps
+		steps = []string{"parse", "analyze"}
 	}
 
-	// Add the corresponding Stage for each requested step
+	pipeline, err := e.buildProcessingPipeline(steps)
+	if err != nil {
+		return e.failResult(result, err.Error())
+	}
+
+	startTime := time.Now()
+	stageData, err := pipeline.Execute(ctx, request)
+	duration := time.Since(startTime)
+	result.ElapsedMs = duration.Milliseconds()
+
+	if err != nil {
+		return e.failResult(result, fmt.Sprintf("pipeline error: %v", err))
+	}
+
+	if err := e.extractPipelineResults(stageData, result, steps); err != nil {
+		return e.failResult(result, fmt.Sprintf("result extraction error: %v", err))
+	}
+
+	if err := e.executeInterceptors("post", request, result); err != nil {
+		return e.failResult(result, fmt.Sprintf("post-interceptor error: %v", err))
+	}
+
+	return result
+}
+
+func (e *ProcessingEngine) buildProcessingPipeline(steps []string) (*proc_pipeline.Pipeline, error) {
+	pipeline := proc_pipeline.NewPipeline(otel.Tracer("processing-engine"))
 	stageMap := map[string]proc_pipeline.Stage{
 		"parse":     NewParseStage(e.registry),
 		"analyze":   NewAnalyzeStage(e.registry),
@@ -67,40 +82,12 @@ func (e *ProcessingEngine) ProcessWithPipeline(request *ProcessingRequest) *Proc
 	for _, stepName := range steps {
 		stage, ok := stageMap[stepName]
 		if !ok {
-			result.Error = fmt.Sprintf("unknown step: %s", stepName)
-			result.Success = false
-			return result
+			return nil, fmt.Errorf("unknown step: %s", stepName)
 		}
 		pipeline.AddStage(stage)
 	}
 
-	// Execute pipeline
-	startTime := time.Now()
-	stageData, err := pipeline.Execute(ctx, request)
-	duration := time.Since(startTime)
-	result.ElapsedMs = duration.Milliseconds()
-
-	if err != nil {
-		result.Error = fmt.Sprintf("pipeline error: %v", err)
-		result.Success = false
-		return result
-	}
-
-	// Extract results from Pipeline StageData
-	if err := e.extractPipelineResults(stageData, result, steps); err != nil {
-		result.Error = fmt.Sprintf("result extraction error: %v", err)
-		result.Success = false
-		return result
-	}
-
-	// Execute post-interceptors
-	if err := e.executeInterceptors("post", request, result); err != nil {
-		result.Error = fmt.Sprintf("post-interceptor error: %v", err)
-		result.Success = false
-		return result
-	}
-
-	return result
+	return pipeline, nil
 }
 
 // extractPipelineResults extracts results from Pipeline StageData into ProcessingResult

@@ -156,7 +156,7 @@ func (cc *ConfigCenter) Load() error {
 func (cc *ConfigCenter) Get() *ManagedConfig {
 	cc.mu.RLock()
 	defer cc.mu.RUnlock()
-	return cc.current
+	return cc.current.Clone()
 }
 
 // Update updates the configuration
@@ -344,9 +344,9 @@ func (cc *ConfigCenter) GetHistory(limit int) []*VersionedConfig {
 // Rollback rolls back to the specified version
 func (cc *ConfigCenter) Rollback(version string, reason, rolledBackBy string) error {
 	cc.mu.Lock()
-	defer cc.mu.Unlock()
 
 	if !cc.loaded {
+		cc.mu.Unlock()
 		return fmt.Errorf("config center not loaded")
 	}
 
@@ -360,6 +360,7 @@ func (cc *ConfigCenter) Rollback(version string, reason, rolledBackBy string) er
 	}
 
 	if targetVersion == nil {
+		cc.mu.Unlock()
 		return fmt.Errorf("version not found: %s", version)
 	}
 
@@ -370,12 +371,8 @@ func (cc *ConfigCenter) Rollback(version string, reason, rolledBackBy string) er
 	// Detect changes
 	changes := cc.detectChanges(cc.current, newConfig)
 
-	// Notify listeners
-	for _, listener := range cc.listeners {
-		if err := listener.OnConfigChange(cc.current, newConfig, changes); err != nil {
-			return fmt.Errorf("listener error: %w", err)
-		}
-	}
+	listeners := make([]ConfigChangeListener, len(cc.listeners))
+	copy(listeners, cc.listeners)
 
 	// Update the current configuration
 	cc.current = newConfig
@@ -385,7 +382,17 @@ func (cc *ConfigCenter) Rollback(version string, reason, rolledBackBy string) er
 	if err := cc.saveToFileLocked(); err != nil {
 		// Roll back to the old configuration
 		cc.current = oldConfig
+		cc.mu.Unlock()
 		return fmt.Errorf("failed to save config: %w", err)
+	}
+
+	cc.mu.Unlock()
+
+	// Notify listeners outside lock to avoid deadlock and long lock hold.
+	for _, listener := range listeners {
+		if err := listener.OnConfigChange(oldConfig, newConfig, changes); err != nil {
+			return fmt.Errorf("listener error: %w", err)
+		}
 	}
 
 	return nil

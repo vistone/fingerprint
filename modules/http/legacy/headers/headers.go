@@ -61,94 +61,101 @@ func GenerateHeaders(browserType types.BrowserType, userAgent string, isMobile b
 
 	switch browserType {
 	case types.BrowserChrome:
-		headers.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
-		headers.AcceptEncoding = "gzip, deflate, br, zstd"
-		headers.SecFetchSite = "none"
-		headers.SecFetchMode = "navigate"
-		headers.SecFetchUser = "?1"
-		headers.SecFetchDest = "document"
-		headers.UpgradeInsecureRequests = "1"
-
-		if isMobile {
-			headers.SecCHUA = `"Not A(Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"`
-			headers.SecCHUAMobile = "?1"
-			headers.SecCHUAPlatform = `"Android"`
-		} else {
-			// Extract Chrome version from User-Agent
-			chromeVersion := utils.ExtractChromeVersion(userAgent)
-			headers.SecCHUA = fmt.Sprintf(`"Not A(Brand";v="8", "Chromium";v="%s", "Google Chrome";v="%s"`, chromeVersion, chromeVersion)
-			headers.SecCHUAMobile = "?0"
-			// Extract platform from User-Agent
-			headers.SecCHUAPlatform = utils.ExtractPlatform(userAgent)
-		}
+		populateChromeHeaders(headers, userAgent, isMobile)
 
 	case types.BrowserFirefox:
-		headers.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
-		headers.AcceptEncoding = "gzip, deflate, br"
-		// Firefox does not use Sec-Fetch-* headers (older versions)
-		// Newer Firefox versions use them, but with different format
-		if isMobile {
-			headers.SecFetchSite = "none"
-			headers.SecFetchMode = "navigate"
-			headers.SecFetchUser = "?1"
-			headers.SecFetchDest = "document"
-		}
+		populateFirefoxHeaders(headers, isMobile)
 
 	case types.BrowserSafari:
-		headers.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-		headers.AcceptEncoding = "gzip, deflate, br"
-		if !isMobile {
-			headers.SecFetchSite = "none"
-			headers.SecFetchMode = "navigate"
-			headers.SecFetchUser = "?1"
-			headers.SecFetchDest = "document"
-		}
+		populateSafariHeaders(headers, isMobile)
 
 	case types.BrowserOpera:
-		// Opera uses Chromium engine, headers similar to Chrome
-		headers.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
-		headers.AcceptEncoding = "gzip, deflate, br, zstd"
-		headers.SecFetchSite = "none"
-		headers.SecFetchMode = "navigate"
-		headers.SecFetchUser = "?1"
-		headers.SecFetchDest = "document"
-		headers.UpgradeInsecureRequests = "1"
-
-		if isMobile {
-			headers.SecCHUA = `"Opera";v="91", "Chromium";v="105", "Not A(Brand";v="8"`
-			headers.SecCHUAMobile = "?1"
-			headers.SecCHUAPlatform = `"Android"`
-		} else {
-			headers.SecCHUA = `"Opera";v="91", "Chromium";v="105", "Not A(Brand";v="8"`
-			headers.SecCHUAMobile = "?0"
-			headers.SecCHUAPlatform = utils.ExtractPlatform(userAgent)
-		}
+		populateOperaHeaders(headers, userAgent, isMobile)
 
 	case types.BrowserEdge:
-		// Edge uses Chromium engine, headers similar to Chrome
-		headers.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
-		headers.AcceptEncoding = "gzip, deflate, br, zstd"
-		headers.SecFetchSite = "none"
-		headers.SecFetchMode = "navigate"
-		headers.SecFetchUser = "?1"
-		headers.SecFetchDest = "document"
-		headers.UpgradeInsecureRequests = "1"
-
-		if isMobile {
-			headers.SecCHUA = `"Not A(Brand";v="8", "Chromium";v="120", "Microsoft Edge";v="120"`
-			headers.SecCHUAMobile = "?1"
-			headers.SecCHUAPlatform = `"Android"`
-		} else {
-			edgeVersion := utils.ExtractChromeVersion(userAgent)
-			headers.SecCHUA = fmt.Sprintf(`"Not A(Brand";v="8", "Chromium";v="%s", "Microsoft Edge";v="%s"`, edgeVersion, edgeVersion)
-			headers.SecCHUAMobile = "?0"
-			headers.SecCHUAPlatform = utils.ExtractPlatform(userAgent)
-		}
-
+		populateEdgeHeaders(headers, userAgent, isMobile)
 	}
 
 	// Accept-Language uses random language
 	headers.AcceptLanguage = RandomLanguage()
 
 	return headers
+}
+
+func populateChromeHeaders(headers *types.HTTPHeaders, userAgent string, isMobile bool) {
+	headers.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+	headers.AcceptEncoding = "gzip, deflate, br, zstd"
+	setDefaultNavigateFetchHeaders(headers)
+	headers.UpgradeInsecureRequests = "1"
+
+	if isMobile {
+		headers.SecCHUA = `"Not A(Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"`
+		headers.SecCHUAMobile = "?1"
+		headers.SecCHUAPlatform = `"Android"`
+		return
+	}
+
+	chromeVersion := utils.ExtractChromeVersion(userAgent)
+	headers.SecCHUA = fmt.Sprintf(`"Not A(Brand";v="8", "Chromium";v="%s", "Google Chrome";v="%s"`, chromeVersion, chromeVersion)
+	headers.SecCHUAMobile = "?0"
+	headers.SecCHUAPlatform = utils.ExtractPlatform(userAgent)
+}
+
+func populateFirefoxHeaders(headers *types.HTTPHeaders, isMobile bool) {
+	headers.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+	headers.AcceptEncoding = "gzip, deflate, br"
+	if isMobile {
+		setDefaultNavigateFetchHeaders(headers)
+	}
+}
+
+func populateSafariHeaders(headers *types.HTTPHeaders, isMobile bool) {
+	headers.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+	headers.AcceptEncoding = "gzip, deflate, br"
+	if !isMobile {
+		setDefaultNavigateFetchHeaders(headers)
+	}
+}
+
+func populateOperaHeaders(headers *types.HTTPHeaders, userAgent string, isMobile bool) {
+	headers.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+	headers.AcceptEncoding = "gzip, deflate, br, zstd"
+	setDefaultNavigateFetchHeaders(headers)
+	headers.UpgradeInsecureRequests = "1"
+
+	headers.SecCHUA = `"Opera";v="91", "Chromium";v="105", "Not A(Brand";v="8"`
+	if isMobile {
+		headers.SecCHUAMobile = "?1"
+		headers.SecCHUAPlatform = `"Android"`
+		return
+	}
+
+	headers.SecCHUAMobile = "?0"
+	headers.SecCHUAPlatform = utils.ExtractPlatform(userAgent)
+}
+
+func populateEdgeHeaders(headers *types.HTTPHeaders, userAgent string, isMobile bool) {
+	headers.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+	headers.AcceptEncoding = "gzip, deflate, br, zstd"
+	setDefaultNavigateFetchHeaders(headers)
+	headers.UpgradeInsecureRequests = "1"
+
+	if isMobile {
+		headers.SecCHUA = `"Not A(Brand";v="8", "Chromium";v="120", "Microsoft Edge";v="120"`
+		headers.SecCHUAMobile = "?1"
+		headers.SecCHUAPlatform = `"Android"`
+		return
+	}
+
+	edgeVersion := utils.ExtractChromeVersion(userAgent)
+	headers.SecCHUA = fmt.Sprintf(`"Not A(Brand";v="8", "Chromium";v="%s", "Microsoft Edge";v="%s"`, edgeVersion, edgeVersion)
+	headers.SecCHUAMobile = "?0"
+	headers.SecCHUAPlatform = utils.ExtractPlatform(userAgent)
+}
+
+func setDefaultNavigateFetchHeaders(headers *types.HTTPHeaders) {
+	headers.SecFetchSite = "none"
+	headers.SecFetchMode = "navigate"
+	headers.SecFetchUser = "?1"
+	headers.SecFetchDest = "document"
 }

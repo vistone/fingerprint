@@ -1,5 +1,5 @@
 // Package client provides complete browser fingerprint simulationtransport layer
-// uses unified fhttp type，supports automatic HTTP/2 → HTTP/1.1 fallback
+// with profile-driven TCP/IP and TLS behavior.
 package client
 
 import (
@@ -20,11 +20,11 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-// SmartTransport smart transport layer，uses unified fhttp type
+// SmartTransport executes profile-aware HTTP requests.
 type SmartTransport struct {
 	profile profiles.ClientProfile
 	dialer  *net.Dialer
-	// strictFingerprint disallow standard TLS compatibility fallback，ensure fingerprint chain path。
+	// strictFingerprint disallows compatibility fallback and enforces profile fidelity.
 	strictFingerprint bool
 
 	mu                sync.RWMutex
@@ -33,7 +33,7 @@ type SmartTransport struct {
 	http2Transport *http2.Transport
 }
 
-// SetStrictFingerprint set strict fingerprint mode。
+// SetStrictFingerprint toggles strict fingerprint mode.
 func (st *SmartTransport) SetStrictFingerprint(strict bool) {
 	st.strictFingerprint = strict
 }
@@ -75,7 +75,7 @@ func (st *SmartTransport) configureTCP() error {
 		Control: func(network, address string, c syscall.RawConn) error {
 			var sockErr error
 			err := c.Control(func(fd uintptr) {
-				// prioritize applying core TCP/IP parameters，unsupported platform options will be safely ignored。
+				// Apply core socket options; unsupported options are safely ignored.
 				if tcpip.TTL > 0 {
 					sockErr = unix.SetsockoptInt(int(fd), unix.IPPROTO_IP, unix.IP_TTL, int(tcpip.TTL))
 					if sockErr != nil {
@@ -189,108 +189,6 @@ func (st *SmartTransport) dialTLS(network, addr string, cfg *tls.Config) (net.Co
 	}
 
 	return tlsConn, nil
-}
-
-// RoundTrip execute request (unified return *fhttp.Response)
-func (st *SmartTransport) RoundTrip(req *fhttp.Request) (*fhttp.Response, error) {
-	ctx := req.Context()
-	host := req.Host
-	if host == "" {
-		host = req.URL.Host
-	}
-
-	// check cached protocol preference
-	st.mu.RLock()
-	cachedProto := st.hostProtocolCache[host]
-	st.mu.RUnlock()
-
-	// prefer cached protocol
-	if cachedProto == "http/1.1" {
-		resp, err := st.roundTripHTTP1(ctx, req)
-		if err == nil && !shouldRetryWithHTTP1(resp) {
-			return resp, nil
-		}
-		if st.strictFingerprint {
-			if err != nil {
-				return nil, err
-			}
-			return resp, nil
-		}
-		return st.roundTripHTTP1Compat(ctx, req)
-	}
-
-	// 1. attempt HTTP/2
-	resp, err := st.roundTripHTTP2(ctx, req)
-	if err == nil {
-		// some sites/CDN may directly return 400/421 for current H2 fingerprint, fallback to HTTP/1.1 can recover.
-		if shouldRetryWithHTTP1(resp) {
-			h1Resp, h1Err := st.roundTripHTTP1(ctx, req)
-			if h1Err == nil && !shouldRetryWithHTTP1(h1Resp) {
-				if resp.Body != nil {
-					_ = resp.Body.Close()
-				}
-				st.mu.Lock()
-				st.hostProtocolCache[host] = "http/1.1"
-				st.mu.Unlock()
-				return h1Resp, nil
-			}
-
-			// final compatibility fallback: use standard TLS HTTP/1.1.
-			if !st.strictFingerprint {
-				compatResp, compatErr := st.roundTripHTTP1Compat(ctx, req)
-				if compatErr == nil {
-					if resp.Body != nil {
-						_ = resp.Body.Close()
-					}
-					if h1Resp != nil && h1Resp.Body != nil {
-						_ = h1Resp.Body.Close()
-					}
-					st.mu.Lock()
-					st.hostProtocolCache[host] = "http/1.1"
-					st.mu.Unlock()
-					return compatResp, nil
-				}
-			}
-		}
-
-		st.mu.Lock()
-		st.hostProtocolCache[host] = "h2"
-		st.mu.Unlock()
-		return resp, nil
-	}
-
-	// classify error information
-	errType := classifyError(err)
-
-	// for protocol error, TLS error, or network connection error, fallback to HTTP/1.1
-	// but for context error or other clear errors, directly return
-	if errType == ErrorTypeTimeout || errType == ErrorTypeCanceled {
-		// timeout or cancellation error do not fallback
-		return nil, err
-	}
-
-	// 2. fallback to HTTP/1.1
-	resp, err = st.roundTripHTTP1(ctx, req)
-	if err == nil {
-		st.mu.Lock()
-		st.hostProtocolCache[host] = "http/1.1"
-		st.mu.Unlock()
-		return resp, err
-	}
-
-	// 3. final compatibility fallback: handle ALPN negotiation/HTTP2 frame misidentification as HTTP/1.1 etc.
-	if !st.strictFingerprint && shouldFallbackToHTTP1Compat(err) {
-		compatResp, compatErr := st.roundTripHTTP1Compat(ctx, req)
-		if compatErr == nil {
-			st.mu.Lock()
-			st.hostProtocolCache[host] = "http/1.1"
-			st.mu.Unlock()
-			return compatResp, nil
-		}
-	}
-
-	// if both protocols fail, return first error (HTTP/2 error)
-	return nil, err
 }
 
 // roundTripHTTP2 uses HTTP/2

@@ -192,78 +192,26 @@ func (t *NeuralTrainer) trainEncoder(samples []profileSample) error {
 	scheduler := NewWarmupCosineAnnealingLR(cfg.LearningRate, cfg.LearningRate*0.01, 5)
 	tripletMargin := cfg.TripletMargin
 
-	// Group indices by family
-	familyIdx := make(map[int][]int)
-	for i, s := range samples {
-		familyIdx[s.FamilyLabel] = append(familyIdx[s.FamilyLabel], i)
-	}
-	families := make([]int, 0, len(familyIdx))
-	for f := range familyIdx {
-		families = append(families, f)
-	}
-	sort.Ints(families)
+	familyIdx, families := buildFamilyIndices(samples)
 
 	for epoch := 0; epoch < cfg.Epochs; epoch++ {
 		scheduler.StepLR(optimizer, epoch, cfg.Epochs)
 		totalLoss := 0.0
 		count := 0
 
-		// Generate triplets with semi-hard negative mining
 		for _, fam := range families {
 			indices := familyIdx[fam]
 			if len(indices) < 2 {
 				continue
 			}
 
-			batchSize := min(cfg.BatchSize, len(indices)/2)
-			if batchSize < 1 {
-				batchSize = 1
-			}
-
-			// Pre-compute embeddings for hard negative selection
-			var candidateNegs []int
-			for _, otherFam := range families {
-				if otherFam != fam {
-					candidateNegs = append(candidateNegs, familyIdx[otherFam]...)
-				}
-			}
+			batchSize := encoderBatchSize(cfg.BatchSize, len(indices))
+			candidateNegs := buildCandidateNegatives(familyIdx, families, fam)
 			if len(candidateNegs) == 0 {
 				continue
 			}
 
-			anchors := make([]float64, 0, batchSize*FingerprintFeatureDim)
-			positives := make([]float64, 0, batchSize*FingerprintFeatureDim)
-			negatives := make([]float64, 0, batchSize*FingerprintFeatureDim)
-
-			for b := 0; b < batchSize; b++ {
-				aIdx := indices[rand.Intn(len(indices))]
-				pIdx := indices[rand.Intn(len(indices))]
-
-				// Semi-hard negative mining: pick closest negative
-				anchorEmb := enc.EncodeSingle(samples[aIdx].Features)
-				bestNegIdx := candidateNegs[rand.Intn(len(candidateNegs))]
-				bestNegDist := math.MaxFloat64
-
-				// Sample a subset of candidates for efficiency
-				numCandidates := min(16, len(candidateNegs))
-				for c := 0; c < numCandidates; c++ {
-					cIdx := candidateNegs[rand.Intn(len(candidateNegs))]
-					negEmb := enc.EncodeSingle(samples[cIdx].Features)
-					dist := 0.0
-					for d := 0; d < len(anchorEmb); d++ {
-						diff := anchorEmb[d] - negEmb[d]
-						dist += diff * diff
-					}
-					if dist < bestNegDist {
-						bestNegDist = dist
-						bestNegIdx = cIdx
-					}
-				}
-
-				anchors = append(anchors, samples[aIdx].Features...)
-				positives = append(positives, samples[pIdx].Features...)
-				negatives = append(negatives, samples[bestNegIdx].Features...)
-			}
+			anchors, positives, negatives := buildTripletFeatureBatches(enc, samples, indices, candidateNegs, batchSize)
 
 			anchorT := NewTensor([]int{batchSize, FingerprintFeatureDim}, anchors)
 			posT := NewTensor([]int{batchSize, FingerprintFeatureDim}, positives)
@@ -289,6 +237,86 @@ func (t *NeuralTrainer) trainEncoder(samples []profileSample) error {
 		}
 	}
 	return nil
+}
+
+func buildFamilyIndices(samples []profileSample) (map[int][]int, []int) {
+	familyIdx := make(map[int][]int)
+	for i, s := range samples {
+		familyIdx[s.FamilyLabel] = append(familyIdx[s.FamilyLabel], i)
+	}
+	families := make([]int, 0, len(familyIdx))
+	for f := range familyIdx {
+		families = append(families, f)
+	}
+	sort.Ints(families)
+	return familyIdx, families
+}
+
+func encoderBatchSize(configBatchSize int, familyCount int) int {
+	batchSize := min(configBatchSize, familyCount/2)
+	if batchSize < 1 {
+		return 1
+	}
+	return batchSize
+}
+
+func buildCandidateNegatives(familyIdx map[int][]int, families []int, family int) []int {
+	var candidateNegs []int
+	for _, otherFam := range families {
+		if otherFam != family {
+			candidateNegs = append(candidateNegs, familyIdx[otherFam]...)
+		}
+	}
+	return candidateNegs
+}
+
+func buildTripletFeatureBatches(
+	enc *FingerprintEncoder,
+	samples []profileSample,
+	indices []int,
+	candidateNegs []int,
+	batchSize int,
+) (anchors []float64, positives []float64, negatives []float64) {
+	anchors = make([]float64, 0, batchSize*FingerprintFeatureDim)
+	positives = make([]float64, 0, batchSize*FingerprintFeatureDim)
+	negatives = make([]float64, 0, batchSize*FingerprintFeatureDim)
+
+	for b := 0; b < batchSize; b++ {
+		aIdx := indices[rand.Intn(len(indices))]
+		pIdx := indices[rand.Intn(len(indices))]
+		bestNegIdx := findBestNegativeIndex(enc, samples, aIdx, candidateNegs)
+
+		anchors = append(anchors, samples[aIdx].Features...)
+		positives = append(positives, samples[pIdx].Features...)
+		negatives = append(negatives, samples[bestNegIdx].Features...)
+	}
+	return anchors, positives, negatives
+}
+
+func findBestNegativeIndex(enc *FingerprintEncoder, samples []profileSample, anchorIndex int, candidateNegs []int) int {
+	anchorEmb := enc.EncodeSingle(samples[anchorIndex].Features)
+	bestNegIdx := candidateNegs[rand.Intn(len(candidateNegs))]
+	bestNegDist := math.MaxFloat64
+
+	numCandidates := min(16, len(candidateNegs))
+	for c := 0; c < numCandidates; c++ {
+		cIdx := candidateNegs[rand.Intn(len(candidateNegs))]
+		dist := embeddingDistanceSquared(anchorEmb, enc.EncodeSingle(samples[cIdx].Features))
+		if dist < bestNegDist {
+			bestNegDist = dist
+			bestNegIdx = cIdx
+		}
+	}
+	return bestNegIdx
+}
+
+func embeddingDistanceSquared(a []float64, b []float64) float64 {
+	dist := 0.0
+	for i := 0; i < len(a); i++ {
+		diff := a[i] - b[i]
+		dist += diff * diff
+	}
+	return dist
 }
 
 // =========================================================================

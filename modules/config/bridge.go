@@ -20,19 +20,19 @@ type ConfigChange = ic.ConfigChange
 // ConfigChangeListener configuration change listener interface.
 type ConfigChangeListener = ic.ConfigChangeListener
 
-// BehaviorAnalysisConfig behavioranalyzeconfiguration。
+// BehaviorAnalysisConfig defines behavior analysis settings.
 type BehaviorAnalysisConfig = ic.BehaviorAnalysisConfig
 
 // RiskScoringConfig risk scoring configuration.
 type RiskScoringConfig = ic.RiskScoringConfig
 
-// FeatureExtractionConfig featureextractconfiguration。
+// FeatureExtractionConfig defines feature extraction settings.
 type FeatureExtractionConfig = ic.FeatureExtractionConfig
 
-// QUICConfig QUIC configuration。
+// QUICConfig defines QUIC fingerprint settings.
 type QUICConfig = ic.QUICConfig
 
-// TLSConfig TLS configuration。
+// TLSConfig defines TLS fingerprint settings.
 type TLSConfig = ic.TLSConfig
 
 // GlobalConfig global configuration.

@@ -282,18 +282,18 @@ func (h *Handler) handleStats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Read live metrics.
+	stats := h.buildStatsPayload()
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(stats)
+}
+
+func (h *Handler) buildStatsPayload() map[string]interface{} {
 	rps, latency, rate, uptime, recent := globalMetrics.GetMetrics()
 	h.mu.RLock()
 	totalProfiles := len(h.profiles)
 	h.mu.RUnlock()
-	// Keep stable defaults when no live data is available.
-	if rps == 0 {
-		rps = 0
-	}
-	if latency == 0 {
-		latency = 0
-	}
+
 	if rate == 0 {
 		rate = 100.0
 	}
@@ -310,7 +310,15 @@ func (h *Handler) handleStats(w http.ResponseWriter, r *http.Request) {
 		"recentClassifications": recent,
 	}
 
-	// Attach agent status.
+	h.appendAgentStats(stats)
+	h.appendMLServiceStats(stats)
+	h.appendSystemStatus(stats)
+	h.appendRuntimeStats(stats)
+
+	return stats
+}
+
+func (h *Handler) appendAgentStats(stats map[string]interface{}) {
 	if a := h.gateway.GetAgent(); a != nil {
 		agentStats := a.Stats()
 		stats["agent"] = map[string]interface{}{
@@ -320,42 +328,48 @@ func (h *Handler) handleStats(w http.ResponseWriter, r *http.Request) {
 			"activeStrategies":  agentStats.ActiveStrategies,
 			"learnedPatterns":   agentStats.LearnedPatterns,
 		}
-	} else {
-		stats["agent"] = map[string]interface{}{"enabled": false}
+		return
 	}
 
-	// Attach ML service status.
-	if svc := h.gateway.GetMLService(); svc != nil {
-		svcStats := svc.Stats()
-		mlSvc := map[string]interface{}{
-			"enabled":       true,
-			"ready":         svc.IsReady(),
-			"inferCount":    svcStats.InferCount,
-			"feedbackCount": svcStats.FeedbackCount,
-			"evolveCount":   svcStats.EvolveCount,
-			"modelVersions": svcStats.ModelVersions,
-		}
-		if svcStats.LearnerStats != nil {
-			mlSvc["learner"] = map[string]interface{}{
-				"totalSamples":    svcStats.LearnerStats.TotalSamples,
-				"bufferFilled":    svcStats.LearnerStats.BufferFilled,
-				"peakAccuracy":    svcStats.LearnerStats.PeakAccuracy,
-				"recentAccuracy":  svcStats.LearnerStats.RecentAccuracy,
-				"driftDetected":   svcStats.LearnerStats.DriftDetected,
-				"driftEventCount": svcStats.LearnerStats.DriftEventCount,
-			}
-		}
-		stats["mlService"] = mlSvc
-	} else {
+	stats["agent"] = map[string]interface{}{"enabled": false}
+}
+
+func (h *Handler) appendMLServiceStats(stats map[string]interface{}) {
+	svc := h.gateway.GetMLService()
+	if svc == nil {
 		stats["mlService"] = map[string]interface{}{"enabled": false, "ready": false}
+		return
 	}
 
-	// Attach runtime component status.
+	svcStats := svc.Stats()
+	mlSvc := map[string]interface{}{
+		"enabled":       true,
+		"ready":         svc.IsReady(),
+		"inferCount":    svcStats.InferCount,
+		"feedbackCount": svcStats.FeedbackCount,
+		"evolveCount":   svcStats.EvolveCount,
+		"modelVersions": svcStats.ModelVersions,
+	}
+	if svcStats.LearnerStats != nil {
+		mlSvc["learner"] = map[string]interface{}{
+			"totalSamples":    svcStats.LearnerStats.TotalSamples,
+			"bufferFilled":    svcStats.LearnerStats.BufferFilled,
+			"peakAccuracy":    svcStats.LearnerStats.PeakAccuracy,
+			"recentAccuracy":  svcStats.LearnerStats.RecentAccuracy,
+			"driftDetected":   svcStats.LearnerStats.DriftDetected,
+			"driftEventCount": svcStats.LearnerStats.DriftEventCount,
+		}
+	}
+	stats["mlService"] = mlSvc
+}
+
+func (h *Handler) appendSystemStatus(stats map[string]interface{}) {
 	cfg := h.gateway.GetConfig()
 	mlServiceReady := false
 	if svc := h.gateway.GetMLService(); svc != nil {
 		mlServiceReady = svc.IsReady()
 	}
+
 	stats["systemStatus"] = map[string]interface{}{
 		"apiServer":         true,
 		"mlClassifier":      true,
@@ -366,10 +380,6 @@ func (h *Handler) handleStats(w http.ResponseWriter, r *http.Request) {
 		"mlServiceEnabled":  cfg.MLServiceEnabled,
 		"mlServiceReady":    mlServiceReady,
 	}
-	h.appendRuntimeStats(stats)
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(stats)
 }
 
 // handleProfiles returns browser profiles

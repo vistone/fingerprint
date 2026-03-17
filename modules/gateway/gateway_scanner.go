@@ -9,6 +9,31 @@ import (
 	"time"
 )
 
+type scannerRequest struct {
+	HTMLContent    string `json:"html"`
+	URL            string `json:"url,omitempty"`
+	FollowRedirect bool   `json:"followRedirects,omitempty"`
+	MaxRedirects   int    `json:"maxRedirects,omitempty"`
+	ExecuteJS      bool   `json:"executeJs,omitempty"`
+	WaitMs         int    `json:"waitMs,omitempty"`
+	ScanTimeout    int    `json:"scanTimeout,omitempty"`
+}
+
+type scannerFetchResult struct {
+	HTMLContent             string
+	SourceURL               string
+	Redirects               []string
+	FetchMode               string
+	BrowserError            string
+	ExternalScriptStats     *ExternalScriptStats
+	ExternalScriptsCaptured int
+}
+
+type scannerBrowserOptions struct {
+	MaxRedirects int
+	WaitMs       int
+}
+
 // =====================================================================
 // Anti-Detection - HTML Injection Handler
 // =====================================================================
@@ -105,162 +130,244 @@ func (g *Gateway) V8ScannerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Limit request body size (maximum 5MB)
-	r.Body = http.MaxBytesReader(w, r.Body, 5*1024*1024)
-
-	var request struct {
-		HTMLContent    string `json:"html"`
-		URL            string `json:"url,omitempty"`
-		FollowRedirect bool   `json:"followRedirects,omitempty"`
-		MaxRedirects   int    `json:"maxRedirects,omitempty"`
-		ExecuteJS      bool   `json:"executeJs,omitempty"`
-		WaitMs         int    `json:"waitMs,omitempty"`
-		ScanTimeout    int    `json:"scanTimeout,omitempty"`
+	req, ok := parseScannerRequest(w, r)
+	if !ok {
+		return
 	}
 
+	ctx, cancel := context.WithTimeout(r.Context(), resolveScanTimeout(req.ScanTimeout))
+	defer cancel()
+
+	fetchResult, statusCode, err := g.resolveScannerFetch(ctx, req)
+	if err != nil {
+		writeScannerJSONError(w, statusCode, err.Error())
+		return
+	}
+
+	result, statusCode, err := runScanner(ctx, fetchResult.HTMLContent)
+	if err != nil {
+		writeScannerJSONError(w, statusCode, err.Error())
+		return
+	}
+
+	writeScannerSuccess(w, req, fetchResult, result)
+}
+
+func parseScannerRequest(w http.ResponseWriter, r *http.Request) (*scannerRequest, bool) {
+	// Limit request body size (maximum 5MB).
+	r.Body = http.MaxBytesReader(w, r.Body, 5*1024*1024)
+
+	var request scannerRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		writeScannerJSONError(w, http.StatusBadRequest, fmt.Sprintf("invalid request: %s", err.Error()))
-		return
+		return nil, false
 	}
 
 	if request.HTMLContent == "" && strings.TrimSpace(request.URL) == "" {
 		writeScannerJSONError(w, http.StatusBadRequest, "html or url is required")
+		return nil, false
+	}
+
+	return &request, true
+}
+
+func resolveScanTimeout(scanTimeoutSeconds int) time.Duration {
+	scanTimeout := 20 * time.Second
+	if scanTimeoutSeconds <= 0 {
+		return scanTimeout
+	}
+
+	scanTimeout = time.Duration(scanTimeoutSeconds) * time.Second
+	if scanTimeout < 10*time.Second {
+		scanTimeout = 10 * time.Second
+	}
+	if scanTimeout > 120*time.Second {
+		scanTimeout = 120 * time.Second
+	}
+
+	return scanTimeout
+}
+
+func (g *Gateway) resolveScannerFetch(ctx context.Context, req *scannerRequest) (*scannerFetchResult, int, error) {
+	result := &scannerFetchResult{
+		HTMLContent: req.HTMLContent,
+		SourceURL:   req.URL,
+		Redirects:   []string{},
+		FetchMode:   "inline-html",
+	}
+
+	if strings.TrimSpace(req.URL) == "" {
+		return result, http.StatusOK, nil
+	}
+
+	config := g.GetConfig()
+	result.FetchMode = "http"
+	followRedirect := true
+	maxRedirects := req.MaxRedirects
+	if maxRedirects <= 0 {
+		maxRedirects = 10
+	}
+
+	if req.ExecuteJS || config.ScannerUseBrowser {
+		g.tryScannerBrowserFetch(ctx, req, scannerBrowserOptions{
+			MaxRedirects: maxRedirects,
+			WaitMs:       req.WaitMs,
+		}, config, result)
+	}
+
+	if result.FetchMode == "http" {
+		if err := g.tryScannerHTTPFetch(ctx, req, followRedirect, maxRedirects, result); err != nil {
+			fetchErr, ok := err.(*scannerFetchError)
+			if ok {
+				return nil, fetchErr.statusCode, fetchErr
+			}
+			return nil, http.StatusBadGateway, err
+		}
+	}
+
+	if result.FetchMode == "headless-browser" && result.ExternalScriptStats != nil {
+		result.ExternalScriptsCaptured = result.ExternalScriptStats.Count
+	}
+
+	return result, http.StatusOK, nil
+}
+
+type scannerFetchError struct {
+	statusCode int
+	message    string
+}
+
+func (e *scannerFetchError) Error() string {
+	return e.message
+}
+
+func (g *Gateway) tryScannerBrowserFetch(
+	ctx context.Context,
+	req *scannerRequest,
+	options scannerBrowserOptions,
+	config *GatewayConfig,
+	result *scannerFetchResult,
+) {
+	waitMs := options.WaitMs
+	if waitMs <= 0 {
+		waitMs = 1200
+	}
+	if waitMs > 3500 {
+		waitMs = 3500
+	}
+	options.WaitMs = waitMs
+
+	if strings.TrimSpace(config.ScannerBrowserWS) != "" {
+		g.tryScannerHeadlessFetch(ctx, req, options, config, result)
+	}
+	if result.FetchMode != "headless-browser" {
+		g.tryScannerRedirectEmulationFetch(ctx, req.URL, options.MaxRedirects, options.WaitMs, result)
+	}
+}
+
+func (g *Gateway) tryScannerHeadlessFetch(
+	ctx context.Context,
+	req *scannerRequest,
+	options scannerBrowserOptions,
+	config *GatewayConfig,
+	result *scannerFetchResult,
+) {
+	browserTimeout := config.ScannerBrowserTimeout
+	if browserTimeout <= 0 {
+		browserTimeout = 25 * time.Second
+	}
+	if deadline, ok := ctx.Deadline(); ok {
+		left := time.Until(deadline) - 3*time.Second
+		if left > browserTimeout {
+			browserTimeout = left
+		}
+	}
+	if browserTimeout > 25*time.Second {
+		browserTimeout = 25 * time.Second
+	}
+
+	html, finalURL, chain, stats, err := fetchHTMLWithHeadlessBrowser(ctx, headlessFetchOptions{
+		TargetURL:    req.URL,
+		BrowserWS:    config.ScannerBrowserWS,
+		MaxRedirects: options.MaxRedirects,
+		WaitMs:       options.WaitMs,
+		Timeout:      browserTimeout,
+	})
+	if err != nil {
+		result.BrowserError = err.Error()
+		return
+	}
+	if html == "" {
 		return
 	}
 
-	// Call scanner (with configurable timeout)
-	scanTimeout := 20 * time.Second
-	if request.ScanTimeout > 0 {
-		scanTimeout = time.Duration(request.ScanTimeout) * time.Second
-		if scanTimeout < 10*time.Second {
-			scanTimeout = 10 * time.Second
+	result.HTMLContent = html
+	result.SourceURL = finalURL
+	result.Redirects = chain
+	result.FetchMode = "headless-browser"
+	result.ExternalScriptStats = stats
+}
+
+func (g *Gateway) tryScannerRedirectEmulationFetch(
+	ctx context.Context,
+	targetURL string,
+	maxRedirects int,
+	waitMs int,
+	result *scannerFetchResult,
+) {
+	html, finalURL, chain, err := fetchHTMLWithClientSideRedirects(ctx, targetURL, maxRedirects, waitMs)
+	if err != nil {
+		if result.BrowserError == "" {
+			result.BrowserError = err.Error()
 		}
-		if scanTimeout > 120*time.Second {
-			scanTimeout = 120 * time.Second
+		return
+	}
+	if html == "" {
+		return
+	}
+
+	result.HTMLContent = html
+	result.SourceURL = finalURL
+	result.Redirects = chain
+	result.FetchMode = "js-redirect-emulation"
+}
+
+func (g *Gateway) tryScannerHTTPFetch(
+	ctx context.Context,
+	req *scannerRequest,
+	followRedirect bool,
+	maxRedirects int,
+	result *scannerFetchResult,
+) error {
+	remainingBudget := 12 * time.Second
+	if deadline, ok := ctx.Deadline(); ok {
+		left := time.Until(deadline) - 500*time.Millisecond
+		if left <= 2*time.Second {
+			return &scannerFetchError{statusCode: http.StatusGatewayTimeout, message: "scan timeout"}
+		}
+		if left < remainingBudget {
+			remainingBudget = left
 		}
 	}
 
-	ctx, cancel := context.WithTimeout(r.Context(), scanTimeout)
-	defer cancel()
-
-	htmlContent := request.HTMLContent
-	sourceURL := request.URL
-	redirects := []string{}
-	fetchMode := "inline-html"
-	browserError := ""
-	usedHeadless := false
-	externalScriptsCaptured := 0
-	var externalScriptStats *ExternalScriptStats
-
-	if strings.TrimSpace(request.URL) != "" {
-		fetchMode = "http"
-		followRedirect := request.FollowRedirect
-		if !request.FollowRedirect {
-			// Enable redirect following by default
-			followRedirect = true
-		}
-
-		maxRedirects := request.MaxRedirects
-		if maxRedirects <= 0 {
-			maxRedirects = 10
-		}
-
-		wantBrowser := request.ExecuteJS || g.config.ScannerUseBrowser
-		if wantBrowser {
-			waitMs := request.WaitMs
-			if waitMs <= 0 {
-				waitMs = 1200
-			}
-			if waitMs > 3500 {
-				waitMs = 3500
-			}
-
-			if strings.TrimSpace(g.config.ScannerBrowserWS) != "" {
-				browserTimeout := g.config.ScannerBrowserTimeout
-				if browserTimeout <= 0 {
-					browserTimeout = 25 * time.Second
-				}
-				// Give headless fetch more time budget, but still reserve time for scan and encoding.
-				if scanTimeout > 8*time.Second {
-					candidate := scanTimeout - 3*time.Second
-					if candidate > browserTimeout {
-						browserTimeout = candidate
-					}
-				}
-				if browserTimeout > 25*time.Second {
-					browserTimeout = 25 * time.Second
-				}
-
-				browserHTML, browserFinalURL, browserChain, stats, err := fetchHTMLWithHeadlessBrowser(
-					ctx,
-					headlessFetchOptions{
-						TargetURL:    request.URL,
-						BrowserWS:    g.config.ScannerBrowserWS,
-						MaxRedirects: maxRedirects,
-						WaitMs:       waitMs,
-						Timeout:      browserTimeout,
-					},
-				)
-				if err == nil && browserHTML != "" {
-					htmlContent = browserHTML
-					sourceURL = browserFinalURL
-					redirects = browserChain
-					fetchMode = "headless-browser"
-					usedHeadless = true
-					externalScriptStats = stats
-				} else if err != nil {
-					browserError = err.Error()
-				}
-			}
-
-			if !usedHeadless {
-				execHTML, execFinalURL, execChain, err := fetchHTMLWithClientSideRedirects(
-					ctx,
-					request.URL,
-					maxRedirects,
-					waitMs,
-				)
-				if err == nil && execHTML != "" {
-					htmlContent = execHTML
-					sourceURL = execFinalURL
-					redirects = execChain
-					fetchMode = "js-redirect-emulation"
-				} else if err != nil && browserError == "" {
-					browserError = err.Error()
-				}
-			}
-		}
-
-		if fetchMode == "http" {
-			remainingBudget := 12 * time.Second
-			if deadline, ok := ctx.Deadline(); ok {
-				left := time.Until(deadline) - 500*time.Millisecond
-				if left <= 2*time.Second {
-					writeScannerJSONError(w, http.StatusGatewayTimeout, "scan timeout")
-					return
-				}
-				if left < remainingBudget {
-					remainingBudget = left
-				}
-			}
-
-			fetchedHTML, finalURL, chain, err := fetchHTMLWithRedirects(ctx, request.URL, followRedirect, maxRedirects, remainingBudget)
-			if err == nil && fetchedHTML != "" {
-				htmlContent = fetchedHTML
-				sourceURL = finalURL
-				redirects = chain
-			} else if htmlContent == "" {
-				writeScannerJSONError(w, http.StatusBadGateway, fmt.Sprintf("fetch url failed: %s", err.Error()))
-				return
-			}
+	html, finalURL, chain, err := fetchHTMLWithRedirects(ctx, req.URL, followRedirect, maxRedirects, remainingBudget)
+	if err != nil && result.HTMLContent == "" {
+		return &scannerFetchError{
+			statusCode: http.StatusBadGateway,
+			message:    fmt.Sprintf("fetch url failed: %s", err.Error()),
 		}
 	}
-
-	if fetchMode == "headless-browser" && externalScriptStats != nil {
-		externalScriptsCaptured = externalScriptStats.Count
+	if html == "" {
+		return nil
 	}
 
-	// Execute scan in goroutine so it can be interrupted by ctx.Done()
+	result.HTMLContent = html
+	result.SourceURL = finalURL
+	result.Redirects = chain
+	return nil
+}
+
+func runScanner(ctx context.Context, htmlContent string) (*JSDetectionResult, int, error) {
 	type scanResult struct {
 		result *JSDetectionResult
 		err    error
@@ -269,36 +376,38 @@ func (g *Gateway) V8ScannerHandler(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan scanResult, 1)
 	go func() {
 		result, err := ScanJavaScriptWithV8(ctx, htmlContent)
-		resultChan <- scanResult{result, err}
+		resultChan <- scanResult{result: result, err: err}
 	}()
 
-	// Wait for scan to complete or timeout
 	select {
 	case <-ctx.Done():
-		writeScannerJSONError(w, http.StatusGatewayTimeout, "scan timeout")
-		return
+		return nil, http.StatusGatewayTimeout, fmt.Errorf("scan timeout")
 	case res := <-resultChan:
 		if res.err != nil {
-			writeScannerJSONError(w, http.StatusInternalServerError, fmt.Sprintf("scan failed: %s", res.err.Error()))
-			return
+			return nil, http.StatusInternalServerError, fmt.Errorf("scan failed: %s", res.err.Error())
 		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("X-Scan-URL", sourceURL)
-		responseData := map[string]interface{}{
-			"url":                     request.URL,
-			"finalUrl":                sourceURL,
-			"redirectChain":           redirects,
-			"fetchMode":               fetchMode,
-			"browserError":            browserError,
-			"externalScriptsCaptured": externalScriptsCaptured,
-			"result":                  res.result,
-		}
-		if externalScriptStats != nil && fetchMode == "headless-browser" {
-			responseData["externalScriptDetails"] = externalScriptStats
-		}
-		json.NewEncoder(w).Encode(responseData)
+		return res.result, http.StatusOK, nil
 	}
+}
+
+func writeScannerSuccess(w http.ResponseWriter, req *scannerRequest, fetchResult *scannerFetchResult, result *JSDetectionResult) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Scan-URL", fetchResult.SourceURL)
+
+	responseData := map[string]interface{}{
+		"url":                     req.URL,
+		"finalUrl":                fetchResult.SourceURL,
+		"redirectChain":           fetchResult.Redirects,
+		"fetchMode":               fetchResult.FetchMode,
+		"browserError":            fetchResult.BrowserError,
+		"externalScriptsCaptured": fetchResult.ExternalScriptsCaptured,
+		"result":                  result,
+	}
+	if fetchResult.ExternalScriptStats != nil && fetchResult.FetchMode == "headless-browser" {
+		responseData["externalScriptDetails"] = fetchResult.ExternalScriptStats
+	}
+
+	_ = json.NewEncoder(w).Encode(responseData)
 }
 
 func writeScannerJSONError(w http.ResponseWriter, statusCode int, msg string) {
@@ -309,7 +418,8 @@ func writeScannerJSONError(w http.ResponseWriter, statusCode int, msg string) {
 
 // InjectProxyHandler provides HTML proxy and auto-injection (for proxy mode)
 func (g *Gateway) InjectProxyHandler() http.Handler {
-	if g.injector == nil || g.config.AntiDetectProxyTarget == "" {
+	config := g.GetConfig()
+	if g.injector == nil || config.AntiDetectProxyTarget == "" {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "proxy mode not configured", http.StatusServiceUnavailable)
 		})

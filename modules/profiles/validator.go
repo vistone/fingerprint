@@ -36,14 +36,26 @@ func (pv *ProfileValidator) SetStrictMode(strict bool) {
 
 // Validate validates fingerprint profile
 func (pv *ProfileValidator) Validate(profile ClientProfile) ProfileValidationResult {
-	result := ProfileValidationResult{
+	result := newValidationResult()
+	pv.validateRequiredFields(profile, &result)
+	pv.validateCoreProfile(profile, &result)
+	pv.validateTLSProfile(profile, &result)
+	pv.validateHTTPHeaders(profile, &result)
+	pv.validateTCPIPProfile(profile, &result)
+	pv.validateVersionMetadata(profile, &result)
+	return result
+}
+
+func newValidationResult() ProfileValidationResult {
+	return ProfileValidationResult{
 		Valid:         true,
 		MissingFields: []string{},
 		Warnings:      []string{},
 		Errors:        []string{},
 	}
+}
 
-	// 1. required field check
+func (pv *ProfileValidator) validateRequiredFields(profile ClientProfile, result *ProfileValidationResult) {
 	if profile.ID == "" {
 		result.Errors = append(result.Errors, "ID is required")
 		result.Valid = false
@@ -52,8 +64,9 @@ func (pv *ProfileValidator) Validate(profile ClientProfile) ProfileValidationRes
 		result.Errors = append(result.Errors, "Name is required")
 		result.Valid = false
 	}
+}
 
-	// 2. browser type check
+func (pv *ProfileValidator) validateCoreProfile(profile ClientProfile, result *ProfileValidationResult) {
 	if profile.BrowserType == "" {
 		result.MissingFields = append(result.MissingFields, "BrowserType")
 		if pv.strictMode {
@@ -61,8 +74,6 @@ func (pv *ProfileValidator) Validate(profile ClientProfile) ProfileValidationRes
 			result.Valid = false
 		}
 	}
-
-	// 3. operating system check
 	if profile.OS == "" {
 		result.MissingFields = append(result.MissingFields, "OS")
 		if pv.strictMode {
@@ -70,58 +81,57 @@ func (pv *ProfileValidator) Validate(profile ClientProfile) ProfileValidationRes
 			result.Valid = false
 		}
 	}
+}
 
-	// 4. TLS profile check
+func (pv *ProfileValidator) validateTLSProfile(profile ClientProfile, result *ProfileValidationResult) {
 	if profile.TLSVersion == 0 {
 		result.MissingFields = append(result.MissingFields, "TLSVersion")
 		result.Warnings = append(result.Warnings, "TLSVersion not specified, will use default TLS 1.2")
 	}
-
 	if len(profile.CipherSuites) == 0 {
 		result.MissingFields = append(result.MissingFields, "CipherSuites")
 		result.Warnings = append(result.Warnings, "CipherSuites is empty, will use system default")
 	}
-
 	if len(profile.Extensions) == 0 {
 		result.MissingFields = append(result.MissingFields, "Extensions")
 		result.Warnings = append(result.Warnings, "TLS Extensions not configured")
 	}
-
-	// 5. HTTP Headers check
-	if profile.Headers == nil {
-		result.MissingFields = append(result.MissingFields, "Headers")
-		result.Warnings = append(result.Warnings, "HTTP Headers missing, request will use defaults")
-	} else {
-		headerValidator := ValidateHeaders(profile.Headers)
-		if len(headerValidator.Missing) > 0 {
-			result.Warnings = append(result.Warnings,
-				fmt.Sprintf("Missing HTTP headers: %s", strings.Join(headerValidator.Missing, ", ")))
-		}
-	}
-
-	// 6. TCP/IP profile check
-	if profile.TCPIP == nil {
-		result.Warnings = append(result.Warnings, "TCPIP configuration missing, TCP fingerprint will not be applied")
-	} else {
-		if err := ValidateTCPIP(profile.TCPIP); err != "" {
-			result.Warnings = append(result.Warnings, fmt.Sprintf("TCPIP issue: %s", err))
-		}
-	}
-
-	// 7. HTTP/2 profile check
 	if profile.HTTP2Settings.HeaderTableSize == 0 {
 		result.Warnings = append(result.Warnings, "HTTP/2 Settings not configured")
 	}
+}
 
-	// 8. version information completeness
+func (pv *ProfileValidator) validateHTTPHeaders(profile ClientProfile, result *ProfileValidationResult) {
+	if profile.Headers == nil {
+		result.MissingFields = append(result.MissingFields, "Headers")
+		result.Warnings = append(result.Warnings, "HTTP Headers missing, request will use defaults")
+		return
+	}
+
+	headerValidator := ValidateHeaders(profile.Headers)
+	if len(headerValidator.Missing) > 0 {
+		result.Warnings = append(result.Warnings,
+			fmt.Sprintf("Missing HTTP headers: %s", strings.Join(headerValidator.Missing, ", ")))
+	}
+}
+
+func (pv *ProfileValidator) validateTCPIPProfile(profile ClientProfile, result *ProfileValidationResult) {
+	if profile.TCPIP == nil {
+		result.Warnings = append(result.Warnings, "TCPIP configuration missing, TCP fingerprint will not be applied")
+		return
+	}
+	if err := ValidateTCPIP(profile.TCPIP); err != "" {
+		result.Warnings = append(result.Warnings, fmt.Sprintf("TCPIP issue: %s", err))
+	}
+}
+
+func (pv *ProfileValidator) validateVersionMetadata(profile ClientProfile, result *ProfileValidationResult) {
 	if profile.BrowserVersion == "" {
 		result.Warnings = append(result.Warnings, "BrowserVersion not specified")
 	}
 	if profile.OSVersion == "" {
 		result.Warnings = append(result.Warnings, "OSVersion not specified")
 	}
-
-	return result
 }
 
 // HeaderValidationResult header validation result

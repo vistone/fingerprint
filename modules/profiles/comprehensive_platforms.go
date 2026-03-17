@@ -160,84 +160,87 @@ func initiOSProfiles() {
 
 // Android Chrome (15 profiles)
 func initAndroidProfiles() {
-	androidVersions := []struct {
-		id      string
-		version string
-		android string
-		device  string
-	}{
-		{"chrome_android_103", "103.0.5060.71", "13", "SM-G998B"},
-		{"chrome_android_105", "105.0.5195.136", "13", "SM-G996B"},
-		{"chrome_android_107", "107.0.5304.105", "13", "SM-G991B"},
-		{"chrome_android_109", "109.0.5414.117", "13", "SM-S908B"},
-		{"chrome_android_111", "111.0.5563.116", "14", "SM-S918B"},
-		{"chrome_android_113", "113.0.5672.162", "14", "SM-S928B"},
-		{"chrome_android_115", "115.0.5790.166", "14", "Pixel 7"},
-		{"chrome_android_117", "117.0.5938.153", "14", "Pixel 7 Pro"},
-		{"chrome_android_119", "119.0.6045.193", "14", "Pixel 8"},
-		{"chrome_android_121", "121.0.6167.178", "14", "Pixel 8 Pro"},
-		{"chrome_android_123", "123.0.6312.80", "14", "SM-G996B"},
-		{"chrome_android_125", "125.0.6422.165", "14", "SM-G991B"},
-		{"chrome_android_127", "127.0.6533.103", "14", "Pixel 8a"},
-		{"chrome_android_129", "129.0.6668.81", "15", "Pixel 9"},
-		{"chrome_android_131", "131.0.6778.135", "15", "Pixel 9 Pro"},
-		// 120, 130 already in other files
+	for _, v := range androidChromeVersions {
+		Register(buildAndroidChromeProfile(v))
 	}
+}
 
-	for _, v := range androidVersions {
-		p := ClientProfile{
-			ID:             v.id,
-			Name:           "Chrome Android " + v.version,
-			BrowserType:    core.BrowserChrome,
-			BrowserVersion: v.version,
-			OS:             core.OSLinux,
-			OSVersion:      v.android,
-			TLSVersion:     0x0303, // TLS 1.2
-			CipherSuites: []uint16{
-				0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030,
-				0xcca9, 0xcca8, 0xc013, 0xc014, 0x002f, 0x0035, 0x000a,
-			},
-			Extensions: []core.TLSExtension{
-				{Type: 0x0000}, {Type: 0x0017}, {Type: 0xff01},
-				{Type: 0x000a}, {Type: 0x000b}, {Type: 0x0023},
-				{Type: 0x0016}, {Type: 0x000d}, {Type: 0x002b},
-				{Type: 0x002d}, {Type: 0x0033}, {Type: 0x001c},
-			},
-			SupportedCurves: []core.CurveID{core.CurveX25519, core.CurveP256, core.CurveP384},
-			HTTP2Settings: core.HTTP2Settings{
-				HeaderTableSize:      65536,
-				EnablePush:           0,
-				MaxConcurrentStreams: 1000,
-				InitialWindowSize:    6291456,
-				MaxFrameSize:         16384,
-				MaxHeaderListSize:    262144,
-			},
-			// HTTP/3 (QUIC) profile - Android Chrome already supported HTTP/3
-			HTTP3Settings: &core.HTTP3Settings{
-				QUICVersion:            core.QUICVersion1,
-				InitialMaxData:         16777216,
-				InitialMaxStreamData:   6291456,
-				InitialMaxStreamsBidi:  100,
-				InitialMaxStreamsUni:   100,
-				MaxUDPPayloadSize:      1472,
-				AckDelayExponent:       3,
-				MaxAckDelay:            25,
-				DisableActiveMigration: false,
-			},
-			QUICVersions:      []uint32{core.QUICVersion1},
-			PseudoHeaderOrder: []string{":method", ":authority", ":scheme", ":path"},
-			ConnectionFlow:    15663105,
-			Headers: &core.HTTPHeaders{
-				Accept:          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-				AcceptLanguage:  "en-US,en;q=0.9",
-				AcceptEncoding:  "gzip, deflate, br",
-				SecCHUA:         `"Android";v="` + v.android + `", "Chrome";v="` + safeSliceVersion(v.version) + `"`,
-				SecCHUAMobile:   "?1",
-				SecCHUAPlatform: `"Android"`,
-			},
-			TCPIP: createTCPIP(core.OSAndroid),
-		}
-		Register(p)
+type androidChromeVersion struct {
+	id      string
+	version string
+	android string
+	device  string
+}
+
+var androidChromeVersions = []androidChromeVersion{
+	{"chrome_android_103", "103.0.5060.71", "13", "SM-G998B"},
+	{"chrome_android_105", "105.0.5195.136", "13", "SM-G996B"},
+	{"chrome_android_107", "107.0.5304.105", "13", "SM-G991B"},
+	{"chrome_android_109", "109.0.5414.117", "13", "SM-S908B"},
+	{"chrome_android_111", "111.0.5563.116", "14", "SM-S918B"},
+	{"chrome_android_113", "113.0.5672.162", "14", "SM-S928B"},
+	{"chrome_android_115", "115.0.5790.166", "14", "Pixel 7"},
+	{"chrome_android_117", "117.0.5938.153", "14", "Pixel 7 Pro"},
+	{"chrome_android_119", "119.0.6045.193", "14", "Pixel 8"},
+	{"chrome_android_121", "121.0.6167.178", "14", "Pixel 8 Pro"},
+	{"chrome_android_123", "123.0.6312.80", "14", "SM-G996B"},
+	{"chrome_android_125", "125.0.6422.165", "14", "SM-G991B"},
+	{"chrome_android_127", "127.0.6533.103", "14", "Pixel 8a"},
+	{"chrome_android_129", "129.0.6668.81", "15", "Pixel 9"},
+	{"chrome_android_131", "131.0.6778.135", "15", "Pixel 9 Pro"},
+}
+
+func buildAndroidChromeProfile(v androidChromeVersion) ClientProfile {
+	return ClientProfile{
+		ID:             v.id,
+		Name:           "Chrome Android " + v.version,
+		BrowserType:    core.BrowserChrome,
+		BrowserVersion: v.version,
+		OS:             core.OSLinux,
+		OSVersion:      v.android,
+		TLSVersion:     0x0303,
+		CipherSuites: []uint16{
+			0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030,
+			0xcca9, 0xcca8, 0xc013, 0xc014, 0x002f, 0x0035, 0x000a,
+		},
+		Extensions: []core.TLSExtension{
+			{Type: 0x0000}, {Type: 0x0017}, {Type: 0xff01},
+			{Type: 0x000a}, {Type: 0x000b}, {Type: 0x0023},
+			{Type: 0x0016}, {Type: 0x000d}, {Type: 0x002b},
+			{Type: 0x002d}, {Type: 0x0033}, {Type: 0x001c},
+		},
+		SupportedCurves: []core.CurveID{core.CurveX25519, core.CurveP256, core.CurveP384},
+		HTTP2Settings: core.HTTP2Settings{
+			HeaderTableSize:      65536,
+			EnablePush:           0,
+			MaxConcurrentStreams: 1000,
+			InitialWindowSize:    6291456,
+			MaxFrameSize:         16384,
+			MaxHeaderListSize:    262144,
+		},
+		HTTP3Settings: &core.HTTP3Settings{
+			QUICVersion:            core.QUICVersion1,
+			InitialMaxData:         16777216,
+			InitialMaxStreamData:   6291456,
+			InitialMaxStreamsBidi:  100,
+			InitialMaxStreamsUni:   100,
+			MaxUDPPayloadSize:      1472,
+			AckDelayExponent:       3,
+			MaxAckDelay:            25,
+			DisableActiveMigration: false,
+		},
+		QUICVersions:      []uint32{core.QUICVersion1},
+		PseudoHeaderOrder: []string{":method", ":authority", ":scheme", ":path"},
+		ConnectionFlow:    15663105,
+		Headers: &core.HTTPHeaders{
+			Accept:          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			AcceptLanguage:  "en-US,en;q=0.9",
+			AcceptEncoding:  "gzip, deflate, br",
+			SecCHUA:         `"Android";v="` + v.android + `", "Chrome";v="` + safeSliceVersion(v.version) + `"`,
+			SecCHUAMobile:   "?1",
+			SecCHUAPlatform: `"Android"`,
+		},
+		TCPIP: createTCPIP(core.OSAndroid),
 	}
 }
 

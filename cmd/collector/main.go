@@ -95,12 +95,25 @@ func main() {
 	timeout := flag.Int("timeout", 30, "HTTP request timeout in seconds")
 	flag.Parse()
 
-	if err := os.MkdirAll(*outputDir, 0o750); err != nil {
+	ensureOutputDirectory(*outputDir)
+	client := newHTTPClient(*timeout)
+	result := newCollectionResult()
+	collectFromSources(context.Background(), client, result, parseSources(*sources))
+	result.TotalCount = len(result.Fingerprints)
+
+	fmt.Printf("\nTotal collected: %d fingerprints from %d sources\n", result.TotalCount, len(result.Sources))
+	saveCollectionResult(*format, *outputDir, result)
+}
+
+func ensureOutputDirectory(outputDir string) {
+	if err := os.MkdirAll(outputDir, 0o750); err != nil {
 		log.Fatalf("create output dir: %v", err)
 	}
+}
 
-	client := &http.Client{
-		Timeout: time.Duration(*timeout) * time.Second,
+func newHTTPClient(timeoutSeconds int) *http.Client {
+	return &http.Client{
+		Timeout: time.Duration(timeoutSeconds) * time.Second,
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12},
 			DialContext: (&net.Dialer{
@@ -109,36 +122,22 @@ func main() {
 			}).DialContext,
 		},
 	}
+}
 
-	result := &CollectionResult{
+func newCollectionResult() *CollectionResult {
+	return &CollectionResult{
 		Version:     "1.0.0",
 		CollectedAt: time.Now().UTC().Format(time.RFC3339),
 		Sources:     []string{},
 		Statistics:  make(map[string]int),
 	}
+}
 
-	ctx := context.Background()
-	sourceList := parseSources(*sources)
-
+func collectFromSources(ctx context.Context, client *http.Client, result *CollectionResult, sourceList []string) {
 	for _, src := range sourceList {
 		fmt.Printf("Collecting from %s...\n", src)
-		var fps []CollectedFingerprint
-		var err error
-
-		switch src {
-		case "ja3er":
-			fps, err = collectJA3er(ctx, client)
-		case "tls_peet":
-			fps, err = collectPeetJS(ctx, client)
-		case "builtin_knowledge":
-			fps = collectBuiltinKnowledge()
-		default:
-			fmt.Printf("  Unknown source: %s, skipping\n", src)
-			continue
-		}
-
-		if err != nil {
-			fmt.Printf("  Error: %v\n", err)
+		fps, ok := collectFromSource(ctx, client, src)
+		if !ok {
 			continue
 		}
 
@@ -147,29 +146,62 @@ func main() {
 		result.Sources = append(result.Sources, src)
 		result.Statistics[src] = len(fps)
 	}
+}
 
-	result.TotalCount = len(result.Fingerprints)
-	fmt.Printf("\nTotal collected: %d fingerprints from %d sources\n", result.TotalCount, len(result.Sources))
-
-	// Save results
-	switch *format {
-	case "json":
-		outPath := filepath.Join(*outputDir, "fingerprints.json")
-		data, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			log.Fatalf("marshal output: %v", err)
-		}
-		if err := os.WriteFile(outPath, data, 0o600); err != nil {
-			log.Fatalf("write output: %v", err)
-		}
-		fmt.Printf("Saved to %s (%.1f KB)\n", outPath, float64(len(data))/1024)
-	case "go":
-		outPath := filepath.Join(*outputDir, "collected_profiles.go")
-		if err := generateGoProfiles(result, outPath); err != nil {
-			log.Fatalf("generate Go: %v", err)
-		}
-		fmt.Printf("Generated Go profiles: %s\n", outPath)
+func collectFromSource(ctx context.Context, client *http.Client, src string) ([]CollectedFingerprint, bool) {
+	switch src {
+	case "ja3er":
+		return collectOrLogError(func() ([]CollectedFingerprint, error) {
+			return collectJA3er(ctx, client)
+		})
+	case "tls_peet":
+		return collectOrLogError(func() ([]CollectedFingerprint, error) {
+			return collectPeetJS(ctx, client)
+		})
+	case "builtin_knowledge":
+		return collectBuiltinKnowledge(), true
+	default:
+		fmt.Printf("  Unknown source: %s, skipping\n", src)
+		return nil, false
 	}
+}
+
+func collectOrLogError(fetch func() ([]CollectedFingerprint, error)) ([]CollectedFingerprint, bool) {
+	fps, err := fetch()
+	if err != nil {
+		fmt.Printf("  Error: %v\n", err)
+		return nil, false
+	}
+	return fps, true
+}
+
+func saveCollectionResult(format string, outputDir string, result *CollectionResult) {
+	switch format {
+	case "json":
+		saveCollectionJSON(outputDir, result)
+	case "go":
+		saveCollectionGo(outputDir, result)
+	}
+}
+
+func saveCollectionJSON(outputDir string, result *CollectionResult) {
+	outPath := filepath.Join(outputDir, "fingerprints.json")
+	data, err := json.MarshalIndent(result, "", "  ")
+	if err != nil {
+		log.Fatalf("marshal output: %v", err)
+	}
+	if err := os.WriteFile(outPath, data, 0o600); err != nil {
+		log.Fatalf("write output: %v", err)
+	}
+	fmt.Printf("Saved to %s (%.1f KB)\n", outPath, float64(len(data))/1024)
+}
+
+func saveCollectionGo(outputDir string, result *CollectionResult) {
+	outPath := filepath.Join(outputDir, "collected_profiles.go")
+	if err := generateGoProfiles(result, outPath); err != nil {
+		log.Fatalf("generate Go: %v", err)
+	}
+	fmt.Printf("Generated Go profiles: %s\n", outPath)
 }
 
 func parseSources(s string) []string {

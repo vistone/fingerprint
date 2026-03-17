@@ -127,6 +127,26 @@ func (c *LRUCache) Clear() {
 	c.order = list.New()
 }
 
+// Reconfigure updates capacity and default TTL while preserving existing entries.
+func (c *LRUCache) Reconfigure(maxEntries int, defaultTTL time.Duration) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if maxEntries <= 0 {
+		maxEntries = DefaultCacheSize
+	}
+	if defaultTTL <= 0 {
+		defaultTTL = time.Minute * 5
+	}
+
+	c.maxEntries = maxEntries
+	c.defaultTTL = defaultTTL
+
+	for len(c.entries) > c.maxEntries {
+		c.evictOldest()
+	}
+}
+
 // Len returns the current number of entries
 func (c *LRUCache) Len() int {
 	c.mu.RLock()

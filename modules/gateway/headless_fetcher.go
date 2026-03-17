@@ -32,13 +32,45 @@ type headlessFetchOptions struct {
 	Timeout      time.Duration
 }
 
+type scriptCaptureState struct {
+	mu             sync.Mutex
+	requestURLs    map[network.RequestID]string
+	scripts        []string
+	urls           []string
+	capturedBytes  int
+	maxScripts     int
+	maxScriptBytes int
+}
+
 // fetchHTMLWithHeadlessBrowser uses remote headless Chrome to execute scripts and return final DOM.
 func fetchHTMLWithHeadlessBrowser(ctx context.Context, opts headlessFetchOptions) (string, string, []string, *ExternalScriptStats, error) {
+	opts, err := normalizeHeadlessOptions(opts)
+	if err != nil {
+		return "", "", nil, nil, err
+	}
+
+	runCtx, browserCtx, cancelAll := newHeadlessBrowserContext(ctx, opts)
+	defer cancelAll()
+
+	capture := newScriptCaptureState(10, 1024*1024)
+	attachScriptCaptureListener(browserCtx, capture)
+
+	finalURL, pageHTML, redirectChain, err := runHeadlessDOMFetch(browserCtx, opts)
+	if err != nil {
+		return "", "", redirectChain, nil, err
+	}
+
+	pageHTML, allURLs := mergeHeadlessAndDOMScripts(runCtx, finalURL, pageHTML, capture)
+	stats := buildExternalScriptStats(allURLs)
+	return pageHTML, finalURL, redirectChain, stats, nil
+}
+
+func normalizeHeadlessOptions(opts headlessFetchOptions) (headlessFetchOptions, error) {
 	if strings.TrimSpace(opts.TargetURL) == "" {
-		return "", "", nil, nil, fmt.Errorf("empty target url")
+		return opts, fmt.Errorf("empty target url")
 	}
 	if strings.TrimSpace(opts.BrowserWS) == "" {
-		return "", "", nil, nil, fmt.Errorf("empty browser websocket endpoint")
+		return opts, fmt.Errorf("empty browser websocket endpoint")
 	}
 	if opts.WaitMs <= 0 {
 		opts.WaitMs = 1200
@@ -52,69 +84,96 @@ func fetchHTMLWithHeadlessBrowser(ctx context.Context, opts headlessFetchOptions
 	if opts.MaxRedirects <= 0 {
 		opts.MaxRedirects = 10
 	}
+	return opts, nil
+}
 
-	runCtx, cancel := context.WithTimeout(ctx, opts.Timeout)
-	defer cancel()
-
+func newHeadlessBrowserContext(parent context.Context, opts headlessFetchOptions) (context.Context, context.Context, context.CancelFunc) {
+	runCtx, cancelRun := context.WithTimeout(parent, opts.Timeout)
 	allocCtx, cancelAlloc := chromedp.NewRemoteAllocator(runCtx, opts.BrowserWS)
-	defer cancelAlloc()
-
 	browserCtx, cancelBrowser := chromedp.NewContext(allocCtx)
-	defer cancelBrowser()
 
-	var finalURL string
-	var pageHTML string
-	redirectChain := []string{opts.TargetURL}
+	cancelAll := func() {
+		cancelBrowser()
+		cancelAlloc()
+		cancelRun()
+	}
+	return runCtx, browserCtx, cancelAll
+}
 
-	const maxCapturedScripts = 10
-	const maxCapturedScriptBytes = 1024 * 1024
+func newScriptCaptureState(maxScripts, maxBytes int) *scriptCaptureState {
+	return &scriptCaptureState{
+		requestURLs:    map[network.RequestID]string{},
+		scripts:        []string{},
+		urls:           []string{},
+		maxScripts:     maxScripts,
+		maxScriptBytes: maxBytes,
+	}
+}
 
-	var mu sync.Mutex
-	scriptReqURLs := map[network.RequestID]string{}
-	capturedScripts := []string{}
-	capturedURLs := []string{}
-	capturedBytes := 0
-
+func attachScriptCaptureListener(browserCtx context.Context, capture *scriptCaptureState) {
 	chromedp.ListenTarget(browserCtx, func(ev interface{}) {
 		switch e := ev.(type) {
 		case *network.EventResponseReceived:
-			if e.Type == network.ResourceTypeScript {
-				mu.Lock()
-				scriptReqURLs[e.RequestID] = e.Response.URL
-				mu.Unlock()
-			}
+			capture.recordResponse(e)
 		case *network.EventLoadingFinished:
-			mu.Lock()
-			srcURL, ok := scriptReqURLs[e.RequestID]
-			if !ok || len(capturedScripts) >= maxCapturedScripts || capturedBytes >= maxCapturedScriptBytes {
-				mu.Unlock()
-				return
-			}
-			mu.Unlock()
-
-			bodyBytes, err := network.GetResponseBody(e.RequestID).Do(browserCtx)
-			if err != nil {
-				return
-			}
-			body := string(bodyBytes)
-			if strings.TrimSpace(body) == "" {
-				return
-			}
-
-			mu.Lock()
-			if len(capturedScripts) < maxCapturedScripts && capturedBytes < maxCapturedScriptBytes {
-				remaining := maxCapturedScriptBytes - capturedBytes
-				if len(body) > remaining {
-					body = body[:remaining]
-				}
-				capturedScripts = append(capturedScripts, body)
-				capturedURLs = append(capturedURLs, srcURL)
-				capturedBytes += len(body)
-			}
-			delete(scriptReqURLs, e.RequestID)
-			mu.Unlock()
+			capture.recordLoadedScript(browserCtx, e)
 		}
 	})
+}
+
+func (s *scriptCaptureState) recordResponse(event *network.EventResponseReceived) {
+	if event.Type != network.ResourceTypeScript {
+		return
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.requestURLs[event.RequestID] = event.Response.URL
+}
+
+func (s *scriptCaptureState) recordLoadedScript(browserCtx context.Context, event *network.EventLoadingFinished) {
+	srcURL, ok := s.takeRequestURL(event.RequestID)
+	if !ok {
+		return
+	}
+
+	bodyBytes, err := network.GetResponseBody(event.RequestID).Do(browserCtx)
+	if err != nil {
+		return
+	}
+	body := strings.TrimSpace(string(bodyBytes))
+	if body == "" {
+		return
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if len(s.scripts) >= s.maxScripts || s.capturedBytes >= s.maxScriptBytes {
+		return
+	}
+	remaining := s.maxScriptBytes - s.capturedBytes
+	if len(body) > remaining {
+		body = body[:remaining]
+	}
+	s.scripts = append(s.scripts, body)
+	s.urls = append(s.urls, srcURL)
+	s.capturedBytes += len(body)
+}
+
+func (s *scriptCaptureState) takeRequestURL(id network.RequestID) (string, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	srcURL, ok := s.requestURLs[id]
+	if !ok || len(s.scripts) >= s.maxScripts || s.capturedBytes >= s.maxScriptBytes {
+		return "", false
+	}
+	delete(s.requestURLs, id)
+	return srcURL, true
+}
+
+func runHeadlessDOMFetch(browserCtx context.Context, opts headlessFetchOptions) (string, string, []string, error) {
+	finalURL := ""
+	pageHTML := ""
+	redirectChain := []string{opts.TargetURL}
 
 	err := chromedp.Run(browserCtx,
 		network.Enable(),
@@ -124,7 +183,7 @@ func fetchHTMLWithHeadlessBrowser(ctx context.Context, opts headlessFetchOptions
 		chromedp.OuterHTML("html", &pageHTML, chromedp.ByQuery),
 	)
 	if err != nil {
-		return "", "", redirectChain, nil, fmt.Errorf("headless browser fetch failed: %w", err)
+		return "", "", redirectChain, fmt.Errorf("headless browser fetch failed: %w", err)
 	}
 
 	if strings.TrimSpace(finalURL) == "" {
@@ -134,28 +193,32 @@ func fetchHTMLWithHeadlessBrowser(ctx context.Context, opts headlessFetchOptions
 		redirectChain = append(redirectChain, finalURL)
 	}
 	if strings.TrimSpace(pageHTML) == "" {
-		return "", finalURL, redirectChain, nil, fmt.Errorf("empty html from headless browser")
+		return "", finalURL, redirectChain, fmt.Errorf("empty html from headless browser")
 	}
 
-	mu.Lock()
-	netScripts := append([]string(nil), capturedScripts...)
-	netURLs := append([]string(nil), capturedURLs...)
-	usedBytes := capturedBytes
-	mu.Unlock()
+	return finalURL, pageHTML, redirectChain, nil
+}
 
-	remainingScripts := maxCapturedScripts - len(netScripts)
-	remainingBytes := maxCapturedScriptBytes - usedBytes
+func mergeHeadlessAndDOMScripts(runCtx context.Context, finalURL, pageHTML string, capture *scriptCaptureState) (string, []string) {
+	netURLs, netScripts, usedBytes := capture.snapshot()
+	remainingScripts := capture.maxScripts - len(netScripts)
+	remainingBytes := capture.maxScriptBytes - usedBytes
 	domURLs, domScripts := fetchExternalScriptsByDOM(runCtx, finalURL, pageHTML, remainingScripts, remainingBytes)
 
 	allURLs := append(netURLs, domURLs...)
 	allScripts := append(netScripts, domScripts...)
-
 	if len(allScripts) > 0 {
 		pageHTML = appendCapturedScriptsToHTML(pageHTML, allURLs, allScripts)
 	}
+	return pageHTML, allURLs
+}
 
-	stats := buildExternalScriptStats(allURLs)
-	return pageHTML, finalURL, redirectChain, stats, nil
+func (s *scriptCaptureState) snapshot() ([]string, []string, int) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	urls := append([]string(nil), s.urls...)
+	scripts := append([]string(nil), s.scripts...)
+	return urls, scripts, s.capturedBytes
 }
 
 func appendCapturedScriptsToHTML(pageHTML string, urls []string, scripts []string) string {

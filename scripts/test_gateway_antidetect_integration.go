@@ -1,7 +1,7 @@
 //go:build ignore
 
-// Gateway 反检测集成测试 - HTML 注入功能验证
-// 测试网关的 反检测代码自动注入功能
+// Translated comment
+// Translated comment
 package main
 
 import (
@@ -21,19 +21,19 @@ func main() {
 	fmt.Println(strings.Repeat("=", 70))
 	fmt.Println()
 
-	// 第一部分：测试反检测 API 端点
+	// Translated comment
 	fmt.Println("【第一部分】测试反检测 API 端点")
 	fmt.Println(strings.Repeat("-", 70))
 	testAntiDetectAPIs()
 	fmt.Println()
 
-	// 第二部分：测试 HTML 注入中间件
+	// Translated comment
 	fmt.Println("【第二部分】测试 HTML 注入中间件")
 	fmt.Println(strings.Repeat("-", 70))
 	testHTMLInjection()
 	fmt.Println()
 
-	// 第三部分：端到端集成测试
+	// Translated comment
 	fmt.Println("【第三部分】端到端集成测试")
 	fmt.Println(strings.Repeat("-", 70))
 	testEndToEnd()
@@ -44,9 +44,9 @@ func main() {
 	fmt.Println(strings.Repeat("=", 70))
 }
 
-// testAntiDetectAPIs 测试 反检测相关的 API 端点
+// Translated comment
 func testAntiDetectAPIs() {
-	// 创建网关配置
+	// Translated comment
 	config := *gateway.DefaultGatewayConfig
 	config.Port = 8081
 	config.AntiDetectEnabled = true
@@ -54,10 +54,10 @@ func testAntiDetectAPIs() {
 	config.AntiDetectConfigDir = "./profiles"
 	config.AntiDetectInjectConsist = true
 
-	// 创建网关
+	// Translated comment
 	gw := gateway.NewGateway(&config)
 
-	// 测试 1: 获取 Profile 列表
+	// Translated comment
 	fmt.Println("1️⃣ 测试 Profile 列表 API")
 	req := httptest.NewRequest("GET", "/api/v1/antidetect/profiles", nil)
 	w := httptest.NewRecorder()
@@ -74,7 +74,7 @@ func testAntiDetectAPIs() {
 	}
 	fmt.Println()
 
-	// 测试 2: 获取 Profile 详情
+	// Translated comment
 	fmt.Println("2️⃣ 测试 Profile 详情 API")
 	req = httptest.NewRequest("GET", "/api/v1/antidetect/profile?id=chrome_134_default", nil)
 	w = httptest.NewRecorder()
@@ -85,7 +85,7 @@ func testAntiDetectAPIs() {
 
 	if resp.StatusCode == 200 {
 		fmt.Printf("   ✓ Profile 详情获取成功 (长度: %d 字节)\n", len(body))
-		// 显示前200个字符
+		// Translated comment
 		preview := string(body)
 		if len(preview) > 200 {
 			preview = preview[:200] + "..."
@@ -96,7 +96,7 @@ func testAntiDetectAPIs() {
 	}
 	fmt.Println()
 
-	// 测试 3: 获取反检测代码
+	// Translated comment
 	fmt.Println("3️⃣ 测试反检测代码生成 API")
 	req = httptest.NewRequest("GET", "/api/v1/antidetect/antidetect.js", nil)
 	w = httptest.NewRecorder()
@@ -110,7 +110,7 @@ func testAntiDetectAPIs() {
 		fmt.Printf("     代码长度: %d 字节\n", len(body))
 		fmt.Printf("     Content-Type: %s\n", resp.Header.Get("Content-Type"))
 
-		// 验证代码内容
+		// Translated comment
 		code := string(body)
 		checks := []struct {
 			keyword string
@@ -141,7 +141,7 @@ func testAntiDetectAPIs() {
 	}
 	fmt.Println()
 
-	// 测试 4: 使用不同 Profile
+	// Translated comment
 	fmt.Println("4️⃣ 测试切换 Profile")
 	req = httptest.NewRequest("GET", "/api/v1/antidetect/antidetect.js?profile=firefox_132_default", nil)
 	w = httptest.NewRecorder()
@@ -157,14 +157,14 @@ func testAntiDetectAPIs() {
 	}
 }
 
-// testHTMLInjection 测试 HTML 注入功能
+// Translated comment
 func testHTMLInjection() {
-	// 创建网关配置
+	// Translated comment
 	config := *gateway.DefaultGatewayConfig
 	config.AntiDetectEnabled = true
 	gw := gateway.NewGateway(&config)
 
-	// 创建一个简单的 HTML handler
+	// Translated comment
 	htmlHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Write([]byte(`<!DOCTYPE html>
@@ -178,11 +178,11 @@ func testHTMLInjection() {
 </html>`))
 	})
 
-	// 使用注入器中间件包装
+	// Translated comment
 	injectorMiddleware := gw.GetInjectorMiddleware()
 	wrappedHandler := injectorMiddleware(htmlHandler)
 
-	// 测试注入
+	// Translated comment
 	fmt.Println("1️⃣ 测试 HTML 注入")
 	req := httptest.NewRequest("GET", "/test", nil)
 	w := httptest.NewRecorder()
@@ -195,7 +195,7 @@ func testHTMLInjection() {
 	fmt.Printf("   原始 HTML 长度: ~150 字节\n")
 	fmt.Printf("   注入后 HTML 长度: %d 字节\n", len(html))
 
-	// 验证注入
+	// Translated comment
 	if strings.Contains(html, "Anti-Detection") {
 		fmt.Println("   ✓ 反检测代码已成功注入")
 	} else {
@@ -212,17 +212,17 @@ func testHTMLInjection() {
 		}
 	}
 
-	// 显示注入片段
+	// Translated comment
 	fmt.Println("\n   注入代码预览:")
 	lines := strings.Split(html, "\n")
 	for i, line := range lines {
-		if i > 5 && i < 10 { // 显示第6-10行
+		if i > 5 && i < 10 { // Translated comment
 			fmt.Printf("     %s\n", line)
 		}
 	}
 	fmt.Println()
 
-	// 测试非 HTML 响应
+	// Translated comment
 	fmt.Println("2️⃣ 测试非 HTML 响应（不应注入）")
 	jsonHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -244,25 +244,25 @@ func testHTMLInjection() {
 	}
 }
 
-// testEndToEnd 端到端集成测试
+// Translated comment
 func testEndToEnd() {
 	fmt.Println("1️⃣ 启动测试网关服务器")
 
-	// 创建网关配置
+	// Translated comment
 	config := *gateway.DefaultGatewayConfig
-	config.Port = 0 // 使用随机端口
+	config.Port = 0 // Translated comment
 	config.AntiDetectEnabled = true
 	gw := gateway.NewGateway(&config)
 
-	// 创建测试服务器
+	// Translated comment
 	mux := http.NewServeMux()
 
-	// 注册路由
+	// Translated comment
 	mux.HandleFunc("/api/v1/antidetect/antidetect.js", gw.AntiDetectCodeHandler)
 	mux.HandleFunc("/api/v1/antidetect/profiles", gw.ProfileListHandler)
 	mux.HandleFunc("/api/v1/antidetect/profile", gw.ProfileDetailHandler)
 
-	// 创建一个 HTML 测试页面
+	// Translated comment
 	injectorMiddleware := gw.GetInjectorMiddleware()
 	htmlHandler := injectorMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
@@ -279,14 +279,14 @@ func testEndToEnd() {
 	}))
 	mux.Handle("/", htmlHandler)
 
-	// 启动服务器
+	// Translated comment
 	ts := httptest.NewServer(mux)
 	defer ts.Close()
 
 	fmt.Printf("   ✓ 测试服务器启动: %s\n", ts.URL)
 	fmt.Println()
 
-	// 测试 API 端点
+	// Translated comment
 	fmt.Println("2️⃣ 测试 API 端点")
 
 	resp, err := http.Get(ts.URL + "/api/v1/antidetect/profiles")
@@ -307,7 +307,7 @@ func testEndToEnd() {
 	}
 	fmt.Println()
 
-	// 测试 HTML 页面注入
+	// Translated comment
 	fmt.Println("3️⃣ 测试 HTML 页面注入")
 
 	resp, err = http.Get(ts.URL + "/")
@@ -320,7 +320,7 @@ func testEndToEnd() {
 		fmt.Printf("   ✓ 页面请求成功\n")
 		fmt.Printf("   HTML 长度: %d 字节\n", len(html))
 
-		// 验证注入
+		// Translated comment
 		checks := []string{
 			"<script>",
 			"Anti-Detection",
@@ -349,7 +349,7 @@ func testEndToEnd() {
 	}
 	fmt.Println()
 
-	// 性能测试
+	// Translated comment
 	fmt.Println("4️⃣ 性能测试")
 
 	iterations := 100

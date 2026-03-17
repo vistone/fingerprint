@@ -30,14 +30,14 @@ var DefaultBanditConfig = &BanditConfig{
 //	[risk_score, ml_confidence, consistency_score, fp_switch_rate,
 //	 avg_interval, risk_trend, suspicion_score, observation_count_norm]
 type ContextualBandit struct {
-	arms   map[string]*linUCBArm // arm ID (strategy ID) → model
+	arms   map[string]*linUCBArm // strategy ID -> LinUCB arm state
 	config *BanditConfig
 	mu     sync.RWMutex
 }
 
 // linUCBArm stores the per-arm model for LinUCB.
 type linUCBArm struct {
-	// A = d×d matrix (accumulated context outer products + identity)
+	// A is the dxd design matrix (initialized as identity).
 	A [][]float64
 	// b = d-dimensional vector (accumulated reward-weighted contexts)
 	b []float64
@@ -162,18 +162,18 @@ func (cb *ContextualBandit) UpdateReward(strategyID string, context []float64, r
 	arm.rewards += reward
 }
 
-// computeUCB calculates the UCB score for an arm: θ^T·x + α·sqrt(x^T·A^{-1}·x)
+// computeUCB calculates the LinUCB score for a given arm/context pair.
 func (cb *ContextualBandit) computeUCB(arm *linUCBArm, ctx []float64) float64 {
 	d := cb.config.Dimension
 	invA := invertMatrix(arm.A, d)
 
-	// θ = A^{-1} · b
+	// theta = A^{-1} * b
 	theta := matVecMul(invA, arm.b, d)
 
-	// Expected reward: θ^T · x
+	// Expected reward term.
 	expected := dotProduct(theta, ctx, d)
 
-	// Uncertainty: sqrt(x^T · A^{-1} · x)
+	// Exploration uncertainty term sqrt(x^T A^{-1} x).
 	Ainv_x := matVecMul(invA, ctx, d)
 	uncertainty := math.Sqrt(math.Abs(dotProduct(ctx, Ainv_x, d)))
 
@@ -207,7 +207,7 @@ func BuildContext(obs *Observation, profile *BehaviorSummary, matchResult *Match
 		if profile.AvgRequestInterval > 0 {
 			ctx[4] = math.Min(1.0/profile.AvgRequestInterval/20.0, 1.0) // req/s normalized
 		}
-		ctx[5] = (profile.RiskTrend + 1.0) / 2.0 // normalize [-1,1] → [0,1]
+		ctx[5] = (profile.RiskTrend + 1.0) / 2.0 // map risk trend from [-1,1] to [0,1]
 	}
 	if matchResult != nil {
 		ctx[6] = matchResult.SuspicionScore
@@ -254,9 +254,7 @@ type ArmStats struct {
 	AvgReward float64 `json:"avg_reward"`
 }
 
-// --- Linear algebra helpers (small d×d, no external dependency needed) ---
-
-// invertMatrix computes the inverse of a d×d matrix using Gauss-Jordan elimination.
+// invertMatrix computes A^{-1} via Gauss-Jordan elimination.
 // Falls back to identity if singular.
 func invertMatrix(A [][]float64, d int) [][]float64 {
 	// Build augmented matrix [A | I]
@@ -315,7 +313,7 @@ func invertMatrix(A [][]float64, d int) [][]float64 {
 	return inv
 }
 
-// matVecMul computes A·x for d×d matrix A and d-vector x.
+// matVecMul computes A*x for a dxd matrix A and d-vector x.
 func matVecMul(A [][]float64, x []float64, d int) []float64 {
 	result := make([]float64, d)
 	for i := 0; i < d; i++ {
@@ -326,7 +324,7 @@ func matVecMul(A [][]float64, x []float64, d int) []float64 {
 	return result
 }
 
-// dotProduct computes x^T · y.
+// dotProduct computes x^T*y for d-dimensional vectors.
 func dotProduct(x, y []float64, d int) float64 {
 	sum := 0.0
 	for i := 0; i < d; i++ {

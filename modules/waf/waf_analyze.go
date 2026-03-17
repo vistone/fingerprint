@@ -13,6 +13,13 @@ import (
 	"github.com/vistone/fingerprint/modules/ml"
 )
 
+type riskAggregation struct {
+	detectionLayers []string
+	riskFactors     []core.RiskFactor
+	totalRisk       float64
+	riskLevel       core.RiskLevel
+}
+
 // Analyze analyzes the request
 func (w *WAF) Analyze(ctx context.Context, req *http.Request) *WAFResult {
 	w.mu.RLock()
@@ -36,146 +43,144 @@ func (w *WAF) Analyze(ctx context.Context, req *http.Request) *WAFResult {
 		return result
 	}
 
+	if earlyResult := w.runEarlyChecks(req, clientIP); earlyResult != nil {
+		return recordAndReturn(earlyResult)
+	}
+
+	aggregation := w.aggregateRisk(req, clientIP)
+	w.applyMLAdjustment(req, aggregation)
+	agentDecision := w.runAgentDecision(ctx, clientIP, aggregation)
+
+	result := &WAFResult{
+		RiskScore:       aggregation.totalRisk,
+		RiskLevel:       aggregation.riskLevel,
+		DetectionLayers: aggregation.detectionLayers,
+		RiskFactors:     aggregation.riskFactors,
+		FingerprintInfo: w.extractFingerprintInfo(req),
+	}
+	w.applyDecisionPolicy(result, clientIP, aggregation, agentDecision)
+	w.updateStatsAndLearning(clientIP, result)
+
+	return recordAndReturn(result)
+}
+
+func (w *WAF) runEarlyChecks(req *http.Request, clientIP string) *WAFResult {
 	if !w.config.Enabled {
-		return recordAndReturn(&WAFResult{Action: ActionAllow, Reason: "waf_disabled"})
+		return &WAFResult{Action: ActionAllow, Reason: "waf_disabled"}
 	}
-
-	// 1. Whitelist check
 	if w.isWhitelisted(req) {
-		return recordAndReturn(&WAFResult{Action: ActionAllow, Reason: "whitelisted"})
+		return &WAFResult{Action: ActionAllow, Reason: "whitelisted"}
 	}
-
-	// 2. Blacklist check
 	if action, reason := w.isBlacklisted(req); action != ActionAllow {
-		return recordAndReturn(&WAFResult{
-			Action:        action,
-			Reason:        reason,
-			BlockDuration: w.config.BlockDuration,
-		})
+		return &WAFResult{Action: action, Reason: reason, BlockDuration: w.config.BlockDuration}
 	}
-
-	// 3. Block list check
 	if w.blockList.IsBlocked(clientIP) {
-		return recordAndReturn(&WAFResult{
+		return &WAFResult{
 			Action:        ActionBlock,
 			Reason:        "in_blocklist",
 			BlockDuration: w.blockList.RemainingTime(clientIP),
-		})
+		}
 	}
-
-	// 4. Rate limit check
 	if !w.rateLimiter.Allow(clientIP) {
 		w.stats.ThrottledRequests++
-		return recordAndReturn(&WAFResult{
-			Action: ActionThrottle,
-			Reason: "rate_limit_exceeded",
-		})
+		return &WAFResult{Action: ActionThrottle, Reason: "rate_limit_exceeded"}
 	}
 
-	// 5. Multi-layer detection
-	detectionLayers := make([]string, 0)
-	riskFactors := make([]core.RiskFactor, 0)
-	var totalRisk float64
+	return nil
+}
 
-	// L1: Network layer detection
+func (w *WAF) aggregateRisk(req *http.Request, clientIP string) *riskAggregation {
+	result := &riskAggregation{
+		detectionLayers: make([]string, 0),
+		riskFactors:     make([]core.RiskFactor, 0),
+	}
+
 	if w.config.NetworkLayerEnabled && w.networkEngine != nil {
-		if result := w.networkEngine.Analyze(req); result.Score > 0 {
-			detectionLayers = append(detectionLayers, "network")
-			riskFactors = append(riskFactors, result.Factors...)
-			totalRisk += result.Score
+		if layerResult := w.networkEngine.Analyze(req); layerResult.Score > 0 {
+			result.detectionLayers = append(result.detectionLayers, "network")
+			result.riskFactors = append(result.riskFactors, layerResult.Factors...)
+			result.totalRisk += layerResult.Score
 		}
 	}
-
-	// L2: TLS layer detection
 	if w.config.TLSLayerEnabled && w.tlsEngine != nil {
-		if result := w.tlsEngine.Analyze(req); result.Score > 0 {
-			detectionLayers = append(detectionLayers, "tls")
-			riskFactors = append(riskFactors, result.Factors...)
-			totalRisk += result.Score
+		if layerResult := w.tlsEngine.Analyze(req); layerResult.Score > 0 {
+			result.detectionLayers = append(result.detectionLayers, "tls")
+			result.riskFactors = append(result.riskFactors, layerResult.Factors...)
+			result.totalRisk += layerResult.Score
 		}
 	}
-
-	// L3: HTTP layer detection
 	if w.config.HTTPLayerEnabled && w.httpEngine != nil {
-		if result := w.httpEngine.Analyze(req); result.Score > 0 {
-			detectionLayers = append(detectionLayers, "http")
-			riskFactors = append(riskFactors, result.Factors...)
-			totalRisk += result.Score
+		if layerResult := w.httpEngine.Analyze(req); layerResult.Score > 0 {
+			result.detectionLayers = append(result.detectionLayers, "http")
+			result.riskFactors = append(result.riskFactors, layerResult.Factors...)
+			result.totalRisk += layerResult.Score
 		}
 	}
-
-	// L4: Behavior layer detection
 	if w.config.BehaviorLayerEnabled && w.behaviorEngine != nil {
-		if result := w.behaviorEngine.Analyze(clientIP, req); result.Score > 0 {
-			detectionLayers = append(detectionLayers, "behavior")
-			riskFactors = append(riskFactors, result.Factors...)
-			totalRisk += result.Score
+		if layerResult := w.behaviorEngine.Analyze(clientIP, req); layerResult.Score > 0 {
+			result.detectionLayers = append(result.detectionLayers, "behavior")
+			result.riskFactors = append(result.riskFactors, layerResult.Factors...)
+			result.totalRisk += layerResult.Score
 		}
 	}
-
-	// L5: Device layer detection
 	if w.config.DeviceLayerEnabled && w.deviceEngine != nil {
-		if result := w.deviceEngine.Analyze(req); result.Score > 0 {
-			detectionLayers = append(detectionLayers, "device")
-			riskFactors = append(riskFactors, result.Factors...)
-			totalRisk += result.Score
+		if layerResult := w.deviceEngine.Analyze(req); layerResult.Score > 0 {
+			result.detectionLayers = append(result.detectionLayers, "device")
+			result.riskFactors = append(result.riskFactors, layerResult.Factors...)
+			result.totalRisk += layerResult.Score
 		}
 	}
 
-	// 6. Comprehensive risk scoring
-	riskLevel := core.RiskLevelFromScore(totalRisk)
+	result.riskLevel = core.RiskLevelFromScore(result.totalRisk)
+	return result
+}
 
-	// 7. ML verification
-	if w.mlService != nil && w.mlService.IsReady() && w.learningPipeline != nil {
-		// Build a lightweight profile from request fingerprint info for ML inference.
-		fpInfo := w.extractFingerprintInfo(req)
-		if fpInfo != nil && fpInfo.JA3 != "" {
-			riskAdjustment := w.learningPipeline.RunInference(nil, riskFactors)
-			totalRisk += riskAdjustment
-			riskLevel = core.RiskLevelFromScore(totalRisk)
-		}
+func (w *WAF) applyMLAdjustment(req *http.Request, agg *riskAggregation) {
+	if w.mlService == nil || !w.mlService.IsReady() || w.learningPipeline == nil {
+		return
+	}
+	fpInfo := w.extractFingerprintInfo(req)
+	if fpInfo == nil || fpInfo.JA3 == "" {
+		return
 	}
 
-	// 8. Autonomous agent decision
-	var agentDecision *agent.Decision
-	if w.agent != nil {
-		obs := &agent.Observation{
-			ClientID:  clientIP,
-			Timestamp: time.Now(),
-			RiskAssessment: &core.RiskAssessment{
-				Score:   totalRisk,
-				Level:   riskLevel,
-				Factors: riskFactors,
-			},
-		}
-		agentDecision = w.agent.Process(ctx, obs)
+	agg.totalRisk += w.learningPipeline.RunInference(nil, agg.riskFactors)
+	agg.riskLevel = core.RiskLevelFromScore(agg.totalRisk)
+}
+
+func (w *WAF) runAgentDecision(ctx context.Context, clientIP string, agg *riskAggregation) *agent.Decision {
+	if w.agent == nil {
+		return nil
 	}
 
-	// 9. Decision logic
-	result := &WAFResult{
-		RiskScore:       totalRisk,
-		RiskLevel:       riskLevel,
-		DetectionLayers: detectionLayers,
-		RiskFactors:     riskFactors,
-		FingerprintInfo: w.extractFingerprintInfo(req),
+	obs := &agent.Observation{
+		ClientID:  clientIP,
+		Timestamp: time.Now(),
+		RiskAssessment: &core.RiskAssessment{
+			Score:   agg.totalRisk,
+			Level:   agg.riskLevel,
+			Factors: agg.riskFactors,
+		},
 	}
+	return w.agent.Process(ctx, obs)
+}
 
-	// Determine response based on operating mode
+func (w *WAF) applyDecisionPolicy(result *WAFResult, clientIP string, agg *riskAggregation, agentDecision *agent.Decision) {
 	switch w.config.Mode {
 	case WAFModeLearning:
 		result.Action = ActionMonitor
 		result.Reason = "learning_mode"
 
 	case WAFModeDetection:
-		if totalRisk >= w.config.RiskThreshold {
+		if agg.totalRisk >= w.config.RiskThreshold {
 			result.Action = ActionMonitor
-			result.Reason = fmt.Sprintf("suspicious_activity_detected: %v", detectionLayers)
+			result.Reason = fmt.Sprintf("suspicious_activity_detected: %v", agg.detectionLayers)
 		} else {
 			result.Action = ActionAllow
 		}
 
 	case WAFModeAggressive:
-		if totalRisk >= w.config.RiskThreshold*0.5 {
+		if agg.totalRisk >= w.config.RiskThreshold*0.5 {
 			result.Action = ActionBlock
 			result.Reason = "aggressive_mode"
 			w.blockList.Block(clientIP, "aggressive_mode")
@@ -183,50 +188,59 @@ func (w *WAF) Analyze(ctx context.Context, req *http.Request) *WAFResult {
 		}
 
 	default: // WAFModeProtection
-		if agentDecision != nil {
-			// Prioritize agent decision
-			result.Action = WAFAction(agentDecision.Action)
-			result.Reason = "agent_decision"
-		} else if totalRisk >= w.config.RiskThreshold {
-			if totalRisk >= 0.9 {
-				result.Action = ActionBlock
-				result.Reason = fmt.Sprintf("high_risk: %v", detectionLayers)
-				w.blockList.Block(clientIP, fmt.Sprintf("high_risk: %v", detectionLayers))
-				w.stats.BlockedRequests++
-			} else if totalRisk >= 0.8 {
-				result.Action = ActionChallenge
-				result.Reason = fmt.Sprintf("medium_risk: %v", detectionLayers)
-				result.ChallengeToken = w.generateChallengeToken(clientIP)
-				w.stats.ChallengedRequests++
-			} else {
-				result.Action = ActionMonitor
-				result.Reason = fmt.Sprintf("low_risk: %v", detectionLayers)
-				w.stats.MonitoredRequests++
-			}
-		} else {
-			result.Action = ActionAllow
-			result.Reason = "clean"
-		}
+		w.applyProtectionPolicy(result, clientIP, agg, agentDecision)
+	}
+}
+
+func (w *WAF) applyProtectionPolicy(result *WAFResult, clientIP string, agg *riskAggregation, agentDecision *agent.Decision) {
+	if agentDecision != nil {
+		result.Action = WAFAction(agentDecision.Action)
+		result.Reason = "agent_decision"
+		return
+	}
+	if agg.totalRisk < w.config.RiskThreshold {
+		result.Action = ActionAllow
+		result.Reason = "clean"
+		return
 	}
 
+	if agg.totalRisk >= 0.9 {
+		result.Action = ActionBlock
+		result.Reason = fmt.Sprintf("high_risk: %v", agg.detectionLayers)
+		w.blockList.Block(clientIP, fmt.Sprintf("high_risk: %v", agg.detectionLayers))
+		w.stats.BlockedRequests++
+		return
+	}
+	if agg.totalRisk >= 0.8 {
+		result.Action = ActionChallenge
+		result.Reason = fmt.Sprintf("medium_risk: %v", agg.detectionLayers)
+		result.ChallengeToken = w.generateChallengeToken(clientIP)
+		w.stats.ChallengedRequests++
+		return
+	}
+
+	result.Action = ActionMonitor
+	result.Reason = fmt.Sprintf("low_risk: %v", agg.detectionLayers)
+	w.stats.MonitoredRequests++
+}
+
+func (w *WAF) updateStatsAndLearning(clientIP string, result *WAFResult) {
 	w.stats.TotalRequests++
 	if result.Action == ActionAllow {
 		w.stats.AllowedRequests++
 	}
-
-	// Feed detection result to ML learning pipeline
-	if w.learningPipeline != nil && totalRisk > 0 {
-		w.learningPipeline.FeedDetection(&ml.WAFDetectionFeedback{
-			ClientIP:        clientIP,
-			RiskScore:       totalRisk,
-			DetectionLayers: detectionLayers,
-			Blocked:         result.Action == ActionBlock,
-			FingerprintID:   result.FingerprintInfo.JA3,
-			Timestamp:       time.Now(),
-		})
+	if w.learningPipeline == nil || result.RiskScore <= 0 {
+		return
 	}
 
-	return recordAndReturn(result)
+	w.learningPipeline.FeedDetection(&ml.WAFDetectionFeedback{
+		ClientIP:        clientIP,
+		RiskScore:       result.RiskScore,
+		DetectionLayers: result.DetectionLayers,
+		Blocked:         result.Action == ActionBlock,
+		FingerprintID:   result.FingerprintInfo.JA3,
+		Timestamp:       time.Now(),
+	})
 }
 
 // Helper methods

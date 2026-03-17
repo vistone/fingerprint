@@ -1,4 +1,4 @@
-// Package profiles 测试
+// Translated comment
 package profiles
 
 import (
@@ -8,7 +8,7 @@ import (
 )
 
 func TestProfileRegistry(t *testing.T) {
-	// 使用新的注册表实例进行测试
+	// Translated comment
 	reg := NewProfileRegistry()
 
 	profile := ClientProfile{
@@ -17,10 +17,10 @@ func TestProfileRegistry(t *testing.T) {
 		BrowserType: core.BrowserChrome,
 	}
 
-	// 注册
+	// Translated comment
 	reg.Register(profile)
 
-	// 获取
+	// Translated comment
 	got, ok := reg.Get("test_profile")
 	if !ok {
 		t.Fatal("should find registered profile")
@@ -29,7 +29,7 @@ func TestProfileRegistry(t *testing.T) {
 		t.Errorf("ID mismatch: got %s, want test_profile", got.ID)
 	}
 
-	// 不存在的配置
+	// Translated comment
 	_, ok = reg.Get("nonexistent")
 	if ok {
 		t.Error("should not find unregistered profile")
@@ -39,7 +39,7 @@ func TestProfileRegistry(t *testing.T) {
 func TestGetByBrowser(t *testing.T) {
 	reg := NewProfileRegistry()
 
-	// 注册多个 Chrome 配置
+	// Translated comment
 	reg.Register(ClientProfile{ID: "chrome_1", BrowserType: core.BrowserChrome})
 	reg.Register(ClientProfile{ID: "chrome_2", BrowserType: core.BrowserChrome})
 	reg.Register(ClientProfile{ID: "firefox_1", BrowserType: core.BrowserFirefox})
@@ -63,7 +63,7 @@ func TestGetByOS(t *testing.T) {
 	reg.Register(ClientProfile{ID: "linux_1", OS: core.OSLinux})
 
 	winProfiles := reg.GetByOS(core.OSWindows10)
-	// Windows 10 和 Windows 11 常量相同，所以可能有多个
+	// Translated comment
 	if len(winProfiles) < 1 {
 		t.Errorf("should have at least 1 Windows profile, got %d", len(winProfiles))
 	}
@@ -99,7 +99,7 @@ func TestClientProfileGetters(t *testing.T) {
 }
 
 func TestDefaultRegistry(t *testing.T) {
-	// 测试默认注册表（已通过 init() 加载）
+	// Translated comment
 	count := DefaultRegistry.Count()
 	if count == 0 {
 		t.Error("Default registry should have profiles loaded")
@@ -109,14 +109,14 @@ func TestDefaultRegistry(t *testing.T) {
 }
 
 func TestGetRandom(t *testing.T) {
-	// 测试多次随机选择
+	// Translated comment
 	profiles := make(map[string]bool)
 	for i := 0; i < 100; i++ {
 		p := GetRandom()
 		profiles[p.ID] = true
 	}
 
-	// 应该有多种不同的配置被选中
+	// Translated comment
 	if len(profiles) < 2 {
 		t.Error("GetRandom should return varied results")
 	}

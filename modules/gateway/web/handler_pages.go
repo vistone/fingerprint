@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/vistone/fingerprint/modules/gateway"
 	"github.com/vistone/fingerprint/modules/profiles"
 )
 
@@ -40,33 +41,29 @@ func (h *Handler) handleProfileDetail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Extract profile ID from URL path: /api/admin/profiles/{id}
-	path := strings.TrimPrefix(r.URL.Path, "/api/admin/profiles/")
-	profileID := strings.TrimSpace(path)
-
+	profileID := extractProfileIDFromPath(r.URL.Path)
 	if profileID == "" {
 		http.Error(w, "Profile ID required", http.StatusBadRequest)
 		return
 	}
 
-	// Find profile from loaded profiles
-	var found profiles.ClientProfile
-	foundOK := false
-	h.mu.RLock()
-	for i := range h.profiles {
-		if h.profiles[i].ID == profileID {
-			found = h.profiles[i]
-			foundOK = true
-			break
-		}
-	}
-	h.mu.RUnlock()
-
+	found, foundOK := h.findProfile(profileID)
 	if !foundOK {
 		http.Error(w, "Profile not found", http.StatusNotFound)
 		return
 	}
 
+	response := buildProfileDetailResponse(found)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func extractProfileIDFromPath(path string) string {
+	return strings.TrimSpace(strings.TrimPrefix(path, "/api/admin/profiles/"))
+}
+
+func buildProfileDetailResponse(found profiles.ClientProfile) map[string]interface{} {
 	response := map[string]interface{}{
 		"id":              found.ID,
 		"name":            found.Name,
@@ -97,7 +94,6 @@ func (h *Handler) handleProfileDetail(w http.ResponseWriter, r *http.Request) {
 		"metadata":          found.Metadata,
 	}
 
-	// Add TCP/IP fingerprint details.
 	if found.TCPIP != nil {
 		response["tcpip"] = map[string]interface{}{
 			"ipVersion":        found.TCPIP.IPVersion,
@@ -116,7 +112,6 @@ func (h *Handler) handleProfileDetail(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Add HTTP/3 (QUIC) settings.
 	if found.HTTP3Settings != nil {
 		response["http3Settings"] = map[string]interface{}{
 			"quicVersion":            found.HTTP3Settings.QUICVersion,
@@ -135,8 +130,7 @@ func (h *Handler) handleProfileDetail(w http.ResponseWriter, r *http.Request) {
 		response["http3Supported"] = false
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	return response
 }
 
 // handleAnalytics returns analytics data
@@ -213,98 +207,104 @@ func (h *Handler) handleLogs(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handleConfig(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		cfg := h.gateway.GetConfig()
-		agentEnabled := cfg.AgentEnabled
-		var agentCfg map[string]interface{}
-		if a := h.gateway.GetAgent(); a != nil {
-			stats := a.Stats()
-			sessionWindow := 30
-			maxObs := 500
-			fpThresh := 3.0
-			consThresh := 0.4
-			burstThresh := 10.0
-			if cfg.AgentConfig != nil {
-				sessionWindow = int(cfg.AgentConfig.SessionWindow.Minutes())
-				maxObs = cfg.AgentConfig.MaxObservations
-				fpThresh = cfg.AgentConfig.FPSwitchRateThreshold
-				consThresh = cfg.AgentConfig.ConsistencyThreshold
-				burstThresh = cfg.AgentConfig.RequestBurstThreshold
-			}
-			agentCfg = map[string]interface{}{
-				"enabled":               agentEnabled,
-				"sessionWindow":         sessionWindow,
-				"maxObservations":       maxObs,
-				"fpSwitchRateThreshold": fpThresh,
-				"consistencyThreshold":  consThresh,
-				"requestBurstThreshold": burstThresh,
-				"activeSessions":        stats.ActiveSessions,
-				"totalObservations":     stats.TotalObservations,
-			}
-		} else {
-			agentCfg = map[string]interface{}{
-				"enabled": false,
-			}
-		}
-
-		config := map[string]interface{}{
-			"server": map[string]interface{}{
-				"endpoint": cfg.Endpoint,
-				"port":     cfg.Port,
-			},
-			"rateLimit": map[string]interface{}{
-				"enabled":   true,
-				"rps":       cfg.RateLimitRequests,
-				"burstSize": cfg.RateLimitBurst,
-				"window":    int(cfg.RateLimitWindow.Seconds()),
-			},
-			"cache": map[string]interface{}{
-				"enabled": cfg.CacheEnabled,
-				"size":    cfg.CacheSize,
-				"ttl":     int(cfg.CacheTTL.Minutes()),
-			},
-			"ml": map[string]interface{}{
-				"enabled":       true,
-				"riskThreshold": cfg.RiskThreshold,
-			},
-			"mlService": h.getMLServiceConfig(cfg),
-			"antiDetect": map[string]interface{}{
-				"enabled":       cfg.AntiDetectEnabled,
-				"profileId":     cfg.AntiDetectProfileID,
-				"configDir":     cfg.AntiDetectConfigDir,
-				"proxyTarget":   cfg.AntiDetectProxyTarget,
-				"directProxy":   cfg.AntiDetectDirectProxy,
-				"injectConsist": cfg.AntiDetectInjectConsist,
-			},
-			"scanner": map[string]interface{}{
-				"useBrowser":     cfg.ScannerUseBrowser,
-				"browserWS":      cfg.ScannerBrowserWS,
-				"browserTimeout": int(cfg.ScannerBrowserTimeout.Seconds()),
-			},
-			"agent": agentCfg,
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(config)
+		h.handleConfigGet(w)
 
 	case http.MethodPost:
-		var newConfig map[string]interface{}
-		if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&newConfig); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		h.applyConfigUpdate(newConfig)
-
-		WriteLog("INFO", "config", "Configuration updated via admin console")
-
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{
-			"status": "success",
-		})
+		h.handleConfigPost(w, r)
 
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
+}
+
+func (h *Handler) handleConfigGet(w http.ResponseWriter) {
+	cfg := h.gateway.GetConfig()
+	config := map[string]interface{}{
+		"server": map[string]interface{}{
+			"endpoint": cfg.Endpoint,
+			"port":     cfg.Port,
+		},
+		"rateLimit": map[string]interface{}{
+			"enabled":   true,
+			"rps":       cfg.RateLimitRequests,
+			"burstSize": cfg.RateLimitBurst,
+			"window":    int(cfg.RateLimitWindow.Seconds()),
+		},
+		"cache": map[string]interface{}{
+			"enabled": cfg.CacheEnabled,
+			"size":    cfg.CacheSize,
+			"ttl":     int(cfg.CacheTTL.Minutes()),
+		},
+		"ml": map[string]interface{}{
+			"enabled":       true,
+			"riskThreshold": cfg.RiskThreshold,
+		},
+		"mlService": h.getMLServiceConfig(cfg),
+		"antiDetect": map[string]interface{}{
+			"enabled":       cfg.AntiDetectEnabled,
+			"profileId":     cfg.AntiDetectProfileID,
+			"configDir":     cfg.AntiDetectConfigDir,
+			"proxyTarget":   cfg.AntiDetectProxyTarget,
+			"directProxy":   cfg.AntiDetectDirectProxy,
+			"injectConsist": cfg.AntiDetectInjectConsist,
+		},
+		"scanner": map[string]interface{}{
+			"useBrowser":     cfg.ScannerUseBrowser,
+			"browserWS":      cfg.ScannerBrowserWS,
+			"browserTimeout": int(cfg.ScannerBrowserTimeout.Seconds()),
+		},
+		"agent": h.buildAgentConfigState(cfg),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(config)
+}
+
+func (h *Handler) buildAgentConfigState(cfg *gateway.GatewayConfig) map[string]interface{} {
+	agentEnabled := cfg.AgentEnabled
+	if a := h.gateway.GetAgent(); a != nil {
+		stats := a.Stats()
+		sessionWindow := 30
+		maxObs := 500
+		fpThresh := 3.0
+		consThresh := 0.4
+		burstThresh := 10.0
+		if cfg.AgentConfig != nil {
+			sessionWindow = int(cfg.AgentConfig.SessionWindow.Minutes())
+			maxObs = cfg.AgentConfig.MaxObservations
+			fpThresh = cfg.AgentConfig.FPSwitchRateThreshold
+			consThresh = cfg.AgentConfig.ConsistencyThreshold
+			burstThresh = cfg.AgentConfig.RequestBurstThreshold
+		}
+		return map[string]interface{}{
+			"enabled":               agentEnabled,
+			"sessionWindow":         sessionWindow,
+			"maxObservations":       maxObs,
+			"fpSwitchRateThreshold": fpThresh,
+			"consistencyThreshold":  consThresh,
+			"requestBurstThreshold": burstThresh,
+			"activeSessions":        stats.ActiveSessions,
+			"totalObservations":     stats.TotalObservations,
+		}
+	}
+
+	return map[string]interface{}{"enabled": false}
+}
+
+func (h *Handler) handleConfigPost(w http.ResponseWriter, r *http.Request) {
+	var newConfig map[string]interface{}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&newConfig); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	h.applyConfigUpdate(newConfig)
+	WriteLog("INFO", "config", "Configuration updated via admin console")
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"status": "success",
+	})
 }
 
 // Helper functions

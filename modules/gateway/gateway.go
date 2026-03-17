@@ -125,7 +125,9 @@ var DefaultGatewayConfig = &GatewayConfig{
 // NewGateway creates a new gateway
 func NewGateway(config *GatewayConfig) *Gateway {
 	if config == nil {
-		config = DefaultGatewayConfig
+		config = DefaultGatewayConfig.Clone()
+	} else {
+		config = config.Clone()
 	}
 
 	g := &Gateway{
@@ -151,8 +153,8 @@ func NewGateway(config *GatewayConfig) *Gateway {
 // initProfileAndInjector initializes the profile manager and HTML injector.
 func (g *Gateway) initProfileAndInjector(config *GatewayConfig) {
 	g.profileManager = NewProfileManager(&ProfileManagerConfig{
-		ConfigDir:  g.config.AntiDetectConfigDir,
-		DefaultID:  g.config.AntiDetectProfileID,
+		ConfigDir:  config.AntiDetectConfigDir,
+		DefaultID:  config.AntiDetectProfileID,
 		AutoReload: false,
 	})
 
@@ -197,9 +199,9 @@ func (g *Gateway) initMLService(config *GatewayConfig) {
 	if !config.MLServiceEnabled {
 		return
 	}
-	scfg := config.MLServiceConfig
+	scfg := cloneMLServiceConfig(config.MLServiceConfig)
 	if scfg == nil {
-		scfg = ml.DefaultServiceConfig
+		scfg = cloneMLServiceConfig(ml.DefaultServiceConfig)
 	}
 	if config.MLClassifierPath != "" {
 		scfg.ModelStorePath = config.MLClassifierPath
@@ -228,9 +230,9 @@ func (g *Gateway) initClosedLoop(config *GatewayConfig) {
 	if !config.ClosedLoopEnabled || g.mlService == nil {
 		return
 	}
-	clCfg := config.ClosedLoopConfig
+	clCfg := cloneClosedLoopConfig(config.ClosedLoopConfig)
 	if clCfg == nil {
-		clCfg = DefaultClosedLoopConfig
+		clCfg = cloneClosedLoopConfig(DefaultClosedLoopConfig)
 	}
 	clCfg.Enabled = true
 	g.closedLoop = NewClosedLoopController(clCfg, g.mlService)
@@ -401,81 +403,6 @@ type JA4Info struct {
 type JA4HInfo struct {
 	Fingerprint string   `json:"fingerprint"`
 	Headers     []string `json:"headers"`
-}
-
-// Close gracefully shuts down the gateway and releases background resources
-func (g *Gateway) Close() {
-	if g.limiter != nil {
-		g.limiter.Close()
-	}
-	if g.crawler != nil {
-		g.crawler.Stop()
-	}
-	if g.waf != nil {
-		g.waf.Stop()
-	}
-	if g.agent != nil {
-		g.agent.Stop()
-	}
-}
-
-// GetAgent returns the autonomous security agent instance (for web admin console queries)
-func (g *Gateway) GetAgent() *agent.Agent {
-	return g.agent
-}
-
-// GetClassifier returns the ML hierarchical classifier
-func (g *Gateway) GetClassifier() *ml.HierarchicalClassifier {
-	return g.classifier
-}
-
-// GetExtractor returns the feature extractor
-func (g *Gateway) GetExtractor() *ml.FeatureExtractor {
-	return g.extractor
-}
-
-// GetRiskEngine returns the risk assessment engine
-func (g *Gateway) GetRiskEngine() *defense.RiskEngine {
-	return g.riskEngine
-}
-
-// GetSDK returns the frontend SDK
-func (g *Gateway) GetSDK() *frontend.SDK {
-	return g.sdk
-}
-
-// GetInjector returns the HTML injector
-func (g *Gateway) GetInjector() *HTMLInjector {
-	return g.injector
-}
-
-// GetProfileManager returns the Profile manager
-func (g *Gateway) GetProfileManager() *ProfileManager {
-	return g.profileManager
-}
-
-// GetMLService returns the central ML service (nil if not enabled)
-func (g *Gateway) GetMLService() *ml.MLService {
-	return g.mlService
-}
-
-// GetPluginManager returns the plugin manager
-func (g *Gateway) GetPluginManager() *plugin.Manager {
-	return g.pluginManager
-}
-
-// GetConfig returns the current gateway configuration (read-only copy)
-func (g *Gateway) GetConfig() *GatewayConfig {
-	g.mu.RLock()
-	defer g.mu.RUnlock()
-	return g.config
-}
-
-// UpdateConfig hot-updates the gateway configuration (thread-safe)
-func (g *Gateway) UpdateConfig(apply func(cfg *GatewayConfig)) {
-	g.mu.Lock()
-	defer g.mu.Unlock()
-	apply(g.config)
 }
 
 // Analyze executes a complete fingerprint analysis

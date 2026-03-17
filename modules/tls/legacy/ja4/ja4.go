@@ -107,98 +107,18 @@ func (s *JA4Signature) ComputeJA4Original() *JA4Result {
 
 // computeJA4WithOrder computes JA4 fingerprint (specified order)
 func (s *JA4Signature) computeJA4WithOrder(originalOrder bool) *JA4Result {
-	// Filter GREASE values
 	filteredCiphers := filterGREASEUint16(s.CipherSuites)
 	filteredExtensions := filterGREASEUint16(s.Extensions)
 	filteredSigAlgs := filterGREASEUint16(s.SignatureAlgorithms)
 
-	// Protocol identifier ('t' for TLS, 'q' for QUIC)
-	protocol := "t"
+	ja4a := buildJA4A(s, filteredCiphers, filteredExtensions)
+	ja4bRaw := buildJA4B(filteredCiphers, originalOrder)
+	ja4cRaw := buildJA4C(filteredExtensions, filteredSigAlgs, originalOrder)
 
-	// TLS version string
-	tlsVersionStr := tlsVersionToJA4(s.TLSVersion)
-
-	// SNI indicator: 'd' if SNI present, 'i' if absent
-	sniIndicator := "i"
-	if s.SNI != "" {
-		sniIndicator = "d"
-	}
-
-	// Cipher suite count (2-digit decimal, max 99) - uses count after filtering GREASE (per JA4 spec)
-	cipherCount := fmt.Sprintf("%02d", min99(len(filteredCiphers)))
-
-	// Extension count (2-digit decimal, max 99) - uses count after filtering GREASE (per JA4 spec)
-	extensionCount := fmt.Sprintf("%02d", min99(len(filteredExtensions)))
-
-	// ALPN first and last characters
-	alpnFirst, alpnLast := byte('0'), byte('0')
-	if s.ALPN != "" {
-		alpnFirst, alpnLast = firstLastALPN(s.ALPN)
-	}
-
-	// JA4_a format: protocol + version + sni + cipher_count + extension_count + alpn_first + alpn_last
-	ja4a := fmt.Sprintf("%s%s%s%s%s%c%c", protocol, tlsVersionStr, sniIndicator, cipherCount, extensionCount, alpnFirst, alpnLast)
-
-	// JA4_b: cipher suites (sorted or original order, comma-separated, 4-digit hex) - GREASE filtered
-	ciphersForB := make([]uint16, len(filteredCiphers))
-	copy(ciphersForB, filteredCiphers)
-	if !originalOrder {
-		sort.Slice(ciphersForB, func(i, j int) bool { return ciphersForB[i] < ciphersForB[j] })
-	}
-	ja4bParts := make([]string, len(ciphersForB))
-	for i, c := range ciphersForB {
-		ja4bParts[i] = fmt.Sprintf("%04x", c)
-	}
-	ja4bRaw := strings.Join(ja4bParts, ",")
-
-	// JA4_c: extensions (sorted or original order) + signature algorithms
-	extensionsForC := make([]uint16, len(filteredExtensions))
-	copy(extensionsForC, filteredExtensions)
-
-	// Sorted version: remove SNI (0x0000) and ALPN (0x0010) then sort
-	// Original order version: keep SNI/ALPN and maintain original order
-	if !originalOrder {
-		filtered := extensionsForC[:0]
-		for _, ext := range extensionsForC {
-			if ext != 0x0000 && ext != 0x0010 {
-				filtered = append(filtered, ext)
-			}
-		}
-		extensionsForC = filtered
-		sort.Slice(extensionsForC, func(i, j int) bool { return extensionsForC[i] < extensionsForC[j] })
-	}
-
-	extParts := make([]string, len(extensionsForC))
-	for i, e := range extensionsForC {
-		extParts[i] = fmt.Sprintf("%04x", e)
-	}
-	extensionsStr := strings.Join(extParts, ",")
-
-	// Signature algorithms are not sorted, but GREASE is filtered
-	sigAlgParts := make([]string, len(filteredSigAlgs))
-	for i, s := range filteredSigAlgs {
-		sigAlgParts[i] = fmt.Sprintf("%04x", s)
-	}
-	sigAlgsStr := strings.Join(sigAlgParts, ",")
-
-	// Per spec, if there are no signature algorithms, the string does not end with underscore
-	var ja4cRaw string
-	if sigAlgsStr == "" {
-		ja4cRaw = extensionsStr
-	} else if extensionsStr == "" {
-		ja4cRaw = sigAlgsStr
-	} else {
-		ja4cRaw = extensionsStr + "_" + sigAlgsStr
-	}
-
-	// Generate JA4_b and JA4_c hashes (first 12 characters of SHA256)
 	ja4bHash := sha256Hash12(ja4bRaw)
 	ja4cHash := sha256Hash12(ja4cRaw)
 
-	// JA4 full hash: ja4_a + "_" + ja4_b_hash + "_" + ja4_c_hash
 	ja4Hash := fmt.Sprintf("%s_%s_%s", ja4a, ja4bHash, ja4cHash)
-
-	// JA4_r raw: ja4_a + "_" + ja4_b_raw + "_" + ja4_c_raw
 	ja4Raw := fmt.Sprintf("%s_%s_%s", ja4a, ja4bRaw, ja4cRaw)
 
 	return &JA4Result{
@@ -208,6 +128,74 @@ func (s *JA4Signature) computeJA4WithOrder(originalOrder bool) *JA4Result {
 		JA4B:      ja4bRaw,
 		JA4C:      ja4cRaw,
 	}
+}
+
+func buildJA4A(sig *JA4Signature, filteredCiphers []uint16, filteredExtensions []uint16) string {
+	sniIndicator := "i"
+	if sig.SNI != "" {
+		sniIndicator = "d"
+	}
+	alpnFirst, alpnLast := byte('0'), byte('0')
+	if sig.ALPN != "" {
+		alpnFirst, alpnLast = firstLastALPN(sig.ALPN)
+	}
+	return fmt.Sprintf(
+		"t%s%s%02d%02d%c%c",
+		tlsVersionToJA4(sig.TLSVersion),
+		sniIndicator,
+		min99(len(filteredCiphers)),
+		min99(len(filteredExtensions)),
+		alpnFirst,
+		alpnLast,
+	)
+}
+
+func buildJA4B(filteredCiphers []uint16, originalOrder bool) string {
+	ciphersForB := make([]uint16, len(filteredCiphers))
+	copy(ciphersForB, filteredCiphers)
+	if !originalOrder {
+		sort.Slice(ciphersForB, func(i, j int) bool { return ciphersForB[i] < ciphersForB[j] })
+	}
+	return hexListFromUint16(ciphersForB)
+}
+
+func buildJA4C(filteredExtensions []uint16, filteredSigAlgs []uint16, originalOrder bool) string {
+	extensionsForC := normalizeExtensionsForJA4C(filteredExtensions, originalOrder)
+	extensionsStr := hexListFromUint16(extensionsForC)
+	sigAlgsStr := hexListFromUint16(filteredSigAlgs)
+
+	if sigAlgsStr == "" {
+		return extensionsStr
+	}
+	if extensionsStr == "" {
+		return sigAlgsStr
+	}
+	return extensionsStr + "_" + sigAlgsStr
+}
+
+func normalizeExtensionsForJA4C(filteredExtensions []uint16, originalOrder bool) []uint16 {
+	extensionsForC := make([]uint16, len(filteredExtensions))
+	copy(extensionsForC, filteredExtensions)
+	if originalOrder {
+		return extensionsForC
+	}
+
+	filtered := extensionsForC[:0]
+	for _, ext := range extensionsForC {
+		if ext != 0x0000 && ext != 0x0010 {
+			filtered = append(filtered, ext)
+		}
+	}
+	sort.Slice(filtered, func(i, j int) bool { return filtered[i] < filtered[j] })
+	return filtered
+}
+
+func hexListFromUint16(values []uint16) string {
+	parts := make([]string, len(values))
+	for i, v := range values {
+		parts[i] = fmt.Sprintf("%04x", v)
+	}
+	return strings.Join(parts, ",")
 }
 
 // min99 returns the smaller of n and 99
@@ -240,91 +228,75 @@ func ComputeJA4FromSpec(spec tls.ClientHelloSpec) (*JA4Result, error) {
 		TLSVersion: tls.VersionTLS12,
 	}
 
-	// Extract cipher suites
 	sig.CipherSuites = make([]uint16, len(spec.CipherSuites))
 	copy(sig.CipherSuites, spec.CipherSuites)
+	sig.Extensions, sig.SignatureAlgorithms = extractJA4Extensions(spec.Extensions, sig)
+	return sig.ComputeJA4(), nil
+}
 
-	// Extract extension information
+func extractJA4Extensions(exts []tls.TLSExtension, sig *JA4Signature) ([]uint16, []uint16) {
 	extensions := make([]uint16, 0)
 	var sigAlgs []uint16
 
-	for _, ext := range spec.Extensions {
-		switch e := ext.(type) {
-		case *tls.SupportedVersionsExtension:
-			for _, v := range e.Versions {
-				if !isGREASEValue(v) && v > sig.TLSVersion {
-					sig.TLSVersion = v
-				}
-			}
-			extensions = append(extensions, 43)
-
-		case *tls.SNIExtension:
-			// Extract SNI (first name)
-			if e.ServerName != "" {
-				sig.SNI = e.ServerName
-			}
-			extensions = append(extensions, 0)
-
-		case *tls.ALPNExtension:
-			if len(e.AlpnProtocols) > 0 {
-				sig.ALPN = e.AlpnProtocols[0]
-			}
-			extensions = append(extensions, 16)
-
-		case *tls.SignatureAlgorithmsExtension:
-			for _, sa := range e.SupportedSignatureAlgorithms {
-				sigAlgs = append(sigAlgs, uint16(sa))
-			}
-			extensions = append(extensions, 13)
-
-		case *tls.SupportedCurvesExtension:
-			extensions = append(extensions, 10)
-
-		case *tls.SupportedPointsExtension:
-			extensions = append(extensions, 11)
-
-		case *tls.StatusRequestExtension:
-			extensions = append(extensions, 5)
-
-		case *tls.SessionTicketExtension:
-			extensions = append(extensions, 35)
-
-		case *tls.SCTExtension:
-			extensions = append(extensions, 18)
-
-		case *tls.KeyShareExtension:
-			extensions = append(extensions, 51)
-
-		case *tls.PSKKeyExchangeModesExtension:
-			extensions = append(extensions, 45)
-
-		case *tls.ExtendedMasterSecretExtension:
-			extensions = append(extensions, 23)
-
-		case *tls.RenegotiationInfoExtension:
-			extensions = append(extensions, 65281)
-
-		case *tls.UtlsCompressCertExtension:
-			extensions = append(extensions, 27)
-
-		case *tls.ApplicationSettingsExtension:
-			extensions = append(extensions, 17513)
-
-		case *tls.ApplicationSettingsExtensionNew:
-			extensions = append(extensions, 17613)
-
-		case *tls.UtlsGREASEExtension:
-			// Skip GREASE extensions
-
-		default:
-			_ = e
-		}
+	for _, ext := range exts {
+		processJA4SpecExtension(ext, sig, &extensions, &sigAlgs)
 	}
+	return extensions, sigAlgs
+}
 
-	sig.Extensions = extensions
-	sig.SignatureAlgorithms = sigAlgs
-
-	return sig.ComputeJA4(), nil
+func processJA4SpecExtension(ext tls.TLSExtension, sig *JA4Signature, extensions *[]uint16, sigAlgs *[]uint16) {
+	switch e := ext.(type) {
+	case *tls.SupportedVersionsExtension:
+		for _, v := range e.Versions {
+			if !isGREASEValue(v) && v > sig.TLSVersion {
+				sig.TLSVersion = v
+			}
+		}
+		*extensions = append(*extensions, 43)
+	case *tls.SNIExtension:
+		if e.ServerName != "" {
+			sig.SNI = e.ServerName
+		}
+		*extensions = append(*extensions, 0)
+	case *tls.ALPNExtension:
+		if len(e.AlpnProtocols) > 0 {
+			sig.ALPN = e.AlpnProtocols[0]
+		}
+		*extensions = append(*extensions, 16)
+	case *tls.SignatureAlgorithmsExtension:
+		for _, sa := range e.SupportedSignatureAlgorithms {
+			*sigAlgs = append(*sigAlgs, uint16(sa))
+		}
+		*extensions = append(*extensions, 13)
+	case *tls.SupportedCurvesExtension:
+		*extensions = append(*extensions, 10)
+	case *tls.SupportedPointsExtension:
+		*extensions = append(*extensions, 11)
+	case *tls.StatusRequestExtension:
+		*extensions = append(*extensions, 5)
+	case *tls.SessionTicketExtension:
+		*extensions = append(*extensions, 35)
+	case *tls.SCTExtension:
+		*extensions = append(*extensions, 18)
+	case *tls.KeyShareExtension:
+		*extensions = append(*extensions, 51)
+	case *tls.PSKKeyExchangeModesExtension:
+		*extensions = append(*extensions, 45)
+	case *tls.ExtendedMasterSecretExtension:
+		*extensions = append(*extensions, 23)
+	case *tls.RenegotiationInfoExtension:
+		*extensions = append(*extensions, 65281)
+	case *tls.UtlsCompressCertExtension:
+		*extensions = append(*extensions, 27)
+	case *tls.ApplicationSettingsExtension:
+		*extensions = append(*extensions, 17513)
+	case *tls.ApplicationSettingsExtensionNew:
+		*extensions = append(*extensions, 17613)
+	case *tls.UtlsGREASEExtension:
+		return
+	default:
+		return
+	}
 }
 
 // ComputeJA4FromProfile computes JA4 fingerprint from ClientProfile

@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"sync"
 	"time"
 
+	"github.com/vistone/fingerprint/modules/core"
 	"github.com/vistone/fingerprint/modules/crawler"
 	"github.com/vistone/fingerprint/modules/ml"
 	"github.com/vistone/fingerprint/modules/waf"
@@ -218,12 +220,22 @@ func (c *ClosedLoopController) validateAgainstWAF(
 		vr := mlSvc.Validate(gen.Profile)
 
 		reward := (1.0 - vr.ForgeryProb) * vr.ConsistencyScore
+		label := fmt.Sprintf("generated_%s", gen.SourceProfileID)
+		if wafInst != nil {
+			wafReward, action := c.evaluateWithWAF(gen, wafInst)
+			reward = (reward + wafReward) / 2.0
+			label = fmt.Sprintf("%s_waf_%s", label, action)
+		}
+
 		mlSvc.Feedback(&ml.FeedbackSample{
 			Profile:   gen.Profile,
 			Reward:    reward,
-			Label:     fmt.Sprintf("generated_%s", gen.SourceProfileID),
+			Label:     label,
 			Timestamp: time.Now(),
 		})
+		c.mu.Lock()
+		c.stats.DetectionsProcessed++
+		c.mu.Unlock()
 
 		c.logger.Debug("validated generated profile",
 			"profile", gen.Profile.ID,
@@ -231,6 +243,58 @@ func (c *ClosedLoopController) validateAgainstWAF(
 			"consistency", vr.ConsistencyScore,
 			"reward", reward)
 	}
+
+}
+
+func (c *ClosedLoopController) evaluateWithWAF(gen *ml.GenerateResult, wafInst *waf.WAF) (float64, waf.WAFAction) {
+	req, err := http.NewRequest(http.MethodGet, "https://closed-loop.local/simulated", nil)
+	if err != nil {
+		return 0.0, waf.ActionMonitor
+	}
+	req.RemoteAddr = "198.51.100.10:443"
+
+	if gen != nil && gen.Profile != nil {
+		if gen.Profile.Headers != nil {
+			for k, v := range gen.Profile.Headers.ToMap() {
+				req.Header.Set(k, v)
+			}
+		}
+		if req.Header.Get("User-Agent") == "" && gen.Profile.Name != "" {
+			req.Header.Set("User-Agent", gen.Profile.Name)
+		}
+
+		spec := core.ClientHelloSpec{
+			TLSVersion:      gen.Profile.TLSVersion,
+			CipherSuites:    gen.Profile.CipherSuites,
+			Extensions:      gen.Profile.Extensions,
+			SupportedCurves: gen.Profile.SupportedCurves,
+		}
+		if ja3 := calculateJA3(spec); ja3 != nil {
+			req.Header.Set("X-JA3-Fingerprint", ja3.Hash)
+		}
+	}
+
+	res := wafInst.Analyze(c.ctx, req)
+	if res == nil {
+		return 0.0, waf.ActionMonitor
+	}
+
+	actionScore := map[waf.WAFAction]float64{
+		waf.ActionAllow:     1.0,
+		waf.ActionMonitor:   0.75,
+		waf.ActionChallenge: 0.5,
+		waf.ActionThrottle:  0.3,
+		waf.ActionBlock:     0.1,
+	}
+	score, ok := actionScore[res.Action]
+	if !ok {
+		score = 0.4
+	}
+	if res.RiskScore > 0 {
+		score *= 1.0 / (1.0 + res.RiskScore)
+	}
+
+	return score, res.Action
 }
 
 // checkAndEvolve checks if the learner has detected drift and triggers

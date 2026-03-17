@@ -151,8 +151,7 @@ func generateCollectorCanvasWebGL() string {
 `
 }
 
-func generateCollectorAudioFonts() string {
-	return `
+const collectorAudioFontsJS = `
         async collectAudio() {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -233,6 +232,9 @@ func generateCollectorAudioFonts() string {
             };
         }
 `
+
+func generateCollectorAudioFonts() string {
+	return collectorAudioFontsJS
 }
 
 func generateCollectorMisc() string {

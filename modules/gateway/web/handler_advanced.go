@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/vistone/fingerprint/modules/core"
 	"github.com/vistone/fingerprint/modules/gateway"
 	"github.com/vistone/fingerprint/modules/profiles"
 )
@@ -23,36 +24,45 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req struct {
-		ProfileID string `json:"profileId"`
-	}
-	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&req); err != nil {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
-		return
-	}
-	if req.ProfileID == "" {
-		http.Error(w, "profileId required", http.StatusBadRequest)
+	req, ok := decodeAnalyzeProfileRequest(w, r)
+	if !ok {
 		return
 	}
 
-	// Locate profile.
-	var profile profiles.ClientProfile
-	found := false
-	h.mu.RLock()
-	for _, p := range h.profiles {
-		if p.ID == req.ProfileID {
-			profile = p
-			found = true
-			break
-		}
-	}
-	h.mu.RUnlock()
+	profile, found := h.findProfile(req.ProfileID)
 	if !found {
 		http.Error(w, "Profile not found", http.StatusNotFound)
 		return
 	}
 
-	// Build AnalyzeRequest.
+	resp, err := h.runProfileAnalysis(r.Context(), profile)
+	if err != nil {
+		http.Error(w, "Analysis failed", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(buildAnalyzeProfileResponse(req.ProfileID, profile, resp))
+}
+
+func decodeAnalyzeProfileRequest(w http.ResponseWriter, r *http.Request) (struct {
+	ProfileID string `json:"profileId"`
+}, bool) {
+	var req struct {
+		ProfileID string `json:"profileId"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return req, false
+	}
+	if req.ProfileID == "" {
+		http.Error(w, "profileId required", http.StatusBadRequest)
+		return req, false
+	}
+	return req, true
+}
+
+func (h *Handler) runProfileAnalysis(parent context.Context, profile profiles.ClientProfile) (*gateway.AnalyzeResponse, error) {
 	analyzeReq := &gateway.AnalyzeRequest{
 		TLSVersion:      profile.TLSVersion,
 		CipherSuites:    profile.CipherSuites,
@@ -64,16 +74,13 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 		ClientIP:        "admin-console",
 	}
 
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(parent, 5*time.Second)
 	defer cancel()
 
-	resp, err := h.gateway.Analyze(ctx, analyzeReq)
-	if err != nil {
-		http.Error(w, "Analysis failed", http.StatusInternalServerError)
-		return
-	}
+	return h.gateway.Analyze(ctx, analyzeReq)
+}
 
-	// Build detailed response payload.
+func buildAnalyzeProfileResponse(profileID string, profile profiles.ClientProfile, resp *gateway.AnalyzeResponse) map[string]interface{} {
 	result := map[string]interface{}{
 		"profile": map[string]interface{}{
 			"id":      profile.ID,
@@ -87,7 +94,6 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 		"processingTimeMs": resp.ProcessingTimeMs,
 	}
 
-	// Classification result.
 	if resp.Classification != nil {
 		result["classification"] = map[string]interface{}{
 			"protocol":           resp.Classification.Protocol,
@@ -101,25 +107,15 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Risk assessment.
 	if resp.RiskAssessment != nil {
-		factors := make([]map[string]interface{}, 0, len(resp.RiskAssessment.Factors))
-		for _, f := range resp.RiskAssessment.Factors {
-			factors = append(factors, map[string]interface{}{
-				"name":        f.Name,
-				"weight":      f.Weight,
-				"description": f.Description,
-			})
-		}
 		result["riskAssessment"] = map[string]interface{}{
 			"level":       resp.RiskAssessment.Level,
 			"score":       resp.RiskAssessment.Score,
-			"factors":     factors,
+			"factors":     riskFactorsToMaps(resp.RiskAssessment.Factors),
 			"suggestions": resp.RiskAssessment.Suggestions,
 		}
 	}
 
-	// JA3/JA4/JA4H info.
 	if resp.JA3 != nil {
 		result["ja3"] = resp.JA3
 	}
@@ -139,8 +135,19 @@ func (h *Handler) handleAnalyzeProfile(w http.ResponseWriter, r *http.Request) {
 		result["agentDecision"] = resp.AgentDecision
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(result)
+	return result
+}
+
+func riskFactorsToMaps(factors []core.RiskFactor) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(factors))
+	for _, factor := range factors {
+		result = append(result, map[string]interface{}{
+			"name":        factor.Name,
+			"weight":      factor.Weight,
+			"description": factor.Description,
+		})
+	}
+	return result
 }
 
 // =====================================================================
@@ -159,53 +166,67 @@ func (h *Handler) handleMLInfo(w http.ResponseWriter, r *http.Request) {
 
 	info := map[string]interface{}{
 		"architecture": "3-Layer Hierarchical Classifier",
-		"layers": []map[string]interface{}{
-			{
-				"name":        "Protocol Classifier",
-				"description": "Protocol classification (TLS / HTTP / HTTP2 / QUIC / HTTP3)",
-				"level":       1,
-				"threshold":   p,
-				"weight":      0.3,
-			},
-			{
-				"name":        "Family Classifier",
-				"description": "Browser family recognition (Chrome / Firefox / Safari / Edge / Opera)",
-				"level":       2,
-				"threshold":   f,
-				"weight":      0.3,
-			},
-			{
-				"name":        "Version Classifier",
-				"description": "Version recognition (Chrome 134 / Firefox 135 / Safari 18 ...)",
-				"level":       3,
-				"threshold":   v,
-				"weight":      0.4,
-			},
-		},
-		"featureTypes": []map[string]interface{}{
-			{"name": "tls_version", "category": "TLS", "description": "TLS protocol version"},
-			{"name": "cipher_suites", "category": "TLS", "description": "Cipher suite count"},
-			{"name": "extensions", "category": "TLS", "description": "TLS extension count"},
-			{"name": "http2_settings", "category": "HTTP", "description": "HTTP/2 SETTINGS hash"},
-			{"name": "http_headers", "category": "HTTP", "description": "HTTP header feature hash"},
-			{"name": "user_agent", "category": "HTTP", "description": "User-Agent hash"},
-			{"name": "canvas", "category": "Frontend", "description": "Canvas fingerprint hash"},
-			{"name": "webgl", "category": "Frontend", "description": "WebGL renderer fingerprint"},
-			{"name": "audio", "category": "Frontend", "description": "AudioContext fingerprint"},
-			{"name": "fonts", "category": "Frontend", "description": "Font list fingerprint"},
-			{"name": "storage", "category": "Frontend", "description": "Storage API fingerprint"},
-			{"name": "webrtc", "category": "Frontend", "description": "WebRTC config fingerprint"},
-			{"name": "hardware", "category": "Frontend", "description": "Hardware info fingerprint"},
-			{"name": "timing", "category": "Frontend", "description": "Timing precision fingerprint"},
-			{"name": "headless_browser", "category": "Detection", "description": "Headless browser detection"},
-			{"name": "entropy", "category": "Detection", "description": "Information entropy"},
-			{"name": "tool_marker", "category": "Detection", "description": "Automation tool marker"},
-			{"name": "behavior_pattern", "category": "Detection", "description": "Behavior consistency pattern"},
-		},
-		"status": "trained",
+		"layers":       mlInfoLayers(p, f, v),
+		"featureTypes": mlInfoFeatureTypes(),
+		"status":       "trained",
 	}
 
-	// Attach MLService info.
+	h.attachMLInfoServiceState(info)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(info)
+}
+
+func mlInfoLayers(p, f, v float64) []map[string]interface{} {
+	return []map[string]interface{}{
+		{
+			"name":        "Protocol Classifier",
+			"description": "Protocol classification (TLS / HTTP / HTTP2 / QUIC / HTTP3)",
+			"level":       1,
+			"threshold":   p,
+			"weight":      0.3,
+		},
+		{
+			"name":        "Family Classifier",
+			"description": "Browser family recognition (Chrome / Firefox / Safari / Edge / Opera)",
+			"level":       2,
+			"threshold":   f,
+			"weight":      0.3,
+		},
+		{
+			"name":        "Version Classifier",
+			"description": "Version recognition (Chrome 134 / Firefox 135 / Safari 18 ...)",
+			"level":       3,
+			"threshold":   v,
+			"weight":      0.4,
+		},
+	}
+}
+
+func mlInfoFeatureTypes() []map[string]interface{} {
+	return []map[string]interface{}{
+		{"name": "tls_version", "category": "TLS", "description": "TLS protocol version"},
+		{"name": "cipher_suites", "category": "TLS", "description": "Cipher suite count"},
+		{"name": "extensions", "category": "TLS", "description": "TLS extension count"},
+		{"name": "http2_settings", "category": "HTTP", "description": "HTTP/2 SETTINGS hash"},
+		{"name": "http_headers", "category": "HTTP", "description": "HTTP header feature hash"},
+		{"name": "user_agent", "category": "HTTP", "description": "User-Agent hash"},
+		{"name": "canvas", "category": "Frontend", "description": "Canvas fingerprint hash"},
+		{"name": "webgl", "category": "Frontend", "description": "WebGL renderer fingerprint"},
+		{"name": "audio", "category": "Frontend", "description": "AudioContext fingerprint"},
+		{"name": "fonts", "category": "Frontend", "description": "Font list fingerprint"},
+		{"name": "storage", "category": "Frontend", "description": "Storage API fingerprint"},
+		{"name": "webrtc", "category": "Frontend", "description": "WebRTC config fingerprint"},
+		{"name": "hardware", "category": "Frontend", "description": "Hardware info fingerprint"},
+		{"name": "timing", "category": "Frontend", "description": "Timing precision fingerprint"},
+		{"name": "headless_browser", "category": "Detection", "description": "Headless browser detection"},
+		{"name": "entropy", "category": "Detection", "description": "Information entropy"},
+		{"name": "tool_marker", "category": "Detection", "description": "Automation tool marker"},
+		{"name": "behavior_pattern", "category": "Detection", "description": "Behavior consistency pattern"},
+	}
+}
+
+func (h *Handler) attachMLInfoServiceState(info map[string]interface{}) {
 	if svc := h.gateway.GetMLService(); svc != nil {
 		st := svc.Stats()
 		info["mlService"] = map[string]interface{}{
@@ -227,12 +248,10 @@ func (h *Handler) handleMLInfo(w http.ResponseWriter, r *http.Request) {
 				"driftEventCount": st.LearnerStats.DriftEventCount,
 			}
 		}
-	} else {
-		info["mlService"] = map[string]interface{}{"enabled": false}
+		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(info)
+	info["mlService"] = map[string]interface{}{"enabled": false}
 }
 
 // handleMLExtract extracts feature vectors from a selected profile.

@@ -212,118 +212,121 @@ func uint8SliceToString(values []uint8) string {
 // ComputeJA3FromSpec computes JA3 fingerprint from TLS ClientHello spec
 // JA3 algorithm: MD5(TLSVersion,Ciphers,Extensions,EllipticCurves,EllipticCurvePointFormats)
 func ComputeJA3FromSpec(spec tls.ClientHelloSpec) (*JA3Result, error) {
-	// Input validation: check whether spec is empty
 	if err := validateClientHelloSpec(spec); err != nil {
 		return nil, err
 	}
 
-	result := &JA3Result{}
-
-	// Extract TLS version (defaults to TLS 1.2)
-	result.TLSVersion = tls.VersionTLS12
-
-	// Extract cipher suites (GREASE filtered)
 	ciphers := filterGREASEUint16(spec.CipherSuites)
-
-	// Validate cipher suite list
 	if len(ciphers) == 0 {
 		return nil, fmt.Errorf("%w: no valid cipher suites", ErrInvalidClientHelloSpec)
 	}
-	result.CipherSuites = ciphers
+	state := extractJA3State(spec.Extensions)
+	return buildJA3Result(ciphers, state), nil
+}
 
-	// Extract extension information
-	extensions := make([]uint16, 0)
-	var curves []tls.CurveID
-	var pointFormats []uint8
+type ja3State struct {
+	tlsVersion   uint16
+	extensions   []uint16
+	curves       []tls.CurveID
+	pointFormats []uint8
+}
 
-	for _, ext := range spec.Extensions {
-		if ext == nil {
-			continue // Skip nil extension
-		}
-
-		switch e := ext.(type) {
-		case *tls.SupportedVersionsExtension:
-			// Validate extension data
-			if e.Versions == nil {
-				continue
-			}
-			// Extract highest TLS version
-			for _, v := range e.Versions {
-				if !isGREASEValue(v) && v > result.TLSVersion {
-					result.TLSVersion = v
-				}
-			}
-			extensions = append(extensions, 43) // extension_type_supported_versions
-
-		case *tls.SupportedCurvesExtension:
-			if e.Curves == nil {
-				continue
-			}
-			curves = filterGREASECurveID(e.Curves)
-			extensions = append(extensions, 10) // extension_type_supported_groups
-
-		case *tls.SupportedPointsExtension:
-			if e.SupportedPoints == nil {
-				continue
-			}
-			pointFormats = e.SupportedPoints
-			extensions = append(extensions, 11) // extension_type_ec_point_formats
-
-		case *tls.SNIExtension:
-			extensions = append(extensions, 0) // extension_type_server_name
-
-		case *tls.StatusRequestExtension:
-			extensions = append(extensions, 5) // extension_type_status_request
-
-		case *tls.SessionTicketExtension:
-			extensions = append(extensions, 35) // extension_type_session_ticket
-
-		case *tls.ALPNExtension:
-			extensions = append(extensions, 16) // extension_type_alpn
-
-		case *tls.SignatureAlgorithmsExtension:
-			extensions = append(extensions, 13) // extension_type_signature_algorithms
-
-		case *tls.SCTExtension:
-			extensions = append(extensions, 18) // extension_type_signed_certificate_timestamp
-
-		case *tls.KeyShareExtension:
-			extensions = append(extensions, 51) // extension_type_key_share
-
-		case *tls.PSKKeyExchangeModesExtension:
-			extensions = append(extensions, 45) // extension_type_psk_key_exchange_modes
-
-		case *tls.ExtendedMasterSecretExtension:
-			extensions = append(extensions, 23) // extension_type_extended_master_secret
-
-		case *tls.RenegotiationInfoExtension:
-			extensions = append(extensions, 65281) // extension_type_renegotiation_info (0xff01)
-
-		case *tls.UtlsCompressCertExtension:
-			extensions = append(extensions, 27) // extension_type_compress_certificate
-
-		case *tls.ApplicationSettingsExtension:
-			extensions = append(extensions, 17513) // extension_type_application_settings
-
-		case *tls.ApplicationSettingsExtensionNew:
-			extensions = append(extensions, 17613) // extension_type_application_settings_new
-
-		case *tls.UtlsGREASEExtension:
-			// Skip GREASE extensions
-
-		default:
-			// Ignore unknown extensions
-			_ = e
-		}
+func extractJA3State(extensions []tls.TLSExtension) ja3State {
+	state := ja3State{
+		tlsVersion: tls.VersionTLS12,
+		extensions: make([]uint16, 0),
 	}
 
-	// Filter GREASE values in extensions
-	result.Extensions = filterGREASEUint16(extensions)
-	result.EllipticCurves = curves
-	result.EllipticCurvePointFormats = pointFormats
+	for _, ext := range extensions {
+		processJA3Extension(ext, &state)
+	}
+	state.extensions = filterGREASEUint16(state.extensions)
+	return state
+}
 
-	// Build JA3 raw string
-	// Format: TLSVersion,CipherSuites,Extensions,EllipticCurves,EllipticCurvePointFormats
+func processJA3Extension(ext tls.TLSExtension, state *ja3State) {
+	if ext == nil {
+		return
+	}
+
+	switch e := ext.(type) {
+	case *tls.SupportedVersionsExtension:
+		if e.Versions == nil {
+			return
+		}
+		state.tlsVersion = maxTLSVersion(state.tlsVersion, e.Versions)
+		state.extensions = append(state.extensions, 43)
+	case *tls.SupportedCurvesExtension:
+		if e.Curves == nil {
+			return
+		}
+		state.curves = filterGREASECurveID(e.Curves)
+		state.extensions = append(state.extensions, 10)
+	case *tls.SupportedPointsExtension:
+		if e.SupportedPoints == nil {
+			return
+		}
+		state.pointFormats = e.SupportedPoints
+		state.extensions = append(state.extensions, 11)
+	case *tls.SNIExtension:
+		state.extensions = append(state.extensions, 0)
+	case *tls.StatusRequestExtension:
+		state.extensions = append(state.extensions, 5)
+	case *tls.SessionTicketExtension:
+		state.extensions = append(state.extensions, 35)
+	case *tls.ALPNExtension:
+		state.extensions = append(state.extensions, 16)
+	case *tls.SignatureAlgorithmsExtension:
+		state.extensions = append(state.extensions, 13)
+	case *tls.SCTExtension:
+		state.extensions = append(state.extensions, 18)
+	case *tls.KeyShareExtension:
+		state.extensions = append(state.extensions, 51)
+	case *tls.PSKKeyExchangeModesExtension:
+		state.extensions = append(state.extensions, 45)
+	case *tls.ExtendedMasterSecretExtension:
+		state.extensions = append(state.extensions, 23)
+	case *tls.RenegotiationInfoExtension:
+		state.extensions = append(state.extensions, 65281)
+	case *tls.UtlsCompressCertExtension:
+		state.extensions = append(state.extensions, 27)
+	case *tls.ApplicationSettingsExtension:
+		state.extensions = append(state.extensions, 17513)
+	case *tls.ApplicationSettingsExtensionNew:
+		state.extensions = append(state.extensions, 17613)
+	case *tls.UtlsGREASEExtension:
+		return
+	default:
+		return
+	}
+}
+
+func maxTLSVersion(initial uint16, versions []uint16) uint16 {
+	maxVersion := initial
+	for _, v := range versions {
+		if !isGREASEValue(v) && v > maxVersion {
+			maxVersion = v
+		}
+	}
+	return maxVersion
+}
+
+func buildJA3Result(ciphers []uint16, state ja3State) *JA3Result {
+	result := &JA3Result{
+		TLSVersion:                state.tlsVersion,
+		CipherSuites:              ciphers,
+		Extensions:                state.extensions,
+		EllipticCurves:            state.curves,
+		EllipticCurvePointFormats: state.pointFormats,
+	}
+
+	result.RawString = buildJA3RawString(result)
+	hash := md5.Sum([]byte(result.RawString))
+	result.Hash = fmt.Sprintf("%x", hash)
+	return result
+}
+
+func buildJA3RawString(result *JA3Result) string {
 	rawParts := []string{
 		strconv.Itoa(int(result.TLSVersion)),
 		uint16SliceToString(result.CipherSuites),
@@ -331,13 +334,7 @@ func ComputeJA3FromSpec(spec tls.ClientHelloSpec) (*JA3Result, error) {
 		curveIDSliceToString(result.EllipticCurves),
 		uint8SliceToString(result.EllipticCurvePointFormats),
 	}
-	result.RawString = strings.Join(rawParts, ",")
-
-	// Calculate MD5 hash
-	hash := md5.Sum([]byte(result.RawString))
-	result.Hash = fmt.Sprintf("%x", hash)
-
-	return result, nil
+	return strings.Join(rawParts, ",")
 }
 
 // validateClientHelloSpec validates ClientHello spec validity

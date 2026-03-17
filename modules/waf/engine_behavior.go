@@ -66,9 +66,17 @@ func (e *BehaviorEngine) Analyze(clientID string, req *http.Request) *BehaviorRe
 	}
 
 	now := time.Now()
+	session := e.getOrCreateSession(clientID, req, now)
+	e.recordRequest(session, req, now)
+	result.RequestRate = calculateRequestRate(session, now)
+	e.applyBehaviorRiskRules(result, session, now)
+	return result
+}
 
-	// Get or create session
+func (e *BehaviorEngine) getOrCreateSession(clientID string, req *http.Request, now time.Time) *Session {
 	e.sessions.mu.Lock()
+	defer e.sessions.mu.Unlock()
+
 	session, exists := e.sessions.sessions[clientID]
 	if !exists {
 		session = &Session{
@@ -80,8 +88,13 @@ func (e *BehaviorEngine) Analyze(clientID string, req *http.Request) *BehaviorRe
 		}
 		e.sessions.sessions[clientID] = session
 	}
+	return session
+}
 
-	// Record request
+func (e *BehaviorEngine) recordRequest(session *Session, req *http.Request, now time.Time) {
+	e.sessions.mu.Lock()
+	defer e.sessions.mu.Unlock()
+
 	session.RequestCount++
 	session.LastRequest = now
 	session.RequestHistory = append(session.RequestHistory, RequestRecord{
@@ -94,16 +107,18 @@ func (e *BehaviorEngine) Analyze(clientID string, req *http.Request) *BehaviorRe
 	if len(session.RequestHistory) > 100 {
 		session.RequestHistory = session.RequestHistory[len(session.RequestHistory)-100:]
 	}
-	e.sessions.mu.Unlock()
+}
 
-	// Calculate request rate
+func calculateRequestRate(session *Session, now time.Time) float64 {
 	duration := now.Sub(session.FirstRequest).Seconds()
 	if duration > 0 {
-		result.RequestRate = float64(session.RequestCount) / duration
+		return float64(session.RequestCount) / duration
 	}
+	return 0
+}
 
-	// Check for high request rate
-	if result.RequestRate > 10 { // More than 10 req/s
+func (e *BehaviorEngine) applyBehaviorRiskRules(result *BehaviorResult, session *Session, now time.Time) {
+	if result.RequestRate > 10 {
 		result.Score += 0.5
 		result.BurstDetected = true
 		result.Factors = append(result.Factors, core.RiskFactor{
@@ -113,16 +128,7 @@ func (e *BehaviorEngine) Analyze(clientID string, req *http.Request) *BehaviorRe
 		})
 	}
 
-	// Check for burst in short window
-	recentCount := 0
-	windowStart := now.Add(-e.window)
-	for _, record := range session.RequestHistory {
-		if record.Timestamp.After(windowStart) {
-			recentCount++
-		}
-	}
-
-	if recentCount > 50 { // More than 50 requests in 1 minute
+	if countRecentRequests(session, now.Add(-e.window)) > 50 {
 		result.Score += 0.4
 		result.BurstDetected = true
 		result.Factors = append(result.Factors, core.RiskFactor{
@@ -132,7 +138,6 @@ func (e *BehaviorEngine) Analyze(clientID string, req *http.Request) *BehaviorRe
 		})
 	}
 
-	// Check for path traversal patterns
 	if e.detectPathTraversal(session) {
 		result.Score += 0.6
 		result.PatternAnomaly = true
@@ -143,7 +148,6 @@ func (e *BehaviorEngine) Analyze(clientID string, req *http.Request) *BehaviorRe
 		})
 	}
 
-	// Check for sequential access patterns (crawling)
 	if e.detectSequentialAccess(session) {
 		result.Score += 0.3
 		result.PatternAnomaly = true
@@ -153,8 +157,16 @@ func (e *BehaviorEngine) Analyze(clientID string, req *http.Request) *BehaviorRe
 			Description: "Sequential access pattern (possible crawler)",
 		})
 	}
+}
 
-	return result
+func countRecentRequests(session *Session, windowStart time.Time) int {
+	recentCount := 0
+	for _, record := range session.RequestHistory {
+		if record.Timestamp.After(windowStart) {
+			recentCount++
+		}
+	}
+	return recentCount
 }
 
 func (e *BehaviorEngine) detectPathTraversal(session *Session) bool {

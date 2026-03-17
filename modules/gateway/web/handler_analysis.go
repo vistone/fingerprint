@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/vistone/fingerprint/modules/core"
 	"github.com/vistone/fingerprint/modules/defense"
 )
 
@@ -110,49 +111,44 @@ func (h *Handler) handleDefenseDetect(w http.ResponseWriter, r *http.Request) {
 
 	extractor := h.gateway.GetExtractor()
 	fv := extractor.ExtractFromProfile(&profile)
+	detection, risk, advice := h.evaluateDefense(fv)
+	result := buildDefenseDetectResponse(req.ProfileID, profile.Name, detection, risk, advice)
 
-	// Run detector.
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(result)
+}
+
+func (h *Handler) evaluateDefense(fv *core.FeatureVector) (*defense.DetectionResult, *core.RiskAssessment, *defense.DefenseAdvice) {
 	detector := defense.NewDetector()
 	detection := detector.Detect(fv)
 
-	// Run risk evaluation.
 	classifier := h.gateway.GetClassifier()
 	classification := classifier.Classify(fv)
+
 	riskEngine := h.gateway.GetRiskEngine()
 	risk := riskEngine.Evaluate(fv, classification)
 
-	// Build defense recommendations.
 	defenseSystem := defense.NewDefenseSystem()
 	advice := defenseSystem.Analyze(fv, classification)
 
-	findings := make([]map[string]interface{}, 0, len(detection.Findings))
-	for _, f := range detection.Findings {
-		findings = append(findings, map[string]interface{}{
-			"rule":        f.Rule,
-			"description": f.Description,
-			"riskScore":   f.RiskScore,
-		})
-	}
+	return detection, risk, advice
+}
 
-	factors := make([]map[string]interface{}, 0)
-	if risk != nil {
-		for _, f := range risk.Factors {
-			factors = append(factors, map[string]interface{}{
-				"name":        f.Name,
-				"weight":      f.Weight,
-				"description": f.Description,
-			})
-		}
-	}
-
+func buildDefenseDetectResponse(
+	profileID string,
+	profileName string,
+	detection *defense.DetectionResult,
+	risk *core.RiskAssessment,
+	advice *defense.DefenseAdvice,
+) map[string]interface{} {
 	result := map[string]interface{}{
-		"profileId":   req.ProfileID,
-		"profileName": profile.Name,
+		"profileId":   profileID,
+		"profileName": profileName,
 		"detection": map[string]interface{}{
 			"isThreat":  detection.IsThreat(),
 			"riskScore": detection.RiskScore,
 			"riskLevel": detection.RiskLevel,
-			"findings":  findings,
+			"findings":  defenseFindingsToMaps(detection.Findings),
 			"labels":    detection.Labels,
 		},
 	}
@@ -161,11 +157,10 @@ func (h *Handler) handleDefenseDetect(w http.ResponseWriter, r *http.Request) {
 		result["riskAssessment"] = map[string]interface{}{
 			"level":       risk.Level,
 			"score":       risk.Score,
-			"factors":     factors,
+			"factors":     riskFactorsToMaps(risk.Factors),
 			"suggestions": risk.Suggestions,
 		}
 	}
-
 	if advice != nil {
 		result["defenseAdvice"] = map[string]interface{}{
 			"detection":  advice.Detection,
@@ -174,6 +169,17 @@ func (h *Handler) handleDefenseDetect(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(result)
+	return result
+}
+
+func defenseFindingsToMaps(findings []defense.Finding) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(findings))
+	for _, finding := range findings {
+		result = append(result, map[string]interface{}{
+			"rule":        finding.Rule,
+			"description": finding.Description,
+			"riskScore":   finding.RiskScore,
+		})
+	}
+	return result
 }

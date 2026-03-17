@@ -54,6 +54,26 @@ jobs:
           fi
         done
 
+  gateway-security-regression:
+    name: Gateway Security Regression
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.25'
+
+    - name: Download dependencies
+      run: go mod download
+
+    - name: Run gateway security regression tests
+      run: |
+        cd modules/gateway
+        go test -race -run 'TestGRPCService_(AnalyzeAndHealth|TLS|MTLS)|TestClosedLoop(EvaluateWithWAF_ActionAndScore|ValidateAgainstWAF_RecordsFeedbackAndStats)$' ./...
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
