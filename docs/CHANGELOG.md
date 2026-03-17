@@ -2,6 +2,21 @@
 
 This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) specification.
 
+## [v1.0.26] - 2026-03-17
+
+### Changed
+
+- **Codebase standards alignment and maintainability hardening**:
+  - Completed a full project rule audit and aligned implementation with `docs/CONTRIBUTING.md` and `docs/DEVELOPER_GUIDE.md`
+  - Refined Gateway startup/runtime wiring and TLS bootstrap flow to improve readability and reduce lint debt without changing behavior
+  - Normalized error handling patterns in command entrypoints and gateway helpers to satisfy strict lint and static analysis checks
+
+### Fixed
+
+- **Release quality gates**:
+  - Resolved all current `golangci-lint` blocking issues, including static error usage, TLS config validation flow, and style/lifecycle warnings
+  - Verified full workspace test pass with `go test ./...`
+
 ## [v1.0.25] - 2026-03-16
 
 ### Added
