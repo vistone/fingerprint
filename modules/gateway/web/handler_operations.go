@@ -207,6 +207,10 @@ func (h *Handler) handleClientTest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "url is required", http.StatusBadRequest)
 		return
 	}
+	if err := gateway.ValidateOutboundTarget(req.URL, false); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	// Resolve requested profile.
 	var profile profiles.ClientProfile

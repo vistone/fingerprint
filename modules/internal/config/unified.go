@@ -22,6 +22,9 @@ type UnifiedConfigManager struct {
 // enhancedFeatures represents optional enhanced features
 type enhancedFeatures struct {
 	broadcastCh   chan ConfigChangeEvent
+	closedCh      chan struct{}
+	closeOnce     sync.Once
+	publishMu     sync.Mutex
 	subscribers   map[string]chan ConfigChangeEvent
 	subscriberMu  sync.RWMutex
 	healthChecker *ConfigHealthChecker
@@ -36,12 +39,16 @@ func NewUnifiedConfigManager(configPath string) *UnifiedConfigManager {
 
 // EnableEnhancedFeatures enables enhanced features (event subscription, health check)
 func (ucm *UnifiedConfigManager) EnableEnhancedFeatures() {
+	ucm.mu.Lock()
+	defer ucm.mu.Unlock()
+
 	if ucm.enhanced != nil {
 		return // Already enabled
 	}
 
 	ucm.enhanced = &enhancedFeatures{
 		broadcastCh: make(chan ConfigChangeEvent, 100),
+		closedCh:    make(chan struct{}),
 		subscribers: make(map[string]chan ConfigChangeEvent),
 	}
 
@@ -67,65 +74,46 @@ func (ucm *UnifiedConfigManager) EnableEnhancedFeatures() {
 // DisableEnhancedFeatures disables enhanced features
 func (ucm *UnifiedConfigManager) DisableEnhancedFeatures() {
 	ucm.mu.Lock()
-	defer ucm.mu.Unlock()
+	enhanced := ucm.enhanced
+	ucm.enhanced = nil
+	ucm.mu.Unlock()
 
-	if ucm.enhanced == nil {
+	if enhanced == nil {
 		return
 	}
 
-	// Stop the health checker
-	if ucm.enhanced.healthChecker != nil {
-		ucm.enhanced.healthChecker.stop()
-	}
-
-	// Close the broadcast channel (if not already closed)
-	if ucm.enhanced.broadcastCh != nil {
-		select {
-		case <-ucm.enhanced.broadcastCh:
-			// Already closed
-		default:
-			close(ucm.enhanced.broadcastCh)
-		}
-	}
-
-	// Close all subscriber channels
-	ucm.enhanced.subscriberMu.Lock()
-	for _, ch := range ucm.enhanced.subscribers {
-		select {
-		case <-ch:
-			// Already closed
-		default:
-			close(ch)
-		}
-	}
-	ucm.enhanced.subscribers = make(map[string]chan ConfigChangeEvent)
-	ucm.enhanced.subscriberMu.Unlock()
-
-	ucm.enhanced = nil
+	enhanced.close()
 }
 
 // Subscribe subscribes to configuration change events (requires enhanced features to be enabled)
 func (ucm *UnifiedConfigManager) Subscribe(subscriberID string) (<-chan ConfigChangeEvent, error) {
-	if ucm.enhanced == nil {
+	ucm.mu.RLock()
+	enhanced := ucm.enhanced
+	ucm.mu.RUnlock()
+	if enhanced == nil {
 		return nil, fmt.Errorf("enhanced features not enabled, call EnableEnhancedFeatures() first")
 	}
 
-	ucm.enhanced.subscriberMu.Lock()
-	defer ucm.enhanced.subscriberMu.Unlock()
+	enhanced.subscriberMu.Lock()
+	defer enhanced.subscriberMu.Unlock()
 
-	if _, exists := ucm.enhanced.subscribers[subscriberID]; exists {
+	if _, exists := enhanced.subscribers[subscriberID]; exists {
 		return nil, fmt.Errorf("subscriber %s already exists", subscriberID)
 	}
 
 	eventCh := make(chan ConfigChangeEvent, 10)
-	ucm.enhanced.subscribers[subscriberID] = eventCh
+	enhanced.subscribers[subscriberID] = eventCh
 
 	// Send subscription confirmation event
-	ucm.enhanced.broadcastCh <- ConfigChangeEvent{
+	if err := enhanced.publish(ConfigChangeEvent{
 		Type:        ConfigChangeTypeSubscribe,
 		Timestamp:   time.Now(),
 		Description: fmt.Sprintf("Subscriber %s registered", subscriberID),
 		Source:      subscriberID,
+	}); err != nil {
+		delete(enhanced.subscribers, subscriberID)
+		close(eventCh)
+		return nil, err
 	}
 
 	return eventCh, nil
@@ -133,20 +121,23 @@ func (ucm *UnifiedConfigManager) Subscribe(subscriberID string) (<-chan ConfigCh
 
 // Unsubscribe unsubscribes from configuration change events
 func (ucm *UnifiedConfigManager) Unsubscribe(subscriberID string) error {
-	if ucm.enhanced == nil {
+	ucm.mu.RLock()
+	enhanced := ucm.enhanced
+	ucm.mu.RUnlock()
+	if enhanced == nil {
 		return fmt.Errorf("enhanced features not enabled")
 	}
 
-	ucm.enhanced.subscriberMu.Lock()
-	defer ucm.enhanced.subscriberMu.Unlock()
+	enhanced.subscriberMu.Lock()
+	defer enhanced.subscriberMu.Unlock()
 
-	eventCh, exists := ucm.enhanced.subscribers[subscriberID]
+	eventCh, exists := enhanced.subscribers[subscriberID]
 	if !exists {
 		return fmt.Errorf("subscriber %s not found", subscriberID)
 	}
 
 	close(eventCh)
-	delete(ucm.enhanced.subscribers, subscriberID)
+	delete(enhanced.subscribers, subscriberID)
 
 	return nil
 }
@@ -170,16 +161,8 @@ func (ucm *UnifiedConfigManager) broadcastProcessor() {
 			return
 		}
 
-		// Copy subscriber list (to avoid holding the lock while sending)
 		enhanced.subscriberMu.RLock()
-		subscribers := make(map[string]chan ConfigChangeEvent, len(enhanced.subscribers))
-		for k, v := range enhanced.subscribers {
-			subscribers[k] = v
-		}
-		enhanced.subscriberMu.RUnlock()
-
-		// Asynchronously send to all subscribers
-		for subscriberID, ch := range subscribers {
+		for subscriberID, ch := range enhanced.subscribers {
 			select {
 			case ch <- event:
 				// Sent successfully
@@ -188,6 +171,7 @@ func (ucm *UnifiedConfigManager) broadcastProcessor() {
 				_ = subscriberID
 			}
 		}
+		enhanced.subscriberMu.RUnlock()
 	}
 }
 
@@ -199,17 +183,65 @@ func (ucm *UnifiedConfigManager) Update(newConfig *ManagedConfig, reason, change
 	}
 
 	// If enhanced features are enabled, broadcast the update event
-	if ucm.enhanced != nil {
-		ucm.enhanced.broadcastCh <- ConfigChangeEvent{
+	ucm.mu.RLock()
+	enhanced := ucm.enhanced
+	ucm.mu.RUnlock()
+	if enhanced != nil {
+		if err := enhanced.publish(ConfigChangeEvent{
 			Type:        ConfigChangeTypeUpdate,
 			Timestamp:   time.Now(),
 			Config:      ucm.ConfigCenter.Get(),
 			Description: reason,
 			Source:      changedBy,
+		}); err != nil {
+			return err
 		}
 	}
 
 	return nil
+}
+
+func (ef *enhancedFeatures) publish(event ConfigChangeEvent) error {
+	if ef == nil {
+		return fmt.Errorf("enhanced features not enabled")
+	}
+
+	ef.publishMu.Lock()
+	defer ef.publishMu.Unlock()
+
+	select {
+	case <-ef.closedCh:
+		return fmt.Errorf("enhanced features not enabled")
+	default:
+	}
+
+	ef.broadcastCh <- event
+	return nil
+}
+
+func (ef *enhancedFeatures) close() {
+	if ef == nil {
+		return
+	}
+
+	ef.closeOnce.Do(func() {
+		close(ef.closedCh)
+
+		if ef.healthChecker != nil {
+			ef.healthChecker.stop()
+		}
+
+		ef.publishMu.Lock()
+		close(ef.broadcastCh)
+		ef.publishMu.Unlock()
+
+		ef.subscriberMu.Lock()
+		for id, ch := range ef.subscribers {
+			close(ch)
+			delete(ef.subscribers, id)
+		}
+		ef.subscriberMu.Unlock()
+	})
 }
 
 // GetHealthStatus returns the health status

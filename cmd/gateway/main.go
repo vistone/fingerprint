@@ -102,7 +102,28 @@ func registerRoutes(mux *http.ServeMux, gatewayService *gateway.Gateway, modules
 	mux.HandleFunc("/metrics", metricsHandler)
 
 	webHandler := web.NewHandler(gatewayService)
-	webHandler.RegisterRoutes(mux)
+	adminMux := http.NewServeMux()
+	webHandler.RegisterRoutes(adminMux)
+	registerProtectedAdminRoutes(mux, adminMux, config)
+}
+
+func registerProtectedAdminRoutes(mux *http.ServeMux, adminMux *http.ServeMux, config *gateway.GatewayConfig) {
+	protectedHandler := protectAdminRoutes(adminMux, config)
+	mux.Handle("/admin", protectedHandler)
+	mux.Handle("/admin/", protectedHandler)
+	mux.Handle("/api/admin/", protectedHandler)
+}
+
+func protectAdminRoutes(adminMux *http.ServeMux, config *gateway.GatewayConfig) http.Handler {
+	if len(config.APIKeys) == 0 {
+		return http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+			writer.Header().Set("Content-Type", "application/json")
+			writer.WriteHeader(http.StatusUnauthorized)
+			writeBytes(writer, []byte(`{"error":"missing API key"}`))
+		})
+	}
+
+	return gateway.NewAPIKeyAuth(config.APIKeys, nil).Middleware(adminMux)
 }
 
 func closedLoopStatusHandler(gatewayService *gateway.Gateway) http.HandlerFunc {

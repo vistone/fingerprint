@@ -3,6 +3,9 @@ package generator
 import (
 	"errors"
 	"testing"
+
+	"github.com/vistone/fingerprint/modules/core"
+	"github.com/vistone/fingerprint/modules/profiles"
 )
 
 // TestErrorDefinitions tests error definitions
@@ -163,5 +166,57 @@ func TestPackageExports(t *testing.T) {
 
 	if ErrInvalidRandomSource == nil {
 		t.Error("ErrInvalidRandomSource should not be nil")
+	}
+}
+
+func TestMutateProfile_DoesNotShareMutableNestedState(t *testing.T) {
+	gen := NewSmartGenerator(nil, &SmartGeneratorConfig{CacheSize: 1})
+	base := &profiles.ClientProfile{
+		ID:          "base",
+		BrowserType: core.BrowserChrome,
+		Headers: &core.HTTPHeaders{
+			UserAgent: "base-ua",
+			Custom:    map[string]string{"X-Test": "base"},
+		},
+		Metadata: map[string]interface{}{"key": "base"},
+		HTTP3Settings: &core.HTTP3Settings{
+			QUICVersion: 1,
+		},
+		QUICVersions: []uint32{1},
+	}
+
+	mutated := gen.mutateProfile(base, 0)
+	mutated.Headers.Custom["X-Test"] = "mutated"
+	mutated.Metadata["key"] = "mutated"
+	mutated.HTTP3Settings.QUICVersion = 2
+	mutated.QUICVersions[0] = 2
+
+	if got := base.Headers.Custom["X-Test"]; got != "base" {
+		t.Fatalf("expected base headers to remain unchanged, got %q", got)
+	}
+	if got := base.Metadata["key"]; got != "base" {
+		t.Fatalf("expected base metadata to remain unchanged, got %v", got)
+	}
+	if got := base.HTTP3Settings.QUICVersion; got != 1 {
+		t.Fatalf("expected base HTTP3 settings to remain unchanged, got %d", got)
+	}
+	if got := base.QUICVersions[0]; got != 1 {
+		t.Fatalf("expected base QUIC versions to remain unchanged, got %d", got)
+	}
+}
+
+func TestShouldRetryDuplicateSource(t *testing.T) {
+	usedSources := map[string]bool{"profile-1": true}
+
+	if retry := shouldRetryDuplicateSource(usedSources, "profile-1", 4, 10, 1); retry {
+		t.Fatal("expected duplicate source to be accepted once unique sources are exhausted")
+	}
+
+	if retry := shouldRetryDuplicateSource(usedSources, "profile-1", 1, 10, 3); !retry {
+		t.Fatal("expected duplicate source to retry while more unique sources may still exist")
+	}
+
+	if retry := shouldRetryDuplicateSource(usedSources, "profile-2", 1, 10, 3); retry {
+		t.Fatal("expected unseen source to be accepted immediately")
 	}
 }

@@ -280,6 +280,9 @@ func fetchExternalScriptsByDOM(ctx context.Context, baseURL, pageHTML string, ma
 		if remain <= 0 {
 			break
 		}
+		if err := ValidateOutboundTarget(scriptURL, false); err != nil {
+			continue
+		}
 
 		body, ok := fetchScriptBody(ctx, scriptFetchParams{
 			Client:     client,

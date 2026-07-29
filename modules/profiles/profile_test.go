@@ -74,6 +74,38 @@ func TestGetByOS(t *testing.T) {
 	}
 }
 
+func TestProfileRegistryGet_ReturnsIsolatedMutableState(t *testing.T) {
+	reg := NewProfileRegistry()
+	reg.Register(ClientProfile{
+		ID:          "isolated",
+		BrowserType: core.BrowserChrome,
+		Headers: &core.HTTPHeaders{
+			Custom: map[string]string{"X-Test": "base"},
+		},
+		Metadata: map[string]interface{}{"key": "base"},
+	})
+
+	got, ok := reg.Get("isolated")
+	if !ok {
+		t.Fatal("expected to retrieve registered profile")
+	}
+
+	got.Headers.Custom["X-Test"] = "mutated"
+	got.Metadata["key"] = "mutated"
+
+	again, ok := reg.Get("isolated")
+	if !ok {
+		t.Fatal("expected to retrieve registered profile again")
+	}
+
+	if value := again.Headers.Custom["X-Test"]; value != "base" {
+		t.Fatalf("expected stored headers to remain unchanged, got %q", value)
+	}
+	if value := again.Metadata["key"]; value != "base" {
+		t.Fatalf("expected stored metadata to remain unchanged, got %v", value)
+	}
+}
+
 func TestClientProfileGetters(t *testing.T) {
 	profile := ClientProfile{
 		ID:          "test_id",

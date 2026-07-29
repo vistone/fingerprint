@@ -1,6 +1,7 @@
 package waf
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
@@ -163,6 +164,44 @@ func TestRateLimiter(t *testing.T) {
 	// Different client should be allowed
 	if !rl.Allow("client2") {
 		t.Error("Different client should be allowed")
+	}
+}
+
+func TestWAFGetClientIP_IgnoresForwardedHeadersFromUntrustedPeer(t *testing.T) {
+	config := &WAFConfig{
+		Enabled:        true,
+		Mode:           WAFModeProtection,
+		TrustedProxies: []string{"203.0.113.10"},
+	}
+	w := NewWAF(config)
+	defer w.Stop()
+
+	req := httptest.NewRequest(http.MethodGet, "/api/test", nil)
+	req.RemoteAddr = "198.51.100.20:12345"
+	req.Header.Set("X-Forwarded-For", "192.0.2.10")
+
+	clientIP := w.getClientIP(req)
+	if clientIP != "198.51.100.20" {
+		t.Fatalf("expected remote IP from untrusted peer, got %q", clientIP)
+	}
+}
+
+func TestWAFGetClientIP_UsesForwardedHeadersFromTrustedProxy(t *testing.T) {
+	config := &WAFConfig{
+		Enabled:        true,
+		Mode:           WAFModeProtection,
+		TrustedProxies: []string{"203.0.113.10"},
+	}
+	w := NewWAF(config)
+	defer w.Stop()
+
+	req := httptest.NewRequest(http.MethodGet, "/api/test", nil)
+	req.RemoteAddr = "203.0.113.10:12345"
+	req.Header.Set("X-Forwarded-For", "192.0.2.10, 203.0.113.10")
+
+	clientIP := w.getClientIP(req)
+	if clientIP != "192.0.2.10" {
+		t.Fatalf("expected forwarded IP from trusted proxy, got %q", clientIP)
 	}
 }
 

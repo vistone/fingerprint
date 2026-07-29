@@ -110,6 +110,20 @@ func (p *ClientProfile) Clone() *ClientProfile {
 	if p.Headers != nil {
 		clone.Headers = p.Headers.Clone()
 	}
+	if p.HTTP3Settings != nil {
+		http3Settings := *p.HTTP3Settings
+		clone.HTTP3Settings = &http3Settings
+	}
+	if p.QUICVersions != nil {
+		clone.QUICVersions = append([]uint32(nil), p.QUICVersions...)
+	}
+	if p.TCPIP != nil {
+		tcpip := *p.TCPIP
+		clone.TCPIP = &tcpip
+	}
+	if p.JSAntiDetection != nil {
+		clone.JSAntiDetection = cloneJSAntiDetection(p.JSAntiDetection)
+	}
 
 	// copy Metadata
 	for k, v := range p.Metadata {
@@ -117,6 +131,62 @@ func (p *ClientProfile) Clone() *ClientProfile {
 	}
 
 	return clone
+}
+
+func cloneJSAntiDetection(src *JSAntiDetection) *JSAntiDetection {
+	if src == nil {
+		return nil
+	}
+
+	clone := *src
+	if src.WebGPU != nil {
+		webGPU := *src.WebGPU
+		if src.WebGPU.FeatureFlags != nil {
+			webGPU.FeatureFlags = append([]string(nil), src.WebGPU.FeatureFlags...)
+		}
+		if src.WebGPU.LimitValues != nil {
+			webGPU.LimitValues = make(map[string]uint64, len(src.WebGPU.LimitValues))
+			for key, value := range src.WebGPU.LimitValues {
+				webGPU.LimitValues[key] = value
+			}
+		}
+		clone.WebGPU = &webGPU
+	}
+	if src.MediaDevices != nil {
+		mediaDevices := *src.MediaDevices
+		if src.MediaDevices.VideoInputs != nil {
+			mediaDevices.VideoInputs = append([]*MediaDeviceInfo(nil), src.MediaDevices.VideoInputs...)
+		}
+		if src.MediaDevices.AudioInputs != nil {
+			mediaDevices.AudioInputs = append([]*MediaDeviceInfo(nil), src.MediaDevices.AudioInputs...)
+		}
+		if src.MediaDevices.AudioOutputs != nil {
+			mediaDevices.AudioOutputs = append([]*MediaDeviceInfo(nil), src.MediaDevices.AudioOutputs...)
+		}
+		if src.MediaDevices.UserMediaConstraints != nil {
+			mediaDevices.UserMediaConstraints = make(map[string]interface{}, len(src.MediaDevices.UserMediaConstraints))
+			for key, value := range src.MediaDevices.UserMediaConstraints {
+				mediaDevices.UserMediaConstraints[key] = value
+			}
+		}
+		clone.MediaDevices = &mediaDevices
+	}
+	if src.Permissions != nil {
+		permissions := *src.Permissions
+		if src.Permissions.PermissionState != nil {
+			permissions.PermissionState = make(map[string]string, len(src.Permissions.PermissionState))
+			for key, value := range src.Permissions.PermissionState {
+				permissions.PermissionState[key] = value
+			}
+		}
+		clone.Permissions = &permissions
+	}
+	if src.Automation != nil {
+		automation := *src.Automation
+		clone.Automation = &automation
+	}
+
+	return &clone
 }
 
 // GetRegistrySafe safely gets the registry (with nil check)

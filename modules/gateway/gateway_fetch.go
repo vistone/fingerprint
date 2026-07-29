@@ -20,6 +20,9 @@ func fetchHTMLWithRedirects(ctx context.Context, rawURL string, followRedirect b
 	if trimmedURL == "" {
 		return "", "", redirectChain, fmt.Errorf("empty url")
 	}
+	if err := ValidateOutboundTarget(trimmedURL, false); err != nil {
+		return "", "", redirectChain, err
+	}
 	requestTimeout = clampTimeout(requestTimeout, 3*time.Second, 20*time.Second, 12*time.Second)
 
 	var resp *http.Response
@@ -86,6 +89,9 @@ func buildFetchHTTPClient(timeout time.Duration, followRedirect bool, maxRedirec
 	}
 	if followRedirect {
 		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+			if err := ValidateOutboundTarget(req.URL.String(), false); err != nil {
+				return err
+			}
 			*chain = append(*chain, req.URL.String())
 			if len(via) >= maxRedirects {
 				return fmt.Errorf("too many redirects: %d", maxRedirects)

@@ -68,6 +68,7 @@ func NewWAF(config *WAFConfig) *WAF {
 	// Initialize layer engines
 	if config.NetworkLayerEnabled {
 		waf.networkEngine = NewNetworkEngine()
+		waf.networkEngine.trustedProxies = append([]string(nil), config.TrustedProxies...)
 	}
 	if config.TLSLayerEnabled {
 		waf.tlsEngine = NewTLSEngine(config.BlacklistJA3, config.BlacklistJA4)

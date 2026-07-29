@@ -81,6 +81,7 @@ type GatewayConfig struct {
 
 	// Security configuration
 	TrustedProxies []string // Trusted reverse proxy IP list; empty means proxy headers are not trusted
+	APIKeys        []string // API keys allowed to access sensitive HTTP routes
 
 	// Agent configuration
 	AgentEnabled bool               // Whether to enable autonomous security agent

@@ -225,6 +225,11 @@ func (g *SmartGenerator) GenerateBatch(n int, config *SmartGenerateConfig) ([]*S
 
 	results := make([]*SmartGenerateResult, 0, n)
 	usedSources := make(map[string]bool)
+	maxUniqueSources := countUniqueSourceProfiles(g.selectCandidates(configValue(config, func(cfg *SmartGenerateConfig) string {
+		return cfg.TargetBrowser
+	}), configValue(config, func(cfg *SmartGenerateConfig) string {
+		return cfg.TargetOS
+	})))
 
 	for i := 0; i < n; i++ {
 		result, err := g.Generate(config)
@@ -233,7 +238,7 @@ func (g *SmartGenerator) GenerateBatch(n int, config *SmartGenerateConfig) ([]*S
 		}
 
 		// Try to diversify — avoid the same source profile twice.
-		if usedSources[result.SourceProfileID] && i < n*2 {
+		if shouldRetryDuplicateSource(usedSources, result.SourceProfileID, i, n, maxUniqueSources) {
 			i-- // retry
 			continue
 		}
@@ -252,6 +257,32 @@ func (g *SmartGenerator) GenerateForBrowser(browser string) (*SmartGenerateResul
 // GenerateForOS is a convenience method for generating by OS.
 func (g *SmartGenerator) GenerateForOS(os string) (*SmartGenerateResult, error) {
 	return g.Generate(&SmartGenerateConfig{TargetOS: os})
+}
+
+func shouldRetryDuplicateSource(usedSources map[string]bool, sourceID string, acceptedCount, requestedCount, maxUniqueSources int) bool {
+	if !usedSources[sourceID] {
+		return false
+	}
+	if maxUniqueSources > 0 && len(usedSources) >= maxUniqueSources {
+		return false
+	}
+	return acceptedCount < requestedCount*2
+}
+
+func countUniqueSourceProfiles(candidates []profiles.ClientProfile) int {
+	unique := make(map[string]struct{}, len(candidates))
+	for _, candidate := range candidates {
+		unique[candidate.ID] = struct{}{}
+	}
+	return len(unique)
+}
+
+func configValue[T any](config *SmartGenerateConfig, getter func(*SmartGenerateConfig) T) T {
+	var zero T
+	if config == nil {
+		return zero
+	}
+	return getter(config)
 }
 
 // =========================================================================

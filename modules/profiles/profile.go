@@ -273,7 +273,14 @@ func (r *ProfileRegistry) Get(id string) (ClientProfile, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	p, ok := r.profiles[id]
-	return p, ok
+	if !ok {
+		return ClientProfile{}, false
+	}
+	clone := p.Clone()
+	if clone == nil {
+		return ClientProfile{}, false
+	}
+	return *clone, true
 }
 
 // GetByBrowser gets all fingerprints by browser type
@@ -283,7 +290,9 @@ func (r *ProfileRegistry) GetByBrowser(browser core.BrowserType) []ClientProfile
 	var result []ClientProfile
 	for _, p := range r.profiles {
 		if p.BrowserType == browser {
-			result = append(result, p)
+			if clone := p.Clone(); clone != nil {
+				result = append(result, *clone)
+			}
 		}
 	}
 	return result
@@ -296,7 +305,9 @@ func (r *ProfileRegistry) GetByOS(os core.OperatingSystem) []ClientProfile {
 	var result []ClientProfile
 	for _, p := range r.profiles {
 		if p.OS == os {
-			result = append(result, p)
+			if clone := p.Clone(); clone != nil {
+				result = append(result, *clone)
+			}
 		}
 	}
 	return result
@@ -308,7 +319,9 @@ func (r *ProfileRegistry) GetAll() []ClientProfile {
 	defer r.mu.RUnlock()
 	result := make([]ClientProfile, 0, len(r.profiles))
 	for _, p := range r.profiles {
-		result = append(result, p)
+		if clone := p.Clone(); clone != nil {
+			result = append(result, *clone)
+		}
 	}
 	return result
 }

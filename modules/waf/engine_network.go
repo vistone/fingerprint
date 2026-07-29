@@ -3,7 +3,6 @@ package waf
 import (
 	"net"
 	"net/http"
-	"strings"
 
 	"github.com/vistone/fingerprint/modules/core"
 )
@@ -12,6 +11,7 @@ import (
 type NetworkEngine struct {
 	ipReputation *IPReputationTable
 	geoDB        *GeoDatabase
+	trustedProxies []string
 }
 
 // IPReputationTable stores IP reputation data
@@ -42,7 +42,8 @@ func NewNetworkEngine() *NetworkEngine {
 			blacklist: make(map[string]bool),
 			greylist:  make(map[string]int),
 		},
-		geoDB: &GeoDatabase{enabled: false},
+		geoDB:           &GeoDatabase{enabled: false},
+		trustedProxies:  nil,
 	}
 }
 
@@ -53,7 +54,7 @@ func (e *NetworkEngine) Analyze(req *http.Request) *NetworkResult {
 		Factors: make([]core.RiskFactor, 0),
 	}
 
-	clientIP := getClientIP(req)
+	clientIP := extractClientIP(req, e.trustedProxies)
 
 	// Check IP reputation
 	if e.ipReputation.blacklist[clientIP] {
@@ -97,29 +98,6 @@ func (e *NetworkEngine) BlockIP(ip string) {
 // GreylistIP increments the greylist counter for an IP
 func (e *NetworkEngine) GreylistIP(ip string) {
 	e.ipReputation.greylist[ip]++
-}
-
-func getClientIP(req *http.Request) string {
-	// Check X-Forwarded-For header
-	if xff := req.Header.Get("X-Forwarded-For"); xff != "" {
-		if idx := strings.Index(xff, ","); idx != -1 {
-			return strings.TrimSpace(xff[:idx])
-		}
-		return xff
-	}
-
-	// Check X-Real-IP header
-	if xri := req.Header.Get("X-Real-IP"); xri != "" {
-		return xri
-	}
-
-	// Use RemoteAddr
-	host, _, _ := net.SplitHostPort(req.RemoteAddr)
-	if host != "" {
-		return host
-	}
-
-	return req.RemoteAddr
 }
 
 func isPrivateIP(ip string) bool {

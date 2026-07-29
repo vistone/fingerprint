@@ -3,7 +3,6 @@ package waf
 import (
 	"context"
 	"fmt"
-	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -283,26 +282,7 @@ func (w *WAF) isBlacklisted(req *http.Request) (WAFAction, string) {
 }
 
 func (w *WAF) getClientIP(req *http.Request) string {
-	// X-Forwarded-For
-	if xff := req.Header.Get("X-Forwarded-For"); xff != "" {
-		if idx := strings.Index(xff, ","); idx != -1 {
-			return strings.TrimSpace(xff[:idx])
-		}
-		return xff
-	}
-
-	// X-Real-IP
-	if xri := req.Header.Get("X-Real-IP"); xri != "" {
-		return xri
-	}
-
-	// RemoteAddr
-	host, _, _ := net.SplitHostPort(req.RemoteAddr)
-	if host != "" {
-		return host
-	}
-
-	return req.RemoteAddr
+	return extractClientIP(req, w.config.TrustedProxies)
 }
 
 func (w *WAF) extractFingerprintInfo(req *http.Request) *FingerprintInfo {

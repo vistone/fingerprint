@@ -349,8 +349,9 @@ func (tm *TimeoutMiddleware) Process(ctx context.Context, stageName string, data
 
 	// Execute with timeout-bound context
 	done := make(chan error, 1)
+	workingData := cloneStageData(data)
 	go func() {
-		done <- next(timeoutCtx, data)
+		done <- next(timeoutCtx, workingData)
 	}()
 
 	select {
@@ -358,9 +359,48 @@ func (tm *TimeoutMiddleware) Process(ctx context.Context, stageName string, data
 		if err != nil {
 			return fmt.Errorf("stage %s: %w", stageName, err)
 		}
+		commitStageData(data, workingData)
 		return nil
 	case <-timeoutCtx.Done():
 		return fmt.Errorf("stage %s timeout after %v", stageName, tm.timeout)
+	}
+}
+
+func cloneStageData(data *StageData) *StageData {
+	if data == nil {
+		return &StageData{}
+	}
+
+	cloned := *data
+	if data.Context != nil {
+		cloned.Context = make(map[string]interface{}, len(data.Context))
+		for key, value := range data.Context {
+			cloned.Context[key] = value
+		}
+	}
+
+	return &cloned
+}
+
+func commitStageData(dst, src *StageData) {
+	if dst == nil || src == nil {
+		return
+	}
+
+	dst.Input = src.Input
+	dst.Output = src.Output
+	dst.ExecutedAt = src.ExecutedAt
+	dst.Duration = src.Duration
+	dst.Error = src.Error
+
+	if src.Context == nil {
+		dst.Context = nil
+		return
+	}
+
+	dst.Context = make(map[string]interface{}, len(src.Context))
+	for key, value := range src.Context {
+		dst.Context[key] = value
 	}
 }
 

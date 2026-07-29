@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+
+	"github.com/vistone/fingerprint/modules/gateway"
 )
 
 func (h *Handler) handleCrawlerStatus(w http.ResponseWriter, r *http.Request) {
@@ -104,6 +106,10 @@ func (h *Handler) handleCrawlerCrawl(w http.ResponseWriter, r *http.Request) {
 	req.URL = strings.TrimSpace(req.URL)
 	if req.URL == "" {
 		http.Error(w, "url is required", http.StatusBadRequest)
+		return
+	}
+	if err := gateway.ValidateOutboundTarget(req.URL, false); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

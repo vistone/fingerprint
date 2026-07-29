@@ -61,6 +61,7 @@ type WAFConfig struct {
 	BlacklistPaths []string // URL blacklist
 	BlacklistJA3   []string // JA3 blacklist
 	BlacklistJA4   []string // JA4 blacklist
+	TrustedProxies []string // Trusted reverse proxy IPs allowed to supply forwarding headers
 }
 
 // WAFMode operating mode

@@ -137,8 +137,7 @@ func (st *SmartTransport) dialTLS(network, addr string, cfg *tls.Config) (net.Co
 
 	// create uTLS configuration
 	tlsConfig := &tls.Config{
-		InsecureSkipVerify: true,
-		NextProtos:         []string{"h2", "http/1.1"},
+		NextProtos: []string{"h2", "http/1.1"},
 	}
 
 	// apply fingerprint TLS configuration
@@ -247,9 +246,8 @@ func (st *SmartTransport) roundTripHTTP1Compat(ctx context.Context, req *fhttp.R
 		DialContext:       st.dialer.DialContext,
 		ForceAttemptHTTP2: false,
 		TLSClientConfig: &stdtls.Config{
-			InsecureSkipVerify: true,
-			MinVersion:         stdtls.VersionTLS12,
-			NextProtos:         []string{"http/1.1"},
+			MinVersion: stdtls.VersionTLS12,
+			NextProtos: []string{"http/1.1"},
 		},
 	}
 
@@ -347,9 +345,8 @@ func (st *SmartTransport) dialTLSForHTTP1(addr, host string) (net.Conn, error) {
 
 	// enforce HTTP/1.1 TLS configuration
 	tlsConfig := &tls.Config{
-		InsecureSkipVerify: true,
-		ServerName:         host,
-		NextProtos:         []string{"http/1.1"},
+		ServerName: host,
+		NextProtos: []string{"http/1.1"},
 	}
 
 	if st.profile.TLSVersion != 0 {

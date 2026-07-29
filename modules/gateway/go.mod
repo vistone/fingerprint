@@ -5,11 +5,10 @@ go 1.25.7
 require (
 	github.com/chromedp/cdproto v0.0.0-20241022234722-4d5d5faf59fb
 	github.com/chromedp/chromedp v0.11.2
-	github.com/vistone/fingerprint v1.0.28
 	github.com/vistone/fingerprint/modules/agent v1.0.28
 	github.com/vistone/fingerprint/modules/client v1.0.28
 	github.com/vistone/fingerprint/modules/core v1.0.28
-	github.com/vistone/fingerprint/modules/crawler v1.0.20
+	github.com/vistone/fingerprint/modules/crawler v1.0.28
 	github.com/vistone/fingerprint/modules/defense v1.0.28
 	github.com/vistone/fingerprint/modules/errors v1.0.28
 	github.com/vistone/fingerprint/modules/frontend v1.0.28
@@ -20,8 +19,9 @@ require (
 	github.com/vistone/fingerprint/modules/plugin v1.0.28
 	github.com/vistone/fingerprint/modules/profiles v1.0.28
 	github.com/vistone/fingerprint/modules/tls v1.0.28
-	github.com/vistone/fingerprint/modules/waf v1.0.20
+	github.com/vistone/fingerprint/modules/waf v1.0.28
 	google.golang.org/grpc v1.79.1
+	google.golang.org/protobuf v1.36.10
 )
 
 require (
@@ -49,5 +49,4 @@ require (
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
-	google.golang.org/protobuf v1.36.10 // indirect
 )

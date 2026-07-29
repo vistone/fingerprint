@@ -126,6 +126,7 @@ func loadWAFConfig(config *gateway.GatewayConfig) *waf.WAFConfig {
 	base.MLClassifierPath = config.MLClassifierPath
 	base.MLEnabled = config.MLServiceEnabled
 	base.RiskThreshold = config.RiskThreshold
+	base.TrustedProxies = append([]string(nil), config.TrustedProxies...)
 
 	if value, ok := readEnvString("FP_WAF_MODE"); ok {
 		base.Mode = waf.WAFMode(value)

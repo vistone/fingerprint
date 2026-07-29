@@ -12,7 +12,14 @@ import (
 )
 
 func (g *SmartGenerator) mutateProfile(base *profiles.ClientProfile, intensity float64) *profiles.ClientProfile {
-	cloned := *base
+	if base == nil {
+		return nil
+	}
+
+	cloned := base.Clone()
+	if cloned == nil {
+		return nil
+	}
 	cloned.ID = fmt.Sprintf("%s_gen_%d", base.ID, time.Now().UnixNano())
 
 	// Mutate TCP/IP parameters.
@@ -55,7 +62,7 @@ func (g *SmartGenerator) mutateProfile(base *profiles.ClientProfile, intensity f
 		cloned.ConnectionFlow = uint32(int32(cloned.ConnectionFlow) + delta)
 	}
 
-	return &cloned
+	return cloned
 }
 
 // computeQualityScore computes a composite quality score from validation.

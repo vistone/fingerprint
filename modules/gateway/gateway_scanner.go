@@ -199,6 +199,9 @@ func (g *Gateway) resolveScannerFetch(ctx context.Context, req *scannerRequest) 
 	if strings.TrimSpace(req.URL) == "" {
 		return result, http.StatusOK, nil
 	}
+	if err := ValidateOutboundTarget(req.URL, false); err != nil {
+		return nil, http.StatusBadRequest, err
+	}
 
 	config := g.GetConfig()
 	result.FetchMode = "http"
@@ -352,8 +355,12 @@ func (g *Gateway) tryScannerHTTPFetch(
 
 	html, finalURL, chain, err := fetchHTMLWithRedirects(ctx, req.URL, followRedirect, maxRedirects, remainingBudget)
 	if err != nil && result.HTMLContent == "" {
+		statusCode := http.StatusBadGateway
+		if isBlockedTargetError(err) {
+			statusCode = http.StatusBadRequest
+		}
 		return &scannerFetchError{
-			statusCode: http.StatusBadGateway,
+			statusCode: statusCode,
 			message:    fmt.Sprintf("fetch url failed: %s", err.Error()),
 		}
 	}

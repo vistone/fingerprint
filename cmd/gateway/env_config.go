@@ -140,6 +140,10 @@ func applyRiskAndProxyEnv(config *gateway.GatewayConfig) {
 		config.RiskThreshold = threshold
 	}
 
+	if apiKeys, ok := readEnvString("FP_API_KEYS"); ok {
+		config.APIKeys = splitCSV(apiKeys)
+	}
+
 	if trustedProxies, ok := readEnvString("FP_TRUSTED_PROXIES"); ok {
 		config.TrustedProxies = splitCSV(trustedProxies)
 	}

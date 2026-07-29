@@ -44,6 +44,9 @@ func (c *GatewayConfig) Clone() *GatewayConfig {
 	if c.TrustedProxies != nil {
 		clone.TrustedProxies = append([]string(nil), c.TrustedProxies...)
 	}
+	if c.APIKeys != nil {
+		clone.APIKeys = append([]string(nil), c.APIKeys...)
+	}
 	clone.AgentConfig = cloneAgentConfig(c.AgentConfig)
 	clone.MLServiceConfig = cloneMLServiceConfig(c.MLServiceConfig)
 	clone.ClosedLoopConfig = cloneClosedLoopConfig(c.ClosedLoopConfig)

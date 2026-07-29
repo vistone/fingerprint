@@ -1,6 +1,7 @@
 package config
 
 import (
+	"sync"
 	"testing"
 	"time"
 )
@@ -246,6 +247,111 @@ func TestUnifiedConfigManager_DisableEnhancedFeatures(t *testing.T) {
 
 	if ucm.enhanced != nil {
 		t.Error("enhanced features should be nil after disabling")
+	}
+}
+
+func TestUnifiedConfigManager_UpdateWhileDisablingDoesNotPanic(t *testing.T) {
+	for i := 0; i < 100; i++ {
+		ucm := NewUnifiedConfigManager("")
+		ucm.current = DefaultManagedConfig()
+		ucm.loaded = true
+		ucm.EnableEnhancedFeatures()
+
+		panicCh := make(chan interface{}, 2)
+		var wg sync.WaitGroup
+		wg.Add(2)
+
+		go func() {
+			defer wg.Done()
+			defer func() {
+				if r := recover(); r != nil {
+					panicCh <- r
+				}
+			}()
+			_ = ucm.Update(DefaultManagedConfig(), "test update", "tester")
+		}()
+
+		go func() {
+			defer wg.Done()
+			defer func() {
+				if r := recover(); r != nil {
+					panicCh <- r
+				}
+			}()
+			ucm.DisableEnhancedFeatures()
+		}()
+
+		wg.Wait()
+
+		select {
+		case p := <-panicCh:
+			t.Fatalf("unexpected panic while disabling during update: %v", p)
+		default:
+		}
+	}
+}
+
+func TestUnifiedConfigManager_UnsubscribeWhileBroadcastingDoesNotPanic(t *testing.T) {
+	for i := 0; i < 50; i++ {
+		ucm := NewUnifiedConfigManager("")
+		ucm.current = DefaultManagedConfig()
+		ucm.loaded = true
+		ucm.EnableEnhancedFeatures()
+
+		ch, err := ucm.Subscribe("test-subscriber")
+		if err != nil {
+			t.Fatalf("Subscribe() error = %v", err)
+		}
+
+		var wg sync.WaitGroup
+		wg.Add(2)
+
+		go func() {
+			defer wg.Done()
+			for j := 0; j < 50; j++ {
+				_ = ucm.Update(DefaultManagedConfig(), "test update", "tester")
+			}
+		}()
+
+		go func() {
+			defer wg.Done()
+			<-ch
+			_ = ucm.Unsubscribe("test-subscriber")
+		}()
+
+		wg.Wait()
+		ucm.DisableEnhancedFeatures()
+	}
+}
+
+func TestUnifiedConfigManager_DisableClosesBroadcastChannelEvenWhenBuffered(t *testing.T) {
+	ucm := NewUnifiedConfigManager("")
+	ucm.EnableEnhancedFeatures()
+
+	enhanced := ucm.enhanced
+	enhanced.broadcastCh <- ConfigChangeEvent{
+		Type:        ConfigChangeTypeUpdate,
+		Timestamp:   time.Now(),
+		Description: "buffered event",
+		Source:      "test",
+	}
+
+	ucm.DisableEnhancedFeatures()
+
+	select {
+	case _, ok := <-enhanced.broadcastCh:
+		if ok {
+			select {
+			case _, ok = <-enhanced.broadcastCh:
+				if ok {
+					t.Fatal("expected broadcast channel to be closed after draining buffered event")
+				}
+			case <-time.After(100 * time.Millisecond):
+				t.Fatal("broadcast channel remained open after draining buffered event")
+			}
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("broadcast channel remained open after disable")
 	}
 }
 
